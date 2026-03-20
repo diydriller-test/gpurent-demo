@@ -4,7 +4,8 @@ import { NavAuthButton } from "@/components/NavAuthButton";
 const APIS = [
   {
     name: "Embedding",
-    description: "텍스트를 벡터로 변환하는 임베딩 API. RAG, 시맨틱 검색에 최적화",
+    description:
+      "텍스트를 벡터로 변환하는 임베딩 API. RAG, 시맨틱 검색에 최적화",
     icon: "◇",
   },
   {
@@ -47,7 +48,9 @@ export default function Home() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
             <span className="font-mono text-lg font-bold text-accent">GPU</span>
-            <span className="font-mono text-lg font-medium text-foreground/90">Modu</span>
+            <span className="font-mono text-lg font-medium text-foreground/90">
+              Modu
+            </span>
           </Link>
           <div className="flex items-center gap-8">
             <Link
@@ -81,15 +84,19 @@ export default function Home() {
           <p className="mx-auto mb-10 max-w-2xl text-lg text-foreground/70">
             자체 GPU로 구축한 임베딩, 리랭킹, TTS 등 다양한 API.
             <br className="hidden sm:block" />
-            토큰 과금이 아닌 <strong className="text-foreground">트래픽 기반</strong>으로 예측 가능한 비용으로 운영하세요.
+            토큰 과금이 아닌{" "}
+            <strong className="text-foreground">트래픽 기반</strong>으로 예측
+            가능한 비용으로 운영하세요.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              href="/plans"
+              href="/api-test"
               className="group flex items-center gap-2 rounded-xl bg-accent px-8 py-4 font-medium text-background glow-accent transition-all hover:opacity-90"
             >
               무료 체험
-              <span className="transition-transform group-hover:translate-x-1">→</span>
+              <span className="transition-transform group-hover:translate-x-1">
+                →
+              </span>
             </Link>
             <Link
               href="#apis"
@@ -119,7 +126,9 @@ export default function Home() {
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 font-mono text-xl text-accent transition-colors group-hover:bg-accent/20">
                   {api.icon}
                 </div>
-                <h3 className="mb-2 font-semibold text-foreground">{api.name}</h3>
+                <h3 className="mb-2 font-semibold text-foreground">
+                  {api.name}
+                </h3>
                 <p className="text-sm leading-relaxed text-foreground/60">
                   {api.description}
                 </p>
@@ -136,7 +145,8 @@ export default function Home() {
             단순하고 예측 가능한 과금
           </h2>
           <p className="mx-auto mb-16 max-w-2xl text-center text-foreground/70">
-            토큰량 측정 없이, 최대 RPS만 제한하는 구조로 비용을 명확히 파악할 수 있습니다.
+            토큰량 측정 없이, 최대 RPS만 제한하는 구조로 비용을 명확히 파악할 수
+            있습니다.
           </p>
           <div className="grid gap-8 md:grid-cols-3">
             {BENEFITS.map((benefit) => (

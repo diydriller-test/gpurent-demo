@@ -1,5 +1,24 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 환경 변수 (로컬 실행)
+
+실제 키는 Git에 올리지 마세요. 저장소에는 `.env.example`만 포함됩니다.
+
+```bash
+cp .env.example .env.local
+```
+
+`.env.local`을 열어 아래 값을 채웁니다.
+
+| 변수 | 용도 |
+|------|------|
+| `OPENAI_API_KEY` | `/api/chat` (LLM) |
+| `QWEN_API_KEY` | `/api/rerank` (Reranker, `access_token`) |
+| `RERANK_API_KEY` | (선택) `QWEN_API_KEY` 없을 때 Rerank용 폴백 |
+| `NEXT_PUBLIC_API_URL` | (선택) 클라이언트용 API 베이스 URL |
+
+배포 시에는 Vercel 등 호스팅의 **Environment Variables**에 동일한 이름으로 등록하면 됩니다.
+
 ## Getting Started
 
 First, run the development server:
