@@ -1,0 +1,96 @@
+import { NextResponse } from "next/server";
+
+const EMBEDDING_ENDPOINT =
+  "http://gpurent.kogrobo.com:11436/_inference/text_embedding/qwen3";
+
+type EmbeddingRequestBody = {
+  // playground에서 보낼 때
+  text?: unknown;
+  // developer console에서 보낼 때(요청 스펙)
+  input?: unknown;
+  input_type?: unknown;
+};
+
+export async function POST(req: Request) {
+  try {
+    const body = (await req.json().catch(() => null)) as
+      | EmbeddingRequestBody
+      | null;
+
+    const text =
+      typeof body?.text === "string"
+        ? body.text.trim()
+        : typeof body?.input === "string"
+          ? body.input.trim()
+          : "";
+
+    const inputType =
+      typeof body?.input_type === "string" ? body.input_type : "string";
+
+    if (!text) {
+      return NextResponse.json(
+        { error: "input/text를 확인해주세요." },
+        { status: 400 },
+      );
+    }
+
+    const apiKey = process.env.EMBEDDING_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: "EMBEDDING_API_KEY가 설정되지 않았습니다." },
+        { status: 500 },
+      );
+    }
+
+    const upstreamRes = await fetch(EMBEDDING_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        access_token: apiKey,
+      },
+      body: JSON.stringify({
+        input: text,
+        task_settings: { additionalProp1: {} },
+        input_type: inputType,
+      }),
+    });
+
+    const upstreamJson = (await upstreamRes.json().catch(() => null)) as
+      | unknown
+      | null;
+
+    if (!upstreamRes.ok) {
+      return NextResponse.json(
+        upstreamJson ?? { error: "Embedding API 요청 실패" },
+        { status: upstreamRes.status || 500 },
+      );
+    }
+
+    const embeddingVector = (
+      upstreamJson as
+        | { inference_results?: Array<{ text_embedding?: unknown }> }
+        | null
+    )?.inference_results?.[0]?.text_embedding;
+
+    if (!Array.isArray(embeddingVector)) {
+      return NextResponse.json(
+        { error: "Embedding 응답 형식이 올바르지 않습니다." },
+        { status: 502 },
+      );
+    }
+
+    // 숫자 배열로 정규화
+    const normalized = embeddingVector
+      .map((v: unknown) => (typeof v === "number" ? v : Number(v)))
+      .filter((v: number) => Number.isFinite(v));
+
+    return NextResponse.json({ embeddingVector: normalized });
+  } catch (error: unknown) {
+    console.error("Embedding API Error:", error);
+    return NextResponse.json(
+      { error: "Embedding 서버 연결에 실패했습니다." },
+      { status: 500 },
+    );
+  }
+}
+

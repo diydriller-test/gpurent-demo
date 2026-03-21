@@ -2,16 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getToken, removeToken } from "@/lib/token";
 
 export function NavAuthButton() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    setIsLoggedIn(!!getToken());
-  }, []);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getToken());
 
   function handleLogout() {
     removeToken();
