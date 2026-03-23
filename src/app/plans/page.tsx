@@ -79,10 +79,11 @@ export default function PlansPage() {
   }
 
   async function handleSelectPlan(planId: number) {
+    if (!selectedApi) return;
     setPlanActionError(null);
     setUpdatingPlanId(planId);
     try {
-      await updatePlan(planId);
+      await updatePlan(selectedApi.id, planId);
       await fetchUser();
     } catch (err) {
       setPlanActionError(
@@ -174,13 +175,13 @@ export default function PlansPage() {
             <p className="text-sm text-foreground/80">
               현재 플랜:{" "}
               <span className="font-medium text-accent">
-                {userLoading ? "확인 중..." : (user?.plan?.name ?? "없음")}
+                {userLoading
+                  ? "확인 중..."
+                  : (() => {
+                      const ap = user?.api_plans?.find((p) => p.api_id === selectedApi.id);
+                      return ap ? `${ap.plan_name} (최대 ${ap.max_rps} RPS)` : "없음";
+                    })()}
               </span>
-              {user?.plan && (
-                <span className="ml-2 text-foreground/50">
-                  (최대 {user.plan.max_rps} RPS)
-                </span>
-              )}
             </p>
           </div>
         )}
@@ -221,23 +222,31 @@ export default function PlansPage() {
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {apis.map((api) => (
-                <button
-                  key={api.id}
-                  type="button"
-                  onClick={() => handleSelectApi(api)}
-                  className="group rounded-2xl border border-white/5 bg-surface/80 p-6 text-left transition-all hover:border-accent/20 hover:bg-surface"
-                >
-                  <h2 className="text-xl font-semibold text-foreground">{api.name}</h2>
-                  <p className="mt-2 text-sm text-foreground/60">{api.company_name}</p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-sm text-accent opacity-0 transition-opacity group-hover:opacity-100">
-                    플랜 보기
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </button>
-              ))}
+              {apis.map((api) => {
+                const currentPlan = user?.api_plans?.find((p) => p.api_id === api.id);
+                return (
+                  <button
+                    key={api.id}
+                    type="button"
+                    onClick={() => handleSelectApi(api)}
+                    className="group rounded-2xl border border-white/5 bg-surface/80 p-6 text-left transition-all hover:border-accent/20 hover:bg-surface"
+                  >
+                    <h2 className="text-xl font-semibold text-foreground">{api.name}</h2>
+                    <p className="mt-2 text-sm text-foreground/60">{api.company_name}</p>
+                    {currentPlan && (
+                      <p className="mt-3 rounded-lg bg-accent/10 px-3 py-2 text-sm font-medium text-accent">
+                        현재 플랜: {currentPlan.plan_name} ({currentPlan.max_rps} RPS)
+                      </p>
+                    )}
+                    <span className="mt-4 inline-flex items-center gap-1 text-sm text-accent opacity-0 transition-opacity group-hover:opacity-100">
+                      플랜 보기
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           )
         ) : (
@@ -274,7 +283,8 @@ export default function PlansPage() {
             <div className="grid gap-8 lg:grid-cols-3">
               {plans.map((plan) => {
                 const highlighted = plan.sort_order === 2;
-                const isCurrentPlan = user?.plan_id === plan.id;
+                const currentApiPlan = user?.api_plans?.find((p) => p.api_id === selectedApi.id);
+                const isCurrentPlan = currentApiPlan?.plan_id === plan.id;
                 const isUpdating = updatingPlanId === plan.id;
 
                 return (

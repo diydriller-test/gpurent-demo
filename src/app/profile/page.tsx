@@ -185,7 +185,7 @@ export default function ProfilePage() {
     }
   }
 
-  const hasPlan = !!user?.plan_id;
+  const hasPlan = (user?.api_plans?.length ?? 0) > 0;
 
   if (isLoading) {
     return (
@@ -263,17 +263,6 @@ export default function ProfilePage() {
             <p className="mt-1 text-lg font-medium text-foreground">{user.email}</p>
           </div>
           <div>
-            <p className="text-sm text-foreground/50">현재 플랜</p>
-            <p className="mt-1 text-lg font-medium text-foreground">
-              {user.plan?.name ?? "없음"}
-              {user.plan && (
-                <span className="ml-2 text-sm text-foreground/50">
-                  (최대 {user.plan.max_rps} RPS)
-                </span>
-              )}
-            </p>
-          </div>
-          <div>
             <p className="text-sm text-foreground/50">가입일</p>
             <p className="mt-1 text-lg font-medium text-foreground">
               {new Date(user.created_at).toLocaleDateString("ko-KR")}
@@ -331,15 +320,6 @@ export default function ProfilePage() {
               )}
             </div>
           )}
-        </div>
-
-        <div className="mt-8 flex gap-4">
-          <Link
-            href="/plans"
-            className="rounded-xl bg-accent px-6 py-3 font-medium text-background transition-opacity hover:opacity-90"
-          >
-            플랜 변경
-          </Link>
         </div>
       </main>
     </div>
