@@ -1,6 +1,8 @@
 import type React from "react";
 
 import type { ApiId, ChatMessage, RerankResult } from "../lib/types";
+import { ChatMarkdown } from "./ChatMarkdown";
+import { EmbeddingFingerprintHeatmap } from "./EmbeddingFingerprintHeatmap";
 
 type Props = {
   selectedApi: ApiId;
@@ -11,12 +13,9 @@ type Props = {
 
   // Embedding
   embeddingVector: number[] | null;
-  embeddingInputLabel: string | null;
   embeddingError: string | null;
-  EmbeddingUniverseViz: React.ComponentType<{
-    vector: number[];
-    seedText: string | null;
-  }>;
+  isEmbeddingLoading: boolean;
+  embeddingAnimationKey: string;
 
   // Reranker
   rerankQuestion: string;
@@ -35,6 +34,10 @@ type Props = {
   ttsDurationMs: number;
   ttsProgress: number;
   ttsWave: number[];
+  ttsAudioRef: React.RefObject<HTMLAudioElement | null>;
+  ttsAudioUrl: string | null;
+  ttsIsSynthesizing: boolean;
+  ttsMockResponse: Record<string, unknown> | null;
   IconPlay: React.ComponentType<{ className?: string }>;
   IconPause: React.ComponentType<{ className?: string }>;
 
@@ -53,9 +56,9 @@ export function ApiOutputPanel({
   formatTime,
   liveNowText,
   embeddingVector,
-  embeddingInputLabel,
   embeddingError,
-  EmbeddingUniverseViz,
+  isEmbeddingLoading,
+  embeddingAnimationKey,
   rerankQuestion,
   rerankDocsText,
   setRerankQuestion,
@@ -70,6 +73,10 @@ export function ApiOutputPanel({
   ttsDurationMs,
   ttsProgress,
   ttsWave,
+  ttsAudioRef,
+  ttsAudioUrl,
+  ttsIsSynthesizing,
+  ttsMockResponse,
   IconPlay,
   IconPause,
   sttTranscript,
@@ -152,9 +159,16 @@ export function ApiOutputPanel({
                             : "border-white/10 bg-background/30 text-foreground",
                         ].join(" ")}
                       >
-                        <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-                          {m.content}
-                        </pre>
+                        {isUser ? (
+                          <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                            {m.content}
+                          </pre>
+                        ) : (
+                          <ChatMarkdown
+                            content={m.content}
+                            className="min-w-0 break-words text-sm"
+                          />
+                        )}
                         <div className="mt-2 flex items-center justify-end gap-2">
                           <span className="font-mono text-[11px] text-foreground/40">
                             {formatTime(m.createdAt)}
@@ -173,66 +187,48 @@ export function ApiOutputPanel({
             return (
               <div className="space-y-3">
                 <div className="rounded-2xl border border-[#10b981]/25 bg-[#10b981]/5 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-mono text-xs text-[#10b981]">
-                        고차원 의미 공간 (4,096-Dimensional Space)
-                      </p>
-                      <p
-                        className={[
-                          "mt-1 text-sm font-semibold text-foreground transition-opacity duration-200",
-                          embeddingVector ? "opacity-100" : "opacity-80",
-                        ].join(" ")}
-                      >
-                        {embeddingVector
-                          ? "입력하신 문장이 AI가 학습한 거대한 의미의 우주 속에서 단 하나의 고유한 좌표(Vector)로 변환되었습니다."
-                          : "문장을 AI가 학습한 거대한 의미의 우주 속 좌표로 변환해보세요."}
-                      </p>
-                      <p
-                        className={[
-                          "mt-1 text-xs text-foreground/60 transition-opacity duration-200",
-                          embeddingVector ? "opacity-100" : "opacity-80",
-                        ].join(" ")}
-                      >
-                        {embeddingVector
-                          ? "4,096차원의 의미 공간에서 이 문장이 가진 고유한 위치를 확인해보세요."
-                          : "입력하신 문장의 의미를 분석하여 고차원 공간상의 수치로 시각화합니다."}
+                  {embeddingError &&
+                  !isEmbeddingLoading &&
+                  !embeddingVector ? (
+                    <div className="mt-3 rounded-xl border border-white/5 bg-background/20 p-3">
+                      <p className="text-sm font-semibold text-foreground">
+                        {embeddingError}
                       </p>
                     </div>
-                  </div>
-
-                  {embeddingVector ? (
-                    <>
-                      {embeddingInputLabel ? (
-                        <p className="mt-2 text-xs text-foreground/60">
-                          Input: {embeddingInputLabel}
+                  ) : isEmbeddingLoading || embeddingVector ? (
+                    <div className="mt-3 space-y-3">
+                      <div className="rounded-xl border border-[#10b981]/15 bg-zinc-950/40 px-3 py-4">
+                        <p className="text-center font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a7f3d0]/95">
+                          의미적 지문 (Semantic Fingerprint)
                         </p>
-                      ) : null}
-                      <p className="mt-2 text-xs text-foreground/60">
-                        총 4096 차원의 고밀도 벡터가 생성되었습니다.
-                      </p>
+                        <p className="mt-1 text-center text-[10px] text-foreground/45">
+                          4,096차원을 64×64 민트 히트맵으로 시각화합니다. 셀에
+                          마우스를 올리면 차원 인덱스와 값을 확인할 수 있습니다.
+                        </p>
 
-                      <div className="mt-3">
-                        <EmbeddingUniverseViz
-                          vector={embeddingVector}
-                          seedText={embeddingInputLabel}
-                        />
+                        <div className="mt-4">
+                          <EmbeddingFingerprintHeatmap
+                            vector={embeddingVector}
+                            isLoading={isEmbeddingLoading}
+                            animationKey={embeddingAnimationKey}
+                          />
+                        </div>
                       </div>
 
-                      <p className="mt-2 text-xs text-foreground/60">
-                        이 점의 위치가 비슷할수록 문장의 의미가 가깝다는 뜻입니다.
-                      </p>
-                    </>
+                      {embeddingVector && !isEmbeddingLoading ? (
+                        <p className="text-xs text-foreground/60">
+                          이 지문 패턴이 비슷할수록 문장의 의미가 가깝다는 뜻입니다.
+                        </p>
+                      ) : null}
+                    </div>
                   ) : (
                     <div className="mt-3 rounded-xl border border-white/5 bg-background/20 p-3">
                       <p className="text-sm font-semibold text-foreground">
-                        {embeddingError ?? "아직 생성 결과가 없습니다."}
+                        아직 생성 결과가 없습니다.
                       </p>
-                      {!embeddingError ? (
-                        <p className="mt-1 text-xs text-foreground/60">
-                          하단 입력 후 “임베딩 생성”을 눌러보세요.
-                        </p>
-                      ) : null}
+                      <p className="mt-1 text-xs text-foreground/60">
+                        하단 입력 후 “임베딩 생성”을 눌러보세요.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -398,62 +394,125 @@ export function ApiOutputPanel({
           case "tts":
             return (
               <div className="space-y-3">
+                <audio
+                  ref={ttsAudioRef}
+                  src={ttsAudioUrl ?? undefined}
+                  preload="auto"
+                  className="hidden"
+                />
                 <div className="rounded-2xl border border-[#10b981]/25 bg-[#10b981]/5 p-4">
-                  <p className="font-mono text-xs text-[#10b981]">Audio Player (UI Demo)</p>
+                  <p className="font-mono text-xs text-[#10b981]">
+                    Audio Player (Mock 데모)
+                  </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
-                    재생/일시정지는 오디오가 아니라 UI 애니메이션으로 동작합니다.
+                    합성 후 실제 blob 오디오 재생 · 진행률은 재생 시간에 따라
+                    갱신됩니다.
                   </p>
 
-                  <div className="mt-4 flex items-center justify-between gap-4">
-                    <button
-                      type="button"
-                      onClick={handleTtsPlayPause}
-                      className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#10b981] text-background shadow-[0_0_40px_rgba(16,185,129,0.22)] transition-opacity hover:opacity-90"
-                    >
-                      {ttsPlaying ? (
-                        <IconPause className="h-5 w-5" />
-                      ) : (
-                        <IconPlay className="h-5 w-5" />
-                      )}
-                    </button>
-                    <div className="flex-1">
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                        <div
-                          className="h-2 rounded-full bg-[#10b981]"
-                          style={{ width: `${Math.round(ttsProgress * 100)}%` }}
-                        />
-                      </div>
-                      <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-foreground/50">
-                        <span>
-                          {Math.round((ttsDurationMs * ttsProgress) / 1000)}s
-                        </span>
-                        <span>{Math.round(ttsDurationMs / 1000)}s</span>
+                  <div
+                    className={[
+                      "mt-4 transition-opacity duration-300",
+                      ttsAudioUrl
+                        ? "opacity-100"
+                        : "pointer-events-none opacity-50",
+                    ].join(" ")}
+                  >
+                    {!ttsAudioUrl ? (
+                      <p className="mb-3 text-xs text-foreground/55">
+                        합성 후 이용 가능합니다. 하단에서 &quot;합성&quot;을
+                        눌러 음성을 생성해 주세요.
+                      </p>
+                    ) : null}
+
+                    <div className="flex items-center justify-between gap-4">
+                      <button
+                        type="button"
+                        disabled={!ttsAudioUrl}
+                        onClick={handleTtsPlayPause}
+                        className={[
+                          "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#10b981] text-background shadow-[0_0_40px_rgba(16,185,129,0.22)] transition-opacity",
+                          ttsAudioUrl
+                            ? "hover:opacity-90"
+                            : "cursor-not-allowed opacity-40",
+                        ].join(" ")}
+                      >
+                        {ttsPlaying ? (
+                          <IconPause className="h-5 w-5" />
+                        ) : (
+                          <IconPlay className="h-5 w-5" />
+                        )}
+                      </button>
+                      <div className="flex-1">
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-2 rounded-full bg-[#10b981] transition-[width] duration-100 ease-linear"
+                            style={{
+                              width: `${Math.round(ttsProgress * 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-foreground/50">
+                          <span>
+                            {(ttsDurationMs * ttsProgress / 1000).toFixed(1)}s
+                          </span>
+                          <span>{(ttsDurationMs / 1000).toFixed(1)}s</span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-end gap-1">
-                    {(ttsWave?.length ? ttsWave : [])
-                      .slice(0, 26)
-                      .map((v, idx) => {
-                        const h = Math.max(6, Math.round(v * 44));
-                        return (
-                          <div
-                            key={`${idx}-${v}`}
-                            className={[
-                              "w-[6px] rounded-sm bg-white/10",
-                              ttsPlaying ? "bg-[#10b981]" : "bg-white/10",
-                            ].join(" ")}
-                            style={{ height: h }}
-                          />
-                        );
-                      })}
-                    {!ttsWave.length ? (
-                      <div className="mt-2 text-xs text-foreground/60">
-                        하단에서 “합성” 후 재생을 눌러보세요.
-                      </div>
+                  {ttsMockResponse ? (
+                    <p className="mt-2 text-[10px] text-foreground/45">
+                      Mock 응답 duration:{" "}
+                      {String(ttsMockResponse.duration ?? "—")} · 모델:{" "}
+                      {String(ttsMockResponse.model ?? "—")}
+                    </p>
+                  ) : null}
+
+                  <div className="relative mt-4 overflow-hidden rounded-xl border border-[#10b981]/15 bg-zinc-950/40 px-2 py-3">
+                    <div className="flex h-14 items-end justify-center gap-[3px]">
+                      {(ttsIsSynthesizing
+                        ? Array.from({ length: 32 }, (_, i) => 0.35 + (i % 5) * 0.1)
+                        : ttsWave?.length
+                          ? ttsWave
+                          : Array.from({ length: 32 }, () => 0.12)
+                      )
+                        .slice(0, 32)
+                        .map((v, idx) => {
+                          const h = Math.max(8, Math.round(v * 44));
+                          return (
+                            <div
+                              key={`tts-w-${idx}-${ttsIsSynthesizing ? "s" : "d"}`}
+                              className={[
+                                "w-[5px] origin-bottom rounded-sm bg-white/10",
+                                ttsPlaying ? "bg-[#10b981]" : "bg-white/15",
+                              ].join(" ")}
+                              style={{
+                                height: h,
+                                ...(ttsIsSynthesizing
+                                  ? {
+                                      animation:
+                                        "ttsWv 1.15s ease-in-out infinite",
+                                      animationDelay: `${idx * 32}ms`,
+                                    }
+                                  : {}),
+                              }}
+                            />
+                          );
+                        })}
+                    </div>
+                    {ttsIsSynthesizing ? (
+                      <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-[11px] font-medium text-[#10b981]/90">
+                        음성 합성 중…
+                      </p>
                     ) : null}
                   </div>
+                  <style>{`
+                    @keyframes ttsWv {
+                      0%, 100% { transform: scaleY(0.38); opacity: 0.55; }
+                      50% { transform: scaleY(1); opacity: 1; }
+                    }
+                  `}</style>
                 </div>
               </div>
             );

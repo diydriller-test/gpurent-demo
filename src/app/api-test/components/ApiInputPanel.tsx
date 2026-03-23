@@ -23,9 +23,10 @@ type Props = {
   isEmbeddingLoading: boolean;
 
   // TTS input
-  handleTtsSynthesize: () => void;
+  handleTtsRun: () => void;
   ttsText: string;
   setTtsText: React.Dispatch<React.SetStateAction<string>>;
+  isTtsSynthesizing: boolean;
 
   // STT input
   sttFileInputRef: React.RefObject<HTMLInputElement | null>;
@@ -105,9 +106,10 @@ export function ApiInputPanel({
   setEmbeddingText,
   isEmbeddingLoading,
 
-  handleTtsSynthesize,
+  handleTtsRun,
   ttsText,
   setTtsText,
+  isTtsSynthesizing,
 
   sttFileInputRef,
   sttFileName,
@@ -231,6 +233,16 @@ export function ApiInputPanel({
                 }
                 className="mt-2 w-full accent-[#10b981]"
               />
+              <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
+                <span className="text-foreground/55">Temperature</span>는 답이
+                얼마나 “정해진 느낌”으로 나올지를 조절해요.{" "}
+                <span className="text-foreground/60">낮으면</span> 같은 질문에
+                비슷하고 안정적인 문장을,{" "}
+                <span className="text-foreground/60">높으면</span> 표현이 더
+                다양해지고 때로는 예측하기 어려울 수 있어요. 요약·보고서처럼
+                톤을 맞추고 싶을 땐 낮게, 아이디어나 문장을 넓게 펼치고 싶을
+                땐 높게 써보세요.
+              </p>
             </div>
           </div>
         </form>
@@ -292,7 +304,7 @@ export function ApiInputPanel({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            handleTtsSynthesize();
+            handleTtsRun();
           }}
         >
           <div className="flex flex-col gap-3">
@@ -309,13 +321,36 @@ export function ApiInputPanel({
             </div>
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs text-foreground/60">
-                합성 시 mock 웨이브가 생성됩니다.
+                Mock 합성 후 blob 오디오 재생 · 콘솔에 더미 응답이 표시됩니다.
               </p>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#10b981] px-5 py-3 text-background font-medium shadow-[0_0_40px_rgba(16,185,129,0.22)] hover:opacity-90 transition-opacity"
+                disabled={isTtsSynthesizing || !ttsText.trim()}
+                className={[
+                  "inline-flex items-center gap-2 rounded-xl bg-[#10b981] px-5 py-3 text-background font-medium shadow-[0_0_40px_rgba(16,185,129,0.22)] transition-opacity",
+                  isTtsSynthesizing || !ttsText.trim()
+                    ? "cursor-not-allowed opacity-50"
+                    : "hover:opacity-90",
+                ].join(" ")}
               >
-                합성
+                {isTtsSynthesizing ? (
+                  <>
+                    <svg
+                      className="h-4 w-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                    <span>합성 중…</span>
+                  </>
+                ) : (
+                  <span>합성</span>
+                )}
               </button>
             </div>
           </div>

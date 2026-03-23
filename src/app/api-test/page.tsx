@@ -14,9 +14,16 @@ import { getToken } from "@/lib/token";
 import { SmartSolutionGuide } from "./components/SmartSolutionGuide";
 import { JsonCode } from "./components/JsonCode";
 import { DeveloperCodeSection } from "./components/DeveloperCodeSection";
+import { EmbeddingDeveloperCodeSection } from "./components/EmbeddingDeveloperCodeSection";
+import { PlaygroundDeveloperCodeSection } from "./components/PlaygroundDeveloperCodeSection";
 import { ApiOutputPanel } from "./components/ApiOutputPanel";
 import { ApiInputPanel } from "./components/ApiInputPanel";
 import { buildLlmDevCodePython } from "./lib/buildLlmDevCodePython";
+import { buildEmbeddingDevCodePython } from "./lib/buildEmbeddingDevCodePython";
+import { buildRerankDevCodePython } from "./lib/buildRerankDevCodePython";
+import { buildTtsDevCodePython } from "./lib/buildTtsDevCodePython";
+import { buildSttDevCodePython } from "./lib/buildSttDevCodePython";
+import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 
 type ApiId = "llm" | "embedding" | "reranker" | "tts" | "stt";
 
@@ -37,8 +44,14 @@ type ChatMessage = {
 
 const DEFAULT_EMBEDDING_PLAYGROUND_TEXT =
   "인공지능을 활용한 기업용 지식 관리 시스템 구축 및 운영 전략";
-const DEFAULT_EMBEDDING_CONSOLE_INPUT =
-  "대규모 언어 모델을 활용한 고차원 벡터 검색 성능 최적화 방안";
+
+const DEFAULT_TTS_PLAYGROUND_TEXT =
+  "안녕하세요. GPU Modu API 데모를 재생합니다.";
+
+const DEFAULT_RERANK_QUERY =
+  "사람 없고 한적한 곳에서 힐링하고 싶어";
+const DEFAULT_RERANK_DOCS_TEXT =
+  "- 사람들이 가장 많이 찾는 서울 핫플레이스 TOP 10\n- 여름 휴가철 인파로 북적이는 해운대 해수욕장 현황\n- 숲소리만 들리는 깊은 산속 프라이빗 독채 펜션\n- 친구들과 시끌벅적하게 즐기는 강남역 맛집 탐방";
 
 const STT_ACCEPTED_LANGUAGE_CODES = [
   "af",
@@ -298,196 +311,6 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-function formatVectorSample(vec: number[], count = 6) {
-  const safe = vec.slice(0, count);
-  return `[${safe.map((v) => v.toFixed(2)).join(", ")}]`;
-}
-
-function EmbeddingUniverseViz({
-  vector,
-  seedText,
-}: {
-  vector: number[];
-  seedText: string | null;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const pointsRef = useRef<Array<{ x: number; y: number; a: number; s: number }>>(
-    [],
-  );
-  const [size, setSize] = useState({ w: 0, h: 0 });
-  const [isHover, setIsHover] = useState(false);
-
-  const dims = 4096;
-  const sampleText = useMemo(
-    () => formatVectorSample(vector, 6),
-    // vector는 reference가 바뀌므로 의존성으로 둬도 됩니다.
-    [vector],
-  );
-
-  const x01 = useMemo(() => {
-    const v0 = Number.isFinite(vector[0] ?? NaN) ? (vector[0] as number) : 0;
-    // [-inf..inf] -> [0..1] 안정화
-    return clamp(0.5 + Math.tanh(v0) * 0.5, 0, 1);
-  }, [vector]);
-
-  const y01 = useMemo(() => {
-    const v1 = Number.isFinite(vector[1] ?? NaN) ? (vector[1] as number) : 0;
-    return clamp(0.5 + Math.tanh(v1) * 0.5, 0, 1);
-  }, [vector]);
-
-  const seed = useMemo(() => hashString((seedText ?? "embedding").trim()), [
-    seedText,
-  ]);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const ro = new ResizeObserver(() => {
-      const r = el.getBoundingClientRect();
-      setSize({ w: Math.max(1, r.width), h: Math.max(1, r.height) });
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const rnd = mulberry32(seed);
-    const pointsCount = 2600; // 잠재 공간 점들
-    pointsRef.current = Array.from({ length: pointsCount }, () => {
-      const x = rnd();
-      const y = rnd();
-      const a = 0.08 + rnd() * 0.22;
-      const s = 0.6 + rnd() * 1.2;
-      return { x, y, a, s };
-    });
-  }, [seed]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const host = containerRef.current;
-    if (!canvas || !host) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let raf = 0;
-    const start = performance.now();
-
-    const render = (t: number) => {
-      const dpr = window.devicePixelRatio || 1;
-      const w = size.w;
-      const h = size.h;
-      canvas.width = Math.max(1, Math.floor(w * dpr));
-      canvas.height = Math.max(1, Math.floor(h * dpr));
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, w, h);
-
-      // Background points (latent space)
-      for (const p of pointsRef.current) {
-        ctx.globalAlpha = p.a;
-        ctx.fillStyle = "#cfcfcf";
-        ctx.fillRect(p.x * w, p.y * h, p.s, p.s);
-      }
-      ctx.globalAlpha = 1;
-
-      // Bright point
-      const px = x01 * w;
-      const py = y01 * h;
-      const pulse = 0.65 + 0.35 * Math.sin((t - start) / 260);
-      const r = 3.2 + 2.8 * pulse;
-
-      // Outer glow
-      const glow = ctx.createRadialGradient(px, py, 0, px, py, r * 6);
-      glow.addColorStop(0, "rgba(167,243,208,0.75)");
-      glow.addColorStop(0.35, "rgba(16,185,129,0.28)");
-      glow.addColorStop(1, "rgba(16,185,129,0)");
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(px, py, r * 6, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Core
-      ctx.fillStyle = "rgba(52, 211, 153, 1)";
-      ctx.beginPath();
-      ctx.arc(px, py, r, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Hover halo
-      if (isHover) {
-        const hr = r + 2.4;
-        ctx.strokeStyle = "rgba(167,243,208,0.55)";
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.arc(px, py, hr, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
-      raf = requestAnimationFrame(render);
-    };
-
-    raf = requestAnimationFrame(render);
-    return () => cancelAnimationFrame(raf);
-  }, [size.w, size.h, x01, y01, isHover]);
-
-  const px = x01 * size.w;
-  const py = y01 * size.h;
-
-  return (
-    <div
-      ref={containerRef}
-      className="relative w-full rounded-xl border border-white/5 bg-background/20 overflow-hidden"
-      style={{ height: 240 }}
-      onMouseMove={(e) => {
-        const el = containerRef.current;
-        if (!el) return;
-        const r = el.getBoundingClientRect();
-        const mx = e.clientX - r.left;
-        const my = e.clientY - r.top;
-        const dist = Math.hypot(mx - px, my - py);
-        setIsHover(dist <= 18);
-      }}
-      onMouseLeave={() => setIsHover(false)}
-    >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 h-full w-full"
-      />
-
-      {/* Label near the bright point */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          left: px,
-          top: py,
-          transform: "translate(-50%, -120%)",
-        }}
-      >
-        <div className="rounded-lg border border-[#10b981]/25 bg-background/40 px-2 py-1 text-[11px] text-[#10b981] font-mono">
-          Point: [{dims.toLocaleString()} Dimensions]
-        </div>
-      </div>
-
-      {isHover ? (
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            left: px,
-            top: py,
-            transform: "translate(-50%, 20px)",
-          }}
-        >
-          <div className="rounded-xl border border-white/10 bg-background/60 px-3 py-2 text-[11px] text-foreground/80 backdrop-blur">
-            <div className="font-mono text-[#a7f3d0]">Vector sample</div>
-            <div className="font-mono">{sampleText}</div>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 function HelpInfoIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -571,11 +394,298 @@ function mockWaveform(seedText: string, length = 24) {
   return bars;
 }
 
+/** TTS 데모용 재생 가능한 WAV blob URL (실전 API 전 시연용) */
+function createMockTtsWavBlobUrl(durationSec = 2.5): string {
+  const sampleRate = 44100;
+  const numSamples = Math.floor(sampleRate * durationSec);
+  const dataSize = numSamples * 2;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+  const writeStr = (offset: number, s: string) => {
+    for (let i = 0; i < s.length; i++) {
+      view.setUint8(offset + i, s.charCodeAt(i));
+    }
+  };
+  writeStr(0, "RIFF");
+  view.setUint32(4, 36 + dataSize, true);
+  writeStr(8, "WAVE");
+  writeStr(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, "data");
+  view.setUint32(40, dataSize, true);
+  for (let i = 0; i < numSamples; i++) {
+    const t = (i / sampleRate) * 440 * 2 * Math.PI;
+    const s = Math.sin(t) * 0.28 * 32767;
+    view.setInt16(44 + i * 2, s, true);
+  }
+  const blob = new Blob([buffer], { type: "audio/wav" });
+  return URL.createObjectURL(blob);
+}
+
 function formatTime(ts: number) {
   const d = new Date(ts);
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
   return `${hh}:${mm}`;
+}
+
+/** Text Playground ↔ Developer Console 동기화용 LLM Request JSON */
+function buildLlmConsoleRequestJson(promptValue: string, temperature: number) {
+  return JSON.stringify(
+    {
+      model: "openai/gpt-oss-120b",
+      temperature,
+      messages: [{ role: "user", content: promptValue }],
+    },
+    null,
+    2,
+  );
+}
+
+/**
+ * 콘솔 JSON → Playground `prompt` / `temperature` (슬라이더 범위 0~1에 맞춤)
+ * 파싱 실패 시 null
+ */
+function tryParseLlmConsoleToPlayground(jsonText: string): {
+  prompt?: string;
+  temperature?: number;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      temperature?: unknown;
+      messages?: unknown;
+      input?: unknown;
+    };
+    const out: { prompt?: string; temperature?: number } = {};
+
+    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+      out.temperature = clamp(parsed.temperature, 0, 1);
+    } else if (
+      typeof parsed.temperature === "string" &&
+      parsed.temperature.trim() !== "" &&
+      Number.isFinite(Number(parsed.temperature))
+    ) {
+      out.temperature = clamp(Number(parsed.temperature), 0, 1);
+    }
+
+    const directInput =
+      typeof parsed.input === "string" ? parsed.input : undefined;
+    let msgContent: string | undefined;
+    if (Array.isArray(parsed.messages)) {
+      const u = [...parsed.messages]
+        .reverse()
+        .find(
+          (m) =>
+            m &&
+            typeof m === "object" &&
+            (m as { role?: string }).role === "user" &&
+            typeof (m as { content?: unknown }).content === "string",
+        ) as { content?: string } | undefined;
+      msgContent = u?.content;
+    }
+    const content = msgContent ?? directInput;
+    if (typeof content === "string") {
+      out.prompt = content;
+    }
+
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+/** Embedding Playground ↔ Developer Console 동기화용 Request JSON */
+function buildEmbeddingConsoleRequestJson(inputText: string) {
+  return JSON.stringify(
+    {
+      input: inputText,
+      input_type: "string",
+    },
+    null,
+    2,
+  );
+}
+
+/**
+ * Embedding 콘솔 JSON → Playground `embeddingText`
+ * 파싱 실패 시 null
+ */
+function tryParseEmbeddingConsoleToPlayground(jsonText: string): {
+  input?: string;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as { input?: unknown };
+    const out: { input?: string } = {};
+    if (typeof parsed.input === "string") {
+      out.input = parsed.input;
+    }
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+/** TTS Playground ↔ Developer Console 동기화용 Request JSON */
+function buildTtsConsoleRequestJson(text: string) {
+  return JSON.stringify(
+    {
+      text,
+      voice: "default",
+      format: "mp3",
+    },
+    null,
+    2,
+  );
+}
+
+function sanitizeRerankDocLine(line: string): string {
+  return line.trim().replace(/^-+\s*/, "");
+}
+
+/** Reranker Playground ↔ Developer Console 동기화용 Request JSON */
+function buildRerankConsoleRequestJson(query: string, docsText: string): string {
+  const input = docsText
+    .split("\n")
+    .map((line) => sanitizeRerankDocLine(line))
+    .filter(Boolean);
+  return JSON.stringify(
+    {
+      query: query.trim(),
+      input,
+    },
+    null,
+    2,
+  );
+}
+
+function rerankDocsArrayToPlaygroundText(docs: string[]): string {
+  return docs
+    .map((s) => String(s).trim())
+    .filter(Boolean)
+    .map((line) => `- ${line}`)
+    .join("\n");
+}
+
+/**
+ * Reranker 콘솔 JSON → Playground `rerankQuestion` / `rerankDocsText`
+ * 파싱 실패 시 null
+ */
+function tryParseRerankConsoleToPlayground(jsonText: string): {
+  query?: string;
+  docsText?: string;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      query?: unknown;
+      input?: unknown;
+    };
+    const out: { query?: string; docsText?: string } = {};
+
+    if (typeof parsed.query === "string") {
+      out.query = parsed.query;
+    }
+
+    if (Array.isArray(parsed.input)) {
+      const items = parsed.input.filter(
+        (x): x is string => typeof x === "string",
+      );
+      out.docsText = rerankDocsArrayToPlaygroundText(items);
+    }
+
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+function isSttLanguageCode(s: string): s is SttLanguage {
+  return (STT_ACCEPTED_LANGUAGE_CODES as readonly string[]).includes(s);
+}
+
+function clampSttBeamSize(n: number): number {
+  return Math.min(5, Math.max(1, Math.round(n)));
+}
+
+/** STT Playground ↔ Developer Console 동기화용 Request JSON */
+function buildSttConsoleRequestJson(
+  language: SttLanguage,
+  vadOn: boolean,
+  beamSize: number,
+  recordedFileInfo: string | null,
+): string {
+  return JSON.stringify(
+    {
+      language,
+      task: STT_DEFAULT_TASK,
+      vad_filter: vadOn,
+      beam_size: beamSize,
+      ...(recordedFileInfo ? { file: recordedFileInfo } : {}),
+    },
+    null,
+    2,
+  );
+}
+
+/**
+ * STT 콘솔 JSON → Playground 언어 / VAD / Beam / 녹음 파일 메타
+ * 파싱 실패 시 null
+ */
+function tryParseSttConsoleToPlayground(jsonText: string): {
+  language?: SttLanguage;
+  vadOn?: boolean;
+  beamSize?: number;
+  recordedFileInfo?: string | null;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      language?: unknown;
+      vad_filter?: unknown;
+      beam_size?: unknown;
+      file?: unknown;
+    };
+    const out: {
+      language?: SttLanguage;
+      vadOn?: boolean;
+      beamSize?: number;
+      recordedFileInfo?: string | null;
+    } = {};
+
+    if (typeof parsed.language === "string" && isSttLanguageCode(parsed.language)) {
+      out.language = parsed.language;
+    }
+
+    if (typeof parsed.vad_filter === "boolean") {
+      out.vadOn = parsed.vad_filter;
+    }
+
+    if (typeof parsed.beam_size === "number" && Number.isFinite(parsed.beam_size)) {
+      out.beamSize = clampSttBeamSize(parsed.beam_size);
+    } else if (
+      typeof parsed.beam_size === "string" &&
+      parsed.beam_size.trim() !== "" &&
+      Number.isFinite(Number(parsed.beam_size))
+    ) {
+      out.beamSize = clampSttBeamSize(Number(parsed.beam_size));
+    }
+
+    if ("file" in parsed) {
+      if (parsed.file === null || parsed.file === "") {
+        out.recordedFileInfo = null;
+      } else if (typeof parsed.file === "string") {
+        out.recordedFileInfo = parsed.file;
+      }
+    }
+
+    return out;
+  } catch {
+    return null;
+  }
 }
 
 export default function ApiTestPage() {
@@ -634,57 +744,27 @@ export default function ApiTestPage() {
   const getDefaultConsoleRequestJson = useCallback(
     (api: ApiId): string => {
     if (api === "llm") {
-      return JSON.stringify(
-        {
-          model: "openai/gpt-oss-120b",
-          temperature: llmTemperature,
-          messages: [
-            {
-              role: "user",
-              content: "GPU 인프라 도입 효과를 3줄로 요약해줘.",
-            },
-          ],
-        },
-        null,
-        2,
-      );
+      return buildLlmConsoleRequestJson("", llmTemperature);
     }
     if (api === "reranker") {
-      return JSON.stringify(
-        {
-          query: "부모님 환갑 선물로 건강 챙겨드릴 만한 거",
-          input: [
-            "최신 유행하는 무선 이어폰과 블루투스 스피커 세트",
-            "매일 아침 가볍게 마시는 프리미엄 유기농 녹용 진액",
-            "초등학생 조카들이 좋아하는 인기 캐릭터 장난감",
-            "환갑 잔치 때 입기 좋은 화려한 스타일의 파티복",
-          ],
-        },
-        null,
-        2,
+      return buildRerankConsoleRequestJson(
+        DEFAULT_RERANK_QUERY,
+        DEFAULT_RERANK_DOCS_TEXT,
       );
     }
     if (api === "embedding") {
-      return JSON.stringify(
-        {
-          input: DEFAULT_EMBEDDING_CONSOLE_INPUT,
-          input_type: "string",
-        },
-        null,
-        2,
-      );
+      return buildEmbeddingConsoleRequestJson(DEFAULT_EMBEDDING_PLAYGROUND_TEXT);
     }
     if (api === "stt") {
-      return JSON.stringify(
-        {
-          language: STT_DEFAULT_LANGUAGE,
-          task: STT_DEFAULT_TASK,
-          vad_filter: STT_DEFAULT_VAD_ON,
-          beam_size: STT_DEFAULT_BEAM_SIZE,
-        },
+      return buildSttConsoleRequestJson(
+        STT_DEFAULT_LANGUAGE,
+        STT_DEFAULT_VAD_ON,
+        STT_DEFAULT_BEAM_SIZE,
         null,
-        2,
       );
+    }
+    if (api === "tts") {
+      return buildTtsConsoleRequestJson(DEFAULT_TTS_PLAYGROUND_TEXT);
     }
     return "{}";
     },
@@ -917,17 +997,18 @@ export default function ApiTestPage() {
   const [embeddingVector, setEmbeddingVector] = useState<number[] | null>(null);
   const [isEmbeddingLoading, setIsEmbeddingLoading] = useState(false);
   const [embeddingError, setEmbeddingError] = useState<string | null>(null);
-  const [embeddingInputLabel, setEmbeddingInputLabel] = useState<string | null>(
-    null,
+  const [embeddingDisplayNonce, setEmbeddingDisplayNonce] = useState(0);
+  const [embeddingDevCodeOpen, setEmbeddingDevCodeOpen] = useState(false);
+  const [embeddingDevCodeCopied, setEmbeddingDevCodeCopied] = useState(false);
+
+  const embeddingDevCodePython = useMemo(
+    () => buildEmbeddingDevCodePython({ inputText: embeddingText }),
+    [embeddingText],
   );
 
   // Reranker
-  const [rerankQuestion, setRerankQuestion] = useState(
-    "사람 없고 한적한 곳에서 힐링하고 싶어",
-  );
-  const [rerankDocsText, setRerankDocsText] = useState(
-    "- 사람들이 가장 많이 찾는 서울 핫플레이스 TOP 10\n- 여름 휴가철 인파로 북적이는 해운대 해수욕장 현황\n- 숲소리만 들리는 깊은 산속 프라이빗 독채 펜션\n- 친구들과 시끌벅적하게 즐기는 강남역 맛집 탐방",
-  );
+  const [rerankQuestion, setRerankQuestion] = useState(DEFAULT_RERANK_QUERY);
+  const [rerankDocsText, setRerankDocsText] = useState(DEFAULT_RERANK_DOCS_TEXT);
   const [rerankResults, setRerankResults] = useState<Array<{
     rank: number;
     doc: string;
@@ -937,15 +1018,20 @@ export default function ApiTestPage() {
   const [isRerankLoading, setIsRerankLoading] = useState(false);
   const [rerankError, setRerankError] = useState<string | null>(null);
 
-  // TTS
-  const [ttsText, setTtsText] = useState(
-    "안녕하세요. GPU Modu API 데모를 재생합니다.",
-  );
+  // TTS (Playground: Mock 합성 + blob 오디오 재생)
+  const [ttsText, setTtsText] = useState(DEFAULT_TTS_PLAYGROUND_TEXT);
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [mockResponse, setMockResponse] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [ttsWave, setTtsWave] = useState<number[]>(() => []);
-  const [ttsDurationMs, setTtsDurationMs] = useState(14000);
+  const [ttsDurationMs, setTtsDurationMs] = useState(14_200);
   const [ttsProgress, setTtsProgress] = useState(0);
   const [ttsPlaying, setTtsPlaying] = useState(false);
-  const ttsIntervalRef = useRef<number | null>(null);
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsBlobUrlRef = useRef<string | null>(null);
 
   // STT
   const [sttFileName, setSttFileName] = useState<string | null>(null);
@@ -980,15 +1066,44 @@ export default function ApiTestPage() {
 
   const [sttUploadClearMounted, setSttUploadClearMounted] = useState(false);
   const sttUploadClearTimerRef = useRef<number | null>(null);
-  const [sttWorkflowMounted, setSttWorkflowMounted] = useState(false);
-  const [sttWorkflowVisible, setSttWorkflowVisible] = useState(false);
-  const sttWorkflowTimerRef = useRef<number | null>(null);
   const sttLangDropdownRootRef = useRef<HTMLDivElement | null>(null);
   const sttLangInputRef = useRef<HTMLInputElement | null>(null);
   const [sttLangDropdownOpen, setSttLangDropdownOpen] = useState(false);
   const [sttLangQuery, setSttLangQuery] = useState<string>("");
 
   const sttFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [rerankerDevCodeOpen, setRerankerDevCodeOpen] = useState(false);
+  const [rerankerDevCodeCopied, setRerankerDevCodeCopied] = useState(false);
+  const [ttsDevCodeOpen, setTtsDevCodeOpen] = useState(false);
+  const [ttsDevCodeCopied, setTtsDevCodeCopied] = useState(false);
+  const [sttDevCodeOpen, setSttDevCodeOpen] = useState(false);
+  const [sttDevCodeCopied, setSttDevCodeCopied] = useState(false);
+
+  const rerankerDevCodePython = useMemo(
+    () =>
+      buildRerankDevCodePython({
+        query: rerankQuestion,
+        docLines: rerankDocsText.split("\n"),
+      }),
+    [rerankQuestion, rerankDocsText],
+  );
+
+  const ttsDevCodePython = useMemo(
+    () => buildTtsDevCodePython({ text: ttsText }),
+    [ttsText],
+  );
+
+  const sttDevCodePython = useMemo(
+    () =>
+      buildSttDevCodePython({
+        language: sttLanguage,
+        task: STT_DEFAULT_TASK,
+        beamSize: sttBeamSize,
+        vadOn: sttVadOn,
+      }),
+    [sttLanguage, sttBeamSize, sttVadOn],
+  );
 
   useEffect(() => {
     if (!sttTooltipPinned) return;
@@ -1026,34 +1141,37 @@ export default function ApiTestPage() {
     };
   }, [sttFileName]);
 
-  useEffect(() => {
-    if (sttWorkflowTimerRef.current) {
-      clearTimeout(sttWorkflowTimerRef.current);
-      sttWorkflowTimerRef.current = null;
-    }
+  const llmHasWorkflowResult = useMemo(
+    () =>
+      messages.some(
+        (m) =>
+          m.role === "assistant" &&
+          m.content.trim() !== "" &&
+          m.content !== "답변 생성 중...",
+      ),
+    [messages],
+  );
 
-    const hasTranscript =
-      typeof sttTranscript === "string" && sttTranscript.trim().length > 0;
+  const embeddingHasWorkflowResult =
+    embeddingVector !== null && embeddingVector.length > 0;
 
-    if (hasTranscript) {
-      setSttWorkflowMounted(true);
-      setSttWorkflowVisible(false);
-      window.requestAnimationFrame(() => setSttWorkflowVisible(true));
-      return;
-    }
+  const rerankerHasWorkflowResult =
+    rerankResults !== null && rerankResults.length > 0;
 
-    setSttWorkflowVisible(false);
-    sttWorkflowTimerRef.current = window.setTimeout(() => {
-      setSttWorkflowMounted(false);
-    }, 180);
+  const ttsHasWorkflowResult = Boolean(audioUrl);
 
-    return () => {
-      if (sttWorkflowTimerRef.current) {
-        clearTimeout(sttWorkflowTimerRef.current);
-        sttWorkflowTimerRef.current = null;
-      }
-    };
-  }, [sttTranscript]);
+  const sttHasWorkflowResult =
+    typeof sttTranscript === "string" && sttTranscript.trim().length > 0;
+
+  const hasWorkflowBannerResult =
+    (selectedApi === "llm" && llmHasWorkflowResult) ||
+    (selectedApi === "embedding" && embeddingHasWorkflowResult) ||
+    (selectedApi === "reranker" && rerankerHasWorkflowResult) ||
+    (selectedApi === "tts" && ttsHasWorkflowResult) ||
+    (selectedApi === "stt" && sttHasWorkflowResult);
+
+  const { mounted: workflowBannerMounted, visible: workflowBannerVisible } =
+    useResultTriggeredBanner(hasWorkflowBannerResult);
 
   useEffect(() => {
     if (!sttLangDropdownOpen) return;
@@ -1151,37 +1269,72 @@ export default function ApiTestPage() {
 
   useEffect(() => {
     return () => {
-      if (ttsIntervalRef.current) {
-        window.clearInterval(ttsIntervalRef.current);
+      if (ttsBlobUrlRef.current) {
+        URL.revokeObjectURL(ttsBlobUrlRef.current);
+        ttsBlobUrlRef.current = null;
       }
     };
   }, []);
 
   useEffect(() => {
-    if (selectedApi !== "llm") return;
+    const nextRequestJson = buildTtsConsoleRequestJson(ttsText);
+
     setConsoleByApi((prev) => {
-      const current = prev.llm;
-      if (current.requestJson.includes('"messages"')) return prev;
+      if (prev.tts.requestJson === nextRequestJson) return prev;
       return {
         ...prev,
-        llm: {
-          ...current,
-          requestJson: getDefaultConsoleRequestJson("llm"),
-          error: null,
+        tts: {
+          ...prev.tts,
+          requestJson: nextRequestJson,
         },
       };
     });
-  }, [selectedApi, getDefaultConsoleRequestJson]);
+  }, [ttsText]);
 
   useEffect(() => {
-    const nextRequestJson = JSON.stringify(
-      {
-        input: embeddingText,
-        input_type: "string",
-      },
-      null,
-      2,
-    );
+    const el = ttsAudioRef.current;
+    if (!el || !audioUrl) return;
+
+    const onLoaded = () => {
+      if (el.duration && Number.isFinite(el.duration)) {
+        setTtsDurationMs(Math.round(el.duration * 1000));
+      }
+    };
+    const onTime = () => {
+      if (el.duration && Number.isFinite(el.duration)) {
+        setTtsProgress(el.currentTime / el.duration);
+      }
+    };
+    const onEnded = () => {
+      setTtsPlaying(false);
+      setTtsProgress(0);
+    };
+    el.addEventListener("loadedmetadata", onLoaded);
+    el.addEventListener("timeupdate", onTime);
+    el.addEventListener("ended", onEnded);
+    return () => {
+      el.removeEventListener("loadedmetadata", onLoaded);
+      el.removeEventListener("timeupdate", onTime);
+      el.removeEventListener("ended", onEnded);
+    };
+  }, [audioUrl]);
+
+  useEffect(() => {
+    const nextRequestJson = buildLlmConsoleRequestJson(prompt, llmTemperature);
+    setConsoleByApi((prev) => {
+      if (prev.llm.requestJson === nextRequestJson) return prev;
+      return {
+        ...prev,
+        llm: {
+          ...prev.llm,
+          requestJson: nextRequestJson,
+        },
+      };
+    });
+  }, [prompt, llmTemperature]);
+
+  useEffect(() => {
+    const nextRequestJson = buildEmbeddingConsoleRequestJson(embeddingText);
 
     setConsoleByApi((prev) => {
       if (prev.embedding.requestJson === nextRequestJson) return prev;
@@ -1196,16 +1349,29 @@ export default function ApiTestPage() {
   }, [embeddingText]);
 
   useEffect(() => {
-    const nextRequestJson = JSON.stringify(
-      {
-        language: sttLanguage,
-        task: STT_DEFAULT_TASK,
-        vad_filter: sttVadOn,
-        beam_size: sttBeamSize,
-        ...(sttRecordedFileInfo ? { file: sttRecordedFileInfo } : {}),
-      },
-      null,
-      2,
+    const nextRequestJson = buildRerankConsoleRequestJson(
+      rerankQuestion,
+      rerankDocsText,
+    );
+
+    setConsoleByApi((prev) => {
+      if (prev.reranker.requestJson === nextRequestJson) return prev;
+      return {
+        ...prev,
+        reranker: {
+          ...prev.reranker,
+          requestJson: nextRequestJson,
+        },
+      };
+    });
+  }, [rerankQuestion, rerankDocsText]);
+
+  useEffect(() => {
+    const nextRequestJson = buildSttConsoleRequestJson(
+      sttLanguage,
+      sttVadOn,
+      sttBeamSize,
+      sttRecordedFileInfo,
     );
 
     setConsoleByApi((prev) => {
@@ -1258,6 +1424,60 @@ export default function ApiTestPage() {
     }));
   }
 
+  /** Developer Console JSON 편집 → Playground 상태와 동기화 */
+  function handleConsoleRequestJsonChange(nextJson: string) {
+    patchConsole(selectedApi, {
+      requestJson: nextJson,
+      error: null,
+    });
+    if (selectedApi === "llm") {
+      const parsed = tryParseLlmConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.temperature !== undefined) {
+        setLlmTemperature(parsed.temperature);
+      }
+      if (parsed.prompt !== undefined) {
+        setPrompt(parsed.prompt);
+      }
+      return;
+    }
+    if (selectedApi === "embedding") {
+      const parsed = tryParseEmbeddingConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.input !== undefined) {
+        setEmbeddingText(parsed.input);
+      }
+      return;
+    }
+    if (selectedApi === "reranker") {
+      const parsed = tryParseRerankConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.query !== undefined) {
+        setRerankQuestion(parsed.query);
+      }
+      if (parsed.docsText !== undefined) {
+        setRerankDocsText(parsed.docsText);
+      }
+      return;
+    }
+    if (selectedApi === "stt") {
+      const parsed = tryParseSttConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.language !== undefined) {
+        setSttLanguage(parsed.language);
+      }
+      if (parsed.vadOn !== undefined) {
+        setSttVadOn(parsed.vadOn);
+      }
+      if (parsed.beamSize !== undefined) {
+        setSttBeamSize(parsed.beamSize);
+      }
+      if (parsed.recordedFileInfo !== undefined) {
+        setSttRecordedFileInfo(parsed.recordedFileInfo);
+      }
+    }
+  }
+
   function resetConsoleForApi(api: ApiId) {
     setConsoleByApi((prev) => ({
       ...prev,
@@ -1265,12 +1485,15 @@ export default function ApiTestPage() {
     }));
     if (api === "reranker") {
       setDisplayedQuery("");
+      setRerankQuestion(DEFAULT_RERANK_QUERY);
+      setRerankDocsText(DEFAULT_RERANK_DOCS_TEXT);
+      setRerankResults(null);
+      setRerankError(null);
     }
     if (api === "embedding") {
       setEmbeddingText(DEFAULT_EMBEDDING_PLAYGROUND_TEXT);
       setEmbeddingVector(null);
       setEmbeddingError(null);
-      setEmbeddingInputLabel(null);
     }
     if (api === "stt") {
       setSttTranscript(null);
@@ -1283,6 +1506,20 @@ export default function ApiTestPage() {
       setSttBeamSize(STT_DEFAULT_BEAM_SIZE);
       setSttError(null);
       setIsSttLoading(false);
+    }
+    if (api === "tts") {
+      if (ttsBlobUrlRef.current) {
+        URL.revokeObjectURL(ttsBlobUrlRef.current);
+        ttsBlobUrlRef.current = null;
+      }
+      setTtsText(DEFAULT_TTS_PLAYGROUND_TEXT);
+      setAudioUrl(null);
+      setMockResponse(null);
+      setTtsWave([]);
+      setTtsDurationMs(14_200);
+      setTtsProgress(0);
+      setTtsPlaying(false);
+      setIsSynthesizing(false);
     }
     setConsoleCopied(false);
   }
@@ -1331,10 +1568,6 @@ export default function ApiTestPage() {
       .map((item, idx) => ({ ...item, rank: idx + 1 }));
   }
 
-  function sanitizeRerankDocLine(line: string): string {
-    return line.trim().replace(/^-+\s*/, "");
-  }
-
   function moveToApiDetail(api: ApiId) {
     setSelectedApi(api);
     setViewMode("detail");
@@ -1374,19 +1607,11 @@ export default function ApiTestPage() {
     setIsEmbeddingLoading(true);
     setEmbeddingError(null);
     setEmbeddingVector(null);
-    setEmbeddingInputLabel(null);
     setConsoleCopied(false);
     patchConsole("embedding", {
       statusCode: null,
       statusLine: "Pending...",
-      requestJson: JSON.stringify(
-        {
-          input: text,
-          input_type: "string",
-        },
-        null,
-        2,
-      ),
+      requestJson: buildEmbeddingConsoleRequestJson(text),
       responseJson: "",
       error: null,
     });
@@ -1442,7 +1667,7 @@ export default function ApiTestPage() {
         .filter((v: number) => Number.isFinite(v));
 
       setEmbeddingVector(normalized);
-      setEmbeddingInputLabel(text);
+      setEmbeddingDisplayNonce((n) => n + 1);
       patchConsole("embedding", {
         statusCode: 200,
         statusLine: "200 OK",
@@ -1491,7 +1716,7 @@ export default function ApiTestPage() {
     patchConsole("reranker", {
       statusCode: null,
       statusLine: "Pending...",
-      requestJson: JSON.stringify(requestBody, null, 2),
+      requestJson: buildRerankConsoleRequestJson(rerankQuestion, rerankDocsText),
       responseJson: "",
       error: null,
     });
@@ -1546,41 +1771,67 @@ export default function ApiTestPage() {
     }
   }
 
-  function handleTtsSynthesize() {
-    const wave = mockWaveform(ttsText, 26);
-    const base = 9000 + (hashString(ttsText) % 9000); // 9s..18s roughly
-    setTtsWave(wave);
-    setTtsDurationMs(base);
-    setTtsProgress(0);
+  function handleTtsRun() {
+    const trimmed = ttsText.trim();
+    if (!trimmed || isSynthesizing) return;
+
+    if (ttsBlobUrlRef.current) {
+      URL.revokeObjectURL(ttsBlobUrlRef.current);
+      ttsBlobUrlRef.current = null;
+    }
+
+    setAudioUrl(null);
+    setMockResponse(null);
     setTtsPlaying(false);
+    setTtsProgress(0);
+    setIsSynthesizing(true);
+
+    patchConsole("tts", {
+      statusCode: null,
+      statusLine: "Pending...",
+      responseJson: "",
+      error: null,
+    });
+
+    window.setTimeout(() => {
+      const url = createMockTtsWavBlobUrl(2.5);
+      ttsBlobUrlRef.current = url;
+
+      const responseBody: Record<string, unknown> = {
+        status: "success",
+        audio_url: url,
+        duration: "14.2s",
+        model: "Qwen3-TTS",
+        format: "mp3",
+      };
+
+      setMockResponse(responseBody);
+      setAudioUrl(url);
+      setTtsWave(mockWaveform(ttsText, 32));
+      setTtsDurationMs(14_200);
+      setIsSynthesizing(false);
+
+      patchConsole("tts", {
+        statusCode: 200,
+        statusLine: "200 OK",
+        responseJson: JSON.stringify(responseBody, null, 2),
+        error: null,
+      });
+    }, 1500);
   }
 
   function handleTtsPlayPause() {
-    if (!ttsWave.length) {
-      handleTtsSynthesize();
-    }
+    if (!audioUrl) return;
+    const el = ttsAudioRef.current;
+    if (!el) return;
     if (ttsPlaying) {
+      el.pause();
       setTtsPlaying(false);
-      if (ttsIntervalRef.current) window.clearInterval(ttsIntervalRef.current);
-      ttsIntervalRef.current = null;
       return;
     }
-
-    const startAt = Date.now();
-    const startProgress = ttsProgress;
-    setTtsPlaying(true);
-
-    ttsIntervalRef.current = window.setInterval(() => {
-      const elapsed = Date.now() - startAt;
-      const next = Math.min(1, startProgress + elapsed / ttsDurationMs);
-      setTtsProgress(next);
-      if (next >= 1) {
-        setTtsPlaying(false);
-        if (ttsIntervalRef.current)
-          window.clearInterval(ttsIntervalRef.current);
-        ttsIntervalRef.current = null;
-      }
-    }, 60);
+    void el.play().then(() => setTtsPlaying(true)).catch(() => {
+      setTtsPlaying(false);
+    });
   }
 
   async function startRecording() {
@@ -1771,9 +2022,7 @@ export default function ApiTestPage() {
         setAudioChunks([]);
         audioChunksRef.current = [];
 
-        // Auto STT run
         setIsRecording(false);
-        void handleSttRun(file);
       };
 
       recorder.start();
@@ -2288,7 +2537,6 @@ export default function ApiTestPage() {
 
         setEmbeddingError(null);
         setEmbeddingVector(null);
-        setEmbeddingInputLabel(null);
 
         const res = await fetch("/api/embedding", {
           method: "POST",
@@ -2320,7 +2568,7 @@ export default function ApiTestPage() {
             .map((v) => (typeof v === "number" ? v : Number(v)))
             .filter((v): v is number => Number.isFinite(v));
           setEmbeddingVector(normalized);
-          setEmbeddingInputLabel(input);
+          setEmbeddingDisplayNonce((n) => n + 1);
         }
 
         return;
@@ -2889,9 +3137,9 @@ export default function ApiTestPage() {
                       formatTime={formatTime}
                       liveNowText={formatTime(Date.now())}
                       embeddingVector={embeddingVector}
-                      embeddingInputLabel={embeddingInputLabel}
                       embeddingError={embeddingError}
-                      EmbeddingUniverseViz={EmbeddingUniverseViz}
+                      isEmbeddingLoading={isEmbeddingLoading}
+                      embeddingAnimationKey={String(embeddingDisplayNonce)}
                       rerankQuestion={rerankQuestion}
                       rerankDocsText={rerankDocsText}
                       setRerankQuestion={setRerankQuestion}
@@ -2906,6 +3154,10 @@ export default function ApiTestPage() {
                       ttsDurationMs={ttsDurationMs}
                       ttsProgress={ttsProgress}
                       ttsWave={ttsWave}
+                      ttsAudioRef={ttsAudioRef}
+                      ttsAudioUrl={audioUrl}
+                      ttsIsSynthesizing={isSynthesizing}
+                      ttsMockResponse={mockResponse}
                       IconPlay={IconPlay}
                       IconPause={IconPause}
                       sttTranscript={sttTranscript}
@@ -2931,9 +3183,10 @@ export default function ApiTestPage() {
                     embeddingText={embeddingText}
                     setEmbeddingText={setEmbeddingText}
                     isEmbeddingLoading={isEmbeddingLoading}
-                    handleTtsSynthesize={handleTtsSynthesize}
+                    handleTtsRun={handleTtsRun}
                     ttsText={ttsText}
                     setTtsText={setTtsText}
+                    isTtsSynthesizing={isSynthesizing}
                     sttFileInputRef={sttFileInputRef}
                     sttFileName={sttFileName}
                     sttUploadClearMounted={sttUploadClearMounted}
@@ -3041,10 +3294,7 @@ export default function ApiTestPage() {
                       <textarea
                         value={currentConsole.requestJson}
                         onChange={(e) => {
-                          patchConsole(selectedApi, {
-                            requestJson: e.target.value,
-                            error: null,
-                          });
+                          handleConsoleRequestJsonChange(e.target.value);
                         }}
                         placeholder={`{\n  "model": "openai/gpt-oss-120b",\n  "input": "직접 입력한 내용"\n}`}
                         rows={9}
@@ -3119,6 +3369,59 @@ export default function ApiTestPage() {
                         setDevCodeCopied={setDevCodeCopied}
                         llmDevCodePython={llmDevCodePython}
                       />
+                    ) : selectedApi === "embedding" ? (
+                      <EmbeddingDeveloperCodeSection
+                        devCodeOpen={embeddingDevCodeOpen}
+                        setDevCodeOpen={setEmbeddingDevCodeOpen}
+                        devCodeCopied={embeddingDevCodeCopied}
+                        setDevCodeCopied={setEmbeddingDevCodeCopied}
+                        embeddingDevCodePython={embeddingDevCodePython}
+                      />
+                    ) : selectedApi === "reranker" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={rerankerDevCodeOpen}
+                        setDevCodeOpen={setRerankerDevCodeOpen}
+                        devCodeCopied={rerankerDevCodeCopied}
+                        setDevCodeCopied={setRerankerDevCodeCopied}
+                        codePython={rerankerDevCodePython}
+                        footer={
+                          <>
+                            51087 Reranker 엔드포인트 예시입니다. 데모 앱은{" "}
+                            <span className="text-foreground/80">/api/rerank</span>{" "}
+                            프록시를 통해 호출합니다.
+                          </>
+                        }
+                      />
+                    ) : selectedApi === "tts" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={ttsDevCodeOpen}
+                        setDevCodeOpen={setTtsDevCodeOpen}
+                        devCodeCopied={ttsDevCodeCopied}
+                        setDevCodeCopied={setTtsDevCodeCopied}
+                        codePython={ttsDevCodePython}
+                        footer={
+                          <>
+                            Playground는 클라이언트에서 파형을 시뮬레이션합니다. 위
+                            코드는 Text API와 동일 호스트(51089) 기준 OpenAI 호환
+                            음성 합성 예시입니다.
+                          </>
+                        }
+                      />
+                    ) : selectedApi === "stt" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={sttDevCodeOpen}
+                        setDevCodeOpen={setSttDevCodeOpen}
+                        devCodeCopied={sttDevCodeCopied}
+                        setDevCodeCopied={setSttDevCodeCopied}
+                        codePython={sttDevCodePython}
+                        footer={
+                          <>
+                            multipart STT 예시입니다. 데모 앱은{" "}
+                            <span className="text-foreground/80">/api/stt</span>{" "}
+                            프록시를 통해 동일 스펙으로 전달합니다.
+                          </>
+                        }
+                      />
                     ) : null}
 
                     {currentConsole.error ? (
@@ -3137,48 +3440,47 @@ export default function ApiTestPage() {
               </div>
             </aside>
 
-            {(selectedApi === "llm" ||
+            {workflowBannerMounted &&
+            (selectedApi === "llm" ||
               selectedApi === "reranker" ||
-              selectedApi === "embedding") ? (
-              <section className="w-full lg:basis-full">
-                <div className="rounded-xl border-t border-[#10b981]/20 bg-[#10b981]/5 px-4 py-3">
-                  <SmartSolutionGuide
-                    selectedApi={selectedApi}
-                    onNavigateApi={moveToApiDetail}
-                  />
-                </div>
-              </section>
-            ) : null}
-
-            {selectedApi === "stt" && sttWorkflowMounted ? (
+              selectedApi === "embedding" ||
+              selectedApi === "tts" ||
+              selectedApi === "stt") ? (
               <section className="w-full lg:basis-full">
                 <div className="rounded-xl border-t border-[#10b981]/20 bg-[#10b981]/5 px-4 py-3">
                   <div
                     className={[
                       "transition-opacity duration-200",
-                      sttWorkflowVisible ? "opacity-100" : "opacity-0",
+                      workflowBannerVisible ? "opacity-100" : "opacity-0",
                     ].join(" ")}
                   >
-                    <p className="text-sm leading-relaxed text-foreground/90">
-                      <span className="mr-2">🎙️</span>
-                      인식된 목소리를 텍스트로 완성! 이제 추출된 내용을{" "}
-                      <button
-                        type="button"
-                        onClick={() => moveToApiDetail("llm")}
-                        className="font-semibold text-[#10b981] underline decoration-[#10b981]/60 underline-offset-2 transition-colors hover:text-[#34d399]"
-                      >
-                        [LLM]
-                      </button>{" "}
-                      으로 요약하거나{" "}
-                      <button
-                        type="button"
-                        onClick={() => moveToApiDetail("embedding")}
-                        className="font-semibold text-[#10b981] underline decoration-[#10b981]/60 underline-offset-2 transition-colors hover:text-[#34d399]"
-                      >
-                        [Embedding]
-                      </button>
-                      으로 사내 지식 베이스에 저장해보세요.
-                    </p>
+                    {selectedApi === "stt" ? (
+                      <p className="text-sm leading-relaxed text-foreground/90">
+                        <span className="mr-2">🎙️</span>
+                        인식된 목소리를 텍스트로 완성! 이제 추출된 내용을{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("llm")}
+                          className="font-semibold text-[#10b981] underline decoration-[#10b981]/60 underline-offset-2 transition-colors hover:text-[#34d399]"
+                        >
+                          [LLM]
+                        </button>{" "}
+                        으로 요약하거나{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("embedding")}
+                          className="font-semibold text-[#10b981] underline decoration-[#10b981]/60 underline-offset-2 transition-colors hover:text-[#34d399]"
+                        >
+                          [Embedding]
+                        </button>
+                        으로 사내 지식 베이스에 저장해보세요.
+                      </p>
+                    ) : (
+                      <SmartSolutionGuide
+                        selectedApi={selectedApi}
+                        onNavigateApi={moveToApiDetail}
+                      />
+                    )}
                   </div>
                 </div>
               </section>

@@ -31,7 +31,8 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
   if (
     selectedApi !== "llm" &&
     selectedApi !== "reranker" &&
-    selectedApi !== "embedding"
+    selectedApi !== "embedding" &&
+    selectedApi !== "tts"
   ) {
     return null;
   }
@@ -65,6 +66,22 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
           onNavigateApi={onNavigateApi}
         />
         와 조합하면 검색 품질이 비약적으로 향상됩니다.
+      </p>
+    );
+  }
+
+  if (selectedApi === "tts") {
+    return (
+      <p className="text-sm leading-relaxed text-foreground/90">
+        <span className="mr-2">🔊</span>
+        <span className="font-semibold text-foreground">
+          음성으로 전달할 준비가 됐어요!
+        </span>{" "}
+        녹음·파일을 다시 글로 쓰려면{" "}
+        <GuideApiLink label="STT" api="stt" onNavigateApi={onNavigateApi} />로
+        인식하거나,{" "}
+        <GuideApiLink label="Text" api="llm" onNavigateApi={onNavigateApi} />로
+        대본을 다듬어 보세요.
       </p>
     );
   }
