@@ -26,6 +26,14 @@ type Props = {
   handleTtsRun: () => void;
   ttsText: string;
   setTtsText: React.Dispatch<React.SetStateAction<string>>;
+  ttsLanguage: string;
+  setTtsLanguage: React.Dispatch<React.SetStateAction<string>>;
+  ttsLanguageOptions: Array<{ value: string; label: string }>;
+  ttsSpeaker: string;
+  setTtsSpeaker: React.Dispatch<React.SetStateAction<string>>;
+  ttsSpeakerOptions: Array<{ value: string; label: string }>;
+  ttsStyleInstruction: string;
+  setTtsStyleInstruction: React.Dispatch<React.SetStateAction<string>>;
   isTtsSynthesizing: boolean;
 
   // STT input
@@ -109,6 +117,14 @@ export function ApiInputPanel({
   handleTtsRun,
   ttsText,
   setTtsText,
+  ttsLanguage,
+  setTtsLanguage,
+  ttsLanguageOptions,
+  ttsSpeaker,
+  setTtsSpeaker,
+  ttsSpeakerOptions,
+  ttsStyleInstruction,
+  setTtsStyleInstruction,
   isTtsSynthesizing,
 
   sttFileInputRef,
@@ -159,7 +175,7 @@ export function ApiInputPanel({
       className={
         selectedApi === "reranker"
           ? "hidden"
-          : "flex-shrink-0 border-t border-white/5 bg-background/20 p-4"
+          : "flex-shrink-0 border-t border-white/5 bg-background/20 p-2"
       }
     >
       {selectedApi === "llm" ? (
@@ -307,7 +323,48 @@ export function ApiInputPanel({
             handleTtsRun();
           }}
         >
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end">
+              <div className="min-w-0 flex-1">
+                <p className="font-mono text-xs text-foreground/60">언어</p>
+                <select
+                  value={ttsLanguage}
+                  onChange={(e) => setTtsLanguage(e.target.value)}
+                  className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-[13px] text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                >
+                  {ttsLanguageOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-mono text-xs text-foreground/60">Speaker</p>
+                <select
+                  value={ttsSpeaker}
+                  onChange={(e) => setTtsSpeaker(e.target.value)}
+                  className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-[13px] text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                >
+                  {ttsSpeakerOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <p className="font-mono text-xs text-foreground/60">
+                Style Instruction (Optional)
+              </p>
+              <input
+                value={ttsStyleInstruction}
+                onChange={(e) => setTtsStyleInstruction(e.target.value)}
+                placeholder='e.g., Speak in a cheerful and energetic tone'
+                className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-[13px] text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+              />
+            </div>
             <div>
               <p className="font-mono text-xs text-foreground/60">
                 읽어줄 텍스트
@@ -315,19 +372,19 @@ export function ApiInputPanel({
               <textarea
                 value={ttsText}
                 onChange={(e) => setTtsText(e.target.value)}
-                rows={3}
-                className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                rows={2}
+                className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] leading-snug text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
               />
             </div>
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-foreground/60">
+              <p className="text-[11px] text-foreground/55">
                 Mock 합성 후 blob 오디오 재생 · 콘솔에 더미 응답이 표시됩니다.
               </p>
               <button
                 type="submit"
                 disabled={isTtsSynthesizing || !ttsText.trim()}
                 className={[
-                  "inline-flex items-center gap-2 rounded-xl bg-[#10b981] px-5 py-3 text-background font-medium shadow-[0_0_40px_rgba(16,185,129,0.22)] transition-opacity",
+                  "inline-flex items-center gap-2 rounded-xl bg-[#10b981] px-4 py-2 text-sm text-background font-medium shadow-[0_0_40px_rgba(16,185,129,0.22)] transition-opacity",
                   isTtsSynthesizing || !ttsText.trim()
                     ? "cursor-not-allowed opacity-50"
                     : "hover:opacity-90",

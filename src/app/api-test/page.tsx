@@ -47,6 +47,34 @@ const DEFAULT_EMBEDDING_PLAYGROUND_TEXT =
 
 const DEFAULT_TTS_PLAYGROUND_TEXT =
   "안녕하세요. GPU Modu API 데모를 재생합니다.";
+const TTS_LANGUAGE_OPTIONS = [
+  { value: "auto", label: "Auto" },
+  { value: "zh", label: "Chinese" },
+  { value: "en", label: "English" },
+  { value: "ja", label: "Japanese" },
+  { value: "ko", label: "Korean" },
+  { value: "fr", label: "French" },
+  { value: "de", label: "German" },
+  { value: "es", label: "Spanish" },
+  { value: "pt", label: "Portuguese" },
+  { value: "ru", label: "Russian" },
+] as const;
+type TtsLanguage = (typeof TTS_LANGUAGE_OPTIONS)[number]["value"];
+const DEFAULT_TTS_LANGUAGE: TtsLanguage = "auto";
+
+const TTS_SPEAKER_OPTIONS = [
+  { value: "Aiden", label: "Aiden" },
+  { value: "Dylan", label: "Dylan" },
+  { value: "Eric", label: "Eric" },
+  { value: "Ono_anna", label: "Ono_anna" },
+  { value: "Ryan", label: "Ryan" },
+  { value: "Serena", label: "Serena" },
+  { value: "Sohee", label: "Sohee" },
+  { value: "Uncle_fu", label: "Uncle_fu" },
+  { value: "Vivian", label: "Vivian" },
+] as const;
+type TtsSpeaker = (typeof TTS_SPEAKER_OPTIONS)[number]["value"];
+const DEFAULT_TTS_SPEAKER: TtsSpeaker = "Ryan";
 
 const DEFAULT_RERANK_QUERY =
   "사람 없고 한적한 곳에서 힐링하고 싶어";
@@ -531,17 +559,73 @@ function tryParseEmbeddingConsoleToPlayground(jsonText: string): {
   }
 }
 
+function isTtsLanguage(value: string): value is TtsLanguage {
+  return TTS_LANGUAGE_OPTIONS.some((opt) => opt.value === value);
+}
+
+function isTtsSpeaker(value: string): value is TtsSpeaker {
+  return TTS_SPEAKER_OPTIONS.some((opt) => opt.value === value);
+}
+
 /** TTS Playground ↔ Developer Console 동기화용 Request JSON */
-function buildTtsConsoleRequestJson(text: string) {
-  return JSON.stringify(
-    {
-      text,
-      voice: "default",
-      format: "mp3",
-    },
-    null,
-    2,
-  );
+function buildTtsConsoleRequestJson(
+  text: string,
+  language: TtsLanguage,
+  speaker: TtsSpeaker,
+  styleInstruction: string,
+) {
+  const trimmedStyle = styleInstruction.trim();
+  const payload: Record<string, unknown> = {
+    text,
+    language,
+    speaker,
+    format: "mp3",
+  };
+  if (trimmedStyle) {
+    payload.style_instruction = trimmedStyle;
+  }
+  return JSON.stringify(payload, null, 2);
+}
+
+function tryParseTtsConsoleToPlayground(jsonText: string): {
+  text?: string;
+  language?: TtsLanguage;
+  speaker?: TtsSpeaker;
+  styleInstruction?: string;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      text?: unknown;
+      language?: unknown;
+      speaker?: unknown;
+      style_instruction?: unknown;
+    };
+    const out: {
+      text?: string;
+      language?: TtsLanguage;
+      speaker?: TtsSpeaker;
+      styleInstruction?: string;
+    } = {};
+    if (typeof parsed.text === "string") {
+      out.text = parsed.text;
+    }
+    if (typeof parsed.language === "string" && isTtsLanguage(parsed.language)) {
+      out.language = parsed.language;
+    }
+    if (typeof parsed.speaker === "string" && isTtsSpeaker(parsed.speaker)) {
+      out.speaker = parsed.speaker;
+    }
+    if ("style_instruction" in parsed) {
+      if (typeof parsed.style_instruction === "string") {
+        out.styleInstruction = parsed.style_instruction;
+      } else if (parsed.style_instruction === null) {
+        out.styleInstruction = "";
+      }
+    }
+    return out;
+  } catch {
+    return null;
+  }
 }
 
 function sanitizeRerankDocLine(line: string): string {
@@ -764,7 +848,12 @@ export default function ApiTestPage() {
       );
     }
     if (api === "tts") {
-      return buildTtsConsoleRequestJson(DEFAULT_TTS_PLAYGROUND_TEXT);
+      return buildTtsConsoleRequestJson(
+        DEFAULT_TTS_PLAYGROUND_TEXT,
+        DEFAULT_TTS_LANGUAGE,
+        DEFAULT_TTS_SPEAKER,
+        "",
+      );
     }
     return "{}";
     },
@@ -1020,6 +1109,11 @@ export default function ApiTestPage() {
 
   // TTS (Playground: Mock 합성 + blob 오디오 재생)
   const [ttsText, setTtsText] = useState(DEFAULT_TTS_PLAYGROUND_TEXT);
+  const [ttsLanguage, setTtsLanguage] = useState<TtsLanguage>(
+    DEFAULT_TTS_LANGUAGE,
+  );
+  const [ttsSpeaker, setTtsSpeaker] = useState<TtsSpeaker>(DEFAULT_TTS_SPEAKER);
+  const [ttsStyleInstruction, setTtsStyleInstruction] = useState("");
   const [isSynthesizing, setIsSynthesizing] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [mockResponse, setMockResponse] = useState<Record<
@@ -1277,7 +1371,12 @@ export default function ApiTestPage() {
   }, []);
 
   useEffect(() => {
-    const nextRequestJson = buildTtsConsoleRequestJson(ttsText);
+    const nextRequestJson = buildTtsConsoleRequestJson(
+      ttsText,
+      ttsLanguage,
+      ttsSpeaker,
+      ttsStyleInstruction,
+    );
 
     setConsoleByApi((prev) => {
       if (prev.tts.requestJson === nextRequestJson) return prev;
@@ -1289,7 +1388,7 @@ export default function ApiTestPage() {
         },
       };
     });
-  }, [ttsText]);
+  }, [ttsText, ttsLanguage, ttsSpeaker, ttsStyleInstruction]);
 
   useEffect(() => {
     const el = ttsAudioRef.current;
@@ -1460,6 +1559,23 @@ export default function ApiTestPage() {
       }
       return;
     }
+    if (selectedApi === "tts") {
+      const parsed = tryParseTtsConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.text !== undefined) {
+        setTtsText(parsed.text);
+      }
+      if (parsed.language !== undefined) {
+        setTtsLanguage(parsed.language);
+      }
+      if (parsed.speaker !== undefined) {
+        setTtsSpeaker(parsed.speaker);
+      }
+      if (parsed.styleInstruction !== undefined) {
+        setTtsStyleInstruction(parsed.styleInstruction);
+      }
+      return;
+    }
     if (selectedApi === "stt") {
       const parsed = tryParseSttConsoleToPlayground(nextJson);
       if (!parsed) return;
@@ -1513,6 +1629,9 @@ export default function ApiTestPage() {
         ttsBlobUrlRef.current = null;
       }
       setTtsText(DEFAULT_TTS_PLAYGROUND_TEXT);
+      setTtsLanguage(DEFAULT_TTS_LANGUAGE);
+      setTtsSpeaker(DEFAULT_TTS_SPEAKER);
+      setTtsStyleInstruction("");
       setAudioUrl(null);
       setMockResponse(null);
       setTtsWave([]);
@@ -1771,8 +1890,14 @@ export default function ApiTestPage() {
     }
   }
 
-  function handleTtsRun() {
-    const trimmed = ttsText.trim();
+  /** Playground·개발자 콘솔 공통 — Mock TTS(클라이언트 합성, 서버 라우트 없음) */
+  function runTtsMockSynthesis(
+    textForWaveform: string,
+    languageForSynthesis: TtsLanguage = ttsLanguage,
+    speakerForSynthesis: TtsSpeaker = ttsSpeaker,
+    styleInstructionForSynthesis: string = ttsStyleInstruction,
+  ) {
+    const trimmed = textForWaveform.trim();
     if (!trimmed || isSynthesizing) return;
 
     if (ttsBlobUrlRef.current) {
@@ -1802,12 +1927,18 @@ export default function ApiTestPage() {
         audio_url: url,
         duration: "14.2s",
         model: "Qwen3-TTS",
+        language: languageForSynthesis,
+        speaker: speakerForSynthesis,
         format: "mp3",
       };
+      const styleTrim = styleInstructionForSynthesis.trim();
+      if (styleTrim) {
+        responseBody.style_instruction = styleTrim;
+      }
 
       setMockResponse(responseBody);
       setAudioUrl(url);
-      setTtsWave(mockWaveform(ttsText, 32));
+      setTtsWave(mockWaveform(trimmed, 32));
       setTtsDurationMs(14_200);
       setIsSynthesizing(false);
 
@@ -1818,6 +1949,10 @@ export default function ApiTestPage() {
         error: null,
       });
     }, 1500);
+  }
+
+  function handleTtsRun() {
+    runTtsMockSynthesis(ttsText, ttsLanguage, ttsSpeaker, ttsStyleInstruction);
   }
 
   function handleTtsPlayPause() {
@@ -2574,6 +2709,54 @@ export default function ApiTestPage() {
         return;
       }
 
+      if (targetApi === "tts") {
+        const body = parsed as {
+          text?: unknown;
+          language?: unknown;
+          speaker?: unknown;
+          style_instruction?: unknown;
+          voice?: unknown;
+          format?: unknown;
+        };
+        const text =
+          typeof body.text === "string" ? body.text.trim() : "";
+        const language =
+          typeof body.language === "string" && isTtsLanguage(body.language)
+            ? body.language
+            : ttsLanguage;
+        const speaker =
+          typeof body.speaker === "string" && isTtsSpeaker(body.speaker)
+            ? body.speaker
+            : ttsSpeaker;
+        let styleInstruction = ttsStyleInstruction;
+        if ("style_instruction" in body) {
+          if (typeof body.style_instruction === "string") {
+            styleInstruction = body.style_instruction;
+          } else if (body.style_instruction === null) {
+            styleInstruction = "";
+          }
+        }
+        if (!text) {
+          patchConsole("tts", {
+            error: "`text` 문자열을 입력해주세요.",
+            statusLine: "—",
+            statusCode: null,
+            responseJson: "",
+          });
+          setConsoleSubmitShake(true);
+          window.setTimeout(() => {
+            setConsoleSubmitShake(false);
+          }, 420);
+          return;
+        }
+        setTtsText(text);
+        setTtsLanguage(language);
+        setTtsSpeaker(speaker);
+        setTtsStyleInstruction(styleInstruction);
+        runTtsMockSynthesis(text, language, speaker, styleInstruction);
+        return;
+      }
+
       if (targetApi !== "llm") {
         patchConsole(targetApi, {
           statusLine: "—",
@@ -3186,6 +3369,24 @@ export default function ApiTestPage() {
                     handleTtsRun={handleTtsRun}
                     ttsText={ttsText}
                     setTtsText={setTtsText}
+                    ttsLanguage={ttsLanguage}
+                    setTtsLanguage={
+                      setTtsLanguage as React.Dispatch<React.SetStateAction<string>>
+                    }
+                    ttsLanguageOptions={TTS_LANGUAGE_OPTIONS.map((opt) => ({
+                      value: opt.value,
+                      label: opt.label,
+                    }))}
+                    ttsSpeaker={ttsSpeaker}
+                    setTtsSpeaker={
+                      setTtsSpeaker as React.Dispatch<React.SetStateAction<string>>
+                    }
+                    ttsSpeakerOptions={TTS_SPEAKER_OPTIONS.map((opt) => ({
+                      value: opt.value,
+                      label: opt.label,
+                    }))}
+                    ttsStyleInstruction={ttsStyleInstruction}
+                    setTtsStyleInstruction={setTtsStyleInstruction}
                     isTtsSynthesizing={isSynthesizing}
                     sttFileInputRef={sttFileInputRef}
                     sttFileName={sttFileName}
@@ -3251,7 +3452,9 @@ export default function ApiTestPage() {
                               ? "/api/rerank"
                               : selectedApi === "stt"
                                 ? "/api/stt"
-                              : "/api/chat"}
+                                : selectedApi === "tts"
+                                  ? "Mock TTS (client)"
+                                  : "/api/chat"}
                         </span>
                       </p>
                     </div>
