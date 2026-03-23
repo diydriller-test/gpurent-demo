@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const RERANK_ENDPOINT = "http://gpurent.kogrobo.com:51087/_inference/rerank/qwen3";
+const RERANK_ENDPOINT = "http://gpurent.kogrobo.com:11115/trial/rerank/_inference/rerank/qwen3";
 
 export async function POST(req: Request) {
   try {
@@ -20,19 +20,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const apiKey = process.env.QWEN_API_KEY ?? process.env.RERANK_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "QWEN_API_KEY가 설정되지 않았습니다." },
-        { status: 500 }
-      );
-    }
+    // const apiKey = process.env.QWEN_API_KEY ?? process.env.RERANK_API_KEY;
+    // if (!apiKey) {
+    //   return NextResponse.json(
+    //     { error: "QWEN_API_KEY가 설정되지 않았습니다." },
+    //     { status: 500 }
+    //   );
+    // }
 
     const upstreamRes = await fetch(RERANK_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access_token: apiKey,
+        // access_token: apiKey,
       },
       body: JSON.stringify({
         query,
@@ -43,10 +43,12 @@ export async function POST(req: Request) {
     const upstreamJson = (await upstreamRes.json().catch(() => null)) as unknown;
 
     if (!upstreamRes.ok) {
-      return NextResponse.json(
-        upstreamJson ?? { error: "Reranker API 요청 실패" },
-        { status: upstreamRes.status || 500 }
-      );
+      const status = upstreamRes.status || 500;
+      const message =
+        status === 429
+          ? "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요."
+          : (upstreamJson as { error?: string })?.error ?? "Reranker API 요청 실패";
+      return NextResponse.json({ error: message }, { status });
     }
 
     return NextResponse.json(upstreamJson ?? {});

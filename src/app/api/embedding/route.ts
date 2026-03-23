@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const EMBEDDING_ENDPOINT =
-  "http://gpurent.kogrobo.com:11436/_inference/text_embedding/qwen3";
+  "http://gpurent.kogrobo.com:11115/trial/embedding/_inference/text_embedding/qwen3";
 
 type EmbeddingRequestBody = {
   // playground에서 보낼 때
@@ -34,19 +34,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const apiKey = process.env.EMBEDDING_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "EMBEDDING_API_KEY가 설정되지 않았습니다." },
-        { status: 500 },
-      );
-    }
+    // const apiKey = process.env.EMBEDDING_API_KEY;
+    // if (!apiKey) {
+    //   return NextResponse.json(
+    //     { error: "EMBEDDING_API_KEY가 설정되지 않았습니다." },
+    //     { status: 500 },
+    //   );
+    // }
 
     const upstreamRes = await fetch(EMBEDDING_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access_token: apiKey,
+        // access_token: apiKey,
       },
       body: JSON.stringify({
         input: text,
@@ -60,10 +60,12 @@ export async function POST(req: Request) {
       | null;
 
     if (!upstreamRes.ok) {
-      return NextResponse.json(
-        upstreamJson ?? { error: "Embedding API 요청 실패" },
-        { status: upstreamRes.status || 500 },
-      );
+      const status = upstreamRes.status || 500;
+      const message =
+        status === 429
+          ? "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요."
+          : (upstreamJson as { error?: string })?.error ?? "Embedding API 요청 실패";
+      return NextResponse.json({ error: message }, { status });
     }
 
     const embeddingVector = (
