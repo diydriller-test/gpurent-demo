@@ -6,13 +6,21 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { input } = await req.json();
+    const { input, temperature } = await req.json();
+
+    const parsedTemperature =
+      typeof temperature === "number" && Number.isFinite(temperature)
+        ? temperature
+        : typeof temperature === "string" &&
+            Number.isFinite(Number(temperature))
+          ? Number(temperature)
+          : 0.1;
 
     const llm = new ChatOpenAI({
       configuration: { baseURL: "http://gpurent.kogrobo.com:51089/v1" },
       apiKey: process.env.OPENAI_API_KEY, // .env.local의 키 사용
       model: "openai/gpt-oss-120b",
-      temperature: 0.1,
+      temperature: parsedTemperature,
     });
 
     const prompt =
