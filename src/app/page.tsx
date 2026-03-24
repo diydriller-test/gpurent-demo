@@ -1,27 +1,54 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { NavAuthButton } from "@/components/NavAuthButton";
 
-const APIS = [
+type ApiCard = {
+  name: string;
+  description: string;
+  icon: string;
+  apiId?: "llm" | "embedding" | "reranker" | "tts" | "stt";
+  comingSoon?: boolean;
+};
+
+const APIS: ApiCard[] = [
+  {
+    name: "Text",
+    description: "대화, 요약, 생성 작업을 빠르게 처리하는 텍스트 생성 API",
+    icon: "✦",
+    apiId: "llm",
+  },
+  {
+    name: "STT",
+    description: "음성을 텍스트로 변환하는 스피치 투 텍스트 API",
+    icon: "◉",
+    apiId: "stt",
+  },
   {
     name: "Embedding",
     description:
       "텍스트를 벡터로 변환하는 임베딩 API. RAG, 시맨틱 검색에 최적화",
     icon: "◇",
+    apiId: "embedding",
   },
   {
     name: "Re-ranking",
     description: "검색 결과의 관련도를 재정렬하여 정확도 향상",
     icon: "⇅",
+    apiId: "reranker",
   },
   {
     name: "TTS",
     description: "텍스트를 자연스러운 음성으로 변환하는 텍스트 투 스피치 API",
     icon: "♪",
+    apiId: "tts",
   },
   {
     name: "More APIs",
     description: "추가 API는 지속적으로 확장됩니다",
     icon: "+",
+    comingSoon: true,
   },
 ];
 
@@ -40,9 +67,54 @@ const BENEFITS = [
   },
 ];
 
+const API_BELT = [...APIS, ...APIS];
+
 export default function Home() {
+  const [comingSoonMessage, setComingSoonMessage] = useState<string | null>(
+    null,
+  );
+  const comingSoonTimerRef = useRef<number | null>(null);
+
+  function showComingSoon(message: string) {
+    setComingSoonMessage(message);
+    if (comingSoonTimerRef.current) {
+      window.clearTimeout(comingSoonTimerRef.current);
+    }
+    comingSoonTimerRef.current = window.setTimeout(() => {
+      setComingSoonMessage(null);
+    }, 2000);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (comingSoonTimerRef.current) {
+        window.clearTimeout(comingSoonTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-grid-pattern">
+      {comingSoonMessage ? (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[2px] px-4">
+          <div className="w-[min(520px,90%)] rounded-2xl border border-[#10b981]/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(16,185,129,0.18)]">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#10b981]/30 bg-[#10b981]/10 text-[#10b981]">
+                +
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  Coming Soon
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-foreground/80">
+                  {comingSoonMessage}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -105,23 +177,57 @@ export default function Home() {
           <p className="mx-auto mb-16 max-w-2xl text-center text-foreground/70">
             필요한 API를 골라 사용하세요. 계속해서 새로운 API가 추가됩니다.
           </p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {APIS.map((api, i) => (
-              <div
-                key={api.name}
-                className="group rounded-2xl border border-white/5 bg-surface/50 p-6 transition-all hover:border-accent/20 hover:bg-surface"
-              >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 font-mono text-xl text-accent transition-colors group-hover:bg-accent/20">
-                  {api.icon}
-                </div>
-                <h3 className="mb-2 font-semibold text-foreground">
-                  {api.name}
-                </h3>
-                <p className="text-sm leading-relaxed text-foreground/60">
-                  {api.description}
-                </p>
-              </div>
-            ))}
+          <div className="api-belt-wrap overflow-hidden">
+            <div className="api-belt-track flex w-max gap-6 pr-6">
+              {API_BELT.map((api, i) => (
+                api.comingSoon ? (
+                  <button
+                    key={`${api.name}-${i}`}
+                    type="button"
+                    onClick={() =>
+                      showComingSoon(
+                        "추가 API가 곧 공개됩니다. 조금만 기다려 주세요!",
+                      )
+                    }
+                    className="api-belt-card group w-[250px] shrink-0 rounded-2xl border border-white/5 bg-surface/50 p-6 text-left transition-all hover:border-accent/20 hover:bg-surface"
+                  >
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 font-mono text-xl text-accent transition-colors group-hover:bg-accent/20">
+                      {api.icon}
+                    </div>
+                    <h3 className="mb-2 font-semibold text-foreground">
+                      {api.name}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-foreground/60">
+                      {api.description}
+                    </p>
+                    <div className="mt-4 flex items-center gap-2 text-xs text-foreground/45 opacity-0 transition-all duration-200 group-hover:opacity-100">
+                      <span>곧 공개됩니다</span>
+                      <span className="text-accent/70">→</span>
+                    </div>
+                  </button>
+                ) : (
+                  <Link
+                    key={`${api.name}-${i}`}
+                    href={`/api-test?task=${api.apiId}`}
+                    className="api-belt-card group block w-[250px] shrink-0 rounded-2xl border border-white/5 bg-surface/50 p-6 transition-all hover:border-accent/20 hover:bg-surface"
+                  >
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 font-mono text-xl text-accent transition-colors group-hover:bg-accent/20">
+                      {api.icon}
+                    </div>
+                    <h3 className="mb-2 font-semibold text-foreground">
+                      {api.name}
+                    </h3>
+                    <p className="text-sm leading-relaxed text-foreground/60">
+                      {api.description}
+                    </p>
+                    <div className="mt-4 flex items-center gap-2 text-xs text-foreground/45 opacity-0 transition-all duration-200 group-hover:opacity-100">
+                      <span>테스트하러 가기</span>
+                      <span className="text-accent">→</span>
+                    </div>
+                  </Link>
+                )
+              ))}
+            </div>
           </div>
         </div>
       </section>

@@ -816,6 +816,25 @@ export default function ApiTestPage() {
   const comingSoonTimerRef = useRef<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const api = params.get("api");
+    const view = params.get("view");
+
+    if (
+      api === "llm" ||
+      api === "embedding" ||
+      api === "reranker" ||
+      api === "tts" ||
+      api === "stt"
+    ) {
+      setSelectedApi(api);
+      // 홈 카드에서 들어올 때는 바로 해당 챕터 상세를 보여줌
+      setViewMode(view === "list" ? "list" : "detail");
+    }
+  }, []);
+
   const [isChatLoading, setIsChatLoading] = useState(false);
   const pendingAssistantIdRef = useRef<string | null>(null);
 
@@ -974,6 +993,44 @@ export default function ApiTestPage() {
     () => ["Text Generation", "Embedding", "Reranker", "TTS", "STT"],
     []
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const taskParam = params.get("task")?.toLowerCase() ?? null;
+    if (!taskParam) return;
+
+    const targetTask: MarketplaceTask | null =
+      taskParam === "llm" || taskParam === "text"
+        ? "Text Generation"
+        : taskParam === "embedding"
+          ? "Embedding"
+          : taskParam === "reranker" || taskParam === "rerank"
+            ? "Reranker"
+            : taskParam === "tts"
+              ? "TTS"
+              : taskParam === "stt" || taskParam === "sst"
+                ? "STT"
+                : null;
+
+    if (!targetTask) return;
+
+    setViewMode("list");
+    setFilterTasks((prev) => {
+      const next = { ...prev };
+      taskKeys.forEach((k) => {
+        next[k] = k === targetTask;
+      });
+      next.Vision = false;
+      return next;
+    });
+
+    if (targetTask === "Text Generation") setSelectedApi("llm");
+    if (targetTask === "Embedding") setSelectedApi("embedding");
+    if (targetTask === "Reranker") setSelectedApi("reranker");
+    if (targetTask === "TTS") setSelectedApi("tts");
+    if (targetTask === "STT") setSelectedApi("stt");
+  }, [taskKeys]);
 
   const filteredMarketplace = useMemo(() => {
     return marketplaceItems.filter((item) => {
