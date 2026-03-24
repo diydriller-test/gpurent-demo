@@ -3048,7 +3048,9 @@ export default function ApiTestPage() {
                       </button>
 
                       {taskKeys.map((t) => {
-                        const isActive = filterTasks[t];
+                        // "All"이 켜져 있을 때는 전 태스크가 true라서, 개별 버튼은 강조하지 않음
+                        const isActive =
+                          filterTasks[t] && !isAllTasksActive;
                         const label = t === "Text Generation" ? "Text" : t;
 
                         return (
@@ -3146,7 +3148,13 @@ export default function ApiTestPage() {
                               ? "Qwen3 Generation • TTS"
                               : item.task === "STT"
                                 ? "Qwen3 Audio • STT"
-                                : `Model Size ${item.modelSizeB}B • ${item.task}`}
+                                : item.task === "Text Generation"
+                                  ? "GPT-OSS • Text Generation"
+                                  : item.task === "Embedding"
+                                    ? "Qwen-Embedding • Embedding"
+                                    : item.task === "Reranker"
+                                      ? "Qwen3 Reranker • Reranker"
+                                      : `Model Size ${item.modelSizeB}B • ${item.task}`}
                           </p>
                           <p className="mt-1 text-lg font-semibold text-foreground leading-tight break-words">
                             {item.model}
@@ -3165,21 +3173,9 @@ export default function ApiTestPage() {
                         ))}
                       </div>
 
-                      <div
-                        className={[
-                          "mt-4 flex items-center",
-                          item.task === "TTS" || item.task === "STT"
-                            ? "justify-start gap-2"
-                            : "justify-between",
-                        ].join(" ")}
-                      >
-                        {item.task === "TTS" || item.task === "STT" ? null : (
-                          <span className="rounded-lg border border-white/10 bg-background/30 px-2.5 py-1 text-[11px] font-mono text-foreground/70">
-                            Size: {item.modelSizeB}B
-                          </span>
-                        )}
+                      <div className="mt-4 flex items-center justify-start gap-2">
                         <span className="text-xs text-foreground/50">
-                          Click to open
+                          Let&apos;s try
                         </span>
                         <span className="text-[#10b981] transition-transform group-hover:translate-x-0.5">
                           →
@@ -3246,9 +3242,17 @@ export default function ApiTestPage() {
                     <p className="mt-2 font-mono text-xs text-foreground/60">
                       Test Playground
                     </p>
-                    <h3 className="mt-1 truncate text-lg font-semibold text-foreground">
-                      {selectedApiItem?.name ?? "API"} Playground
-                    </h3>
+                    <div className="mt-1 flex items-center justify-between gap-3">
+                      <h3 className="min-w-0 truncate text-lg font-semibold text-foreground">
+                        {selectedApiItem?.name ?? "API"} Playground
+                      </h3>
+                      <Link
+                        href="/plans"
+                        className="shrink-0 rounded-lg border border-[#10b981]/45 bg-transparent px-2.5 py-1 text-[11px] font-medium text-[#10b981] transition-colors hover:bg-[#10b981]/10 hover:border-[#10b981]/60"
+                      >
+                        플랜 보기
+                      </Link>
+                    </div>
                     {selectedApi === "llm" ||
                     selectedApi === "reranker" ||
                     selectedApi === "embedding" ||
@@ -3657,6 +3661,18 @@ export default function ApiTestPage() {
                       workflowBannerVisible ? "opacity-100" : "opacity-0",
                     ].join(" ")}
                   >
+                    <div className="mb-3 flex flex-col gap-2 border-b border-white/5 pb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <p className="text-[12px] leading-relaxed text-foreground/65">
+                        테스트가 마음에 드셨다면, 요금제에서 맞는 플랜을 확인해
+                        보세요.
+                      </p>
+                      <Link
+                        href="/plans"
+                        className="inline-flex shrink-0 items-center justify-center rounded-lg border border-[#10b981]/35 bg-transparent px-3 py-1.5 text-[11px] font-medium text-[#10b981] transition-colors hover:bg-[#10b981]/10 hover:border-[#10b981]/55"
+                      >
+                        플랜 보기
+                      </Link>
+                    </div>
                     {selectedApi === "stt" ? (
                       <p className="text-sm leading-relaxed text-foreground/90">
                         <span className="mr-2">🎙️</span>
