@@ -54,12 +54,6 @@ export default function Home() {
           </Link>
           <div className="flex items-center gap-8">
             <Link
-              href="#apis"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              API
-            </Link>
-            <Link
               href="/plans"
               className="text-sm text-foreground/70 transition-colors hover:text-accent"
             >
@@ -97,12 +91,6 @@ export default function Home() {
               <span className="transition-transform group-hover:translate-x-1">
                 →
               </span>
-            </Link>
-            <Link
-              href="#apis"
-              className="flex items-center gap-2 rounded-xl border border-white/10 px-8 py-4 font-medium text-foreground transition-colors hover:border-accent/50 hover:bg-white/5"
-            >
-              API 살펴보기
             </Link>
           </div>
         </div>

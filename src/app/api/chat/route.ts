@@ -17,8 +17,8 @@ export async function POST(req: Request) {
           : 0.1;
 
     const llm = new ChatOpenAI({
-      configuration: { baseURL: "http://gpurent.kogrobo.com:51089/v1" },
-      apiKey: process.env.OPENAI_API_KEY, // .env.local의 키 사용
+      configuration: { baseURL: "http://gpurent.kogrobo.com:11115/trial/llm/v1" },
+      // apiKey: process.env.OPENAI_API_KEY, // .env.local의 키 사용
       model: "openai/gpt-oss-120b",
       temperature: parsedTemperature,
     });
@@ -32,6 +32,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ text: response });
   } catch (error: unknown) {
     console.error("API Error:", error);
+    const err = error as { response?: { status?: number }; status?: number; message?: string };
+    const msg = String(err?.message ?? "").toLowerCase();
+    const is429 =
+      err?.response?.status === 429 ||
+      err?.status === 429 ||
+      msg.includes("429") ||
+      msg.includes("rate limit") ||
+      msg.includes("too many requests");
+    if (is429) {
+      return NextResponse.json(
+        { error: "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요." },
+        { status: 429 },
+      );
+    }
     return NextResponse.json(
       { error: "서버 연결에 실패했습니다." },
       { status: 500 },

@@ -812,6 +812,7 @@ export default function ApiTestPage() {
   const [comingSoonMessage, setComingSoonMessage] = useState<string | null>(
     null,
   );
+  const [limitExceededModalOpen, setLimitExceededModalOpen] = useState(false);
   const comingSoonTimerRef = useRef<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -1755,6 +1756,9 @@ export default function ApiTestPage() {
       });
 
       if (!res.ok) {
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
         const msg =
           typeof data?.error === "string"
             ? data.error
@@ -1860,6 +1864,9 @@ export default function ApiTestPage() {
       consoleAlreadySet = true;
 
       if (!res.ok) {
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
         throw new Error("RERANK_API_ERROR");
       }
 
@@ -2288,6 +2295,9 @@ export default function ApiTestPage() {
       const data = (await res.json().catch(() => null)) as unknown | null;
 
       if (!res.ok) {
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
         const responseJson = JSON.stringify(data ?? { error: "Request failed" }, null, 2);
         setSttError("STT 요청이 실패했습니다.");
         patchConsole("stt", {
@@ -2437,6 +2447,9 @@ export default function ApiTestPage() {
       });
 
       if (!res.ok) {
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
         let errJson: unknown = null;
         try {
           errJson = await res.json();
@@ -2635,6 +2648,9 @@ export default function ApiTestPage() {
         consoleAlreadySet = true;
 
         if (!res.ok) {
+          if (res.status === 429) {
+            setLimitExceededModalOpen(true);
+          }
           throw new Error("RERANK_API_ERROR");
         }
 
@@ -2694,6 +2710,9 @@ export default function ApiTestPage() {
         consoleAlreadySet = true;
 
         if (!res.ok) {
+          if (res.status === 429) {
+            setLimitExceededModalOpen(true);
+          }
           throw new Error("EMBEDDING_API_ERROR");
         }
 
@@ -2860,6 +2879,9 @@ export default function ApiTestPage() {
       consoleAlreadySet = true;
 
       if (!res.ok) {
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
         if (res.status === 401) {
           throw new Error("401");
         }
@@ -2929,6 +2951,31 @@ export default function ApiTestPage() {
 
   return (
     <div className="min-h-screen bg-background bg-grid-pattern">
+      {limitExceededModalOpen ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-[min(480px,90%)] rounded-2xl border border-amber-500/30 bg-surface/95 p-6 shadow-xl">
+            <p className="text-center text-base font-medium text-foreground">
+              일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요.
+            </p>
+            <div className="mt-6 flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setLimitExceededModalOpen(false)}
+                className="rounded-xl border border-white/10 px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-white/5"
+              >
+                닫기
+              </button>
+              <Link
+                href="/signup"
+                onClick={() => setLimitExceededModalOpen(false)}
+                className="rounded-xl bg-accent px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              >
+                회원가입
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
       {/* Header */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">

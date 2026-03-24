@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const STT_ENDPOINT =
-  "http://gpurent.kogrobo.com:11437/_inference/stt/my_stt";
+  "http://gpurent.kogrobo.com:11115/trial/stt/_inference/stt/my_stt";
 
 export const maxDuration = 60;
 
@@ -39,13 +39,13 @@ export async function POST(req: Request) {
       vad_filter: asString(formData.get("vad_filter")),
     } satisfies SttMultipartFields;
 
-    const apiKey = process.env.TTS_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "TTS_API_KEY가 설정되지 않았습니다." },
-        { status: 500 },
-      );
-    }
+    // const apiKey = process.env.TTS_API_KEY;
+    // if (!apiKey) {
+    //   return NextResponse.json(
+    //     { error: "TTS_API_KEY가 설정되지 않았습니다." },
+    //     { status: 500 },
+    //   );
+    // }
 
     const upstreamForm = new FormData();
     const fileName =
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     const upstreamRes = await fetch(STT_ENDPOINT, {
       method: "POST",
       headers: {
-        access_token: apiKey,
+        // access_token: apiKey,
       },
       body: upstreamForm,
       signal: controller.signal,
@@ -72,7 +72,15 @@ export async function POST(req: Request) {
       | unknown
       | null;
 
-    return NextResponse.json(upstreamJson ?? {}, { status: upstreamRes.status });
+    const status = upstreamRes.status;
+    if (!upstreamRes.ok && status === 429) {
+      return NextResponse.json(
+        { error: "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요." },
+        { status: 429 },
+      );
+    }
+
+    return NextResponse.json(upstreamJson ?? {}, { status });
   } catch (error: unknown) {
     if (error instanceof Error && error.name === "AbortError") {
       return NextResponse.json(

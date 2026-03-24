@@ -77,9 +77,35 @@ export function getAuthHeaders(): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
 }
 
+export interface Api {
+  id: number;
+  name: string;
+  company_id: number;
+  company_name: string;
+}
+
+export async function getApis(): Promise<Api[]> {
+  const res = await fetch(`${API_BASE_URL}/apis`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("API 목록을 불러올 수 없습니다.");
+  }
+
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
 export interface Plan {
   id: number;
   name: string;
+  api_id?: number;
+  api_name?: string;
   price_monthly: string;
   description: string;
   max_rps: number;
@@ -89,8 +115,8 @@ export interface Plan {
   sort_order: number;
 }
 
-export async function getPlans(): Promise<Plan[]> {
-  const res = await fetch(`${API_BASE_URL}/plans`, {
+export async function getPlans(apiId: number): Promise<Plan[]> {
+  const res = await fetch(`${API_BASE_URL}/plans?api_id=${apiId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -108,12 +134,21 @@ export async function getPlans(): Promise<Plan[]> {
     .sort((a, b) => a.sort_order - b.sort_order);
 }
 
+export interface ApiPlan {
+  api_id: number;
+  api_name: string;
+  company_id: number;
+  company_name: string;
+  plan_id: number;
+  plan_name: string;
+  max_rps: number;
+}
+
 export interface User {
   id: number;
   email: string;
   username: string;
-  plan_id: number | null;
-  plan: Plan | null;
+  api_plans: ApiPlan[];
   is_active: boolean;
   created_at: string;
 }
@@ -143,7 +178,7 @@ export async function getMe(): Promise<User> {
   return res.json();
 }
 
-export async function updatePlan(planId: number): Promise<void> {
+export async function updatePlan(apiId: number, planId: number): Promise<void> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...getAuthHeaders(),
@@ -152,7 +187,7 @@ export async function updatePlan(planId: number): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/auth/me/plan`, {
     method: "PATCH",
     headers,
-    body: JSON.stringify({ plan_id: planId }),
+    body: JSON.stringify({ api_id: apiId, plan_id: planId }),
   });
 
   if (res.status === 401) {
