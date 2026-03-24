@@ -3294,7 +3294,7 @@ export default function ApiTestPage() {
                         {selectedApiItem?.name ?? "API"} Playground
                       </h3>
                       <Link
-                        href="/plans"
+                        href={`/plans?chapter=${selectedApi}&auto=1`}
                         className="shrink-0 rounded-lg border border-[#10b981]/45 bg-transparent px-2.5 py-1 text-[11px] font-medium text-[#10b981] transition-colors hover:bg-[#10b981]/10 hover:border-[#10b981]/60"
                       >
                         플랜 보기
@@ -3714,7 +3714,7 @@ export default function ApiTestPage() {
                         보세요.
                       </p>
                       <Link
-                        href="/plans"
+                        href={`/plans?chapter=${selectedApi}&auto=1`}
                         className="inline-flex shrink-0 items-center justify-center rounded-lg border border-[#10b981]/35 bg-transparent px-3 py-1.5 text-[11px] font-medium text-[#10b981] transition-colors hover:bg-[#10b981]/10 hover:border-[#10b981]/55"
                       >
                         플랜 보기
