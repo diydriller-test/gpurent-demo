@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { getToken } from "@/lib/token";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getToken, removeToken } from "@/lib/token";
 
 type DocSection = {
   id: string;
@@ -103,9 +105,78 @@ const SECTIONS: DocSection[] = [
   },
 ];
 
+const TOC_SECTION_IDS = [
+  "overview",
+  "tts-note",
+  ...SECTIONS.map((s) => s.id),
+];
+
+const LAST_TOC_SECTION_ID = TOC_SECTION_IDS[TOC_SECTION_IDS.length - 1];
+
+/** 고정 상단 네비(h-16) + scroll-mt와 맞춘 활성화 기준선(뷰포트 상단 기준 px) */
+const TOC_ACTIVATION_LINE_PX = 112;
+
+/**
+ * 스크롤 위치에 맞는 TOC 항목 1개만 계산합니다.
+ * - 맨 아래에 도달하면 항상 마지막 섹션(현재 stt)
+ * - 그 외에는 `rect.top <= 기준선`인 섹션들 중 문서 순서상 마지막
+ * (중간에 `break` 하면 안 됨 — 그게 두 칸 점프 원인이 됩니다)
+ */
+function computeActiveTocId(): string {
+  const { scrollY, innerHeight } = window;
+  const maxScroll = document.documentElement.scrollHeight - innerHeight;
+  const atBottom = maxScroll <= 0 || scrollY >= maxScroll - 2;
+  if (atBottom) return LAST_TOC_SECTION_ID;
+
+  const line = TOC_ACTIVATION_LINE_PX;
+  let active = TOC_SECTION_IDS[0];
+
+  for (const id of TOC_SECTION_IDS) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (el.getBoundingClientRect().top <= line) {
+      active = id;
+    }
+  }
+
+  return active;
+}
+
+function docsTocLinkClass(isActive: boolean) {
+  return isActive
+    ? "docs-toc-link-active block rounded-lg px-2 py-1.5 transition-all duration-300"
+    : "block rounded-lg px-2 py-1.5 text-foreground/70 transition-all duration-300 hover:bg-white/5 hover:text-accent";
+}
+
 export default function DocsPage() {
   const hasToken = !!getToken();
+  const [activeSectionId, setActiveSectionId] = useState<string>("overview");
 
+  useEffect(() => {
+    let raf = 0;
+
+    const update = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const next = computeActiveTocId();
+        setActiveSectionId((prev) => (prev === next ? prev : next));
+      });
+    };
+
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    window.addEventListener("load", update);
+    window.addEventListener("hashchange", update);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+      window.removeEventListener("load", update);
+      window.removeEventListener("hashchange", update);
+    };
+  }, []);
   return (
     <div className="min-h-screen bg-grid-pattern">
       <nav className="border-b border-white/5 bg-background/80 backdrop-blur-xl">
@@ -171,7 +242,10 @@ export default function DocsPage() {
               <li>
                 <a
                   href="#overview"
-                  className="block rounded-lg px-2 py-1.5 text-foreground/70 transition-colors hover:bg-white/5 hover:text-accent"
+                  aria-current={
+                    activeSectionId === "overview" ? "location" : undefined
+                  }
+                  className={docsTocLinkClass(activeSectionId === "overview")}
                 >
                   개요 · 인증
                 </a>
@@ -179,7 +253,10 @@ export default function DocsPage() {
               <li>
                 <a
                   href="#tts-note"
-                  className="block rounded-lg px-2 py-1.5 text-foreground/70 transition-colors hover:bg-white/5 hover:text-accent"
+                  aria-current={
+                    activeSectionId === "tts-note" ? "location" : undefined
+                  }
+                  className={docsTocLinkClass(activeSectionId === "tts-note")}
                 >
                   TTS (체험)
                 </a>
@@ -188,7 +265,10 @@ export default function DocsPage() {
                 <li key={s.id}>
                   <a
                     href={`#${s.id}`}
-                    className="block rounded-lg px-2 py-1.5 text-foreground/70 transition-colors hover:bg-white/5 hover:text-accent"
+                    aria-current={
+                      activeSectionId === s.id ? "location" : undefined
+                    }
+                    className={docsTocLinkClass(activeSectionId === s.id)}
                   >
                     {s.title}
                   </a>
