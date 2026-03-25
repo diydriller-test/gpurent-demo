@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { getMe, getApiKeys, createApiKey, type User, type ApiKey } from "@/lib/api";
-import { getToken } from "@/lib/token";
+import { getToken, removeToken } from "@/lib/token";
 
 function maskKey(key: string): string {
   if (!key) return "";
@@ -228,6 +228,12 @@ export default function ProfilePage() {
               홈
             </Link>
             <Link
+              href="/api-test"
+              className="text-sm text-foreground/70 transition-colors hover:text-accent"
+            >
+              API 체험
+            </Link>
+            <Link
               href="/plans"
               className="text-sm text-foreground/70 transition-colors hover:text-accent"
             >
@@ -239,12 +245,26 @@ export default function ProfilePage() {
             >
               API 문서
             </Link>
-            <Link
-              href="/profile"
-              className="text-sm font-medium text-accent"
-            >
-              프로필
-            </Link>
+            {getToken() ? (
+              <button
+                type="button"
+                onClick={() => {
+                  removeToken();
+                  router.push("/");
+                  router.refresh();
+                }}
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              >
+                로그아웃
+              </button>
+            ) : (
+              <Link
+                href="/signup"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              >
+                시작하기
+              </Link>
+            )}
           </div>
         </div>
       </nav>

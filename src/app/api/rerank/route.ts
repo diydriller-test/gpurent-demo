@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-
-const RERANK_ENDPOINT = "http://gpurent.kogrobo.com:11115/trial/rerank/_inference/rerank/qwen3";
+import { resolveUpstreamBasePath } from "../_lib/upstream";
 
 export async function POST(req: Request) {
   try {
@@ -28,7 +27,8 @@ export async function POST(req: Request) {
     //   );
     // }
 
-    const upstreamRes = await fetch(RERANK_ENDPOINT, {
+    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const upstreamRes = await fetch(`${upstreamBasePath}/rerank/_inference/rerank/qwen3`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

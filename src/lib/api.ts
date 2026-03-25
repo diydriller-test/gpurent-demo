@@ -82,6 +82,13 @@ export interface Api {
   name: string;
   company_id: number;
   company_name: string;
+  task_key?: string;
+  task_label?: string;
+  card_sublabel?: string;
+  model_display?: string;
+  tags?: string[];
+  is_active?: boolean;
+  sort_order?: number;
 }
 
 export async function getApis(): Promise<Api[]> {
@@ -98,7 +105,10 @@ export async function getApis(): Promise<Api[]> {
   }
 
   const data = await res.json();
-  return Array.isArray(data) ? data : [];
+  const apis: Api[] = Array.isArray(data) ? data : [];
+  return apis
+    .filter((api) => api.is_active !== false)
+    .sort((a, b) => (a.sort_order ?? Number.MAX_SAFE_INTEGER) - (b.sort_order ?? Number.MAX_SAFE_INTEGER));
 }
 
 export interface Plan {

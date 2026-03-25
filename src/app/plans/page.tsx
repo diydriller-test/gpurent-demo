@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getApis, getPlans, getMe, updatePlan, type Api, type Plan, type User } from "@/lib/api";
-import { getToken } from "@/lib/token";
+import { getToken, removeToken } from "@/lib/token";
 import {
   chapterQueryToPlanTask,
   DEMO_APIS_FALLBACK,
@@ -15,6 +15,14 @@ import {
   type PlanTask,
 } from "./planCatalog";
 import { IconLayers, PlanTaskIcon } from "./TaskFilterIcons";
+
+function getApiTask(api: Api): PlanTask | null {
+  const k = api.task_key;
+  if (k === "Text Generation" || k === "Embedding" || k === "Reranker" || k === "TTS" || k === "STT") {
+    return k;
+  }
+  return inferPlanTask(api.name);
+}
 
 function formatPrice(priceMonthly: string): string {
   const num = parseFloat(priceMonthly);
@@ -27,6 +35,7 @@ function formatPrice(priceMonthly: string): string {
 }
 
 function PlansPageContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const chapterParam = searchParams.get("chapter");
   const autoParam = searchParams.get("auto") === "1";
@@ -46,6 +55,7 @@ function PlansPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [planActionError, setPlanActionError] = useState<string | null>(null);
   const [updatingPlanId, setUpdatingPlanId] = useState<number | null>(null);
+  const [pendingPlanId, setPendingPlanId] = useState<number | null>(null);
   /** 백엔드 /apis 실패 시 데모 목록을 쓰는 중 */
   const [usingDemoApis, setUsingDemoApis] = useState(false);
 
@@ -66,7 +76,7 @@ function PlansPageContent() {
 
   const filteredApis = useMemo(() => {
     return apis.filter((api) => {
-      const task = inferPlanTask(api.name);
+      const task = getApiTask(api);
       if (isAllTasksActive) return true;
       if (!task) return false;
       return filterTasks[task];
@@ -97,7 +107,7 @@ function PlansPageContent() {
     }
 
     if (autoParam && !playgroundAutoSelectDoneRef.current) {
-      const match = apis.find((api) => inferPlanTask(api.name) === task);
+      const match = apis.find((api) => getApiTask(api) === task);
       if (match) {
         setSelectedApi(match);
         playgroundAutoSelectDoneRef.current = true;
@@ -191,16 +201,27 @@ function PlansPageContent() {
 
   function handleSelectApi(api: Api) {
     setSelectedApi(api);
+    setPendingPlanId(null);
   }
 
   function handleBack() {
     setSelectedApi(null);
     setPlans([]);
     setError(null);
+    setPendingPlanId(null);
   }
 
-  async function handleSelectPlan(planId: number) {
+  function handlePickPlan(planId: number) {
+    setPlanActionError(null);
+    setPendingPlanId(planId);
+  }
+
+  async function handleRegisterPlan() {
     if (!selectedApi) return;
+    if (!pendingPlanId) {
+      setPlanActionError("먼저 플랜을 선택해주세요.");
+      return;
+    }
     if (usingDemoApis) {
       setPlanActionError(
         "데모 화면입니다. 실제 구독·플랜 변경은 백엔드(NEXT_PUBLIC_API_URL) 연결 후 가능합니다.",
@@ -208,10 +229,11 @@ function PlansPageContent() {
       return;
     }
     setPlanActionError(null);
-    setUpdatingPlanId(planId);
+    setUpdatingPlanId(pendingPlanId);
     try {
-      await updatePlan(selectedApi.id, planId);
+      await updatePlan(selectedApi.id, pendingPlanId);
       await fetchUser();
+      setPendingPlanId(null);
     } catch (err) {
       setPlanActionError(
         err instanceof Error ? err.message : "플랜 변경에 실패했습니다."
@@ -247,31 +269,37 @@ function PlansPageContent() {
             >
               API 체험
             </Link>
-            {isLoggedIn || isAuthChecking ? (
-              <>
-                <Link
-                  href="/docs"
-                  className="text-sm text-foreground/70 transition-colors hover:text-accent"
-                >
-                  API 문서
-                </Link>
-                <span className="text-sm text-foreground/50">{user?.username ?? "..."}</span>
-              </>
+            <span
+              aria-disabled="true"
+              className="cursor-not-allowed text-sm text-foreground/35"
+            >
+              플랜
+            </span>
+            <Link
+              href="/docs"
+              className="text-sm text-foreground/70 transition-colors hover:text-accent"
+            >
+              API 문서
+            </Link>
+            {hasToken ? (
+              <button
+                type="button"
+                onClick={() => {
+                  removeToken();
+                  router.push("/");
+                  router.refresh();
+                }}
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              >
+                로그아웃
+              </button>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-sm text-foreground/70 transition-colors hover:text-accent"
-                >
-                  로그인
-                </Link>
-                <Link
-                  href="/signup"
-                  className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
-                >
-                  시작하기
-                </Link>
-              </>
+              <Link
+                href="/signup"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              >
+                시작하기
+              </Link>
             )}
           </div>
         </div>
@@ -530,7 +558,14 @@ function PlansPageContent() {
 
                   <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filteredApis.map((api) => {
-                      const display = getPlanCardDisplay(api);
+                      const fallbackDisplay = getPlanCardDisplay(api);
+                      const display = {
+                        ...fallbackDisplay,
+                        task: getApiTask(api),
+                        sublabel: api.card_sublabel ?? fallbackDisplay.sublabel,
+                        modelDisplay: api.model_display ?? fallbackDisplay.modelDisplay,
+                        tags: api.tags && api.tags.length > 0 ? api.tags : fallbackDisplay.tags,
+                      };
                       const currentPlan = user?.api_plans?.find(
                         (p) => p.api_id === api.id,
                       );
@@ -642,31 +677,27 @@ function PlansPageContent() {
               ) : null}
               <div className="grid gap-8 lg:grid-cols-3">
               {plans.map((plan) => {
-                const highlighted = plan.sort_order === 2;
                 const currentApiPlan = user?.api_plans?.find((p) => p.api_id === selectedApi.id);
                 const isCurrentPlan = currentApiPlan?.plan_id === plan.id;
+                const isPendingPlan = pendingPlanId === plan.id;
                 const isUpdating = updatingPlanId === plan.id;
 
                 return (
                   <div
                     key={plan.id}
-                    className={`group relative flex flex-col rounded-2xl border p-8 transition-all duration-300 ${
-                      highlighted
-                        ? "border-accent/50 bg-surface shadow-lg shadow-accent/5 glow-accent"
-                        : "border-white/5 bg-surface/80 hover:border-white/10 hover:bg-surface"
-                    } ${isCurrentPlan ? "ring-2 ring-accent/30" : ""}`}
+                    className={`group relative flex flex-col rounded-2xl border border-white/5 bg-surface/80 p-8 transition-all duration-300 hover:border-white/10 hover:bg-surface ${isCurrentPlan ? "ring-2 ring-accent/30" : ""} ${isPendingPlan ? "ring-2 ring-emerald-400/50" : ""}`}
                   >
-                    {highlighted && !isCurrentPlan && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="rounded-full bg-accent px-4 py-1 text-xs font-medium text-background">
-                          인기
-                        </span>
-                      </div>
-                    )}
                     {isCurrentPlan && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                         <span className="rounded-full bg-accent/20 border border-accent/50 px-4 py-1 text-xs font-medium text-accent">
                           현재 플랜
+                        </span>
+                      </div>
+                    )}
+                    {!isCurrentPlan && isPendingPlan && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                        <span className="rounded-full border border-emerald-400/50 bg-emerald-400/15 px-4 py-1 text-xs font-medium text-emerald-300">
+                          선택됨
                         </span>
                       </div>
                     )}
@@ -704,7 +735,7 @@ function PlansPageContent() {
                     {isLoggedIn || isAuthChecking ? (
                       <button
                         type="button"
-                        onClick={() => handleSelectPlan(plan.id)}
+                        onClick={() => handlePickPlan(plan.id)}
                         disabled={
                           usingDemoApis
                             ? false
@@ -712,20 +743,18 @@ function PlansPageContent() {
                         }
                         className={`block w-full rounded-xl py-3 text-center font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
                           usingDemoApis
-                            ? highlighted
-                              ? "border border-dashed border-accent/60 bg-accent/15 text-accent hover:bg-accent/25"
-                              : "border border-dashed border-amber-500/35 bg-amber-500/10 text-foreground/90 hover:bg-amber-500/15"
+                            ? "border border-dashed border-amber-500/35 bg-amber-500/10 text-foreground/90 hover:bg-amber-500/15"
                             : isCurrentPlan
                               ? "border border-white/10 bg-surface text-foreground/50"
-                              : highlighted
-                                ? "bg-accent text-background hover:opacity-90"
-                                : "border border-white/10 text-foreground hover:border-accent/50 hover:bg-accent/10"
+                              : "border border-white/10 text-foreground hover:border-accent/50 hover:bg-accent/10"
                         }`}
                       >
                         {usingDemoApis
                           ? "데모 — 실제 선택은 연결 후"
                           : isCurrentPlan
                             ? "선택됨"
+                            : isPendingPlan
+                              ? "선택 완료"
                             : isUpdating
                               ? "처리 중..."
                               : isAuthChecking
@@ -740,22 +769,14 @@ function PlansPageContent() {
                             "데모입니다. 가입·결제는 백엔드 연결 후 진행할 수 있어요.",
                           )
                         }
-                        className={`block w-full rounded-xl py-3 text-center font-medium transition-all ${
-                          highlighted
-                            ? "border border-dashed border-accent/60 bg-accent/15 text-accent hover:bg-accent/25"
-                            : "border border-dashed border-white/20 text-foreground/80 hover:border-accent/40 hover:bg-accent/10"
-                        }`}
+                        className="block w-full rounded-xl border border-dashed border-white/20 py-3 text-center font-medium text-foreground/80 transition-all hover:border-accent/40 hover:bg-accent/10"
                       >
                         데모 — 실제 신청은 연결 후
                       </button>
                     ) : (
                       <Link
                         href="/signup"
-                        className={`block w-full rounded-xl py-3 text-center font-medium transition-all ${
-                          highlighted
-                            ? "bg-accent text-background hover:opacity-90"
-                            : "border border-white/10 text-foreground hover:border-accent/50 hover:bg-accent/10"
-                        }`}
+                        className="block w-full rounded-xl border border-white/10 py-3 text-center font-medium text-foreground transition-all hover:border-accent/50 hover:bg-accent/10"
                       >
                         이 플랜으로 시작
                       </Link>
@@ -764,6 +785,32 @@ function PlansPageContent() {
                 );
               })}
               </div>
+              {isLoggedIn && (
+                <div className="mt-8 flex justify-center">
+                  <div className="flex flex-wrap items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleRegisterPlan}
+                      disabled={!pendingPlanId || !!updatingPlanId}
+                      className="rounded-xl bg-accent px-8 py-3 font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {updatingPlanId ? "등록 중..." : "등록하기"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPlanActionError(
+                          "결제하기 기능은 준비 중입니다. 곧 제공될 예정입니다.",
+                        )
+                      }
+                      className="rounded-xl border border-dashed border-accent/50 bg-accent/10 px-8 py-3 font-medium text-accent transition-colors hover:bg-accent/15"
+                    >
+                      결제하기<br /> 
+                      (Coming Soon)
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )
         )}

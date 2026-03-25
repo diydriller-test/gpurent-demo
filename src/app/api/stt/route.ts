@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-
-const STT_ENDPOINT =
-  "http://gpurent.kogrobo.com:11115/trial/stt/_inference/stt/my_stt";
+import { resolveUpstreamBasePath } from "../_lib/upstream";
 
 export const maxDuration = 60;
 
@@ -59,7 +57,8 @@ export async function POST(req: Request) {
     if (fields.vad_filter)
       upstreamForm.append("vad_filter", fields.vad_filter);
 
-    const upstreamRes = await fetch(STT_ENDPOINT, {
+    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const upstreamRes = await fetch(`${upstreamBasePath}/stt/_inference/stt/my_stt`, {
       method: "POST",
       headers: {
         // access_token: apiKey,

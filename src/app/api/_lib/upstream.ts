@@ -1,0 +1,51 @@
+const UPSTREAM_BASE_URL = "http://gpurent.kogrobo.com:11115";
+const AUTH_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? UPSTREAM_BASE_URL;
+
+type ApiKeyLike = {
+  id?: unknown;
+  is_active?: unknown;
+};
+
+function parseApiKeys(data: unknown): ApiKeyLike[] {
+  if (Array.isArray(data)) return data as ApiKeyLike[];
+  if (data && typeof data === "object") {
+    const obj = data as { keys?: unknown; items?: unknown };
+    if (Array.isArray(obj.keys)) return obj.keys as ApiKeyLike[];
+    if (Array.isArray(obj.items)) return obj.items as ApiKeyLike[];
+  }
+  return [];
+}
+
+async function hasApiKey(authHeader: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${AUTH_BASE_URL}/auth/api-keys`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) return false;
+
+    const data = (await res.json().catch(() => null)) as unknown;
+    const keys = parseApiKeys(data);
+    if (keys.length === 0) return false;
+
+    return keys.some((k) => k.is_active !== false);
+  } catch {
+    return false;
+  }
+}
+
+export async function resolveUpstreamBasePath(req: Request): Promise<string> {
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader) {
+    return `${UPSTREAM_BASE_URL}/trial`;
+  }
+
+  const hasUserApiKey = await hasApiKey(authHeader);
+  return hasUserApiKey ? UPSTREAM_BASE_URL : `${UPSTREAM_BASE_URL}/trial`;
+}
+

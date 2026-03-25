@@ -9,8 +9,8 @@ import React, {
   useCallback,
   useState,
 } from "react";
-import { NavAuthButton } from "@/components/NavAuthButton";
-import { getToken } from "@/lib/token";
+import { useRouter } from "next/navigation";
+import { getToken, removeToken } from "@/lib/token";
 import { SmartSolutionGuide } from "./components/SmartSolutionGuide";
 import { JsonCode } from "./components/JsonCode";
 import { DeveloperCodeSection } from "./components/DeveloperCodeSection";
@@ -773,6 +773,7 @@ function tryParseSttConsoleToPlayground(jsonText: string): {
 }
 
 export default function ApiTestPage() {
+  const router = useRouter();
   type ViewMode = "list" | "detail";
   const apis: ApiItem[] = useMemo(
     () => [
@@ -3049,18 +3050,49 @@ export default function ApiTestPage() {
 
           <div className="flex items-center gap-8">
             <Link
-              href="/api-test"
-              className="text-sm text-accent transition-colors"
+              href="/"
+              className="text-sm text-foreground/70 transition-colors hover:text-accent"
             >
-              API
+              홈
+            </Link>
+            <span
+              aria-disabled="true"
+              className="cursor-not-allowed text-sm text-foreground/35"
+            >
+              API 체험
+            </span>
+            <Link
+              href="/plans"
+              className="text-sm text-foreground/70 transition-colors hover:text-accent"
+            >
+              플랜
             </Link>
             <Link
               href="/docs"
               className="text-sm text-foreground/70 transition-colors hover:text-accent"
             >
-              문서
+              API 문서
             </Link>
-            <NavAuthButton />
+            {getToken() ? (
+              <button
+                type="button"
+                onClick={() => {
+                  removeToken();
+                  router.push("/");
+                  router.refresh();
+                }}
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              >
+                로그아웃
+              </button>
+            ) : (
+              <Link
+                href="/signup"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              >
+                시작하기
+              </Link>
+            )}
           </div>
         </div>
       </nav>

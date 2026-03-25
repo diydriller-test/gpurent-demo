@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-
-const EMBEDDING_ENDPOINT =
-  "http://gpurent.kogrobo.com:11115/trial/embedding/_inference/text_embedding/qwen3";
+import { resolveUpstreamBasePath } from "../_lib/upstream";
 
 type EmbeddingRequestBody = {
   // playground에서 보낼 때
@@ -42,7 +40,10 @@ export async function POST(req: Request) {
     //   );
     // }
 
-    const upstreamRes = await fetch(EMBEDDING_ENDPOINT, {
+    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const upstreamRes = await fetch(
+      `${upstreamBasePath}/embedding/_inference/text_embedding/qwen3`,
+      {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -53,7 +54,8 @@ export async function POST(req: Request) {
         task_settings: { additionalProp1: {} },
         input_type: inputType,
       }),
-    });
+      },
+    );
 
     const upstreamJson = (await upstreamRes.json().catch(() => null)) as
       | unknown

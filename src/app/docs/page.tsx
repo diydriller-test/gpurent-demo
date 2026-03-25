@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { getToken, removeToken } from "@/lib/token";
 
 const API_ENDPOINTS = [
   {
@@ -22,6 +26,9 @@ const API_ENDPOINTS = [
 ];
 
 export default function DocsPage() {
+  const router = useRouter();
+  const hasToken = !!getToken();
+
   return (
     <div className="min-h-screen bg-grid-pattern">
       {/* Navigation */}
@@ -39,11 +46,43 @@ export default function DocsPage() {
               홈
             </Link>
             <Link
-              href="/docs"
-              className="text-sm font-medium text-accent"
+              href="/api-test"
+              className="text-sm text-foreground/70 transition-colors hover:text-accent"
+            >
+              API 체험
+            </Link>
+            <Link
+              href="/plans"
+              className="text-sm text-foreground/70 transition-colors hover:text-accent"
+            >
+              플랜
+            </Link>
+            <span
+              aria-disabled="true"
+              className="cursor-not-allowed text-sm text-foreground/35"
             >
               API 문서
-            </Link>
+            </span>
+            {hasToken ? (
+              <button
+                type="button"
+                onClick={() => {
+                  removeToken();
+                  router.push("/");
+                  router.refresh();
+                }}
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              >
+                로그아웃
+              </button>
+            ) : (
+              <Link
+                href="/signup"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              >
+                시작하기
+              </Link>
+            )}
           </div>
         </div>
       </nav>
