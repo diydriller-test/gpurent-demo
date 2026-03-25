@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getApis, getPlans, getMe, updatePlan, type Api, type Plan, type User } from "@/lib/api";
-import { getToken, removeToken } from "@/lib/token";
+import { getToken } from "@/lib/token";
 import {
   chapterQueryToPlanTask,
   DEMO_APIS_FALLBACK,
@@ -35,7 +35,6 @@ function formatPrice(priceMonthly: string): string {
 }
 
 function PlansPageContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const chapterParam = searchParams.get("chapter");
   const autoParam = searchParams.get("auto") === "1";
@@ -251,12 +250,12 @@ function PlansPageContent() {
     <div className="min-h-screen bg-grid-pattern">
       {/* Navigation */}
       <nav className="border-b border-white/5 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
             <span className="font-mono text-lg font-bold text-accent">GPU</span>
             <span className="font-mono text-lg font-medium text-foreground/90">Modu</span>
           </Link>
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-6">
             <Link
               href="/"
               className="text-sm text-foreground/70 transition-colors hover:text-accent"
@@ -282,17 +281,12 @@ function PlansPageContent() {
               API 문서
             </Link>
             {hasToken ? (
-              <button
-                type="button"
-                onClick={() => {
-                  removeToken();
-                  router.push("/");
-                  router.refresh();
-                }}
+              <Link
+                href="/profile"
                 className="text-sm text-foreground/70 transition-colors hover:text-accent"
               >
-                로그아웃
-              </button>
+                프로필
+              </Link>
             ) : (
               <Link
                 href="/signup"

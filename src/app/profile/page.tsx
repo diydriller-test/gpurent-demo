@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { getMe, getApiKeys, createApiKey, type User, type ApiKey } from "@/lib/api";
-import { getToken, removeToken } from "@/lib/token";
+import { getToken } from "@/lib/token";
 
 function maskKey(key: string): string {
   if (!key) return "";
@@ -246,17 +246,12 @@ export default function ProfilePage() {
               API 문서
             </Link>
             {getToken() ? (
-              <button
-                type="button"
-                onClick={() => {
-                  removeToken();
-                  router.push("/");
-                  router.refresh();
-                }}
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              <span
+                aria-disabled="true"
+                className="cursor-not-allowed text-sm text-foreground/35"
               >
-                로그아웃
-              </button>
+                프로필
+              </span>
             ) : (
               <Link
                 href="/signup"
@@ -338,6 +333,44 @@ export default function ProfilePage() {
                   </Link>
                 </>
               )}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-white/5 bg-surface/80 p-8">
+          <h2 className="mb-4 text-lg font-semibold text-foreground">이용 중인 API</h2>
+          {(user.api_plans?.length ?? 0) > 0 ? (
+            <ul className="space-y-4">
+              {[...(user.api_plans ?? [])]
+                .sort((a, b) => a.api_name.localeCompare(b.api_name, "ko"))
+                .map((ap) => (
+                  <li
+                    key={`${ap.api_id}-${ap.plan_id}`}
+                    className="rounded-xl border border-white/5 bg-background/20 px-4 py-4"
+                  >
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                      <div>
+                        <p className="font-semibold text-foreground">{ap.api_name}</p>
+                        <p className="text-sm text-foreground/50">{ap.company_name}</p>
+                      </div>
+                      <div className="text-sm text-foreground/70 sm:text-right">
+                        <span className="font-medium text-accent">{ap.plan_name}</span>
+                        <span className="text-foreground/40"> · </span>
+                        <span>최대 {ap.max_rps} RPS</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          ) : (
+            <div>
+              <p className="text-foreground/60">아직 구독 중인 API가 없습니다.</p>
+              <Link
+                href="/plans"
+                className="mt-4 inline-block text-sm text-accent hover:underline"
+              >
+                플랜 선택하기 →
+              </Link>
             </div>
           )}
         </div>

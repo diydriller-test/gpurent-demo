@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { getToken, removeToken } from "@/lib/token";
+import { getToken } from "@/lib/token";
 
 type DocSection = {
   id: string;
@@ -105,7 +104,6 @@ const SECTIONS: DocSection[] = [
 ];
 
 export default function DocsPage() {
-  const router = useRouter();
   const hasToken = !!getToken();
 
   return (
@@ -142,17 +140,12 @@ export default function DocsPage() {
               API 문서
             </span>
             {hasToken ? (
-              <button
-                type="button"
-                onClick={() => {
-                  removeToken();
-                  router.push("/");
-                  router.refresh();
-                }}
+              <Link
+                href="/profile"
                 className="text-sm text-foreground/70 transition-colors hover:text-accent"
               >
-                로그아웃
-              </button>
+                프로필
+              </Link>
             ) : (
               <Link
                 href="/signup"

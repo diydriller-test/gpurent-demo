@@ -10,7 +10,7 @@ import React, {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { getToken, removeToken } from "@/lib/token";
+import { getToken } from "@/lib/token";
 import { SmartSolutionGuide } from "./components/SmartSolutionGuide";
 import { JsonCode } from "./components/JsonCode";
 import { DeveloperCodeSection } from "./components/DeveloperCodeSection";
@@ -3048,7 +3048,7 @@ export default function ApiTestPage() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-6">
             <Link
               href="/"
               className="text-sm text-foreground/70 transition-colors hover:text-accent"
@@ -3074,17 +3074,12 @@ export default function ApiTestPage() {
               API 문서
             </Link>
             {getToken() ? (
-              <button
-                type="button"
-                onClick={() => {
-                  removeToken();
-                  router.push("/");
-                  router.refresh();
-                }}
+              <Link
+                href="/profile"
                 className="text-sm text-foreground/70 transition-colors hover:text-accent"
               >
-                로그아웃
-              </button>
+                프로필
+              </Link>
             ) : (
               <Link
                 href="/signup"
