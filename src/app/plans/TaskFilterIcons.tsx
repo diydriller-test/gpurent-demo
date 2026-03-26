@@ -100,6 +100,18 @@ export function IconTextSummary(props: { className?: string }) {
   );
 }
 
+/** 감정·극성 분석 */
+export function IconSentiment(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+      <path d="M9 9h.01" />
+      <path d="M15 9h.01" />
+      <circle cx="12" cy="12" r="10" />
+    </IconBase>
+  );
+}
+
 export function PlanTaskIcon({
   task,
   className = "h-4 w-4",
@@ -114,6 +126,8 @@ export function PlanTaskIcon({
       return <IconPenLine className={className} />;
     case "Text Summary":
       return <IconTextSummary className={className} />;
+    case "Sentiment Analysis":
+      return <IconSentiment className={className} />;
     case "Embedding":
       return <IconLayers className={className} />;
     case "Reranker":

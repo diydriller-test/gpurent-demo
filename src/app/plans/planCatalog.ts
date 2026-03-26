@@ -46,6 +46,12 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     company_id: 1,
     company_name: "GPU Modu",
   },
+  {
+    id: 91008,
+    name: "GPT-OSS Review Sentiment API",
+    company_id: 1,
+    company_name: "GPU Modu",
+  },
 ];
 
 /**
@@ -105,6 +111,7 @@ export type PlansChapterParam =
   | "llm"
   | "adCopy"
   | "summarize"
+  | "sentiment"
   | "embedding"
   | "reranker"
   | "tts"
@@ -120,6 +127,8 @@ export function chapterQueryToPlanTask(
       return "Ad Copy";
     case "summarize":
       return "Text Summary";
+    case "sentiment":
+      return "Sentiment Analysis";
     case "embedding":
       return "Embedding";
     case "reranker":
@@ -138,6 +147,7 @@ export type PlanTask =
   | "Text Generation"
   | "Ad Copy"
   | "Text Summary"
+  | "Sentiment Analysis"
   | "Embedding"
   | "Reranker"
   | "TTS"
@@ -147,6 +157,7 @@ export const PLAN_TASK_KEYS: PlanTask[] = [
   "Text Generation",
   "Ad Copy",
   "Text Summary",
+  "Sentiment Analysis",
   "Embedding",
   "Reranker",
   "TTS",
@@ -171,6 +182,11 @@ const TASK_META: Record<
     sublabel: "GPT-OSS • Text Summary",
     modelDisplay: "gpt-oss-120B",
     tags: ["#Summary", "#LLM", "#NLP"],
+  },
+  "Sentiment Analysis": {
+    sublabel: "GPT-OSS • Sentiment",
+    modelDisplay: "gpt-oss-120B",
+    tags: ["#Sentiment", "#LLM", "#Reviews"],
   },
   Embedding: {
     sublabel: "Qwen-Embedding • Embedding",
@@ -213,6 +229,12 @@ export function inferPlanTask(name: string): PlanTask | null {
     /text\s*summary/i.test(name)
   ) {
     return "Text Summary";
+  }
+  if (
+    /\bsentiment\b|감정\s*분석|리뷰\s*감정|emotion|polarity/i.test(n) ||
+    /review\s*sentiment/i.test(name)
+  ) {
+    return "Sentiment Analysis";
   }
   if (
     /\bllm\b|\bgpt\b|chat|text.?gen|oss|completion|openai|language.?model/i.test(

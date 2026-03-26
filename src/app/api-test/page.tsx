@@ -25,12 +25,15 @@ import { buildTtsDevCodePython } from "./lib/buildTtsDevCodePython";
 import { buildSttDevCodePython } from "./lib/buildSttDevCodePython";
 import { buildAdCopyDevCodePython } from "./lib/buildAdCopyDevCodePython";
 import { buildSummarizeDevCodePython } from "./lib/buildSummarizeDevCodePython";
+import { buildSentimentDevCodePython } from "./lib/buildSentimentDevCodePython";
+import type { SentimentAnalysisPayload } from "./lib/types";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 
 type ApiId =
   | "llm"
   | "adCopy"
   | "summarize"
+  | "sentiment"
   | "embedding"
   | "reranker"
   | "tts"
@@ -61,6 +64,9 @@ const DEFAULT_AD_COPY_BRIEF =
   "신제품 커피 머신 — 집에서 캡슐 커피 한 잔, 아침 루틴에 맞춘 광고 카피";
 
 const DEFAULT_SUMMARY_TEXT = `지난 분기 고객 리뷰와 내부 VOC를 종합한 결과, 배송 지연에 대한 불만이 전년 대비 약 18% 증가했으며, 특히 주말 주문 건에서 체감이 컸습니다. 반면 제품 품질·포장 만족도는 92% 수준으로 유지되었고, 교환·환불 절차에 대한 긍정 평가도 높았습니다. 운영팀은 물류 파트너와의 캐파 조정 및 피크 시간대 알림을 강화하기로 했고, 고객 커뮤니케이션 템플릿은 '지연 사유·예상 도착'을 한 번에 안내하도록 개편합니다. 다음 스프린트에서는 실시간 배송 추적 API 연동과 CS 자동 분류(감성·토픽) 파일럿을 진행할 예정입니다.`;
+
+const DEFAULT_SENTIMENT_TEXT =
+  "치킨은 맛있는데 배송이 1시간 넘게 걸렸어요. 포장은 괜찮았어요.";
 const TTS_LANGUAGE_OPTIONS = [
   { value: "auto", label: "Auto" },
   { value: "zh", label: "Chinese" },
@@ -318,6 +324,17 @@ function IconTextSummary(props: { className?: string }) {
       <path d="M5 8h14" />
       <path d="M5 12h10" />
       <path d="M5 16h6" />
+    </IconBase>
+  );
+}
+
+function IconSentiment(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+      <path d="M9 9h.01" />
+      <path d="M15 9h.01" />
+      <circle cx="12" cy="12" r="10" />
     </IconBase>
   );
 }
@@ -669,6 +686,48 @@ function tryParseSummarizeConsoleToPlayground(jsonText: string): {
   }
 }
 
+function buildSentimentConsoleRequestJson(text: string, temperature: number) {
+  return JSON.stringify(
+    {
+      text,
+      temperature,
+    },
+    null,
+    2,
+  );
+}
+
+function tryParseSentimentConsoleToPlayground(jsonText: string): {
+  text?: string;
+  temperature?: number;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      text?: unknown;
+      temperature?: unknown;
+    };
+    const out: {
+      text?: string;
+      temperature?: number;
+    } = {};
+
+    if (typeof parsed.text === "string") out.text = parsed.text;
+    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+      out.temperature = clamp(parsed.temperature, 0, 1);
+    } else if (
+      typeof parsed.temperature === "string" &&
+      parsed.temperature.trim() !== "" &&
+      Number.isFinite(Number(parsed.temperature))
+    ) {
+      out.temperature = clamp(Number(parsed.temperature), 0, 1);
+    }
+
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 /** Embedding Playground ↔ Developer Console 동기화용 Request JSON */
 function buildEmbeddingConsoleRequestJson(inputText: string) {
   return JSON.stringify(
@@ -934,6 +993,11 @@ export default function ApiTestPage() {
         description: "긴 문서·리뷰를 핵심만 압축 요약 (GPT-OSS)",
       },
       {
+        id: "sentiment",
+        name: "Sentiment",
+        description: "리뷰 감정 분석 · 측면별 긍·부정·점수 (GPT-OSS)",
+      },
+      {
         id: "embedding",
         name: "Embedding",
         description: "문장을 벡터로 변환",
@@ -978,6 +1042,7 @@ export default function ApiTestPage() {
       api === "llm" ||
       api === "adCopy" ||
       api === "summarize" ||
+      api === "sentiment" ||
       api === "embedding" ||
       api === "reranker" ||
       api === "tts" ||
@@ -1009,6 +1074,15 @@ export default function ApiTestPage() {
   const [summarizeDevCodeOpen, setSummarizeDevCodeOpen] = useState(false);
   const [summarizeDevCodeCopied, setSummarizeDevCodeCopied] = useState(false);
 
+  const [sentimentText, setSentimentText] = useState(DEFAULT_SENTIMENT_TEXT);
+  const [sentimentTemperature, setSentimentTemperature] = useState(0.2);
+  const [sentimentAnalysis, setSentimentAnalysis] =
+    useState<SentimentAnalysisPayload | null>(null);
+  const [sentimentError, setSentimentError] = useState<string | null>(null);
+  const [isSentimentLoading, setIsSentimentLoading] = useState(false);
+  const [sentimentDevCodeOpen, setSentimentDevCodeOpen] = useState(false);
+  const [sentimentDevCodeCopied, setSentimentDevCodeCopied] = useState(false);
+
   type ConsoleState = {
     requestJson: string;
     responseJson: string;
@@ -1035,6 +1109,9 @@ export default function ApiTestPage() {
         "",
         0.3,
       );
+    }
+    if (api === "sentiment") {
+      return buildSentimentConsoleRequestJson(DEFAULT_SENTIMENT_TEXT, 0.2);
     }
     if (api === "reranker") {
       return buildRerankConsoleRequestJson(
@@ -1077,6 +1154,7 @@ export default function ApiTestPage() {
       llm: createDefaultConsoleState("llm"),
       adCopy: createDefaultConsoleState("adCopy"),
       summarize: createDefaultConsoleState("summarize"),
+      sentiment: createDefaultConsoleState("sentiment"),
       embedding: createDefaultConsoleState("embedding"),
       reranker: createDefaultConsoleState("reranker"),
       tts: createDefaultConsoleState("tts"),
@@ -1093,6 +1171,7 @@ export default function ApiTestPage() {
     | "Text Generation"
     | "Ad Copy"
     | "Text Summary"
+    | "Sentiment Analysis"
     | "Embedding"
     | "Reranker"
     | "TTS"
@@ -1137,6 +1216,15 @@ export default function ApiTestPage() {
         model: "GPT-OSS-120B • Text Summary",
         modelSizeB: 120,
         taskTags: ["#LLM", "#Summary", "#NLP"],
+        formats: ["vLLM", "Transformers", "ONNX"],
+      },
+      {
+        id: "review-sentiment-gpt-oss",
+        task: "Sentiment Analysis",
+        apiId: "sentiment",
+        model: "GPT-OSS-120B • Sentiment",
+        modelSizeB: 120,
+        taskTags: ["#LLM", "#Sentiment", "#Reviews"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
@@ -1193,6 +1281,7 @@ export default function ApiTestPage() {
     "Text Generation": true,
     "Ad Copy": true,
     "Text Summary": true,
+    "Sentiment Analysis": true,
     Embedding: true,
     Reranker: true,
     TTS: true,
@@ -1204,6 +1293,7 @@ export default function ApiTestPage() {
       "Text Generation",
       "Ad Copy",
       "Text Summary",
+      "Sentiment Analysis",
       "Embedding",
       "Reranker",
       "TTS",
@@ -1227,7 +1317,11 @@ export default function ApiTestPage() {
               taskParam === "summary" ||
               taskParam === "text-summary"
             ? "Text Summary"
-            : taskParam === "embedding"
+            : taskParam === "sentiment" ||
+                taskParam === "review-sentiment" ||
+                taskParam === "감정"
+              ? "Sentiment Analysis"
+              : taskParam === "embedding"
               ? "Embedding"
               : taskParam === "reranker" || taskParam === "rerank"
                 ? "Reranker"
@@ -1252,6 +1346,7 @@ export default function ApiTestPage() {
     if (targetTask === "Text Generation") setSelectedApi("llm");
     if (targetTask === "Ad Copy") setSelectedApi("adCopy");
     if (targetTask === "Text Summary") setSelectedApi("summarize");
+    if (targetTask === "Sentiment Analysis") setSelectedApi("sentiment");
     if (targetTask === "Embedding") setSelectedApi("embedding");
     if (targetTask === "Reranker") setSelectedApi("reranker");
     if (targetTask === "TTS") setSelectedApi("tts");
@@ -1274,6 +1369,7 @@ export default function ApiTestPage() {
     if (active === "Text Generation") return "Text";
     if (active === "Ad Copy") return "AdCopy";
     if (active === "Text Summary") return "TextSummary";
+    if (active === "Sentiment Analysis") return "SentimentAnalysis";
     if (active === "Embedding") return "Embedding";
     if (active === "Reranker") return "Rerank";
     if (active === "TTS" || active === "STT") return "TTS/STT";
@@ -1329,6 +1425,20 @@ export default function ApiTestPage() {
               핵심만 추려 짧게 압축
             </span>
             하는 GPT-OSS 기반 서비스입니다.
+          </>
+        );
+      case "SentimentAnalysis":
+        return (
+          <>
+            💬{" "}
+            <span className="text-[#10b981] font-semibold">
+              리뷰 감정 분석
+            </span>
+            : 긍·부정·중립과{" "}
+            <span className="text-[#10b981] font-semibold">
+              측면별 점수
+            </span>
+            로 브랜드 평판·이슈를 빠르게 파악하는 GPT-OSS 기반 서비스입니다.
           </>
         );
       case "Embedding":
@@ -1428,6 +1538,15 @@ export default function ApiTestPage() {
         temperature: summarizeTemperature,
       }),
     [summarizeText, summarizeStyle, summarizeTemperature],
+  );
+
+  const sentimentDevCodePython = useMemo(
+    () =>
+      buildSentimentDevCodePython({
+        text: sentimentText,
+        temperature: sentimentTemperature,
+      }),
+    [sentimentText, sentimentTemperature],
   );
 
   // Reranker
@@ -1598,10 +1717,14 @@ export default function ApiTestPage() {
   const summarizeHasWorkflowResult =
     typeof summarizeResult === "string" && summarizeResult.trim().length > 0;
 
+  const sentimentHasWorkflowResult =
+    sentimentAnalysis !== null && !sentimentError;
+
   const hasWorkflowBannerResult =
     (selectedApi === "llm" && llmHasWorkflowResult) ||
     (selectedApi === "adCopy" && adCopyHasWorkflowResult) ||
     (selectedApi === "summarize" && summarizeHasWorkflowResult) ||
+    (selectedApi === "sentiment" && sentimentHasWorkflowResult) ||
     (selectedApi === "embedding" && embeddingHasWorkflowResult) ||
     (selectedApi === "reranker" && rerankerHasWorkflowResult) ||
     (selectedApi === "tts" && ttsHasWorkflowResult) ||
@@ -1683,6 +1806,8 @@ export default function ApiTestPage() {
         return <IconPenLine className={base} />;
       case "Text Summary":
         return <IconTextSummary className={base} />;
+      case "Sentiment Analysis":
+        return <IconSentiment className={base} />;
       case "Embedding":
         return <IconLayers className={base} />;
       case "Reranker":
@@ -1817,6 +1942,23 @@ export default function ApiTestPage() {
   }, [summarizeText, summarizeStyle, summarizeTemperature]);
 
   useEffect(() => {
+    const nextRequestJson = buildSentimentConsoleRequestJson(
+      sentimentText,
+      sentimentTemperature,
+    );
+    setConsoleByApi((prev) => {
+      if (prev.sentiment.requestJson === nextRequestJson) return prev;
+      return {
+        ...prev,
+        sentiment: {
+          ...prev.sentiment,
+          requestJson: nextRequestJson,
+        },
+      };
+    });
+  }, [sentimentText, sentimentTemperature]);
+
+  useEffect(() => {
     const nextRequestJson = buildEmbeddingConsoleRequestJson(embeddingText);
 
     setConsoleByApi((prev) => {
@@ -1877,6 +2019,8 @@ export default function ApiTestPage() {
         return "브리프는 하단 입력에서 수정하세요.";
       case "summarize":
         return "요약할 본문은 하단 입력에서 수정하세요.";
+      case "sentiment":
+        return "분석할 리뷰는 하단 입력에서 수정하세요.";
       case "embedding":
         return "예: 벡터로 변환할 문장을 입력하세요…";
       case "reranker":
@@ -1956,6 +2100,17 @@ export default function ApiTestPage() {
       }
       if (parsed.temperature !== undefined) {
         setSummarizeTemperature(parsed.temperature);
+      }
+      return;
+    }
+    if (selectedApi === "sentiment") {
+      const parsed = tryParseSentimentConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.text !== undefined) {
+        setSentimentText(parsed.text);
+      }
+      if (parsed.temperature !== undefined) {
+        setSentimentTemperature(parsed.temperature);
       }
       return;
     }
@@ -2072,6 +2227,12 @@ export default function ApiTestPage() {
       setSummarizeTemperature(0.3);
       setSummarizeResult(null);
     }
+    if (api === "sentiment") {
+      setSentimentText(DEFAULT_SENTIMENT_TEXT);
+      setSentimentTemperature(0.2);
+      setSentimentAnalysis(null);
+      setSentimentError(null);
+    }
     setConsoleCopied(false);
   }
 
@@ -2133,6 +2294,7 @@ export default function ApiTestPage() {
       next["Text Generation"] = selectedApi === "llm";
       next["Ad Copy"] = selectedApi === "adCopy";
       next["Text Summary"] = selectedApi === "summarize";
+      next["Sentiment Analysis"] = selectedApi === "sentiment";
       next.Embedding = selectedApi === "embedding";
       next.Reranker = selectedApi === "reranker";
       next.TTS = selectedApi === "tts";
@@ -2944,6 +3106,92 @@ export default function ApiTestPage() {
     }
   }
 
+  function isSentimentPayload(d: unknown): d is SentimentAnalysisPayload {
+    if (!d || typeof d !== "object") return false;
+    const o = d as Record<string, unknown>;
+    const ov = o.overall;
+    if (!ov || typeof ov !== "object") return false;
+    const overall = ov as Record<string, unknown>;
+    if (typeof overall.label !== "string" || typeof overall.score !== "number") {
+      return false;
+    }
+    if (!Array.isArray(o.aspects)) return false;
+    return o.aspects.every((a) => {
+      if (!a || typeof a !== "object") return false;
+      const x = a as Record<string, unknown>;
+      return (
+        typeof x.aspect === "string" &&
+        typeof x.label === "string" &&
+        typeof x.score === "number"
+      );
+    });
+  }
+
+  async function handleSentimentRun() {
+    if (isSentimentLoading) return;
+    const text = sentimentText.trim();
+    if (!text) return;
+    setIsSentimentLoading(true);
+    setSentimentAnalysis(null);
+    setSentimentError(null);
+    setConsoleCopied(false);
+    patchConsole("sentiment", {
+      statusCode: null,
+      statusLine: "Pending...",
+      requestJson: buildSentimentConsoleRequestJson(
+        sentimentText,
+        sentimentTemperature,
+      ),
+      responseJson: "",
+      error: null,
+    });
+    try {
+      const token = getToken();
+      const res = await fetch("/api/sentiment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          text,
+          temperature: sentimentTemperature,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as unknown;
+      patchConsole("sentiment", {
+        statusCode: res.status,
+        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+        responseJson: JSON.stringify(data ?? {}, null, 2),
+      });
+      if (!res.ok) {
+        if (res.status === 429) setLimitExceededModalOpen(true);
+        const msg =
+          typeof data === "object" &&
+          data !== null &&
+          typeof (data as { error?: unknown }).error === "string"
+            ? (data as { error: string }).error
+            : "요청에 실패했습니다.";
+        setSentimentError(msg);
+        return;
+      }
+      if (!isSentimentPayload(data)) {
+        setSentimentError("응답 형식을 해석하지 못했습니다.");
+        return;
+      }
+      setSentimentAnalysis(data);
+    } catch {
+      patchConsole("sentiment", {
+        statusLine: "—",
+        statusCode: 500,
+        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+      });
+      setSentimentError("서버 연결에 실패했습니다.");
+    } finally {
+      setIsSentimentLoading(false);
+    }
+  }
+
   async function onSend(e: React.FormEvent) {
     e.preventDefault();
     if (selectedApi !== "llm") return;
@@ -3137,7 +3385,8 @@ export default function ApiTestPage() {
     if (
       (targetApi === "llm" && isChatLoading) ||
       (targetApi === "adCopy" && isAdCopyLoading) ||
-      (targetApi === "summarize" && isSummarizeLoading)
+      (targetApi === "summarize" && isSummarizeLoading) ||
+      (targetApi === "sentiment" && isSentimentLoading)
     ) {
       return;
     }
@@ -3528,6 +3777,94 @@ export default function ApiTestPage() {
         return;
       }
 
+      if (targetApi === "sentiment") {
+        const body = parsed as {
+          text?: unknown;
+          temperature?: unknown;
+        };
+        const textBody =
+          typeof body.text === "string" ? body.text.trim() : "";
+        if (!textBody) {
+          patchConsole("sentiment", {
+            error: "`text` 문자열을 확인해주세요.",
+            statusLine: "—",
+            statusCode: null,
+            responseJson: "",
+          });
+          setConsoleSubmitShake(true);
+          window.setTimeout(() => {
+            setConsoleSubmitShake(false);
+          }, 420);
+          return;
+        }
+
+        const parsedTemperature =
+          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+            ? body.temperature
+            : typeof body.temperature === "string" &&
+                body.temperature.trim() &&
+                Number.isFinite(Number(body.temperature))
+              ? Number(body.temperature)
+              : sentimentTemperature;
+
+        setIsSentimentLoading(true);
+        setSentimentAnalysis(null);
+        setSentimentError(null);
+        setSentimentText(textBody);
+        setSentimentTemperature(
+          Math.min(1, Math.max(0, parsedTemperature)),
+        );
+
+        try {
+          const token = getToken();
+          const res = await fetch("/api/sentiment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              text: textBody,
+              temperature: parsedTemperature,
+            }),
+          });
+          const data = (await res.json().catch(() => null)) as unknown;
+          patchConsole("sentiment", {
+            statusCode: res.status,
+            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+            responseJson: JSON.stringify(data ?? {}, null, 2),
+          });
+          consoleAlreadySet = true;
+
+          if (!res.ok) {
+            if (res.status === 429) setLimitExceededModalOpen(true);
+            const msg =
+              typeof data === "object" &&
+              data !== null &&
+              typeof (data as { error?: unknown }).error === "string"
+                ? (data as { error: string }).error
+                : "요청에 실패했습니다.";
+            setSentimentError(msg);
+            return;
+          }
+          if (!isSentimentPayload(data)) {
+            setSentimentError("응답 형식을 해석하지 못했습니다.");
+            return;
+          }
+          setSentimentAnalysis(data);
+        } catch {
+          patchConsole("sentiment", {
+            statusLine: "—",
+            statusCode: 500,
+            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+          });
+          setSentimentError("서버 연결에 실패했습니다.");
+        } finally {
+          setIsSentimentLoading(false);
+        }
+        return;
+      }
+
       if (targetApi !== "llm") {
         patchConsole(targetApi, {
           statusLine: "—",
@@ -3883,7 +4220,9 @@ export default function ApiTestPage() {
                               ? "카피"
                               : t === "Text Summary"
                                 ? "요약"
-                                : t;
+                                : t === "Sentiment Analysis"
+                                  ? "감성"
+                                  : t;
 
                         return (
                           <button
@@ -3986,7 +4325,9 @@ export default function ApiTestPage() {
                                     ? "GPT-OSS • Ad Copy"
                                     : item.task === "Text Summary"
                                       ? "GPT-OSS • Text Summary"
-                                      : item.task === "Embedding"
+                                      : item.task === "Sentiment Analysis"
+                                        ? "GPT-OSS • Sentiment"
+                                        : item.task === "Embedding"
                                       ? "Qwen-Embedding • Embedding"
                                       : item.task === "Reranker"
                                         ? "Qwen3 Reranker • Reranker"
@@ -4065,6 +4406,7 @@ export default function ApiTestPage() {
                           "Text Generation": selectedApi === "llm",
                           "Ad Copy": selectedApi === "adCopy",
                           "Text Summary": selectedApi === "summarize",
+                          "Sentiment Analysis": selectedApi === "sentiment",
                           Embedding: selectedApi === "embedding",
                           Reranker: selectedApi === "reranker",
                           TTS: selectedApi === "tts",
@@ -4094,6 +4436,7 @@ export default function ApiTestPage() {
                     {selectedApi === "llm" ||
                     selectedApi === "adCopy" ||
                     selectedApi === "summarize" ||
+                    selectedApi === "sentiment" ||
                     selectedApi === "reranker" ||
                     selectedApi === "embedding" ||
                     selectedApi === "tts" ||
@@ -4106,13 +4449,15 @@ export default function ApiTestPage() {
                               ? "High-Performance Infra • GPT-OSS-120B • 광고 카피"
                               : selectedApi === "summarize"
                                 ? "High-Performance Infra • GPT-OSS-120B • 텍스트 요약"
-                                : selectedApi === "reranker"
-                                  ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
-                                  : selectedApi === "embedding"
-                                    ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
-                                    : selectedApi === "tts"
-                                      ? "High-Performance Infra • Qwen3-TTS • 실시간"
-                                      : "High-Performance Infra • Qwen3-STT • 실시간"}
+                                : selectedApi === "sentiment"
+                                  ? "High-Performance Infra • GPT-OSS-120B • 리뷰 감정"
+                                  : selectedApi === "reranker"
+                                    ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
+                                    : selectedApi === "embedding"
+                                      ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
+                                      : selectedApi === "tts"
+                                        ? "High-Performance Infra • Qwen3-TTS • 실시간"
+                                        : "High-Performance Infra • Qwen3-STT • 실시간"}
                         </span>
                       </div>
                     ) : null}
@@ -4164,6 +4509,30 @@ export default function ApiTestPage() {
                         </p>
                       </div>
                     ) : null}
+                    {selectedApi === "sentiment" ? (
+                      <div className="mt-3 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-3 text-[13px] leading-relaxed text-foreground/80">
+                        <p className="font-semibold text-foreground/95">
+                          Review Sentiment API 안내
+                        </p>
+                        <p className="mt-2">
+                          고객{" "}
+                          <span className="text-foreground/90">리뷰(text)</span>
+                          를 넣으면{" "}
+                          <span className="text-[#10b981] font-medium">
+                            GPT-OSS-120B
+                          </span>
+                          가 전체 톤과{" "}
+                          <span className="text-foreground/90">
+                            측면(aspect)별
+                          </span>{" "}
+                          긍·부정·중립 및 0~1 점수를 반환합니다. Temperature는
+                          분류·표현의 변동폭에 영향을 줍니다.
+                        </p>
+                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
+                          엔드포인트: POST /api/sentiment
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -4207,7 +4576,9 @@ export default function ApiTestPage() {
                   key={selectedApi}
                   className="api-center-anim flex min-h-0 flex-1 flex-col"
                 >
-                  {selectedApi !== "adCopy" && selectedApi !== "summarize" ? (
+                  {selectedApi !== "adCopy" &&
+                  selectedApi !== "summarize" &&
+                  selectedApi !== "sentiment" ? (
                     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
                       <ApiOutputPanel
                         selectedApi={selectedApi}
@@ -4251,7 +4622,9 @@ export default function ApiTestPage() {
                   ) : null}
                   <div
                     className={
-                      selectedApi === "adCopy" || selectedApi === "summarize"
+                      selectedApi === "adCopy" ||
+                      selectedApi === "summarize" ||
+                      selectedApi === "sentiment"
                         ? "min-h-0 flex-1 overflow-y-auto px-3 py-4"
                         : "flex-shrink-0"
                     }
@@ -4285,6 +4658,14 @@ export default function ApiTestPage() {
                       setSummarizeTemperature={setSummarizeTemperature}
                       isSummarizeLoading={isSummarizeLoading}
                       summarizeResult={summarizeResult}
+                      handleSentimentRun={() => void handleSentimentRun()}
+                      sentimentText={sentimentText}
+                      setSentimentText={setSentimentText}
+                      sentimentTemperature={sentimentTemperature}
+                      setSentimentTemperature={setSentimentTemperature}
+                      isSentimentLoading={isSentimentLoading}
+                      sentimentAnalysis={sentimentAnalysis}
+                      sentimentError={sentimentError}
                       handleEmbeddingRun={handleEmbeddingRun}
                       embeddingText={embeddingText}
                       setEmbeddingText={setEmbeddingText}
@@ -4377,7 +4758,9 @@ export default function ApiTestPage() {
                                 ? "/api/ad-copy"
                                 : selectedApi === "summarize"
                                   ? "/api/summarize"
-                                  : selectedApi === "stt"
+                                  : selectedApi === "sentiment"
+                                    ? "/api/sentiment"
+                                    : selectedApi === "stt"
                                   ? "/api/stt"
                                   : selectedApi === "tts"
                                     ? "Mock TTS (client)"
@@ -4440,7 +4823,8 @@ export default function ApiTestPage() {
                           disabled={
                             (selectedApi === "llm" && isChatLoading) ||
                             (selectedApi === "adCopy" && isAdCopyLoading) ||
-                            (selectedApi === "summarize" && isSummarizeLoading)
+                            (selectedApi === "summarize" && isSummarizeLoading) ||
+                            (selectedApi === "sentiment" && isSentimentLoading)
                           }
                           className={[
                             "rounded-xl border px-5 py-3 text-xs font-medium transition-colors",
@@ -4451,7 +4835,8 @@ export default function ApiTestPage() {
                         >
                           {(selectedApi === "llm" && isChatLoading) ||
                           (selectedApi === "adCopy" && isAdCopyLoading) ||
-                          (selectedApi === "summarize" && isSummarizeLoading)
+                          (selectedApi === "summarize" && isSummarizeLoading) ||
+                          (selectedApi === "sentiment" && isSentimentLoading)
                             ? "전송 중..."
                             : "요청 전송"}
                         </button>
@@ -4560,6 +4945,21 @@ export default function ApiTestPage() {
                           </>
                         }
                       />
+                    ) : selectedApi === "sentiment" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={sentimentDevCodeOpen}
+                        setDevCodeOpen={setSentimentDevCodeOpen}
+                        devCodeCopied={sentimentDevCodeCopied}
+                        setDevCodeCopied={setSentimentDevCodeCopied}
+                        codePython={sentimentDevCodePython}
+                        footer={
+                          <>
+                            데모 앱은{" "}
+                            <span className="text-foreground/80">/api/sentiment</span>{" "}
+                            프록시를 통해 리뷰 감정 분석 결과를 반환합니다.
+                          </>
+                        }
+                      />
                     ) : selectedApi === "tts" ? (
                       <PlaygroundDeveloperCodeSection
                         devCodeOpen={ttsDevCodeOpen}
@@ -4600,13 +5000,16 @@ export default function ApiTestPage() {
 
                     {(selectedApi === "llm" && isChatLoading) ||
                     (selectedApi === "adCopy" && isAdCopyLoading) ||
-                    (selectedApi === "summarize" && isSummarizeLoading) ? (
+                    (selectedApi === "summarize" && isSummarizeLoading) ||
+                    (selectedApi === "sentiment" && isSentimentLoading) ? (
                       <div className="rounded-xl border border-[#10b981]/25 bg-[#10b981]/5 p-3 text-xs text-[#10b981]">
                         {selectedApi === "adCopy"
                           ? "카피 생성 중... (응답 대기)"
                           : selectedApi === "summarize"
                             ? "요약 생성 중... (응답 대기)"
-                            : "답변 생성 중... (응답 대기)"}
+                            : selectedApi === "sentiment"
+                              ? "감정 분석 중... (응답 대기)"
+                              : "답변 생성 중... (응답 대기)"}
                       </div>
                     ) : null}
                   </div>
@@ -4618,6 +5021,7 @@ export default function ApiTestPage() {
             (selectedApi === "llm" ||
               selectedApi === "adCopy" ||
               selectedApi === "summarize" ||
+              selectedApi === "sentiment" ||
               selectedApi === "reranker" ||
               selectedApi === "embedding" ||
               selectedApi === "tts" ||

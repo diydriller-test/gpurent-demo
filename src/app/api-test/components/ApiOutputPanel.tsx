@@ -192,6 +192,9 @@ export function ApiOutputPanel({
           case "summarize":
             return null;
 
+          case "sentiment":
+            return null;
+
           case "adCopy":
             return (
               <div className="flex h-full min-h-[min(45vh,380px)] flex-col">

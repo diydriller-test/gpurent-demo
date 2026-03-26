@@ -2,10 +2,17 @@ export type ApiId =
   | "llm"
   | "adCopy"
   | "summarize"
+  | "sentiment"
   | "embedding"
   | "reranker"
   | "tts"
   | "stt";
+
+/** POST /api/sentiment 응답과 동일 구조 */
+export type SentimentAnalysisPayload = {
+  overall: { label: string; score: number };
+  aspects: Array<{ aspect: string; label: string; score: number }>;
+};
 
 export type ChatRole = "user" | "assistant";
 

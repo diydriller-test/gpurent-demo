@@ -1,6 +1,6 @@
 import type React from "react";
 
-import type { ApiId } from "../lib/types";
+import type { ApiId, SentimentAnalysisPayload } from "../lib/types";
 import { ChatMarkdown } from "./ChatMarkdown";
 
 type SttHelpTooltipId = "vad" | "beam";
@@ -40,6 +40,16 @@ type Props = {
   setSummarizeTemperature: React.Dispatch<React.SetStateAction<number>>;
   isSummarizeLoading: boolean;
   summarizeResult: string | null;
+
+  // Sentiment input
+  handleSentimentRun: () => void;
+  sentimentText: string;
+  setSentimentText: React.Dispatch<React.SetStateAction<string>>;
+  sentimentTemperature: number;
+  setSentimentTemperature: React.Dispatch<React.SetStateAction<number>>;
+  isSentimentLoading: boolean;
+  sentimentAnalysis: SentimentAnalysisPayload | null;
+  sentimentError: string | null;
 
   // Embedding input
   handleEmbeddingRun: () => void;
@@ -156,6 +166,15 @@ export function ApiInputPanel({
   isSummarizeLoading,
   summarizeResult,
 
+  handleSentimentRun,
+  sentimentText,
+  setSentimentText,
+  sentimentTemperature,
+  setSentimentTemperature,
+  isSentimentLoading,
+  sentimentAnalysis,
+  sentimentError,
+
   handleEmbeddingRun,
   embeddingText,
   setEmbeddingText,
@@ -224,7 +243,9 @@ export function ApiInputPanel({
           ? "hidden"
           : [
               "flex-shrink-0 bg-background/20 p-2",
-              selectedApi === "adCopy" || selectedApi === "summarize"
+              selectedApi === "adCopy" ||
+              selectedApi === "summarize" ||
+              selectedApi === "sentiment"
                 ? "border-b border-white/5"
                 : "border-t border-white/5",
             ].join(" ")
@@ -570,6 +591,188 @@ export function ApiInputPanel({
                   <p className="text-sm leading-relaxed text-foreground/45">
                     <span className="text-foreground/65">요약 생성</span>을 누르면
                     이곳에 요약 문장이 표시됩니다.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </form>
+      ) : null}
+
+      {selectedApi === "sentiment" ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSentimentRun();
+          }}
+        >
+          <div className="flex flex-col gap-3">
+            <div>
+              <p className="font-mono text-xs text-foreground/60">
+                리뷰·문장 (필수)
+              </p>
+              <textarea
+                value={sentimentText}
+                onChange={(e) => setSentimentText(e.target.value)}
+                rows={6}
+                placeholder="예: 치킨은 맛있는데 배송이 너무 늦었어요"
+                className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-mono text-xs text-foreground/60">Temperature</p>
+                <span className="font-mono text-xs text-foreground/70">
+                  {sentimentTemperature.toFixed(2)}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={sentimentTemperature}
+                onChange={(e) =>
+                  setSentimentTemperature(Number(e.target.value) || 0.2)
+                }
+                className="mt-2 w-full accent-[#10b981]"
+              />
+              <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
+                분류·라벨 안정성을 원하면{" "}
+                <span className="text-foreground/60">낮게</span>, 표현 변동을
+                허용하려면{" "}
+                <span className="text-foreground/60">높게</span> 조절해 보세요.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isSentimentLoading || !sentimentText.trim()}
+                className={[
+                  "inline-flex items-center gap-2 rounded-xl px-6 py-3 font-medium text-background transition-all",
+                  "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                ].join(" ")}
+              >
+                {isSentimentLoading ? (
+                  <>
+                    <svg
+                      className="h-4 w-4 animate-spin text-background"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                    <span>분석 중...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>감정 분석</span>
+                    <span className="transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-[#10b981]/25 bg-background/35 p-4 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)]">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-mono text-xs font-medium text-[#10b981]">
+                  분석 결과
+                </p>
+                {isSentimentLoading ? (
+                  <span className="text-[11px] text-foreground/50">분석 중…</span>
+                ) : sentimentAnalysis ? (
+                  <span className="text-[11px] text-foreground/50">완료</span>
+                ) : null}
+              </div>
+              <div className="mt-3 max-h-[min(50vh,440px)] min-h-[140px] overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3">
+                {isSentimentLoading ? (
+                  <p className="text-sm leading-relaxed text-foreground/55">
+                    감정을 분석하는 중입니다…
+                  </p>
+                ) : sentimentError ? (
+                  <p className="text-sm leading-relaxed text-red-300">
+                    {sentimentError}
+                  </p>
+                ) : sentimentAnalysis ? (
+                  <div className="space-y-3 text-sm">
+                    <div className="rounded-lg border border-white/10 bg-background/30 px-3 py-2">
+                      <p className="font-mono text-[11px] text-foreground/50">
+                        전체 (overall)
+                      </p>
+                      <p className="mt-1 flex flex-wrap items-baseline gap-2">
+                        <span
+                          className={[
+                            "font-semibold uppercase",
+                            sentimentAnalysis.overall.label === "positive"
+                              ? "text-emerald-300"
+                              : sentimentAnalysis.overall.label === "negative"
+                                ? "text-red-300"
+                                : "text-zinc-300",
+                          ].join(" ")}
+                        >
+                          {sentimentAnalysis.overall.label}
+                        </span>
+                        <span className="font-mono text-foreground/80">
+                          score{" "}
+                          {sentimentAnalysis.overall.score.toFixed(3)} (0~1)
+                        </span>
+                      </p>
+                    </div>
+                    {sentimentAnalysis.aspects.length > 0 ? (
+                      <div className="overflow-x-auto rounded-lg border border-white/10">
+                        <table className="w-full min-w-[280px] text-left text-[13px]">
+                          <thead>
+                            <tr className="border-b border-white/10 font-mono text-[11px] text-foreground/50">
+                              <th className="px-2 py-2">측면</th>
+                              <th className="px-2 py-2">label</th>
+                              <th className="px-2 py-2">score</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sentimentAnalysis.aspects.map((row, idx) => (
+                              <tr
+                                key={`${row.aspect}-${idx}`}
+                                className="border-b border-white/5 last:border-0"
+                              >
+                                <td className="px-2 py-2 text-foreground/90">
+                                  {row.aspect}
+                                </td>
+                                <td
+                                  className={[
+                                    "px-2 py-2 font-medium",
+                                    row.label === "positive"
+                                      ? "text-emerald-300"
+                                      : row.label === "negative"
+                                        ? "text-red-300"
+                                        : "text-zinc-300",
+                                  ].join(" ")}
+                                >
+                                  {row.label}
+                                </td>
+                                <td className="px-2 py-2 font-mono text-foreground/80">
+                                  {row.score.toFixed(3)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-[12px] text-foreground/45">
+                        측면별 항목이 없습니다. 단일 톤의 짧은 문장일 수 있어요.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm leading-relaxed text-foreground/45">
+                    <span className="text-foreground/65">감정 분석</span>을 누르면
+                    이곳에 전체·측면별 결과가 표시됩니다.
                   </p>
                 )}
               </div>

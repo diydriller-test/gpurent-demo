@@ -4,6 +4,7 @@ type ApiId =
   | "llm"
   | "adCopy"
   | "summarize"
+  | "sentiment"
   | "embedding"
   | "reranker"
   | "tts"
@@ -41,9 +42,29 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
     selectedApi !== "embedding" &&
     selectedApi !== "tts" &&
     selectedApi !== "adCopy" &&
-    selectedApi !== "summarize"
+    selectedApi !== "summarize" &&
+    selectedApi !== "sentiment"
   ) {
     return null;
+  }
+
+  if (selectedApi === "sentiment") {
+    return (
+      <p className="text-sm leading-relaxed text-foreground/90">
+        <span className="mr-2">💬</span>
+        <span className="font-semibold text-foreground">
+          감정·이슈가 정리됐습니다.
+        </span>{" "}
+        <GuideApiLink
+          label="Text Summary"
+          api="summarize"
+          onNavigateApi={onNavigateApi}
+        />
+        로 한 줄로 묶거나,{" "}
+        <GuideApiLink label="Text" api="llm" onNavigateApi={onNavigateApi} />로
+        운영 대응 문구를 만들어 보세요.
+      </p>
+    );
   }
 
   if (selectedApi === "summarize") {

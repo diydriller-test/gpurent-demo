@@ -89,6 +89,31 @@ const SECTIONS: DocSection[] = [
     ],
   },
   {
+    id: "sentiment",
+    title: "리뷰 감정 분석",
+    method: "POST",
+    path: "/api/sentiment",
+    description:
+      "고객 리뷰 등 짧은 텍스트의 문맥을 읽어 전체 및 측면(aspect)별로 긍정·부정·중립을 분류하고, 0~1 점수로 극성을 수치화합니다.",
+    requestLabel: "본문 (application/json)",
+    request: `{
+  "text": "분석할 리뷰·문장(필수)",
+  "temperature": 0.2
+}`,
+    responseLabel: "성공 (200)",
+    response: `{
+  "overall": { "label": "positive", "score": 0.82 },
+  "aspects": [
+    { "aspect": "음식", "label": "positive", "score": 0.9 },
+    { "aspect": "배송", "label": "negative", "score": 0.15 }
+  ]
+}`,
+    notes: [
+      "`label`은 positive | negative | neutral, `score`는 0(부정)~1(긍정) 근거 점수입니다.",
+      "모델이 JSON 외 텍스트를 섞으면 502가 날 수 있습니다. 한도 초과 시 429가 올 수 있습니다.",
+    ],
+  },
+  {
     id: "embedding",
     title: "Embedding",
     method: "POST",
