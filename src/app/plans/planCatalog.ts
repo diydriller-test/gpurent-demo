@@ -40,6 +40,12 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     company_id: 1,
     company_name: "GPU Modu",
   },
+  {
+    id: 91007,
+    name: "GPT-OSS Text Summary API",
+    company_id: 1,
+    company_name: "GPU Modu",
+  },
 ];
 
 /**
@@ -98,6 +104,7 @@ export const DEMO_PLANS_THREE_TIERS: Plan[] = [
 export type PlansChapterParam =
   | "llm"
   | "adCopy"
+  | "summarize"
   | "embedding"
   | "reranker"
   | "tts"
@@ -111,6 +118,8 @@ export function chapterQueryToPlanTask(
       return "Text Generation";
     case "adCopy":
       return "Ad Copy";
+    case "summarize":
+      return "Text Summary";
     case "embedding":
       return "Embedding";
     case "reranker":
@@ -128,6 +137,7 @@ export function chapterQueryToPlanTask(
 export type PlanTask =
   | "Text Generation"
   | "Ad Copy"
+  | "Text Summary"
   | "Embedding"
   | "Reranker"
   | "TTS"
@@ -136,6 +146,7 @@ export type PlanTask =
 export const PLAN_TASK_KEYS: PlanTask[] = [
   "Text Generation",
   "Ad Copy",
+  "Text Summary",
   "Embedding",
   "Reranker",
   "TTS",
@@ -155,6 +166,11 @@ const TASK_META: Record<
     sublabel: "GPT-OSS • Ad Copy",
     modelDisplay: "gpt-oss-120B",
     tags: ["#Ad-Copy", "#LLM", "#Marketing"],
+  },
+  "Text Summary": {
+    sublabel: "GPT-OSS • Text Summary",
+    modelDisplay: "gpt-oss-120B",
+    tags: ["#Summary", "#LLM", "#NLP"],
   },
   Embedding: {
     sublabel: "Qwen-Embedding • Embedding",
@@ -191,6 +207,12 @@ export function inferPlanTask(name: string): PlanTask | null {
     /\bad[-\s]?copy\b|광고\s*카피|advertising\s*copy|copywriting/i.test(name)
   ) {
     return "Ad Copy";
+  }
+  if (
+    /\bsummar(y|ize|ization)\b|텍스트\s*요약|요약\s*api/i.test(n) ||
+    /text\s*summary/i.test(name)
+  ) {
+    return "Text Summary";
   }
   if (
     /\bllm\b|\bgpt\b|chat|text.?gen|oss|completion|openai|language.?model/i.test(

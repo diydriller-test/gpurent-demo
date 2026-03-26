@@ -1,6 +1,7 @@
 export type ApiId =
   | "llm"
   | "adCopy"
+  | "summarize"
   | "embedding"
   | "reranker"
   | "tts"

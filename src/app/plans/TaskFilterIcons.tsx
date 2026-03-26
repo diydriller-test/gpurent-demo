@@ -89,6 +89,17 @@ export function IconPenLine(props: { className?: string }) {
   );
 }
 
+/** 텍스트 요약 (본문 압축) */
+export function IconTextSummary(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M5 8h14" />
+      <path d="M5 12h10" />
+      <path d="M5 16h6" />
+    </IconBase>
+  );
+}
+
 export function PlanTaskIcon({
   task,
   className = "h-4 w-4",
@@ -101,6 +112,8 @@ export function PlanTaskIcon({
       return <IconSparkles className={className} />;
     case "Ad Copy":
       return <IconPenLine className={className} />;
+    case "Text Summary":
+      return <IconTextSummary className={className} />;
     case "Embedding":
       return <IconLayers className={className} />;
     case "Reranker":

@@ -21,6 +21,7 @@ function getApiTask(api: Api): PlanTask | null {
   if (
     k === "Text Generation" ||
     k === "Ad Copy" ||
+    k === "Text Summary" ||
     k === "Embedding" ||
     k === "Reranker" ||
     k === "TTS" ||
@@ -498,7 +499,9 @@ function PlansPageContent() {
                             ? "Text"
                             : t === "Ad Copy"
                               ? "카피"
-                              : t;
+                              : t === "Text Summary"
+                                ? "요약"
+                                : t;
 
                         return (
                           <button

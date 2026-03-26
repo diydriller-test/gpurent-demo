@@ -67,6 +67,28 @@ const SECTIONS: DocSection[] = [
     ],
   },
   {
+    id: "summarize",
+    title: "텍스트 요약",
+    method: "POST",
+    path: "/api/summarize",
+    description:
+      "긴 본문을 받아 핵심만 추린 한국어 요약 문자열을 반환합니다. 리뷰·뉴스·회의록 등 비정형 텍스트 정리에 활용할 수 있습니다.",
+    requestLabel: "본문 (application/json)",
+    request: `{
+  "text": "요약할 원문(필수)",
+  "style": "불릿 3줄, 한 문단 등 (선택)",
+  "temperature": 0.3
+}`,
+    responseLabel: "성공 (200)",
+    response: `{
+  "summary": "압축된 한국어 요약"
+}`,
+    notes: [
+      "`text`만 필수입니다. `style`은 요약 형식·톤 힌트로 선택입니다.",
+      "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
+    ],
+  },
+  {
     id: "embedding",
     title: "Embedding",
     method: "POST",

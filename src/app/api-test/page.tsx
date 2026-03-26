@@ -24,11 +24,13 @@ import { buildRerankDevCodePython } from "./lib/buildRerankDevCodePython";
 import { buildTtsDevCodePython } from "./lib/buildTtsDevCodePython";
 import { buildSttDevCodePython } from "./lib/buildSttDevCodePython";
 import { buildAdCopyDevCodePython } from "./lib/buildAdCopyDevCodePython";
+import { buildSummarizeDevCodePython } from "./lib/buildSummarizeDevCodePython";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 
 type ApiId =
   | "llm"
   | "adCopy"
+  | "summarize"
   | "embedding"
   | "reranker"
   | "tts"
@@ -57,6 +59,8 @@ const DEFAULT_TTS_PLAYGROUND_TEXT =
 
 const DEFAULT_AD_COPY_BRIEF =
   "신제품 커피 머신 — 집에서 캡슐 커피 한 잔, 아침 루틴에 맞춘 광고 카피";
+
+const DEFAULT_SUMMARY_TEXT = `지난 분기 고객 리뷰와 내부 VOC를 종합한 결과, 배송 지연에 대한 불만이 전년 대비 약 18% 증가했으며, 특히 주말 주문 건에서 체감이 컸습니다. 반면 제품 품질·포장 만족도는 92% 수준으로 유지되었고, 교환·환불 절차에 대한 긍정 평가도 높았습니다. 운영팀은 물류 파트너와의 캐파 조정 및 피크 시간대 알림을 강화하기로 했고, 고객 커뮤니케이션 템플릿은 '지연 사유·예상 도착'을 한 번에 안내하도록 개편합니다. 다음 스프린트에서는 실시간 배송 추적 API 연동과 CS 자동 분류(감성·토픽) 파일럿을 진행할 예정입니다.`;
 const TTS_LANGUAGE_OPTIONS = [
   { value: "auto", label: "Auto" },
   { value: "zh", label: "Chinese" },
@@ -304,6 +308,16 @@ function IconPenLine(props: { className?: string }) {
     <IconBase {...props}>
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </IconBase>
+  );
+}
+
+function IconTextSummary(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M5 8h14" />
+      <path d="M5 12h10" />
+      <path d="M5 16h6" />
     </IconBase>
   );
 }
@@ -604,6 +618,57 @@ function tryParseAdCopyConsoleToPlayground(jsonText: string): {
   }
 }
 
+function buildSummarizeConsoleRequestJson(
+  text: string,
+  style: string,
+  temperature: number,
+) {
+  return JSON.stringify(
+    {
+      text,
+      style,
+      temperature,
+    },
+    null,
+    2,
+  );
+}
+
+function tryParseSummarizeConsoleToPlayground(jsonText: string): {
+  text?: string;
+  style?: string;
+  temperature?: number;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      text?: unknown;
+      style?: unknown;
+      temperature?: unknown;
+    };
+    const out: {
+      text?: string;
+      style?: string;
+      temperature?: number;
+    } = {};
+
+    if (typeof parsed.text === "string") out.text = parsed.text;
+    if (typeof parsed.style === "string") out.style = parsed.style;
+    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+      out.temperature = clamp(parsed.temperature, 0, 1);
+    } else if (
+      typeof parsed.temperature === "string" &&
+      parsed.temperature.trim() !== "" &&
+      Number.isFinite(Number(parsed.temperature))
+    ) {
+      out.temperature = clamp(Number(parsed.temperature), 0, 1);
+    }
+
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 /** Embedding Playground ↔ Developer Console 동기화용 Request JSON */
 function buildEmbeddingConsoleRequestJson(inputText: string) {
   return JSON.stringify(
@@ -864,6 +929,11 @@ export default function ApiTestPage() {
         description: "광고 카피라이팅 생성 (GPT-OSS)",
       },
       {
+        id: "summarize",
+        name: "Text Summary",
+        description: "긴 문서·리뷰를 핵심만 압축 요약 (GPT-OSS)",
+      },
+      {
         id: "embedding",
         name: "Embedding",
         description: "문장을 벡터로 변환",
@@ -907,6 +977,7 @@ export default function ApiTestPage() {
     if (
       api === "llm" ||
       api === "adCopy" ||
+      api === "summarize" ||
       api === "embedding" ||
       api === "reranker" ||
       api === "tts" ||
@@ -930,6 +1001,14 @@ export default function ApiTestPage() {
   const [adCopyDevCodeOpen, setAdCopyDevCodeOpen] = useState(false);
   const [adCopyDevCodeCopied, setAdCopyDevCodeCopied] = useState(false);
 
+  const [summarizeText, setSummarizeText] = useState(DEFAULT_SUMMARY_TEXT);
+  const [summarizeStyle, setSummarizeStyle] = useState("");
+  const [summarizeTemperature, setSummarizeTemperature] = useState(0.3);
+  const [summarizeResult, setSummarizeResult] = useState<string | null>(null);
+  const [isSummarizeLoading, setIsSummarizeLoading] = useState(false);
+  const [summarizeDevCodeOpen, setSummarizeDevCodeOpen] = useState(false);
+  const [summarizeDevCodeCopied, setSummarizeDevCodeCopied] = useState(false);
+
   type ConsoleState = {
     requestJson: string;
     responseJson: string;
@@ -948,6 +1027,13 @@ export default function ApiTestPage() {
         "",
         "",
         0.7,
+      );
+    }
+    if (api === "summarize") {
+      return buildSummarizeConsoleRequestJson(
+        DEFAULT_SUMMARY_TEXT,
+        "",
+        0.3,
       );
     }
     if (api === "reranker") {
@@ -990,6 +1076,7 @@ export default function ApiTestPage() {
     () => ({
       llm: createDefaultConsoleState("llm"),
       adCopy: createDefaultConsoleState("adCopy"),
+      summarize: createDefaultConsoleState("summarize"),
       embedding: createDefaultConsoleState("embedding"),
       reranker: createDefaultConsoleState("reranker"),
       tts: createDefaultConsoleState("tts"),
@@ -1005,6 +1092,7 @@ export default function ApiTestPage() {
   type MarketplaceTask =
     | "Text Generation"
     | "Ad Copy"
+    | "Text Summary"
     | "Embedding"
     | "Reranker"
     | "TTS"
@@ -1040,6 +1128,15 @@ export default function ApiTestPage() {
         model: "GPT-OSS-120B • Ad Copy",
         modelSizeB: 120,
         taskTags: ["#LLM", "#Ad-Copy"],
+        formats: ["vLLM", "Transformers", "ONNX"],
+      },
+      {
+        id: "text-summary-gpt-oss",
+        task: "Text Summary",
+        apiId: "summarize",
+        model: "GPT-OSS-120B • Text Summary",
+        modelSizeB: 120,
+        taskTags: ["#LLM", "#Summary", "#NLP"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
@@ -1095,6 +1192,7 @@ export default function ApiTestPage() {
   >({
     "Text Generation": true,
     "Ad Copy": true,
+    "Text Summary": true,
     Embedding: true,
     Reranker: true,
     TTS: true,
@@ -1105,6 +1203,7 @@ export default function ApiTestPage() {
     () => [
       "Text Generation",
       "Ad Copy",
+      "Text Summary",
       "Embedding",
       "Reranker",
       "TTS",
@@ -1124,15 +1223,19 @@ export default function ApiTestPage() {
         ? "Text Generation"
         : taskParam === "adcopy" || taskParam === "ad-copy"
           ? "Ad Copy"
-          : taskParam === "embedding"
-            ? "Embedding"
-            : taskParam === "reranker" || taskParam === "rerank"
-              ? "Reranker"
-              : taskParam === "tts"
-                ? "TTS"
-                : taskParam === "stt" || taskParam === "sst"
-                  ? "STT"
-                  : null;
+          : taskParam === "summarize" ||
+              taskParam === "summary" ||
+              taskParam === "text-summary"
+            ? "Text Summary"
+            : taskParam === "embedding"
+              ? "Embedding"
+              : taskParam === "reranker" || taskParam === "rerank"
+                ? "Reranker"
+                : taskParam === "tts"
+                  ? "TTS"
+                  : taskParam === "stt" || taskParam === "sst"
+                    ? "STT"
+                    : null;
 
     if (!targetTask) return;
 
@@ -1148,6 +1251,7 @@ export default function ApiTestPage() {
 
     if (targetTask === "Text Generation") setSelectedApi("llm");
     if (targetTask === "Ad Copy") setSelectedApi("adCopy");
+    if (targetTask === "Text Summary") setSelectedApi("summarize");
     if (targetTask === "Embedding") setSelectedApi("embedding");
     if (targetTask === "Reranker") setSelectedApi("reranker");
     if (targetTask === "TTS") setSelectedApi("tts");
@@ -1169,6 +1273,7 @@ export default function ApiTestPage() {
     if (!active) return "All";
     if (active === "Text Generation") return "Text";
     if (active === "Ad Copy") return "AdCopy";
+    if (active === "Text Summary") return "TextSummary";
     if (active === "Embedding") return "Embedding";
     if (active === "Reranker") return "Rerank";
     if (active === "TTS" || active === "STT") return "TTS/STT";
@@ -1210,6 +1315,20 @@ export default function ApiTestPage() {
               배너·SNS 등 문구
             </span>
             를 생성하는 GPT-OSS 기반 서비스입니다.
+          </>
+        );
+      case "TextSummary":
+        return (
+          <>
+            📄{" "}
+            <span className="text-[#10b981] font-semibold">
+              텍스트 요약
+            </span>
+            : 리뷰·뉴스·회의록 등 긴 본문에서{" "}
+            <span className="text-[#10b981] font-semibold">
+              핵심만 추려 짧게 압축
+            </span>
+            하는 GPT-OSS 기반 서비스입니다.
           </>
         );
       case "Embedding":
@@ -1299,6 +1418,16 @@ export default function ApiTestPage() {
         temperature: adCopyTemperature,
       }),
     [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature],
+  );
+
+  const summarizeDevCodePython = useMemo(
+    () =>
+      buildSummarizeDevCodePython({
+        text: summarizeText,
+        style: summarizeStyle,
+        temperature: summarizeTemperature,
+      }),
+    [summarizeText, summarizeStyle, summarizeTemperature],
   );
 
   // Reranker
@@ -1466,9 +1595,13 @@ export default function ApiTestPage() {
   const adCopyHasWorkflowResult =
     typeof adCopyResult === "string" && adCopyResult.trim().length > 0;
 
+  const summarizeHasWorkflowResult =
+    typeof summarizeResult === "string" && summarizeResult.trim().length > 0;
+
   const hasWorkflowBannerResult =
     (selectedApi === "llm" && llmHasWorkflowResult) ||
     (selectedApi === "adCopy" && adCopyHasWorkflowResult) ||
+    (selectedApi === "summarize" && summarizeHasWorkflowResult) ||
     (selectedApi === "embedding" && embeddingHasWorkflowResult) ||
     (selectedApi === "reranker" && rerankerHasWorkflowResult) ||
     (selectedApi === "tts" && ttsHasWorkflowResult) ||
@@ -1548,6 +1681,8 @@ export default function ApiTestPage() {
         return <IconSparkles className={base} />;
       case "Ad Copy":
         return <IconPenLine className={base} />;
+      case "Text Summary":
+        return <IconTextSummary className={base} />;
       case "Embedding":
         return <IconLayers className={base} />;
       case "Reranker":
@@ -1664,6 +1799,24 @@ export default function ApiTestPage() {
   }, [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature]);
 
   useEffect(() => {
+    const nextRequestJson = buildSummarizeConsoleRequestJson(
+      summarizeText,
+      summarizeStyle,
+      summarizeTemperature,
+    );
+    setConsoleByApi((prev) => {
+      if (prev.summarize.requestJson === nextRequestJson) return prev;
+      return {
+        ...prev,
+        summarize: {
+          ...prev.summarize,
+          requestJson: nextRequestJson,
+        },
+      };
+    });
+  }, [summarizeText, summarizeStyle, summarizeTemperature]);
+
+  useEffect(() => {
     const nextRequestJson = buildEmbeddingConsoleRequestJson(embeddingText);
 
     setConsoleByApi((prev) => {
@@ -1722,6 +1875,8 @@ export default function ApiTestPage() {
         return "GPT-OSS-120B에게 질문하거나 요약을 요청해보세요.";
       case "adCopy":
         return "브리프는 하단 입력에서 수정하세요.";
+      case "summarize":
+        return "요약할 본문은 하단 입력에서 수정하세요.";
       case "embedding":
         return "예: 벡터로 변환할 문장을 입력하세요…";
       case "reranker":
@@ -1787,6 +1942,20 @@ export default function ApiTestPage() {
       }
       if (parsed.temperature !== undefined) {
         setAdCopyTemperature(parsed.temperature);
+      }
+      return;
+    }
+    if (selectedApi === "summarize") {
+      const parsed = tryParseSummarizeConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.text !== undefined) {
+        setSummarizeText(parsed.text);
+      }
+      if (parsed.style !== undefined) {
+        setSummarizeStyle(parsed.style);
+      }
+      if (parsed.temperature !== undefined) {
+        setSummarizeTemperature(parsed.temperature);
       }
       return;
     }
@@ -1897,6 +2066,12 @@ export default function ApiTestPage() {
       setAdCopyTemperature(0.7);
       setAdCopyResult(null);
     }
+    if (api === "summarize") {
+      setSummarizeText(DEFAULT_SUMMARY_TEXT);
+      setSummarizeStyle("");
+      setSummarizeTemperature(0.3);
+      setSummarizeResult(null);
+    }
     setConsoleCopied(false);
   }
 
@@ -1957,6 +2132,7 @@ export default function ApiTestPage() {
       const next = { ...prev };
       next["Text Generation"] = selectedApi === "llm";
       next["Ad Copy"] = selectedApi === "adCopy";
+      next["Text Summary"] = selectedApi === "summarize";
       next.Embedding = selectedApi === "embedding";
       next.Reranker = selectedApi === "reranker";
       next.TTS = selectedApi === "tts";
@@ -2705,6 +2881,69 @@ export default function ApiTestPage() {
     }
   }
 
+  async function handleSummarizeRun() {
+    if (isSummarizeLoading) return;
+    const text = summarizeText.trim();
+    if (!text) return;
+    setIsSummarizeLoading(true);
+    setSummarizeResult(null);
+    setConsoleCopied(false);
+    patchConsole("summarize", {
+      statusCode: null,
+      statusLine: "Pending...",
+      requestJson: buildSummarizeConsoleRequestJson(
+        summarizeText,
+        summarizeStyle,
+        summarizeTemperature,
+      ),
+      responseJson: "",
+      error: null,
+    });
+    try {
+      const token = getToken();
+      const res = await fetch("/api/summarize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          text,
+          style: summarizeStyle.trim() || undefined,
+          temperature: summarizeTemperature,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as {
+        summary?: unknown;
+        error?: unknown;
+      } | null;
+      patchConsole("summarize", {
+        statusCode: res.status,
+        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+        responseJson: JSON.stringify(data ?? {}, null, 2),
+      });
+      if (!res.ok) {
+        if (res.status === 429) setLimitExceededModalOpen(true);
+        setSummarizeResult(
+          typeof data?.error === "string" ? data.error : "요청에 실패했습니다.",
+        );
+        return;
+      }
+      const summary =
+        typeof data?.summary === "string" ? data.summary.trim() : "";
+      setSummarizeResult(summary || "응답이 비어있습니다.");
+    } catch {
+      patchConsole("summarize", {
+        statusLine: "—",
+        statusCode: 500,
+        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+      });
+      setSummarizeResult("서버 연결에 실패했습니다.");
+    } finally {
+      setIsSummarizeLoading(false);
+    }
+  }
+
   async function onSend(e: React.FormEvent) {
     e.preventDefault();
     if (selectedApi !== "llm") return;
@@ -2897,7 +3136,8 @@ export default function ApiTestPage() {
     const targetApi = selectedApi;
     if (
       (targetApi === "llm" && isChatLoading) ||
-      (targetApi === "adCopy" && isAdCopyLoading)
+      (targetApi === "adCopy" && isAdCopyLoading) ||
+      (targetApi === "summarize" && isSummarizeLoading)
     ) {
       return;
     }
@@ -3193,6 +3433,97 @@ export default function ApiTestPage() {
           setAdCopyResult("서버 연결에 실패했습니다.");
         } finally {
           setIsAdCopyLoading(false);
+        }
+        return;
+      }
+
+      if (targetApi === "summarize") {
+        const body = parsed as {
+          text?: unknown;
+          style?: unknown;
+          temperature?: unknown;
+        };
+        const textBody =
+          typeof body.text === "string" ? body.text.trim() : "";
+        if (!textBody) {
+          patchConsole("summarize", {
+            error: "`text` 문자열을 확인해주세요.",
+            statusLine: "—",
+            statusCode: null,
+            responseJson: "",
+          });
+          setConsoleSubmitShake(true);
+          window.setTimeout(() => {
+            setConsoleSubmitShake(false);
+          }, 420);
+          return;
+        }
+
+        const style =
+          typeof body.style === "string" ? body.style.trim() : "";
+        const parsedTemperature =
+          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+            ? body.temperature
+            : typeof body.temperature === "string" &&
+                body.temperature.trim() &&
+                Number.isFinite(Number(body.temperature))
+              ? Number(body.temperature)
+              : summarizeTemperature;
+
+        setIsSummarizeLoading(true);
+        setSummarizeResult(null);
+        setSummarizeText(textBody);
+        setSummarizeStyle(style);
+        setSummarizeTemperature(
+          Math.min(1, Math.max(0, parsedTemperature)),
+        );
+
+        try {
+          const token = getToken();
+          const res = await fetch("/api/summarize", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              text: textBody,
+              style: style || undefined,
+              temperature: parsedTemperature,
+            }),
+          });
+          const data = (await res.json().catch(() => null)) as {
+            summary?: unknown;
+            error?: unknown;
+          } | null;
+          patchConsole("summarize", {
+            statusCode: res.status,
+            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+            responseJson: JSON.stringify(data ?? {}, null, 2),
+          });
+          consoleAlreadySet = true;
+
+          if (!res.ok) {
+            if (res.status === 429) setLimitExceededModalOpen(true);
+            setSummarizeResult(
+              typeof data?.error === "string"
+                ? data.error
+                : "요청에 실패했습니다.",
+            );
+            return;
+          }
+          const summary =
+            typeof data?.summary === "string" ? data.summary.trim() : "";
+          setSummarizeResult(summary || "응답이 비어있습니다.");
+        } catch {
+          patchConsole("summarize", {
+            statusLine: "—",
+            statusCode: 500,
+            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+          });
+          setSummarizeResult("서버 연결에 실패했습니다.");
+        } finally {
+          setIsSummarizeLoading(false);
         }
         return;
       }
@@ -3550,7 +3881,9 @@ export default function ApiTestPage() {
                             ? "Text"
                             : t === "Ad Copy"
                               ? "카피"
-                              : t;
+                              : t === "Text Summary"
+                                ? "요약"
+                                : t;
 
                         return (
                           <button
@@ -3651,7 +3984,9 @@ export default function ApiTestPage() {
                                   ? "GPT-OSS • Text Generation"
                                   : item.task === "Ad Copy"
                                     ? "GPT-OSS • Ad Copy"
-                                    : item.task === "Embedding"
+                                    : item.task === "Text Summary"
+                                      ? "GPT-OSS • Text Summary"
+                                      : item.task === "Embedding"
                                       ? "Qwen-Embedding • Embedding"
                                       : item.task === "Reranker"
                                         ? "Qwen3 Reranker • Reranker"
@@ -3729,6 +4064,7 @@ export default function ApiTestPage() {
                         setFilterTasks({
                           "Text Generation": selectedApi === "llm",
                           "Ad Copy": selectedApi === "adCopy",
+                          "Text Summary": selectedApi === "summarize",
                           Embedding: selectedApi === "embedding",
                           Reranker: selectedApi === "reranker",
                           TTS: selectedApi === "tts",
@@ -3757,6 +4093,7 @@ export default function ApiTestPage() {
                     </div>
                     {selectedApi === "llm" ||
                     selectedApi === "adCopy" ||
+                    selectedApi === "summarize" ||
                     selectedApi === "reranker" ||
                     selectedApi === "embedding" ||
                     selectedApi === "tts" ||
@@ -3767,13 +4104,15 @@ export default function ApiTestPage() {
                             ? "High-Performance Infra • GPT-OSS-120B • 실시간"
                             : selectedApi === "adCopy"
                               ? "High-Performance Infra • GPT-OSS-120B • 광고 카피"
-                              : selectedApi === "reranker"
-                                ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
-                                : selectedApi === "embedding"
-                                  ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
-                                  : selectedApi === "tts"
-                                    ? "High-Performance Infra • Qwen3-TTS • 실시간"
-                                    : "High-Performance Infra • Qwen3-STT • 실시간"}
+                              : selectedApi === "summarize"
+                                ? "High-Performance Infra • GPT-OSS-120B • 텍스트 요약"
+                                : selectedApi === "reranker"
+                                  ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
+                                  : selectedApi === "embedding"
+                                    ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
+                                    : selectedApi === "tts"
+                                      ? "High-Performance Infra • Qwen3-TTS • 실시간"
+                                      : "High-Performance Infra • Qwen3-STT • 실시간"}
                         </span>
                       </div>
                     ) : null}
@@ -3800,6 +4139,28 @@ export default function ApiTestPage() {
                         </p>
                         <p className="mt-2 font-mono text-[11px] text-foreground/50">
                           엔드포인트: POST /api/ad-copy
+                        </p>
+                      </div>
+                    ) : null}
+                    {selectedApi === "summarize" ? (
+                      <div className="mt-3 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-3 text-[13px] leading-relaxed text-foreground/80">
+                        <p className="font-semibold text-foreground/95">
+                          Text Summary API 안내
+                        </p>
+                        <p className="mt-2">
+                          긴{" "}
+                          <span className="text-foreground/90">본문(text)</span>
+                          을 넣으면{" "}
+                          <span className="text-[#10b981] font-medium">
+                            GPT-OSS-120B
+                          </span>
+                          가 핵심만 추려 한국어로 압축합니다. 선택 필드{" "}
+                          <span className="text-foreground/90">style</span>로
+                          불릿·문단 형식 등을 힌트로 줄 수 있고, Temperature로
+                          표현 다양성을 조절할 수 있어요.
+                        </p>
+                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
+                          엔드포인트: POST /api/summarize
                         </p>
                       </div>
                     ) : null}
@@ -3846,7 +4207,7 @@ export default function ApiTestPage() {
                   key={selectedApi}
                   className="api-center-anim flex min-h-0 flex-1 flex-col"
                 >
-                  {selectedApi !== "adCopy" ? (
+                  {selectedApi !== "adCopy" && selectedApi !== "summarize" ? (
                     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
                       <ApiOutputPanel
                         selectedApi={selectedApi}
@@ -3890,7 +4251,7 @@ export default function ApiTestPage() {
                   ) : null}
                   <div
                     className={
-                      selectedApi === "adCopy"
+                      selectedApi === "adCopy" || selectedApi === "summarize"
                         ? "min-h-0 flex-1 overflow-y-auto px-3 py-4"
                         : "flex-shrink-0"
                     }
@@ -3915,6 +4276,15 @@ export default function ApiTestPage() {
                       setAdCopyTemperature={setAdCopyTemperature}
                       isAdCopyLoading={isAdCopyLoading}
                       adCopyResult={adCopyResult}
+                      handleSummarizeRun={() => void handleSummarizeRun()}
+                      summarizeText={summarizeText}
+                      setSummarizeText={setSummarizeText}
+                      summarizeStyle={summarizeStyle}
+                      setSummarizeStyle={setSummarizeStyle}
+                      summarizeTemperature={summarizeTemperature}
+                      setSummarizeTemperature={setSummarizeTemperature}
+                      isSummarizeLoading={isSummarizeLoading}
+                      summarizeResult={summarizeResult}
                       handleEmbeddingRun={handleEmbeddingRun}
                       embeddingText={embeddingText}
                       setEmbeddingText={setEmbeddingText}
@@ -4005,7 +4375,9 @@ export default function ApiTestPage() {
                               ? "/api/rerank"
                               : selectedApi === "adCopy"
                                 ? "/api/ad-copy"
-                                : selectedApi === "stt"
+                                : selectedApi === "summarize"
+                                  ? "/api/summarize"
+                                  : selectedApi === "stt"
                                   ? "/api/stt"
                                   : selectedApi === "tts"
                                     ? "Mock TTS (client)"
@@ -4067,7 +4439,8 @@ export default function ApiTestPage() {
                           onClick={sendConsoleRequest}
                           disabled={
                             (selectedApi === "llm" && isChatLoading) ||
-                            (selectedApi === "adCopy" && isAdCopyLoading)
+                            (selectedApi === "adCopy" && isAdCopyLoading) ||
+                            (selectedApi === "summarize" && isSummarizeLoading)
                           }
                           className={[
                             "rounded-xl border px-5 py-3 text-xs font-medium transition-colors",
@@ -4077,7 +4450,8 @@ export default function ApiTestPage() {
                           ].join(" ")}
                         >
                           {(selectedApi === "llm" && isChatLoading) ||
-                          (selectedApi === "adCopy" && isAdCopyLoading)
+                          (selectedApi === "adCopy" && isAdCopyLoading) ||
+                          (selectedApi === "summarize" && isSummarizeLoading)
                             ? "전송 중..."
                             : "요청 전송"}
                         </button>
@@ -4171,6 +4545,21 @@ export default function ApiTestPage() {
                           </>
                         }
                       />
+                    ) : selectedApi === "summarize" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={summarizeDevCodeOpen}
+                        setDevCodeOpen={setSummarizeDevCodeOpen}
+                        devCodeCopied={summarizeDevCodeCopied}
+                        setDevCodeCopied={setSummarizeDevCodeCopied}
+                        codePython={summarizeDevCodePython}
+                        footer={
+                          <>
+                            데모 앱은{" "}
+                            <span className="text-foreground/80">/api/summarize</span>{" "}
+                            프록시를 통해 텍스트 요약을 생성합니다.
+                          </>
+                        }
+                      />
                     ) : selectedApi === "tts" ? (
                       <PlaygroundDeveloperCodeSection
                         devCodeOpen={ttsDevCodeOpen}
@@ -4210,11 +4599,14 @@ export default function ApiTestPage() {
                     ) : null}
 
                     {(selectedApi === "llm" && isChatLoading) ||
-                    (selectedApi === "adCopy" && isAdCopyLoading) ? (
+                    (selectedApi === "adCopy" && isAdCopyLoading) ||
+                    (selectedApi === "summarize" && isSummarizeLoading) ? (
                       <div className="rounded-xl border border-[#10b981]/25 bg-[#10b981]/5 p-3 text-xs text-[#10b981]">
                         {selectedApi === "adCopy"
                           ? "카피 생성 중... (응답 대기)"
-                          : "답변 생성 중... (응답 대기)"}
+                          : selectedApi === "summarize"
+                            ? "요약 생성 중... (응답 대기)"
+                            : "답변 생성 중... (응답 대기)"}
                       </div>
                     ) : null}
                   </div>
@@ -4225,6 +4617,7 @@ export default function ApiTestPage() {
             {workflowBannerMounted &&
             (selectedApi === "llm" ||
               selectedApi === "adCopy" ||
+              selectedApi === "summarize" ||
               selectedApi === "reranker" ||
               selectedApi === "embedding" ||
               selectedApi === "tts" ||

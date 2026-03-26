@@ -1,6 +1,13 @@
 "use client";
 
-type ApiId = "llm" | "adCopy" | "embedding" | "reranker" | "tts" | "stt";
+type ApiId =
+  | "llm"
+  | "adCopy"
+  | "summarize"
+  | "embedding"
+  | "reranker"
+  | "tts"
+  | "stt";
 
 type Props = {
   selectedApi: ApiId;
@@ -33,9 +40,25 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
     selectedApi !== "reranker" &&
     selectedApi !== "embedding" &&
     selectedApi !== "tts" &&
-    selectedApi !== "adCopy"
+    selectedApi !== "adCopy" &&
+    selectedApi !== "summarize"
   ) {
     return null;
+  }
+
+  if (selectedApi === "summarize") {
+    return (
+      <p className="text-sm leading-relaxed text-foreground/90">
+        <span className="mr-2">📄</span>
+        <span className="font-semibold text-foreground">
+          요약문이 준비됐습니다.
+        </span>{" "}
+        <GuideApiLink label="Text" api="llm" onNavigateApi={onNavigateApi} />로
+        톤을 다듬거나,{" "}
+        <GuideApiLink label="TTS" api="tts" onNavigateApi={onNavigateApi} />로
+        낭독용 스크립트를 만들어 보세요.
+      </p>
+    );
   }
 
   if (selectedApi === "adCopy") {

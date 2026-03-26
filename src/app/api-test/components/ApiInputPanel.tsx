@@ -30,6 +30,17 @@ type Props = {
   isAdCopyLoading: boolean;
   adCopyResult: string | null;
 
+  // Text Summary input
+  handleSummarizeRun: () => void;
+  summarizeText: string;
+  setSummarizeText: React.Dispatch<React.SetStateAction<string>>;
+  summarizeStyle: string;
+  setSummarizeStyle: React.Dispatch<React.SetStateAction<string>>;
+  summarizeTemperature: number;
+  setSummarizeTemperature: React.Dispatch<React.SetStateAction<number>>;
+  isSummarizeLoading: boolean;
+  summarizeResult: string | null;
+
   // Embedding input
   handleEmbeddingRun: () => void;
   embeddingText: string;
@@ -135,6 +146,16 @@ export function ApiInputPanel({
   isAdCopyLoading,
   adCopyResult,
 
+  handleSummarizeRun,
+  summarizeText,
+  setSummarizeText,
+  summarizeStyle,
+  setSummarizeStyle,
+  summarizeTemperature,
+  setSummarizeTemperature,
+  isSummarizeLoading,
+  summarizeResult,
+
   handleEmbeddingRun,
   embeddingText,
   setEmbeddingText,
@@ -203,7 +224,7 @@ export function ApiInputPanel({
           ? "hidden"
           : [
               "flex-shrink-0 bg-background/20 p-2",
-              selectedApi === "adCopy"
+              selectedApi === "adCopy" || selectedApi === "summarize"
                 ? "border-b border-white/5"
                 : "border-t border-white/5",
             ].join(" ")
@@ -423,6 +444,132 @@ export function ApiInputPanel({
                   <p className="text-sm leading-relaxed text-foreground/45">
                     <span className="text-foreground/65">카피 생성</span>을 누르면
                     이곳에 생성된 문구가 표시됩니다.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </form>
+      ) : null}
+
+      {selectedApi === "summarize" ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSummarizeRun();
+          }}
+        >
+          <div className="flex flex-col gap-3">
+            <div>
+              <p className="font-mono text-xs text-foreground/60">
+                본문 (필수)
+              </p>
+              <textarea
+                value={summarizeText}
+                onChange={(e) => setSummarizeText(e.target.value)}
+                rows={8}
+                placeholder="요약할 긴 문서·리뷰·회의록을 붙여 넣으세요"
+                className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+              />
+            </div>
+            <div>
+              <p className="font-mono text-xs text-foreground/60">
+                요약 형식·톤 (선택)
+              </p>
+              <input
+                type="text"
+                value={summarizeStyle}
+                onChange={(e) => setSummarizeStyle(e.target.value)}
+                placeholder="예: 3줄 불릿, 한 문단, 결론 먼저"
+                className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-mono text-xs text-foreground/60">Temperature</p>
+                <span className="font-mono text-xs text-foreground/70">
+                  {summarizeTemperature.toFixed(2)}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={summarizeTemperature}
+                onChange={(e) =>
+                  setSummarizeTemperature(Number(e.target.value) || 0.3)
+                }
+                className="mt-2 w-full accent-[#10b981]"
+              />
+              <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
+                <span className="text-foreground/55">Temperature</span>는 요약
+                문장의 다양성을 조절합니다.{" "}
+                <span className="text-foreground/60">낮으면</span> 일관된
+                핵심 위주로,{" "}
+                <span className="text-foreground/60">높으면</span> 표현이 더
+                달라질 수 있어요.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isSummarizeLoading || !summarizeText.trim()}
+                className={[
+                  "inline-flex items-center gap-2 rounded-xl px-6 py-3 font-medium text-background transition-all",
+                  "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                ].join(" ")}
+              >
+                {isSummarizeLoading ? (
+                  <>
+                    <svg
+                      className="h-4 w-4 animate-spin text-background"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                    <span>요약 생성 중...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>요약 생성</span>
+                    <span className="transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-[#10b981]/25 bg-background/35 p-4 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)]">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-mono text-xs font-medium text-[#10b981]">
+                  요약 결과
+                </p>
+                {isSummarizeLoading ? (
+                  <span className="text-[11px] text-foreground/50">생성 중…</span>
+                ) : summarizeResult ? (
+                  <span className="text-[11px] text-foreground/50">완료</span>
+                ) : null}
+              </div>
+              <div className="mt-3 max-h-[min(50vh,440px)] min-h-[140px] overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3">
+                {isSummarizeLoading ? (
+                  <p className="text-sm leading-relaxed text-foreground/55">
+                    요약을 생성하는 중입니다…
+                  </p>
+                ) : summarizeResult ? (
+                  <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+                    <ChatMarkdown content={summarizeResult} />
+                  </div>
+                ) : (
+                  <p className="text-sm leading-relaxed text-foreground/45">
+                    <span className="text-foreground/65">요약 생성</span>을 누르면
+                    이곳에 요약 문장이 표시됩니다.
                   </p>
                 )}
               </div>
