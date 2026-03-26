@@ -25,6 +25,7 @@ async function hasApiKey(authHeader: string): Promise<boolean> {
         Authorization: authHeader,
       },
       cache: "no-store",
+      signal: AbortSignal.timeout(8_000),
     });
 
     if (!res.ok) return false;

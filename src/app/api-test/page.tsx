@@ -23,9 +23,16 @@ import { buildEmbeddingDevCodePython } from "./lib/buildEmbeddingDevCodePython";
 import { buildRerankDevCodePython } from "./lib/buildRerankDevCodePython";
 import { buildTtsDevCodePython } from "./lib/buildTtsDevCodePython";
 import { buildSttDevCodePython } from "./lib/buildSttDevCodePython";
+import { buildAdCopyDevCodePython } from "./lib/buildAdCopyDevCodePython";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 
-type ApiId = "llm" | "embedding" | "reranker" | "tts" | "stt";
+type ApiId =
+  | "llm"
+  | "adCopy"
+  | "embedding"
+  | "reranker"
+  | "tts"
+  | "stt";
 
 type ApiItem = {
   id: ApiId;
@@ -47,6 +54,9 @@ const DEFAULT_EMBEDDING_PLAYGROUND_TEXT =
 
 const DEFAULT_TTS_PLAYGROUND_TEXT =
   "안녕하세요. GPU Modu API 데모를 재생합니다.";
+
+const DEFAULT_AD_COPY_BRIEF =
+  "신제품 커피 머신 — 집에서 캡슐 커피 한 잔, 아침 루틴에 맞춘 광고 카피";
 const TTS_LANGUAGE_OPTIONS = [
   { value: "auto", label: "Auto" },
   { value: "zh", label: "Chinese" },
@@ -289,6 +299,15 @@ function IconMic(props: { className?: string }) {
   );
 }
 
+function IconPenLine(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </IconBase>
+  );
+}
+
 function IconPlay(props: { className?: string }) {
   return (
     <IconBase {...props}>
@@ -520,6 +539,63 @@ function tryParseLlmConsoleToPlayground(jsonText: string): {
     const content = msgContent ?? directInput;
     if (typeof content === "string") {
       out.prompt = content;
+    }
+
+    return out;
+  } catch {
+    return null;
+  }
+}
+
+function buildAdCopyConsoleRequestJson(
+  brief: string,
+  tone: string,
+  channel: string,
+  temperature: number,
+) {
+  return JSON.stringify(
+    {
+      brief,
+      tone,
+      channel,
+      temperature,
+    },
+    null,
+    2,
+  );
+}
+
+function tryParseAdCopyConsoleToPlayground(jsonText: string): {
+  brief?: string;
+  tone?: string;
+  channel?: string;
+  temperature?: number;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      brief?: unknown;
+      tone?: unknown;
+      channel?: unknown;
+      temperature?: unknown;
+    };
+    const out: {
+      brief?: string;
+      tone?: string;
+      channel?: string;
+      temperature?: number;
+    } = {};
+
+    if (typeof parsed.brief === "string") out.brief = parsed.brief;
+    if (typeof parsed.tone === "string") out.tone = parsed.tone;
+    if (typeof parsed.channel === "string") out.channel = parsed.channel;
+    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+      out.temperature = clamp(parsed.temperature, 0, 1);
+    } else if (
+      typeof parsed.temperature === "string" &&
+      parsed.temperature.trim() !== "" &&
+      Number.isFinite(Number(parsed.temperature))
+    ) {
+      out.temperature = clamp(Number(parsed.temperature), 0, 1);
     }
 
     return out;
@@ -783,6 +859,11 @@ export default function ApiTestPage() {
         description: "프롬프트 기반 텍스트 생성",
       },
       {
+        id: "adCopy",
+        name: "Ad Copy",
+        description: "광고 카피라이팅 생성 (GPT-OSS)",
+      },
+      {
         id: "embedding",
         name: "Embedding",
         description: "문장을 벡터로 변환",
@@ -825,6 +906,7 @@ export default function ApiTestPage() {
 
     if (
       api === "llm" ||
+      api === "adCopy" ||
       api === "embedding" ||
       api === "reranker" ||
       api === "tts" ||
@@ -839,6 +921,15 @@ export default function ApiTestPage() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const pendingAssistantIdRef = useRef<string | null>(null);
 
+  const [adCopyBrief, setAdCopyBrief] = useState(DEFAULT_AD_COPY_BRIEF);
+  const [adCopyTone, setAdCopyTone] = useState("");
+  const [adCopyChannel, setAdCopyChannel] = useState("");
+  const [adCopyTemperature, setAdCopyTemperature] = useState(0.7);
+  const [adCopyResult, setAdCopyResult] = useState<string | null>(null);
+  const [isAdCopyLoading, setIsAdCopyLoading] = useState(false);
+  const [adCopyDevCodeOpen, setAdCopyDevCodeOpen] = useState(false);
+  const [adCopyDevCodeCopied, setAdCopyDevCodeCopied] = useState(false);
+
   type ConsoleState = {
     requestJson: string;
     responseJson: string;
@@ -850,6 +941,14 @@ export default function ApiTestPage() {
     (api: ApiId): string => {
     if (api === "llm") {
       return buildLlmConsoleRequestJson("", llmTemperature);
+    }
+    if (api === "adCopy") {
+      return buildAdCopyConsoleRequestJson(
+        DEFAULT_AD_COPY_BRIEF,
+        "",
+        "",
+        0.7,
+      );
     }
     if (api === "reranker") {
       return buildRerankConsoleRequestJson(
@@ -890,6 +989,7 @@ export default function ApiTestPage() {
   const [consoleByApi, setConsoleByApi] = useState<Record<ApiId, ConsoleState>>(
     () => ({
       llm: createDefaultConsoleState("llm"),
+      adCopy: createDefaultConsoleState("adCopy"),
       embedding: createDefaultConsoleState("embedding"),
       reranker: createDefaultConsoleState("reranker"),
       tts: createDefaultConsoleState("tts"),
@@ -904,6 +1004,7 @@ export default function ApiTestPage() {
 
   type MarketplaceTask =
     | "Text Generation"
+    | "Ad Copy"
     | "Embedding"
     | "Reranker"
     | "TTS"
@@ -930,6 +1031,15 @@ export default function ApiTestPage() {
         model: "gpt-oss-120B",
         modelSizeB: 120,
         taskTags: ["#LLM", "#Text-Gen"],
+        formats: ["vLLM", "Transformers", "ONNX"],
+      },
+      {
+        id: "ad-copy-gpt-oss",
+        task: "Ad Copy",
+        apiId: "adCopy",
+        model: "GPT-OSS-120B • Ad Copy",
+        modelSizeB: 120,
+        taskTags: ["#LLM", "#Ad-Copy"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
@@ -984,6 +1094,7 @@ export default function ApiTestPage() {
     Record<MarketplaceTask, boolean>
   >({
     "Text Generation": true,
+    "Ad Copy": true,
     Embedding: true,
     Reranker: true,
     TTS: true,
@@ -991,8 +1102,15 @@ export default function ApiTestPage() {
     Vision: false,
   });
   const taskKeys = useMemo<MarketplaceTask[]>(
-    () => ["Text Generation", "Embedding", "Reranker", "TTS", "STT"],
-    []
+    () => [
+      "Text Generation",
+      "Ad Copy",
+      "Embedding",
+      "Reranker",
+      "TTS",
+      "STT",
+    ],
+    [],
   );
 
   useEffect(() => {
@@ -1004,15 +1122,17 @@ export default function ApiTestPage() {
     const targetTask: MarketplaceTask | null =
       taskParam === "llm" || taskParam === "text"
         ? "Text Generation"
-        : taskParam === "embedding"
-          ? "Embedding"
-          : taskParam === "reranker" || taskParam === "rerank"
-            ? "Reranker"
-            : taskParam === "tts"
-              ? "TTS"
-              : taskParam === "stt" || taskParam === "sst"
-                ? "STT"
-                : null;
+        : taskParam === "adcopy" || taskParam === "ad-copy"
+          ? "Ad Copy"
+          : taskParam === "embedding"
+            ? "Embedding"
+            : taskParam === "reranker" || taskParam === "rerank"
+              ? "Reranker"
+              : taskParam === "tts"
+                ? "TTS"
+                : taskParam === "stt" || taskParam === "sst"
+                  ? "STT"
+                  : null;
 
     if (!targetTask) return;
 
@@ -1027,6 +1147,7 @@ export default function ApiTestPage() {
     });
 
     if (targetTask === "Text Generation") setSelectedApi("llm");
+    if (targetTask === "Ad Copy") setSelectedApi("adCopy");
     if (targetTask === "Embedding") setSelectedApi("embedding");
     if (targetTask === "Reranker") setSelectedApi("reranker");
     if (targetTask === "TTS") setSelectedApi("tts");
@@ -1047,6 +1168,7 @@ export default function ApiTestPage() {
     const active = taskKeys.find((t) => filterTasks[t]);
     if (!active) return "All";
     if (active === "Text Generation") return "Text";
+    if (active === "Ad Copy") return "AdCopy";
     if (active === "Embedding") return "Embedding";
     if (active === "Reranker") return "Rerank";
     if (active === "TTS" || active === "STT") return "TTS/STT";
@@ -1074,6 +1196,20 @@ export default function ApiTestPage() {
               초거대 언어 모델(LLM)
             </span>{" "}
             서비스입니다.
+          </>
+        );
+      case "AdCopy":
+        return (
+          <>
+            ✍️{" "}
+            <span className="text-[#10b981] font-semibold">
+              광고·마케팅 카피
+            </span>
+            : 브리프·톤·채널에 맞춰{" "}
+            <span className="text-[#10b981] font-semibold">
+              배너·SNS 등 문구
+            </span>
+            를 생성하는 GPT-OSS 기반 서비스입니다.
           </>
         );
       case "Embedding":
@@ -1152,6 +1288,17 @@ export default function ApiTestPage() {
   const embeddingDevCodePython = useMemo(
     () => buildEmbeddingDevCodePython({ inputText: embeddingText }),
     [embeddingText],
+  );
+
+  const adCopyDevCodePython = useMemo(
+    () =>
+      buildAdCopyDevCodePython({
+        brief: adCopyBrief,
+        tone: adCopyTone,
+        channel: adCopyChannel,
+        temperature: adCopyTemperature,
+      }),
+    [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature],
   );
 
   // Reranker
@@ -1316,8 +1463,12 @@ export default function ApiTestPage() {
   const sttHasWorkflowResult =
     typeof sttTranscript === "string" && sttTranscript.trim().length > 0;
 
+  const adCopyHasWorkflowResult =
+    typeof adCopyResult === "string" && adCopyResult.trim().length > 0;
+
   const hasWorkflowBannerResult =
     (selectedApi === "llm" && llmHasWorkflowResult) ||
+    (selectedApi === "adCopy" && adCopyHasWorkflowResult) ||
     (selectedApi === "embedding" && embeddingHasWorkflowResult) ||
     (selectedApi === "reranker" && rerankerHasWorkflowResult) ||
     (selectedApi === "tts" && ttsHasWorkflowResult) ||
@@ -1395,6 +1546,8 @@ export default function ApiTestPage() {
     switch (task) {
       case "Text Generation":
         return <IconSparkles className={base} />;
+      case "Ad Copy":
+        return <IconPenLine className={base} />;
       case "Embedding":
         return <IconLayers className={base} />;
       case "Reranker":
@@ -1492,6 +1645,25 @@ export default function ApiTestPage() {
   }, [prompt, llmTemperature]);
 
   useEffect(() => {
+    const nextRequestJson = buildAdCopyConsoleRequestJson(
+      adCopyBrief,
+      adCopyTone,
+      adCopyChannel,
+      adCopyTemperature,
+    );
+    setConsoleByApi((prev) => {
+      if (prev.adCopy.requestJson === nextRequestJson) return prev;
+      return {
+        ...prev,
+        adCopy: {
+          ...prev.adCopy,
+          requestJson: nextRequestJson,
+        },
+      };
+    });
+  }, [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature]);
+
+  useEffect(() => {
     const nextRequestJson = buildEmbeddingConsoleRequestJson(embeddingText);
 
     setConsoleByApi((prev) => {
@@ -1548,6 +1720,8 @@ export default function ApiTestPage() {
     switch (selectedApi) {
       case "llm":
         return "GPT-OSS-120B에게 질문하거나 요약을 요청해보세요.";
+      case "adCopy":
+        return "브리프는 하단 입력에서 수정하세요.";
       case "embedding":
         return "예: 벡터로 변환할 문장을 입력하세요…";
       case "reranker":
@@ -1596,6 +1770,23 @@ export default function ApiTestPage() {
       }
       if (parsed.prompt !== undefined) {
         setPrompt(parsed.prompt);
+      }
+      return;
+    }
+    if (selectedApi === "adCopy") {
+      const parsed = tryParseAdCopyConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.brief !== undefined) {
+        setAdCopyBrief(parsed.brief);
+      }
+      if (parsed.tone !== undefined) {
+        setAdCopyTone(parsed.tone);
+      }
+      if (parsed.channel !== undefined) {
+        setAdCopyChannel(parsed.channel);
+      }
+      if (parsed.temperature !== undefined) {
+        setAdCopyTemperature(parsed.temperature);
       }
       return;
     }
@@ -1699,6 +1890,13 @@ export default function ApiTestPage() {
       setTtsPlaying(false);
       setIsSynthesizing(false);
     }
+    if (api === "adCopy") {
+      setAdCopyBrief(DEFAULT_AD_COPY_BRIEF);
+      setAdCopyTone("");
+      setAdCopyChannel("");
+      setAdCopyTemperature(0.7);
+      setAdCopyResult(null);
+    }
     setConsoleCopied(false);
   }
 
@@ -1758,6 +1956,7 @@ export default function ApiTestPage() {
     setFilterTasks((prev) => {
       const next = { ...prev };
       next["Text Generation"] = selectedApi === "llm";
+      next["Ad Copy"] = selectedApi === "adCopy";
       next.Embedding = selectedApi === "embedding";
       next.Reranker = selectedApi === "reranker";
       next.TTS = selectedApi === "tts";
@@ -2442,6 +2641,70 @@ export default function ApiTestPage() {
     void handleSttRun();
   }
 
+  async function handleAdCopyRun() {
+    if (isAdCopyLoading) return;
+    const brief = adCopyBrief.trim();
+    if (!brief) return;
+    setIsAdCopyLoading(true);
+    setAdCopyResult(null);
+    setConsoleCopied(false);
+    patchConsole("adCopy", {
+      statusCode: null,
+      statusLine: "Pending...",
+      requestJson: buildAdCopyConsoleRequestJson(
+        adCopyBrief,
+        adCopyTone,
+        adCopyChannel,
+        adCopyTemperature,
+      ),
+      responseJson: "",
+      error: null,
+    });
+    try {
+      const token = getToken();
+      const res = await fetch("/api/ad-copy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          brief,
+          tone: adCopyTone.trim() || undefined,
+          channel: adCopyChannel.trim() || undefined,
+          temperature: adCopyTemperature,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as {
+        copy?: unknown;
+        error?: unknown;
+      } | null;
+      patchConsole("adCopy", {
+        statusCode: res.status,
+        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+        responseJson: JSON.stringify(data ?? {}, null, 2),
+      });
+      if (!res.ok) {
+        if (res.status === 429) setLimitExceededModalOpen(true);
+        setAdCopyResult(
+          typeof data?.error === "string" ? data.error : "요청에 실패했습니다.",
+        );
+        return;
+      }
+      const copy = typeof data?.copy === "string" ? data.copy.trim() : "";
+      setAdCopyResult(copy || "응답이 비어있습니다.");
+    } catch {
+      patchConsole("adCopy", {
+        statusLine: "—",
+        statusCode: 500,
+        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+      });
+      setAdCopyResult("서버 연결에 실패했습니다.");
+    } finally {
+      setIsAdCopyLoading(false);
+    }
+  }
+
   async function onSend(e: React.FormEvent) {
     e.preventDefault();
     if (selectedApi !== "llm") return;
@@ -2631,8 +2894,13 @@ export default function ApiTestPage() {
   }
 
   async function sendConsoleRequest() {
-    if (isChatLoading) return;
     const targetApi = selectedApi;
+    if (
+      (targetApi === "llm" && isChatLoading) ||
+      (targetApi === "adCopy" && isAdCopyLoading)
+    ) {
+      return;
+    }
     setConsoleCopied(false);
     patchConsole(targetApi, {
       error: null,
@@ -2831,6 +3099,101 @@ export default function ApiTestPage() {
         setTtsSpeaker(speaker);
         setTtsStyleInstruction(styleInstruction);
         runTtsMockSynthesis(text, language, speaker, styleInstruction);
+        return;
+      }
+
+      if (targetApi === "adCopy") {
+        const body = parsed as {
+          brief?: unknown;
+          tone?: unknown;
+          channel?: unknown;
+          temperature?: unknown;
+        };
+        const brief =
+          typeof body.brief === "string" ? body.brief.trim() : "";
+        if (!brief) {
+          patchConsole("adCopy", {
+            error: "`brief` 문자열을 확인해주세요.",
+            statusLine: "—",
+            statusCode: null,
+            responseJson: "",
+          });
+          setConsoleSubmitShake(true);
+          window.setTimeout(() => {
+            setConsoleSubmitShake(false);
+          }, 420);
+          return;
+        }
+
+        const tone =
+          typeof body.tone === "string" ? body.tone.trim() : "";
+        const channel =
+          typeof body.channel === "string" ? body.channel.trim() : "";
+        const parsedTemperature =
+          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+            ? body.temperature
+            : typeof body.temperature === "string" &&
+                body.temperature.trim() &&
+                Number.isFinite(Number(body.temperature))
+              ? Number(body.temperature)
+              : adCopyTemperature;
+
+        setIsAdCopyLoading(true);
+        setAdCopyResult(null);
+        setAdCopyBrief(brief);
+        setAdCopyTone(tone);
+        setAdCopyChannel(channel);
+        setAdCopyTemperature(
+          Math.min(1, Math.max(0, parsedTemperature)),
+        );
+
+        try {
+          const token = getToken();
+          const res = await fetch("/api/ad-copy", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              brief,
+              tone: tone || undefined,
+              channel: channel || undefined,
+              temperature: parsedTemperature,
+            }),
+          });
+          const data = (await res.json().catch(() => null)) as {
+            copy?: unknown;
+            error?: unknown;
+          } | null;
+          patchConsole("adCopy", {
+            statusCode: res.status,
+            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+            responseJson: JSON.stringify(data ?? {}, null, 2),
+          });
+          consoleAlreadySet = true;
+
+          if (!res.ok) {
+            if (res.status === 429) setLimitExceededModalOpen(true);
+            setAdCopyResult(
+              typeof data?.error === "string"
+                ? data.error
+                : "요청에 실패했습니다.",
+            );
+            return;
+          }
+          const copy = typeof data?.copy === "string" ? data.copy.trim() : "";
+          setAdCopyResult(copy || "응답이 비어있습니다.");
+        } catch {
+          patchConsole("adCopy", {
+            statusLine: "—",
+            statusCode: 500,
+            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+          });
+          setAdCopyResult("서버 연결에 실패했습니다.");
+        } finally {
+          setIsAdCopyLoading(false);
+        }
         return;
       }
 
@@ -3182,7 +3545,12 @@ export default function ApiTestPage() {
                         // "All"이 켜져 있을 때는 전 태스크가 true라서, 개별 버튼은 강조하지 않음
                         const isActive =
                           filterTasks[t] && !isAllTasksActive;
-                        const label = t === "Text Generation" ? "Text" : t;
+                        const label =
+                          t === "Text Generation"
+                            ? "Text"
+                            : t === "Ad Copy"
+                              ? "카피"
+                              : t;
 
                         return (
                           <button
@@ -3281,11 +3649,13 @@ export default function ApiTestPage() {
                                 ? "Qwen3 Audio • STT"
                                 : item.task === "Text Generation"
                                   ? "GPT-OSS • Text Generation"
-                                  : item.task === "Embedding"
-                                    ? "Qwen-Embedding • Embedding"
-                                    : item.task === "Reranker"
-                                      ? "Qwen3 Reranker • Reranker"
-                                      : `Model Size ${item.modelSizeB}B • ${item.task}`}
+                                  : item.task === "Ad Copy"
+                                    ? "GPT-OSS • Ad Copy"
+                                    : item.task === "Embedding"
+                                      ? "Qwen-Embedding • Embedding"
+                                      : item.task === "Reranker"
+                                        ? "Qwen3 Reranker • Reranker"
+                                        : `Model Size ${item.modelSizeB}B • ${item.task}`}
                           </p>
                           <p className="mt-1 text-lg font-semibold text-foreground leading-tight break-words">
                             {item.model}
@@ -3358,6 +3728,7 @@ export default function ApiTestPage() {
                       onClick={() => {
                         setFilterTasks({
                           "Text Generation": selectedApi === "llm",
+                          "Ad Copy": selectedApi === "adCopy",
                           Embedding: selectedApi === "embedding",
                           Reranker: selectedApi === "reranker",
                           TTS: selectedApi === "tts",
@@ -3385,6 +3756,7 @@ export default function ApiTestPage() {
                       </Link>
                     </div>
                     {selectedApi === "llm" ||
+                    selectedApi === "adCopy" ||
                     selectedApi === "reranker" ||
                     selectedApi === "embedding" ||
                     selectedApi === "tts" ||
@@ -3393,14 +3765,42 @@ export default function ApiTestPage() {
                         <span className="inline-flex items-center rounded-xl border border-[#10b981]/30 bg-[#10b981]/10 px-3 py-1 text-[11px] font-mono text-[#10b981]">
                           {selectedApi === "llm"
                             ? "High-Performance Infra • GPT-OSS-120B • 실시간"
-                            : selectedApi === "reranker"
-                              ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
-                              : selectedApi === "embedding"
-                                ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
-                                : selectedApi === "tts"
-                                  ? "High-Performance Infra • Qwen3-TTS • 실시간"
-                                  : "High-Performance Infra • Qwen3-STT • 실시간"}
+                            : selectedApi === "adCopy"
+                              ? "High-Performance Infra • GPT-OSS-120B • 광고 카피"
+                              : selectedApi === "reranker"
+                                ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
+                                : selectedApi === "embedding"
+                                  ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
+                                  : selectedApi === "tts"
+                                    ? "High-Performance Infra • Qwen3-TTS • 실시간"
+                                    : "High-Performance Infra • Qwen3-STT • 실시간"}
                         </span>
+                      </div>
+                    ) : null}
+                    {selectedApi === "adCopy" ? (
+                      <div className="mt-3 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-3 text-[13px] leading-relaxed text-foreground/80">
+                        <p className="font-semibold text-foreground/95">
+                          Ad Copy API 안내
+                        </p>
+                        <p className="mt-2">
+                          제품·서비스{" "}
+                          <span className="text-foreground/90">브리프</span>와
+                          원하는{" "}
+                          <span className="text-foreground/90">톤·채널</span>
+                          (예: SNS 배너)을 넣으면,{" "}
+                          <span className="text-[#10b981] font-medium">
+                            GPT-OSS-120B
+                          </span>
+                          가 광고에 쓸 수 있는{" "}
+                          <span className="text-foreground/90">
+                            한국어 카피(슬로건·본문 등)
+                          </span>
+                          를 생성합니다. Temperature로 문구의 다양성을 조절할 수
+                          있어요.
+                        </p>
+                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
+                          엔드포인트: POST /api/ad-copy
+                        </p>
                       </div>
                     ) : null}
                   </div>
@@ -3446,125 +3846,143 @@ export default function ApiTestPage() {
                   key={selectedApi}
                   className="api-center-anim flex min-h-0 flex-1 flex-col"
                 >
-                  {/* Output */}
-                  <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
-                    <ApiOutputPanel
+                  {selectedApi !== "adCopy" ? (
+                    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+                      <ApiOutputPanel
+                        selectedApi={selectedApi}
+                        messages={messages}
+                        endRef={endRef}
+                        formatTime={formatTime}
+                        liveNowText={formatTime(Date.now())}
+                        adCopyResult={adCopyResult}
+                        isAdCopyLoading={isAdCopyLoading}
+                        embeddingVector={embeddingVector}
+                        embeddingError={embeddingError}
+                        isEmbeddingLoading={isEmbeddingLoading}
+                        embeddingAnimationKey={String(embeddingDisplayNonce)}
+                        rerankQuestion={rerankQuestion}
+                        rerankDocsText={rerankDocsText}
+                        setRerankQuestion={setRerankQuestion}
+                        setRerankDocsText={setRerankDocsText}
+                        handleRerankRun={handleRerankRun}
+                        isRerankLoading={isRerankLoading}
+                        rerankResults={rerankResults}
+                        rerankError={rerankError}
+                        displayedQuery={displayedQuery}
+                        handleTtsPlayPause={handleTtsPlayPause}
+                        ttsPlaying={ttsPlaying}
+                        ttsDurationMs={ttsDurationMs}
+                        ttsProgress={ttsProgress}
+                        ttsWave={ttsWave}
+                        ttsAudioRef={ttsAudioRef}
+                        ttsAudioUrl={audioUrl}
+                        ttsIsSynthesizing={isSynthesizing}
+                        ttsMockResponse={mockResponse}
+                        IconPlay={IconPlay}
+                        IconPause={IconPause}
+                        sttTranscript={sttTranscript}
+                        isSttLoading={isSttLoading}
+                        sttError={sttError}
+                        sttFileName={sttFileName}
+                        isRecording={isRecording}
+                      />
+                    </div>
+                  ) : null}
+                  <div
+                    className={
+                      selectedApi === "adCopy"
+                        ? "min-h-0 flex-1 overflow-y-auto px-3 py-4"
+                        : "flex-shrink-0"
+                    }
+                  >
+                    <ApiInputPanel
                       selectedApi={selectedApi}
-                      messages={messages}
-                      endRef={endRef}
-                      formatTime={formatTime}
-                      liveNowText={formatTime(Date.now())}
-                      embeddingVector={embeddingVector}
-                      embeddingError={embeddingError}
+                      onSend={onSend as React.FormEventHandler<HTMLFormElement>}
+                      prompt={prompt}
+                      setPrompt={setPrompt}
+                      placeholder={placeholder}
+                      isChatLoading={isChatLoading}
+                      llmTemperature={llmTemperature}
+                      setLlmTemperature={setLlmTemperature}
+                      handleAdCopyRun={() => void handleAdCopyRun()}
+                      adCopyBrief={adCopyBrief}
+                      setAdCopyBrief={setAdCopyBrief}
+                      adCopyTone={adCopyTone}
+                      setAdCopyTone={setAdCopyTone}
+                      adCopyChannel={adCopyChannel}
+                      setAdCopyChannel={setAdCopyChannel}
+                      adCopyTemperature={adCopyTemperature}
+                      setAdCopyTemperature={setAdCopyTemperature}
+                      isAdCopyLoading={isAdCopyLoading}
+                      adCopyResult={adCopyResult}
+                      handleEmbeddingRun={handleEmbeddingRun}
+                      embeddingText={embeddingText}
+                      setEmbeddingText={setEmbeddingText}
                       isEmbeddingLoading={isEmbeddingLoading}
-                      embeddingAnimationKey={String(embeddingDisplayNonce)}
-                      rerankQuestion={rerankQuestion}
-                      rerankDocsText={rerankDocsText}
-                      setRerankQuestion={setRerankQuestion}
-                      setRerankDocsText={setRerankDocsText}
-                      handleRerankRun={handleRerankRun}
-                      isRerankLoading={isRerankLoading}
-                      rerankResults={rerankResults}
-                      rerankError={rerankError}
-                      displayedQuery={displayedQuery}
-                      handleTtsPlayPause={handleTtsPlayPause}
-                      ttsPlaying={ttsPlaying}
-                      ttsDurationMs={ttsDurationMs}
-                      ttsProgress={ttsProgress}
-                      ttsWave={ttsWave}
-                      ttsAudioRef={ttsAudioRef}
-                      ttsAudioUrl={audioUrl}
-                      ttsIsSynthesizing={isSynthesizing}
-                      ttsMockResponse={mockResponse}
-                      IconPlay={IconPlay}
-                      IconPause={IconPause}
-                      sttTranscript={sttTranscript}
-                      isSttLoading={isSttLoading}
-                      sttError={sttError}
+                      handleTtsRun={handleTtsRun}
+                      ttsText={ttsText}
+                      setTtsText={setTtsText}
+                      ttsLanguage={ttsLanguage}
+                      setTtsLanguage={
+                        setTtsLanguage as React.Dispatch<React.SetStateAction<string>>
+                      }
+                      ttsLanguageOptions={TTS_LANGUAGE_OPTIONS.map((opt) => ({
+                        value: opt.value,
+                        label: opt.label,
+                      }))}
+                      ttsSpeaker={ttsSpeaker}
+                      setTtsSpeaker={
+                        setTtsSpeaker as React.Dispatch<React.SetStateAction<string>>
+                      }
+                      ttsSpeakerOptions={TTS_SPEAKER_OPTIONS.map((opt) => ({
+                        value: opt.value,
+                        label: opt.label,
+                      }))}
+                      ttsStyleInstruction={ttsStyleInstruction}
+                      setTtsStyleInstruction={setTtsStyleInstruction}
+                      isTtsSynthesizing={isSynthesizing}
+                      sttFileInputRef={sttFileInputRef}
                       sttFileName={sttFileName}
+                      sttUploadClearMounted={sttUploadClearMounted}
+                      onSttFileChange={handleSttFileChange}
+                      onSttUploadClear={handleSttUploadClear}
                       isRecording={isRecording}
+                      onSttMicToggle={handleSttMicToggle}
+                      sttLangDropdownRootRef={sttLangDropdownRootRef}
+                      sttLangInputRef={sttLangInputRef}
+                      sttLangDropdownOpen={sttLangDropdownOpen}
+                      setSttLangDropdownOpen={setSttLangDropdownOpen}
+                      sttLangQuery={sttLangQuery}
+                      setSttLangQuery={setSttLangQuery}
+                      sttLangOptions={sttLangOptions}
+                      sttLanguage={sttLanguage}
+                      setSttLanguage={
+                        setSttLanguage as React.Dispatch<
+                          React.SetStateAction<string>
+                        >
+                      }
+                      getSttLanguageLabel={
+                        getSttLanguageLabel as (code: string) => string
+                      }
+                      sttTooltipPinned={sttTooltipPinned}
+                      setSttTooltipPinned={setSttTooltipPinned}
+                      sttTooltipHoverId={sttTooltipHoverId}
+                      setSttTooltipHoverId={setSttTooltipHoverId}
+                      SttHelpTooltip={SttHelpTooltip}
+                      sttVadOn={sttVadOn}
+                      setSttVadOn={setSttVadOn}
+                      STT_DEFAULT_BEAM_SIZE={STT_DEFAULT_BEAM_SIZE}
+                      sttBeamSize={sttBeamSize}
+                      setSttBeamSize={setSttBeamSize}
+                      STT_WAVE_BAR_MIN_HEIGHT_PX={STT_WAVE_BAR_MIN_HEIGHT_PX}
+                      STT_WAVE_BAR_MAX_HEIGHT_PX={STT_WAVE_BAR_MAX_HEIGHT_PX}
+                      sttMicBars={sttMicBars}
+                      isSttLoading={isSttLoading}
+                      onSttRun={handleSttRunFromInput}
+                      IconUpload={IconUpload}
+                      IconMic={IconMic}
                     />
-                    
                   </div>
-
-                  {/* Input */}
-                  <ApiInputPanel
-                    selectedApi={selectedApi}
-                    onSend={onSend as React.FormEventHandler<HTMLFormElement>}
-                    prompt={prompt}
-                    setPrompt={setPrompt}
-                    placeholder={placeholder}
-                    isChatLoading={isChatLoading}
-                    llmTemperature={llmTemperature}
-                    setLlmTemperature={setLlmTemperature}
-                    handleEmbeddingRun={handleEmbeddingRun}
-                    embeddingText={embeddingText}
-                    setEmbeddingText={setEmbeddingText}
-                    isEmbeddingLoading={isEmbeddingLoading}
-                    handleTtsRun={handleTtsRun}
-                    ttsText={ttsText}
-                    setTtsText={setTtsText}
-                    ttsLanguage={ttsLanguage}
-                    setTtsLanguage={
-                      setTtsLanguage as React.Dispatch<React.SetStateAction<string>>
-                    }
-                    ttsLanguageOptions={TTS_LANGUAGE_OPTIONS.map((opt) => ({
-                      value: opt.value,
-                      label: opt.label,
-                    }))}
-                    ttsSpeaker={ttsSpeaker}
-                    setTtsSpeaker={
-                      setTtsSpeaker as React.Dispatch<React.SetStateAction<string>>
-                    }
-                    ttsSpeakerOptions={TTS_SPEAKER_OPTIONS.map((opt) => ({
-                      value: opt.value,
-                      label: opt.label,
-                    }))}
-                    ttsStyleInstruction={ttsStyleInstruction}
-                    setTtsStyleInstruction={setTtsStyleInstruction}
-                    isTtsSynthesizing={isSynthesizing}
-                    sttFileInputRef={sttFileInputRef}
-                    sttFileName={sttFileName}
-                    sttUploadClearMounted={sttUploadClearMounted}
-                    onSttFileChange={handleSttFileChange}
-                    onSttUploadClear={handleSttUploadClear}
-                    isRecording={isRecording}
-                    onSttMicToggle={handleSttMicToggle}
-                    sttLangDropdownRootRef={sttLangDropdownRootRef}
-                    sttLangInputRef={sttLangInputRef}
-                    sttLangDropdownOpen={sttLangDropdownOpen}
-                    setSttLangDropdownOpen={setSttLangDropdownOpen}
-                    sttLangQuery={sttLangQuery}
-                    setSttLangQuery={setSttLangQuery}
-                    sttLangOptions={sttLangOptions}
-                    sttLanguage={sttLanguage}
-                    setSttLanguage={
-                      setSttLanguage as React.Dispatch<
-                        React.SetStateAction<string>
-                      >
-                    }
-                    getSttLanguageLabel={
-                      getSttLanguageLabel as (code: string) => string
-                    }
-                    sttTooltipPinned={sttTooltipPinned}
-                    setSttTooltipPinned={setSttTooltipPinned}
-                    sttTooltipHoverId={sttTooltipHoverId}
-                    setSttTooltipHoverId={setSttTooltipHoverId}
-                    SttHelpTooltip={SttHelpTooltip}
-                    sttVadOn={sttVadOn}
-                    setSttVadOn={setSttVadOn}
-                    STT_DEFAULT_BEAM_SIZE={STT_DEFAULT_BEAM_SIZE}
-                    sttBeamSize={sttBeamSize}
-                    setSttBeamSize={setSttBeamSize}
-                    STT_WAVE_BAR_MIN_HEIGHT_PX={STT_WAVE_BAR_MIN_HEIGHT_PX}
-                    STT_WAVE_BAR_MAX_HEIGHT_PX={STT_WAVE_BAR_MAX_HEIGHT_PX}
-                    sttMicBars={sttMicBars}
-                    isSttLoading={isSttLoading}
-                    onSttRun={handleSttRunFromInput}
-                    IconUpload={IconUpload}
-                    IconMic={IconMic}
-                  />
-                  
                 </div>
               </div>
             </section>
@@ -3585,11 +4003,13 @@ export default function ApiTestPage() {
                             ? "/api/embedding"
                             : selectedApi === "reranker"
                               ? "/api/rerank"
-                              : selectedApi === "stt"
-                                ? "/api/stt"
-                                : selectedApi === "tts"
-                                  ? "Mock TTS (client)"
-                                  : "/api/chat"}
+                              : selectedApi === "adCopy"
+                                ? "/api/ad-copy"
+                                : selectedApi === "stt"
+                                  ? "/api/stt"
+                                  : selectedApi === "tts"
+                                    ? "Mock TTS (client)"
+                                    : "/api/chat"}
                         </span>
                       </p>
                     </div>
@@ -3645,7 +4065,10 @@ export default function ApiTestPage() {
                         <button
                           type="button"
                           onClick={sendConsoleRequest}
-                          disabled={isChatLoading}
+                          disabled={
+                            (selectedApi === "llm" && isChatLoading) ||
+                            (selectedApi === "adCopy" && isAdCopyLoading)
+                          }
                           className={[
                             "rounded-xl border px-5 py-3 text-xs font-medium transition-colors",
                             "border-[#10b981]/40 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981]/15",
@@ -3653,7 +4076,10 @@ export default function ApiTestPage() {
                             consoleSubmitShake ? "console-shake" : "",
                           ].join(" ")}
                         >
-                          {isChatLoading ? "전송 중..." : "요청 전송"}
+                          {(selectedApi === "llm" && isChatLoading) ||
+                          (selectedApi === "adCopy" && isAdCopyLoading)
+                            ? "전송 중..."
+                            : "요청 전송"}
                         </button>
                       </div>
                     </div>
@@ -3730,6 +4156,21 @@ export default function ApiTestPage() {
                           </>
                         }
                       />
+                    ) : selectedApi === "adCopy" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={adCopyDevCodeOpen}
+                        setDevCodeOpen={setAdCopyDevCodeOpen}
+                        devCodeCopied={adCopyDevCodeCopied}
+                        setDevCodeCopied={setAdCopyDevCodeCopied}
+                        codePython={adCopyDevCodePython}
+                        footer={
+                          <>
+                            데모 앱은{" "}
+                            <span className="text-foreground/80">/api/ad-copy</span>{" "}
+                            프록시를 통해 광고 카피를 생성합니다.
+                          </>
+                        }
+                      />
                     ) : selectedApi === "tts" ? (
                       <PlaygroundDeveloperCodeSection
                         devCodeOpen={ttsDevCodeOpen}
@@ -3768,9 +4209,12 @@ export default function ApiTestPage() {
                       </div>
                     ) : null}
 
-                    {isChatLoading ? (
+                    {(selectedApi === "llm" && isChatLoading) ||
+                    (selectedApi === "adCopy" && isAdCopyLoading) ? (
                       <div className="rounded-xl border border-[#10b981]/25 bg-[#10b981]/5 p-3 text-xs text-[#10b981]">
-                        답변 생성 중... (응답 대기)
+                        {selectedApi === "adCopy"
+                          ? "카피 생성 중... (응답 대기)"
+                          : "답변 생성 중... (응답 대기)"}
                       </div>
                     ) : null}
                   </div>
@@ -3780,6 +4224,7 @@ export default function ApiTestPage() {
 
             {workflowBannerMounted &&
             (selectedApi === "llm" ||
+              selectedApi === "adCopy" ||
               selectedApi === "reranker" ||
               selectedApi === "embedding" ||
               selectedApi === "tts" ||

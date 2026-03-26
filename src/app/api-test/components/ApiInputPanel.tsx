@@ -1,6 +1,7 @@
 import type React from "react";
 
 import type { ApiId } from "../lib/types";
+import { ChatMarkdown } from "./ChatMarkdown";
 
 type SttHelpTooltipId = "vad" | "beam";
 
@@ -15,6 +16,19 @@ type Props = {
   isChatLoading: boolean;
   llmTemperature: number;
   setLlmTemperature: React.Dispatch<React.SetStateAction<number>>;
+
+  // Ad Copy input
+  handleAdCopyRun: () => void;
+  adCopyBrief: string;
+  setAdCopyBrief: React.Dispatch<React.SetStateAction<string>>;
+  adCopyTone: string;
+  setAdCopyTone: React.Dispatch<React.SetStateAction<string>>;
+  adCopyChannel: string;
+  setAdCopyChannel: React.Dispatch<React.SetStateAction<string>>;
+  adCopyTemperature: number;
+  setAdCopyTemperature: React.Dispatch<React.SetStateAction<number>>;
+  isAdCopyLoading: boolean;
+  adCopyResult: string | null;
 
   // Embedding input
   handleEmbeddingRun: () => void;
@@ -109,6 +123,18 @@ export function ApiInputPanel({
   llmTemperature,
   setLlmTemperature,
 
+  handleAdCopyRun,
+  adCopyBrief,
+  setAdCopyBrief,
+  adCopyTone,
+  setAdCopyTone,
+  adCopyChannel,
+  setAdCopyChannel,
+  adCopyTemperature,
+  setAdCopyTemperature,
+  isAdCopyLoading,
+  adCopyResult,
+
   handleEmbeddingRun,
   embeddingText,
   setEmbeddingText,
@@ -175,7 +201,12 @@ export function ApiInputPanel({
       className={
         selectedApi === "reranker"
           ? "hidden"
-          : "flex-shrink-0 border-t border-white/5 bg-background/20 p-2"
+          : [
+              "flex-shrink-0 bg-background/20 p-2",
+              selectedApi === "adCopy"
+                ? "border-b border-white/5"
+                : "border-t border-white/5",
+            ].join(" ")
       }
     >
       {selectedApi === "llm" ? (
@@ -259,6 +290,142 @@ export function ApiInputPanel({
                 톤을 맞추고 싶을 땐 낮게, 아이디어나 문장을 넓게 펼치고 싶을
                 땐 높게 써보세요.
               </p>
+            </div>
+          </div>
+        </form>
+      ) : null}
+
+      {selectedApi === "adCopy" ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAdCopyRun();
+          }}
+        >
+          <div className="flex flex-col gap-3">
+            <div>
+              <p className="font-mono text-xs text-foreground/60">브리프 (필수)</p>
+              <textarea
+                value={adCopyBrief}
+                onChange={(e) => setAdCopyBrief(e.target.value)}
+                rows={3}
+                placeholder="제품·서비스 설명을 입력하세요"
+                className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="font-mono text-xs text-foreground/60">톤 (선택)</p>
+                <input
+                  type="text"
+                  value={adCopyTone}
+                  onChange={(e) => setAdCopyTone(e.target.value)}
+                  placeholder="예: 친근, 전문"
+                  className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                />
+              </div>
+              <div>
+                <p className="font-mono text-xs text-foreground/60">채널 (선택)</p>
+                <input
+                  type="text"
+                  value={adCopyChannel}
+                  onChange={(e) => setAdCopyChannel(e.target.value)}
+                  placeholder="예: SNS 배너"
+                  className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-mono text-xs text-foreground/60">Temperature</p>
+                <span className="font-mono text-xs text-foreground/70">
+                  {adCopyTemperature.toFixed(2)}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={adCopyTemperature}
+                onChange={(e) =>
+                  setAdCopyTemperature(Number(e.target.value) || 0.7)
+                }
+                className="mt-2 w-full accent-[#10b981]"
+              />
+              <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
+                <span className="text-foreground/55">Temperature</span>는 문구가
+                얼마나 “정해진 느낌”으로 나올지를 조절해요.{" "}
+                <span className="text-foreground/60">낮으면</span> 비슷하고
+                안정적인 카피를,{" "}
+                <span className="text-foreground/60">높으면</span> 표현이 더
+                다양해지고 때로는 예측하기 어려울 수 있어요. 브랜드 톤을 맞추고
+                싶을 땐 낮게, 여러 버전을 넓게 시도해 보고 싶을 땐 높게
+                써보세요.
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isAdCopyLoading || !adCopyBrief.trim()}
+                className={[
+                  "inline-flex items-center gap-2 rounded-xl px-6 py-3 font-medium text-background transition-all",
+                  "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                ].join(" ")}
+              >
+                {isAdCopyLoading ? (
+                  <>
+                    <svg
+                      className="h-4 w-4 animate-spin text-background"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                    <span>카피 생성 중...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>카피 생성</span>
+                    <span className="transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-[#10b981]/25 bg-background/35 p-4 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)]">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-mono text-xs font-medium text-[#10b981]">
+                  생성 결과
+                </p>
+                {isAdCopyLoading ? (
+                  <span className="text-[11px] text-foreground/50">생성 중…</span>
+                ) : adCopyResult ? (
+                  <span className="text-[11px] text-foreground/50">완료</span>
+                ) : null}
+              </div>
+              <div className="mt-3 max-h-[min(50vh,440px)] min-h-[140px] overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3">
+                {isAdCopyLoading ? (
+                  <p className="text-sm leading-relaxed text-foreground/55">
+                    카피를 생성하는 중입니다…
+                  </p>
+                ) : adCopyResult ? (
+                  <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+                    <ChatMarkdown content={adCopyResult} />
+                  </div>
+                ) : (
+                  <p className="text-sm leading-relaxed text-foreground/45">
+                    <span className="text-foreground/65">카피 생성</span>을 누르면
+                    이곳에 생성된 문구가 표시됩니다.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </form>

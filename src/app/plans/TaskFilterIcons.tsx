@@ -79,6 +79,16 @@ export function IconMic(props: { className?: string }) {
   );
 }
 
+/** 광고 카피 / 문구 작성 */
+export function IconPenLine(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </IconBase>
+  );
+}
+
 export function PlanTaskIcon({
   task,
   className = "h-4 w-4",
@@ -89,6 +99,8 @@ export function PlanTaskIcon({
   switch (task) {
     case "Text Generation":
       return <IconSparkles className={className} />;
+    case "Ad Copy":
+      return <IconPenLine className={className} />;
     case "Embedding":
       return <IconLayers className={className} />;
     case "Reranker":

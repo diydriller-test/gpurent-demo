@@ -18,7 +18,14 @@ import { IconLayers, PlanTaskIcon } from "./TaskFilterIcons";
 
 function getApiTask(api: Api): PlanTask | null {
   const k = api.task_key;
-  if (k === "Text Generation" || k === "Embedding" || k === "Reranker" || k === "TTS" || k === "STT") {
+  if (
+    k === "Text Generation" ||
+    k === "Ad Copy" ||
+    k === "Embedding" ||
+    k === "Reranker" ||
+    k === "TTS" ||
+    k === "STT"
+  ) {
     return k;
   }
   return inferPlanTask(api.name);
@@ -487,7 +494,11 @@ function PlansPageContent() {
                       {PLAN_TASK_KEYS.map((t) => {
                         const isActive = filterTasks[t] && !isAllTasksActive;
                         const label =
-                          t === "Text Generation" ? "Text" : t;
+                          t === "Text Generation"
+                            ? "Text"
+                            : t === "Ad Copy"
+                              ? "카피"
+                              : t;
 
                         return (
                           <button

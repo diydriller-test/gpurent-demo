@@ -1,6 +1,6 @@
 "use client";
 
-type ApiId = "llm" | "embedding" | "reranker" | "tts" | "stt";
+type ApiId = "llm" | "adCopy" | "embedding" | "reranker" | "tts" | "stt";
 
 type Props = {
   selectedApi: ApiId;
@@ -32,9 +32,25 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
     selectedApi !== "llm" &&
     selectedApi !== "reranker" &&
     selectedApi !== "embedding" &&
-    selectedApi !== "tts"
+    selectedApi !== "tts" &&
+    selectedApi !== "adCopy"
   ) {
     return null;
+  }
+
+  if (selectedApi === "adCopy") {
+    return (
+      <p className="text-sm leading-relaxed text-foreground/90">
+        <span className="mr-2">✍️</span>
+        <span className="font-semibold text-foreground">
+          광고 카피 초안이 준비됐습니다.
+        </span>{" "}
+        <GuideApiLink label="Text" api="llm" onNavigateApi={onNavigateApi} />로
+        문안을 다듬거나,{" "}
+        <GuideApiLink label="TTS" api="tts" onNavigateApi={onNavigateApi} />로
+        내레이션을 만들어 보세요.
+      </p>
+    );
   }
 
   if (selectedApi === "reranker") {

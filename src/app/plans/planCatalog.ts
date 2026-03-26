@@ -34,6 +34,12 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     company_id: 1,
     company_name: "GPU Modu",
   },
+  {
+    id: 91006,
+    name: "GPT-OSS Ad Copy API",
+    company_id: 1,
+    company_name: "GPU Modu",
+  },
 ];
 
 /**
@@ -91,6 +97,7 @@ export const DEMO_PLANS_THREE_TIERS: Plan[] = [
 /** api-test `selectedApi`와 동일한 문자열 (쿼리 `?chapter=` 값) */
 export type PlansChapterParam =
   | "llm"
+  | "adCopy"
   | "embedding"
   | "reranker"
   | "tts"
@@ -102,6 +109,8 @@ export function chapterQueryToPlanTask(
   switch (chapter) {
     case "llm":
       return "Text Generation";
+    case "adCopy":
+      return "Ad Copy";
     case "embedding":
       return "Embedding";
     case "reranker":
@@ -118,6 +127,7 @@ export function chapterQueryToPlanTask(
 /** api-test 마켓플레이스 Tasks와 동일 */
 export type PlanTask =
   | "Text Generation"
+  | "Ad Copy"
   | "Embedding"
   | "Reranker"
   | "TTS"
@@ -125,6 +135,7 @@ export type PlanTask =
 
 export const PLAN_TASK_KEYS: PlanTask[] = [
   "Text Generation",
+  "Ad Copy",
   "Embedding",
   "Reranker",
   "TTS",
@@ -139,6 +150,11 @@ const TASK_META: Record<
     sublabel: "GPT-OSS • Text Generation",
     modelDisplay: "gpt-oss-120B",
     tags: ["#LLM", "#Text-Gen"],
+  },
+  "Ad Copy": {
+    sublabel: "GPT-OSS • Ad Copy",
+    modelDisplay: "gpt-oss-120B",
+    tags: ["#Ad-Copy", "#LLM", "#Marketing"],
   },
   Embedding: {
     sublabel: "Qwen-Embedding • Embedding",
@@ -171,6 +187,11 @@ export function inferPlanTask(name: string): PlanTask | null {
   if (/embed|embedding/i.test(n)) return "Embedding";
   if (/\bstt\b|speech-to-text|transcri/i.test(n)) return "STT";
   if (/\btts\b|text-to-speech/i.test(n)) return "TTS";
+  if (
+    /\bad[-\s]?copy\b|광고\s*카피|advertising\s*copy|copywriting/i.test(name)
+  ) {
+    return "Ad Copy";
+  }
   if (
     /\bllm\b|\bgpt\b|chat|text.?gen|oss|completion|openai|language.?model/i.test(
       n,

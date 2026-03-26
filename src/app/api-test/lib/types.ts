@@ -1,4 +1,10 @@
-export type ApiId = "llm" | "embedding" | "reranker" | "tts" | "stt";
+export type ApiId =
+  | "llm"
+  | "adCopy"
+  | "embedding"
+  | "reranker"
+  | "tts"
+  | "stt";
 
 export type ChatRole = "user" | "assistant";
 

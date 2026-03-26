@@ -11,6 +11,10 @@ type Props = {
   formatTime: (ts: number) => string;
   liveNowText: string;
 
+  // Ad Copy
+  adCopyResult: string | null;
+  isAdCopyLoading: boolean;
+
   // Embedding
   embeddingVector: number[] | null;
   embeddingError: string | null;
@@ -55,6 +59,8 @@ export function ApiOutputPanel({
   endRef,
   formatTime,
   liveNowText,
+  adCopyResult,
+  isAdCopyLoading,
   embeddingVector,
   embeddingError,
   isEmbeddingLoading,
@@ -180,6 +186,44 @@ export function ApiOutputPanel({
                 })}
 
                 <div ref={endRef} />
+              </div>
+            );
+
+          case "adCopy":
+            return (
+              <div className="flex h-full min-h-[min(45vh,380px)] flex-col">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-[#10b981]/20 bg-background/40">
+                  <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="font-mono text-xs text-[#10b981]/90">
+                        생성 결과
+                      </p>
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {isAdCopyLoading ? "생성 중..." : "미리보기"}
+                      </p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-foreground/45">
+                        카피 생성 후 이 영역에 문구가 표시됩니다.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                    {isAdCopyLoading ? (
+                      <div className="flex h-full min-h-[200px] items-center justify-center text-sm text-foreground/60">
+                        카피를 생성하는 중입니다…
+                      </div>
+                    ) : adCopyResult ? (
+                      <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+                        <ChatMarkdown content={adCopyResult} />
+                      </div>
+                    ) : (
+                      <div className="flex h-full min-h-[200px] items-center justify-center text-center text-sm text-foreground/60">
+                        위에서 브리프를 입력한 뒤{" "}
+                        <span className="text-foreground/80">카피 생성</span>을
+                        누르면 여기에 결과가 나옵니다.
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             );
 

@@ -3,7 +3,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { NextResponse } from "next/server";
-import { resolveUpstreamBasePath } from "../_lib/upstream";
+import { getVllmOpenAiConfig } from "../_lib/vllm";
 
 export async function POST(req: Request) {
   try {
@@ -17,13 +17,14 @@ export async function POST(req: Request) {
           ? Number(temperature)
           : 0.1;
 
-    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const { baseURL, apiKey } = getVllmOpenAiConfig();
 
     const llm = new ChatOpenAI({
-      configuration: { baseURL: `${upstreamBasePath}/llm/v1` },
-      // apiKey: process.env.OPENAI_API_KEY, // .env.local의 키 사용
+      apiKey,
+      configuration: { baseURL },
       model: "openai/gpt-oss-120b",
       temperature: parsedTemperature,
+      timeout: 120_000,
     });
 
     const prompt =
