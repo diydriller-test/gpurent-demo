@@ -81,32 +81,33 @@ const DEFAULT_NER_TEXT = `내일 오후 2시에 세현님과 영등포 코그로
 const DEFAULT_TEXT_TO_SQL_TEXT = `최근 일주일 동안 PROTOCL 앱에서 루틴을 10번 이상 완료한 유저 수 알려줘.`;
 const TTS_LANGUAGE_OPTIONS = [
   { value: "auto", label: "Auto" },
-  { value: "zh", label: "Chinese" },
-  { value: "en", label: "English" },
-  { value: "ja", label: "Japanese" },
-  { value: "ko", label: "Korean" },
-  { value: "fr", label: "French" },
-  { value: "de", label: "German" },
-  { value: "es", label: "Spanish" },
-  { value: "pt", label: "Portuguese" },
-  { value: "ru", label: "Russian" },
+  { value: "chinese", label: "Chinese" },
+  { value: "english", label: "English" },
+  { value: "french", label: "French" },
+  { value: "german", label: "German" },
+  { value: "italian", label: "Italian" },
+  { value: "japanese", label: "Japanese" },
+  { value: "korean", label: "Korean" },
+  { value: "portuguese", label: "Portuguese" },
+  { value: "russian", label: "Russian" },
+  { value: "spanish", label: "Spanish" },
 ] as const;
 type TtsLanguage = (typeof TTS_LANGUAGE_OPTIONS)[number]["value"];
 const DEFAULT_TTS_LANGUAGE: TtsLanguage = "auto";
 
 const TTS_SPEAKER_OPTIONS = [
-  { value: "Aiden", label: "Aiden" },
-  { value: "Dylan", label: "Dylan" },
-  { value: "Eric", label: "Eric" },
-  { value: "Ono_anna", label: "Ono_anna" },
-  { value: "Ryan", label: "Ryan" },
-  { value: "Serena", label: "Serena" },
-  { value: "Sohee", label: "Sohee" },
-  { value: "Uncle_fu", label: "Uncle_fu" },
-  { value: "Vivian", label: "Vivian" },
+  { value: "aiden", label: "Aiden" },
+  { value: "dylan", label: "Dylan" },
+  { value: "eric", label: "Eric" },
+  { value: "ono_anna", label: "Ono_anna" },
+  { value: "ryan", label: "Ryan" },
+  { value: "serena", label: "Serena" },
+  { value: "sohee", label: "Sohee" },
+  { value: "uncle_fu", label: "Uncle_fu" },
+  { value: "vivian", label: "Vivian" },
 ] as const;
 type TtsSpeaker = (typeof TTS_SPEAKER_OPTIONS)[number]["value"];
-const DEFAULT_TTS_SPEAKER: TtsSpeaker = "Ryan";
+const DEFAULT_TTS_SPEAKER: TtsSpeaker = "ryan";
 
 const DEFAULT_RERANK_QUERY =
   "사람 없고 한적한 곳에서 힐링하고 싶어";
@@ -2811,7 +2812,7 @@ export default function ApiTestPage() {
   }
 
   /** Playground·개발자 콘솔 공통 — Mock TTS(클라이언트 합성, 서버 라우트 없음) */
-  function runTtsMockSynthesis(
+  async function runTtsSynthesis(
     textForWaveform: string,
     languageForSynthesis: TtsLanguage = ttsLanguage,
     speakerForSynthesis: TtsSpeaker = ttsSpeaker,
@@ -2838,29 +2839,57 @@ export default function ApiTestPage() {
       error: null,
     });
 
-    window.setTimeout(() => {
-      const url = createMockTtsWavBlobUrl(2.5);
+    try {
+      const token = getToken();
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          text: trimmed,
+          language: languageForSynthesis,
+          speaker: speakerForSynthesis,
+          instruct: styleInstructionForSynthesis?.trim() || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const errJson = (await res.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
+        patchConsole("tts", {
+          statusCode: res.status,
+          statusLine: `${res.status} ${res.statusText || "Error"}`,
+          responseJson: JSON.stringify(errJson ?? {}, null, 2),
+          error: errJson?.error ?? "TTS 요청에 실패했습니다.",
+        });
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
       ttsBlobUrlRef.current = url;
+
+      setAudioUrl(url);
+      setTtsPlaying(false);
+      setTtsProgress(0);
+      setTtsWave(mockWaveform(trimmed, 32)); // 파형은 텍스트 기반 데모 유지
 
       const responseBody: Record<string, unknown> = {
         status: "success",
         audio_url: url,
-        duration: "14.2s",
-        model: "Qwen3-TTS",
         language: languageForSynthesis,
         speaker: speakerForSynthesis,
-        format: "mp3",
+        content_type: blob.type || res.headers.get("content-type") || null,
       };
       const styleTrim = styleInstructionForSynthesis.trim();
-      if (styleTrim) {
-        responseBody.style_instruction = styleTrim;
-      }
-
+      if (styleTrim) responseBody.instruct = styleTrim;
       setMockResponse(responseBody);
-      setAudioUrl(url);
-      setTtsWave(mockWaveform(trimmed, 32));
-      setTtsDurationMs(14_200);
-      setIsSynthesizing(false);
 
       patchConsole("tts", {
         statusCode: 200,
@@ -2868,11 +2897,35 @@ export default function ApiTestPage() {
         responseJson: JSON.stringify(responseBody, null, 2),
         error: null,
       });
-    }, 1500);
+
+      // 응답 도착 시 자동 재생 시도 (브라우저 정책에 따라 실패할 수 있음)
+      window.setTimeout(() => {
+        const el = ttsAudioRef.current;
+        if (!el) return;
+        // src 반영 타이밍을 위해 재생은 다음 tick에 시도
+        void el
+          .play()
+          .then(() => {
+            setTtsPlaying(true);
+          })
+          .catch(() => {
+            setTtsPlaying(false);
+          });
+      }, 50);
+    } catch {
+      patchConsole("tts", {
+        statusCode: 500,
+        statusLine: "500 TTS Error",
+        responseJson: JSON.stringify({ error: "TTS request failed" }, null, 2),
+        error: "TTS API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.",
+      });
+    } finally {
+      setIsSynthesizing(false);
+    }
   }
 
   function handleTtsRun() {
-    runTtsMockSynthesis(ttsText, ttsLanguage, ttsSpeaker, ttsStyleInstruction);
+    void runTtsSynthesis(ttsText, ttsLanguage, ttsSpeaker, ttsStyleInstruction);
   }
 
   function handleTtsPlayPause() {
@@ -4055,7 +4108,7 @@ export default function ApiTestPage() {
         setTtsLanguage(language);
         setTtsSpeaker(speaker);
         setTtsStyleInstruction(styleInstruction);
-        runTtsMockSynthesis(text, language, speaker, styleInstruction);
+        void runTtsSynthesis(text, language, speaker, styleInstruction);
         return;
       }
 
@@ -5599,7 +5652,7 @@ export default function ApiTestPage() {
                               setConsoleCopied(false);
                             }
                           }}
-                          disabled={!currentConsole.responseJson}
+                          disabled={!currentConsole.responseJson || selectedApi === "tts"}
                           className={[
                             "rounded-lg border px-3 py-1 text-[11px] font-mono transition-colors",
                             "border-white/10 bg-background/30 text-foreground/70",
@@ -5610,7 +5663,23 @@ export default function ApiTestPage() {
                           {consoleCopied ? "복사됨" : "복사"}
                         </button>
                       </div>
-                      {currentConsole.responseJson ? (
+                      {selectedApi === "tts" ? (
+                        <div className="mt-3">
+                          {audioUrl ? (
+                            <button
+                              type="button"
+                              onClick={handleTtsPlayPause}
+                              className="inline-flex items-center gap-2 rounded-xl bg-[#10b981] px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+                            >
+                              {ttsPlaying ? "일시정지" : "오디오 재생"}
+                            </button>
+                          ) : (
+                            <div className="text-xs text-foreground/60">
+                              아직 오디오 응답이 없습니다.
+                            </div>
+                          )}
+                        </div>
+                      ) : currentConsole.responseJson ? (
                         <JsonCode text={currentConsole.responseJson} />
                       ) : (
                         <div className="mt-3 text-xs text-foreground/60">

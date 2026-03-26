@@ -458,10 +458,10 @@ export function ApiOutputPanel({
                 />
                 <div className="rounded-2xl border border-[#10b981]/25 bg-[#10b981]/5 p-4">
                   <p className="font-mono text-xs text-[#10b981]">
-                    Audio Player (Mock 데모)
+                    Audio Player
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
-                    합성 후 실제 blob 오디오 재생 · 진행률은 재생 시간에 따라
+                    합성 후 실제 오디오 재생 · 진행률은 재생 시간에 따라
                     갱신됩니다.
                   </p>
 
@@ -517,13 +517,7 @@ export function ApiOutputPanel({
                     </div>
                   </div>
 
-                  {ttsMockResponse ? (
-                    <p className="mt-2 text-[10px] text-foreground/45">
-                      Mock 응답 duration:{" "}
-                      {String(ttsMockResponse.duration ?? "—")} · 모델:{" "}
-                      {String(ttsMockResponse.model ?? "—")}
-                    </p>
-                  ) : null}
+                  {ttsMockResponse ? null : null}
 
                   <div className="relative mt-4 overflow-hidden rounded-xl border border-[#10b981]/15 bg-zinc-950/40 px-2 py-3">
                     <div className="flex h-14 items-end justify-center gap-[3px]">
