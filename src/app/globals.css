@@ -88,13 +88,12 @@ body {
 }
 
 .api-belt-track {
-  animation: apiBeltScroll 28s linear infinite;
-  will-change: transform;
+  /* JS 기반 scroll로 이동하므로 CSS 애니메이션은 비활성화 */
+  animation: none;
+  will-change: auto;
 }
 
-.api-belt-wrap:hover .api-belt-track {
-  animation-play-state: paused;
-}
+/* JS pause가 우선이므로 CSS hover pause는 비활성화 */
 
 .api-belt-card {
   position: relative;
@@ -114,4 +113,46 @@ body {
     0 0 22px rgba(0, 212, 170, 0.14),
     0 0 48px rgba(0, 212, 170, 0.1);
   transform: translateY(-2px);
+}
+
+/* Under-belt horizontal carousel scrollbar (make it visible) */
+.under-api-carousel {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 212, 170, 0.45) rgba(255, 255, 255, 0.06);
+}
+
+.under-api-carousel::-webkit-scrollbar {
+  height: 10px;
+}
+
+.under-api-carousel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 9999px;
+}
+
+.under-api-carousel::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 170, 0.45);
+  border-radius: 9999px;
+  border: 2px solid rgba(10, 14, 23, 1);
+}
+
+/* API belt scrollbar (make it visible) */
+.api-belt-wrap {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 212, 170, 0.45) rgba(255, 255, 255, 0.06);
+}
+
+.api-belt-wrap::-webkit-scrollbar {
+  height: 10px;
+}
+
+.api-belt-wrap::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 9999px;
+}
+
+.api-belt-wrap::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 170, 0.45);
+  border-radius: 9999px;
+  border: 2px solid rgba(10, 14, 23, 1);
 }
