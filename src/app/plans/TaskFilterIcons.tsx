@@ -112,6 +112,16 @@ export function IconSentiment(props: { className?: string }) {
   );
 }
 
+/** 텍스트 태그 / NER */
+export function IconTag(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 2H2v10l9.29 9.29a1 1 0 001.41 0l6.59-6.59a1 1 0 000-1.41L12 2z" />
+      <path d="M7 7h.01" />
+    </IconBase>
+  );
+}
+
 export function PlanTaskIcon({
   task,
   className = "h-4 w-4",
@@ -128,6 +138,8 @@ export function PlanTaskIcon({
       return <IconTextSummary className={className} />;
     case "Sentiment Analysis":
       return <IconSentiment className={className} />;
+    case "NER":
+      return <IconTag className={className} />;
     case "Embedding":
       return <IconLayers className={className} />;
     case "Reranker":

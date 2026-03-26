@@ -114,6 +114,30 @@ const SECTIONS: DocSection[] = [
     ],
   },
   {
+    id: "ner",
+    title: "NER (개체명 인식)",
+    method: "POST",
+    path: "/api/ner",
+    description:
+      "문장에서 인물·장소·조직·시간·금액 등 개체를 찾아 label·category와 함께 배열로 반환합니다.",
+    requestLabel: "본문 (application/json)",
+    request: `{
+  "text": "분석할 문장(필수)",
+  "temperature": 0.1
+}`,
+    responseLabel: "성공 (200)",
+    response: `{
+  "entities": [
+    { "text": "세현", "label": "PER", "category": "Person / 인물" },
+    { "text": "3,000,000원", "label": "MON", "category": "Money / 금액" }
+  ]
+}`,
+    notes: [
+      "`entities`는 원문에 실제로 등장한 표면 형태 `text`와 태그 `label`, 설명 `category`를 포함합니다.",
+      "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
+    ],
+  },
+  {
     id: "embedding",
     title: "Embedding",
     method: "POST",

@@ -23,6 +23,7 @@ function getApiTask(api: Api): PlanTask | null {
     k === "Ad Copy" ||
     k === "Text Summary" ||
     k === "Sentiment Analysis" ||
+    k === "NER" ||
     k === "Embedding" ||
     k === "Reranker" ||
     k === "TTS" ||
@@ -504,7 +505,9 @@ function PlansPageContent() {
                                 ? "요약"
                                 : t === "Sentiment Analysis"
                                   ? "감정"
-                                  : t;
+                                  : t === "NER"
+                                    ? "개체명"
+                                    : t;
 
                         return (
                           <button

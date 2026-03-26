@@ -3,6 +3,7 @@ export type ApiId =
   | "adCopy"
   | "summarize"
   | "sentiment"
+  | "ner"
   | "embedding"
   | "reranker"
   | "tts"
@@ -12,6 +13,11 @@ export type ApiId =
 export type SentimentAnalysisPayload = {
   overall: { label: string; score: number };
   aspects: Array<{ aspect: string; label: string; score: number }>;
+};
+
+/** POST /api/ner 응답과 동일 구조 */
+export type NerPayload = {
+  entities: Array<{ text: string; label: string; category: string }>;
 };
 
 export type ChatRole = "user" | "assistant";

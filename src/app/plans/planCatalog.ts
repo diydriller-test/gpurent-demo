@@ -52,6 +52,12 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     company_id: 1,
     company_name: "GPU Modu",
   },
+  {
+    id: 91009,
+    name: "GPT-OSS NER API",
+    company_id: 1,
+    company_name: "GPU Modu",
+  },
 ];
 
 /**
@@ -112,6 +118,7 @@ export type PlansChapterParam =
   | "adCopy"
   | "summarize"
   | "sentiment"
+  | "ner"
   | "embedding"
   | "reranker"
   | "tts"
@@ -129,6 +136,8 @@ export function chapterQueryToPlanTask(
       return "Text Summary";
     case "sentiment":
       return "Sentiment Analysis";
+    case "ner":
+      return "NER";
     case "embedding":
       return "Embedding";
     case "reranker":
@@ -148,6 +157,7 @@ export type PlanTask =
   | "Ad Copy"
   | "Text Summary"
   | "Sentiment Analysis"
+  | "NER"
   | "Embedding"
   | "Reranker"
   | "TTS"
@@ -158,6 +168,7 @@ export const PLAN_TASK_KEYS: PlanTask[] = [
   "Ad Copy",
   "Text Summary",
   "Sentiment Analysis",
+  "NER",
   "Embedding",
   "Reranker",
   "TTS",
@@ -187,6 +198,11 @@ const TASK_META: Record<
     sublabel: "GPT-OSS • Sentiment",
     modelDisplay: "gpt-oss-120B",
     tags: ["#Sentiment", "#LLM", "#Reviews"],
+  },
+  NER: {
+    sublabel: "GPT-OSS • NER",
+    modelDisplay: "gpt-oss-120B",
+    tags: ["#NER", "#LLM", "#NLP"],
   },
   Embedding: {
     sublabel: "Qwen-Embedding • Embedding",
@@ -235,6 +251,12 @@ export function inferPlanTask(name: string): PlanTask | null {
     /review\s*sentiment/i.test(name)
   ) {
     return "Sentiment Analysis";
+  }
+  if (
+    /\bner\b|개체명|named[-\s]?entity|entity\s*recognition/i.test(n) ||
+    /\bner\s*api/i.test(name)
+  ) {
+    return "NER";
   }
   if (
     /\bllm\b|\bgpt\b|chat|text.?gen|oss|completion|openai|language.?model/i.test(

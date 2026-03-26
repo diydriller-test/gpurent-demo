@@ -26,7 +26,8 @@ import { buildSttDevCodePython } from "./lib/buildSttDevCodePython";
 import { buildAdCopyDevCodePython } from "./lib/buildAdCopyDevCodePython";
 import { buildSummarizeDevCodePython } from "./lib/buildSummarizeDevCodePython";
 import { buildSentimentDevCodePython } from "./lib/buildSentimentDevCodePython";
-import type { SentimentAnalysisPayload } from "./lib/types";
+import { buildNerDevCodePython } from "./lib/buildNerDevCodePython";
+import type { NerPayload, SentimentAnalysisPayload } from "./lib/types";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 
 type ApiId =
@@ -34,6 +35,7 @@ type ApiId =
   | "adCopy"
   | "summarize"
   | "sentiment"
+  | "ner"
   | "embedding"
   | "reranker"
   | "tts"
@@ -67,6 +69,8 @@ const DEFAULT_SUMMARY_TEXT = `지난 분기 고객 리뷰와 내부 VOC를 종�
 
 const DEFAULT_SENTIMENT_TEXT =
   "치킨은 맛있는데 배송이 1시간 넘게 걸렸어요. 포장은 괜찮았어요.";
+
+const DEFAULT_NER_TEXT = `내일 오후 2시에 세현님과 영등포 코그로보 사무실에서 3,000,000원 규모의 프로젝트 계약건으로 미팅이 있습니다.`;
 const TTS_LANGUAGE_OPTIONS = [
   { value: "auto", label: "Auto" },
   { value: "zh", label: "Chinese" },
@@ -335,6 +339,15 @@ function IconSentiment(props: { className?: string }) {
       <path d="M9 9h.01" />
       <path d="M15 9h.01" />
       <circle cx="12" cy="12" r="10" />
+    </IconBase>
+  );
+}
+
+function IconTag(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 2H2v10l9.29 9.29a1 1 0 001.41 0l6.59-6.59a1 1 0 000-1.41L12 2z" />
+      <path d="M7 7h.01" />
     </IconBase>
   );
 }
@@ -728,6 +741,48 @@ function tryParseSentimentConsoleToPlayground(jsonText: string): {
   }
 }
 
+function buildNerConsoleRequestJson(text: string, temperature: number) {
+  return JSON.stringify(
+    {
+      text,
+      temperature,
+    },
+    null,
+    2,
+  );
+}
+
+function tryParseNerConsoleToPlayground(jsonText: string): {
+  text?: string;
+  temperature?: number;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      text?: unknown;
+      temperature?: unknown;
+    };
+    const out: {
+      text?: string;
+      temperature?: number;
+    } = {};
+
+    if (typeof parsed.text === "string") out.text = parsed.text;
+    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+      out.temperature = clamp(parsed.temperature, 0, 1);
+    } else if (
+      typeof parsed.temperature === "string" &&
+      parsed.temperature.trim() !== "" &&
+      Number.isFinite(Number(parsed.temperature))
+    ) {
+      out.temperature = clamp(Number(parsed.temperature), 0, 1);
+    }
+
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 /** Embedding Playground ↔ Developer Console 동기화용 Request JSON */
 function buildEmbeddingConsoleRequestJson(inputText: string) {
   return JSON.stringify(
@@ -998,6 +1053,11 @@ export default function ApiTestPage() {
         description: "리뷰 감정 분석 · 측면별 긍·부정·점수 (GPT-OSS)",
       },
       {
+        id: "ner",
+        name: "NER",
+        description: "개체명 인식 · 인물·장소·시간·금액 등 추출 (GPT-OSS)",
+      },
+      {
         id: "embedding",
         name: "Embedding",
         description: "문장을 벡터로 변환",
@@ -1043,6 +1103,7 @@ export default function ApiTestPage() {
       api === "adCopy" ||
       api === "summarize" ||
       api === "sentiment" ||
+      api === "ner" ||
       api === "embedding" ||
       api === "reranker" ||
       api === "tts" ||
@@ -1083,6 +1144,14 @@ export default function ApiTestPage() {
   const [sentimentDevCodeOpen, setSentimentDevCodeOpen] = useState(false);
   const [sentimentDevCodeCopied, setSentimentDevCodeCopied] = useState(false);
 
+  const [nerText, setNerText] = useState(DEFAULT_NER_TEXT);
+  const [nerTemperature, setNerTemperature] = useState(0.1);
+  const [nerResult, setNerResult] = useState<NerPayload | null>(null);
+  const [nerError, setNerError] = useState<string | null>(null);
+  const [isNerLoading, setIsNerLoading] = useState(false);
+  const [nerDevCodeOpen, setNerDevCodeOpen] = useState(false);
+  const [nerDevCodeCopied, setNerDevCodeCopied] = useState(false);
+
   type ConsoleState = {
     requestJson: string;
     responseJson: string;
@@ -1112,6 +1181,9 @@ export default function ApiTestPage() {
     }
     if (api === "sentiment") {
       return buildSentimentConsoleRequestJson(DEFAULT_SENTIMENT_TEXT, 0.2);
+    }
+    if (api === "ner") {
+      return buildNerConsoleRequestJson(DEFAULT_NER_TEXT, 0.1);
     }
     if (api === "reranker") {
       return buildRerankConsoleRequestJson(
@@ -1155,6 +1227,7 @@ export default function ApiTestPage() {
       adCopy: createDefaultConsoleState("adCopy"),
       summarize: createDefaultConsoleState("summarize"),
       sentiment: createDefaultConsoleState("sentiment"),
+      ner: createDefaultConsoleState("ner"),
       embedding: createDefaultConsoleState("embedding"),
       reranker: createDefaultConsoleState("reranker"),
       tts: createDefaultConsoleState("tts"),
@@ -1172,6 +1245,7 @@ export default function ApiTestPage() {
     | "Ad Copy"
     | "Text Summary"
     | "Sentiment Analysis"
+    | "NER"
     | "Embedding"
     | "Reranker"
     | "TTS"
@@ -1225,6 +1299,15 @@ export default function ApiTestPage() {
         model: "GPT-OSS-120B • Sentiment",
         modelSizeB: 120,
         taskTags: ["#LLM", "#Sentiment", "#Reviews"],
+        formats: ["vLLM", "Transformers", "ONNX"],
+      },
+      {
+        id: "ner-gpt-oss",
+        task: "NER",
+        apiId: "ner",
+        model: "GPT-OSS-120B • NER",
+        modelSizeB: 120,
+        taskTags: ["#LLM", "#NER", "#NLP"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
@@ -1282,6 +1365,7 @@ export default function ApiTestPage() {
     "Ad Copy": true,
     "Text Summary": true,
     "Sentiment Analysis": true,
+    NER: true,
     Embedding: true,
     Reranker: true,
     TTS: true,
@@ -1294,6 +1378,7 @@ export default function ApiTestPage() {
       "Ad Copy",
       "Text Summary",
       "Sentiment Analysis",
+      "NER",
       "Embedding",
       "Reranker",
       "TTS",
@@ -1321,7 +1406,11 @@ export default function ApiTestPage() {
                 taskParam === "review-sentiment" ||
                 taskParam === "감정"
               ? "Sentiment Analysis"
-              : taskParam === "embedding"
+              : taskParam === "ner" ||
+                  taskParam === "named-entity" ||
+                  taskParam === "개체명"
+                ? "NER"
+                : taskParam === "embedding"
               ? "Embedding"
               : taskParam === "reranker" || taskParam === "rerank"
                 ? "Reranker"
@@ -1347,6 +1436,7 @@ export default function ApiTestPage() {
     if (targetTask === "Ad Copy") setSelectedApi("adCopy");
     if (targetTask === "Text Summary") setSelectedApi("summarize");
     if (targetTask === "Sentiment Analysis") setSelectedApi("sentiment");
+    if (targetTask === "NER") setSelectedApi("ner");
     if (targetTask === "Embedding") setSelectedApi("embedding");
     if (targetTask === "Reranker") setSelectedApi("reranker");
     if (targetTask === "TTS") setSelectedApi("tts");
@@ -1370,6 +1460,7 @@ export default function ApiTestPage() {
     if (active === "Ad Copy") return "AdCopy";
     if (active === "Text Summary") return "TextSummary";
     if (active === "Sentiment Analysis") return "SentimentAnalysis";
+    if (active === "NER") return "NERTask";
     if (active === "Embedding") return "Embedding";
     if (active === "Reranker") return "Rerank";
     if (active === "TTS" || active === "STT") return "TTS/STT";
@@ -1439,6 +1530,20 @@ export default function ApiTestPage() {
               측면별 점수
             </span>
             로 브랜드 평판·이슈를 빠르게 파악하는 GPT-OSS 기반 서비스입니다.
+          </>
+        );
+      case "NERTask":
+        return (
+          <>
+            🏷️{" "}
+            <span className="text-[#10b981] font-semibold">
+              개체명 인식 (NER)
+            </span>
+            : 인물·장소·시간·금액 등을{" "}
+            <span className="text-[#10b981] font-semibold">
+              label·category로 정형 추출
+            </span>
+            하는 GPT-OSS 기반 서비스입니다.
           </>
         );
       case "Embedding":
@@ -1547,6 +1652,15 @@ export default function ApiTestPage() {
         temperature: sentimentTemperature,
       }),
     [sentimentText, sentimentTemperature],
+  );
+
+  const nerDevCodePython = useMemo(
+    () =>
+      buildNerDevCodePython({
+        text: nerText,
+        temperature: nerTemperature,
+      }),
+    [nerText, nerTemperature],
   );
 
   // Reranker
@@ -1720,11 +1834,15 @@ export default function ApiTestPage() {
   const sentimentHasWorkflowResult =
     sentimentAnalysis !== null && !sentimentError;
 
+  const nerHasWorkflowResult =
+    nerResult !== null && !nerError;
+
   const hasWorkflowBannerResult =
     (selectedApi === "llm" && llmHasWorkflowResult) ||
     (selectedApi === "adCopy" && adCopyHasWorkflowResult) ||
     (selectedApi === "summarize" && summarizeHasWorkflowResult) ||
     (selectedApi === "sentiment" && sentimentHasWorkflowResult) ||
+    (selectedApi === "ner" && nerHasWorkflowResult) ||
     (selectedApi === "embedding" && embeddingHasWorkflowResult) ||
     (selectedApi === "reranker" && rerankerHasWorkflowResult) ||
     (selectedApi === "tts" && ttsHasWorkflowResult) ||
@@ -1808,6 +1926,8 @@ export default function ApiTestPage() {
         return <IconTextSummary className={base} />;
       case "Sentiment Analysis":
         return <IconSentiment className={base} />;
+      case "NER":
+        return <IconTag className={base} />;
       case "Embedding":
         return <IconLayers className={base} />;
       case "Reranker":
@@ -1959,6 +2079,20 @@ export default function ApiTestPage() {
   }, [sentimentText, sentimentTemperature]);
 
   useEffect(() => {
+    const nextRequestJson = buildNerConsoleRequestJson(nerText, nerTemperature);
+    setConsoleByApi((prev) => {
+      if (prev.ner.requestJson === nextRequestJson) return prev;
+      return {
+        ...prev,
+        ner: {
+          ...prev.ner,
+          requestJson: nextRequestJson,
+        },
+      };
+    });
+  }, [nerText, nerTemperature]);
+
+  useEffect(() => {
     const nextRequestJson = buildEmbeddingConsoleRequestJson(embeddingText);
 
     setConsoleByApi((prev) => {
@@ -2021,6 +2155,8 @@ export default function ApiTestPage() {
         return "요약할 본문은 하단 입력에서 수정하세요.";
       case "sentiment":
         return "분석할 리뷰는 하단 입력에서 수정하세요.";
+      case "ner":
+        return "개체를 추출할 문장은 하단 입력에서 수정하세요.";
       case "embedding":
         return "예: 벡터로 변환할 문장을 입력하세요…";
       case "reranker":
@@ -2111,6 +2247,17 @@ export default function ApiTestPage() {
       }
       if (parsed.temperature !== undefined) {
         setSentimentTemperature(parsed.temperature);
+      }
+      return;
+    }
+    if (selectedApi === "ner") {
+      const parsed = tryParseNerConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.text !== undefined) {
+        setNerText(parsed.text);
+      }
+      if (parsed.temperature !== undefined) {
+        setNerTemperature(parsed.temperature);
       }
       return;
     }
@@ -2233,6 +2380,12 @@ export default function ApiTestPage() {
       setSentimentAnalysis(null);
       setSentimentError(null);
     }
+    if (api === "ner") {
+      setNerText(DEFAULT_NER_TEXT);
+      setNerTemperature(0.1);
+      setNerResult(null);
+      setNerError(null);
+    }
     setConsoleCopied(false);
   }
 
@@ -2295,6 +2448,7 @@ export default function ApiTestPage() {
       next["Ad Copy"] = selectedApi === "adCopy";
       next["Text Summary"] = selectedApi === "summarize";
       next["Sentiment Analysis"] = selectedApi === "sentiment";
+      next.NER = selectedApi === "ner";
       next.Embedding = selectedApi === "embedding";
       next.Reranker = selectedApi === "reranker";
       next.TTS = selectedApi === "tts";
@@ -3192,6 +3346,83 @@ export default function ApiTestPage() {
     }
   }
 
+  function isNerPayload(d: unknown): d is NerPayload {
+    if (!d || typeof d !== "object") return false;
+    const o = d as Record<string, unknown>;
+    if (!Array.isArray(o.entities)) return false;
+    return o.entities.every((e) => {
+      if (!e || typeof e !== "object") return false;
+      const x = e as Record<string, unknown>;
+      return (
+        typeof x.text === "string" &&
+        typeof x.label === "string" &&
+        typeof x.category === "string"
+      );
+    });
+  }
+
+  async function handleNerRun() {
+    if (isNerLoading) return;
+    const text = nerText.trim();
+    if (!text) return;
+    setIsNerLoading(true);
+    setNerResult(null);
+    setNerError(null);
+    setConsoleCopied(false);
+    patchConsole("ner", {
+      statusCode: null,
+      statusLine: "Pending...",
+      requestJson: buildNerConsoleRequestJson(nerText, nerTemperature),
+      responseJson: "",
+      error: null,
+    });
+    try {
+      const token = getToken();
+      const res = await fetch("/api/ner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          text,
+          temperature: nerTemperature,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as unknown;
+      patchConsole("ner", {
+        statusCode: res.status,
+        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+        responseJson: JSON.stringify(data ?? {}, null, 2),
+      });
+      if (!res.ok) {
+        if (res.status === 429) setLimitExceededModalOpen(true);
+        const msg =
+          typeof data === "object" &&
+          data !== null &&
+          typeof (data as { error?: unknown }).error === "string"
+            ? (data as { error: string }).error
+            : "요청에 실패했습니다.";
+        setNerError(msg);
+        return;
+      }
+      if (!isNerPayload(data)) {
+        setNerError("응답 형식을 해석하지 못했습니다.");
+        return;
+      }
+      setNerResult(data);
+    } catch {
+      patchConsole("ner", {
+        statusLine: "—",
+        statusCode: 500,
+        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+      });
+      setNerError("서버 연결에 실패했습니다.");
+    } finally {
+      setIsNerLoading(false);
+    }
+  }
+
   async function onSend(e: React.FormEvent) {
     e.preventDefault();
     if (selectedApi !== "llm") return;
@@ -3386,7 +3617,8 @@ export default function ApiTestPage() {
       (targetApi === "llm" && isChatLoading) ||
       (targetApi === "adCopy" && isAdCopyLoading) ||
       (targetApi === "summarize" && isSummarizeLoading) ||
-      (targetApi === "sentiment" && isSentimentLoading)
+      (targetApi === "sentiment" && isSentimentLoading) ||
+      (targetApi === "ner" && isNerLoading)
     ) {
       return;
     }
@@ -3865,6 +4097,94 @@ export default function ApiTestPage() {
         return;
       }
 
+      if (targetApi === "ner") {
+        const body = parsed as {
+          text?: unknown;
+          temperature?: unknown;
+        };
+        const textBody =
+          typeof body.text === "string" ? body.text.trim() : "";
+        if (!textBody) {
+          patchConsole("ner", {
+            error: "`text` 문자열을 확인해주세요.",
+            statusLine: "—",
+            statusCode: null,
+            responseJson: "",
+          });
+          setConsoleSubmitShake(true);
+          window.setTimeout(() => {
+            setConsoleSubmitShake(false);
+          }, 420);
+          return;
+        }
+
+        const parsedTemperature =
+          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+            ? body.temperature
+            : typeof body.temperature === "string" &&
+                body.temperature.trim() &&
+                Number.isFinite(Number(body.temperature))
+              ? Number(body.temperature)
+              : nerTemperature;
+
+        setIsNerLoading(true);
+        setNerResult(null);
+        setNerError(null);
+        setNerText(textBody);
+        setNerTemperature(
+          Math.min(1, Math.max(0, parsedTemperature)),
+        );
+
+        try {
+          const token = getToken();
+          const res = await fetch("/api/ner", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              text: textBody,
+              temperature: parsedTemperature,
+            }),
+          });
+          const data = (await res.json().catch(() => null)) as unknown;
+          patchConsole("ner", {
+            statusCode: res.status,
+            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+            responseJson: JSON.stringify(data ?? {}, null, 2),
+          });
+          consoleAlreadySet = true;
+
+          if (!res.ok) {
+            if (res.status === 429) setLimitExceededModalOpen(true);
+            const msg =
+              typeof data === "object" &&
+              data !== null &&
+              typeof (data as { error?: unknown }).error === "string"
+                ? (data as { error: string }).error
+                : "요청에 실패했습니다.";
+            setNerError(msg);
+            return;
+          }
+          if (!isNerPayload(data)) {
+            setNerError("응답 형식을 해석하지 못했습니다.");
+            return;
+          }
+          setNerResult(data);
+        } catch {
+          patchConsole("ner", {
+            statusLine: "—",
+            statusCode: 500,
+            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+          });
+          setNerError("서버 연결에 실패했습니다.");
+        } finally {
+          setIsNerLoading(false);
+        }
+        return;
+      }
+
       if (targetApi !== "llm") {
         patchConsole(targetApi, {
           statusLine: "—",
@@ -4222,7 +4542,9 @@ export default function ApiTestPage() {
                                 ? "요약"
                                 : t === "Sentiment Analysis"
                                   ? "감성"
-                                  : t;
+                                  : t === "NER"
+                                    ? "개체명"
+                                    : t;
 
                         return (
                           <button
@@ -4327,7 +4649,9 @@ export default function ApiTestPage() {
                                       ? "GPT-OSS • Text Summary"
                                       : item.task === "Sentiment Analysis"
                                         ? "GPT-OSS • Sentiment"
-                                        : item.task === "Embedding"
+                                        : item.task === "NER"
+                                          ? "GPT-OSS • NER"
+                                          : item.task === "Embedding"
                                       ? "Qwen-Embedding • Embedding"
                                       : item.task === "Reranker"
                                         ? "Qwen3 Reranker • Reranker"
@@ -4407,6 +4731,7 @@ export default function ApiTestPage() {
                           "Ad Copy": selectedApi === "adCopy",
                           "Text Summary": selectedApi === "summarize",
                           "Sentiment Analysis": selectedApi === "sentiment",
+                          NER: selectedApi === "ner",
                           Embedding: selectedApi === "embedding",
                           Reranker: selectedApi === "reranker",
                           TTS: selectedApi === "tts",
@@ -4437,6 +4762,7 @@ export default function ApiTestPage() {
                     selectedApi === "adCopy" ||
                     selectedApi === "summarize" ||
                     selectedApi === "sentiment" ||
+                    selectedApi === "ner" ||
                     selectedApi === "reranker" ||
                     selectedApi === "embedding" ||
                     selectedApi === "tts" ||
@@ -4451,7 +4777,9 @@ export default function ApiTestPage() {
                                 ? "High-Performance Infra • GPT-OSS-120B • 텍스트 요약"
                                 : selectedApi === "sentiment"
                                   ? "High-Performance Infra • GPT-OSS-120B • 리뷰 감정"
-                                  : selectedApi === "reranker"
+                                  : selectedApi === "ner"
+                                    ? "High-Performance Infra • GPT-OSS-120B • 개체명 인식"
+                                    : selectedApi === "reranker"
                                     ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
                                     : selectedApi === "embedding"
                                       ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
@@ -4533,6 +4861,30 @@ export default function ApiTestPage() {
                         </p>
                       </div>
                     ) : null}
+                    {selectedApi === "ner" ? (
+                      <div className="mt-3 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-3 text-[13px] leading-relaxed text-foreground/80">
+                        <p className="font-semibold text-foreground/95">
+                          NER (개체명 인식) API 안내
+                        </p>
+                        <p className="mt-2">
+                          한국어{" "}
+                          <span className="text-foreground/90">문장(text)</span>
+                          에서 인물·장소·시간·조직·금액 등을 찾아{" "}
+                          <span className="text-foreground/90">
+                            표면(text)·라벨(label)·범주(category)
+                          </span>
+                          로 반환합니다.{" "}
+                          <span className="text-[#10b981] font-medium">
+                            GPT-OSS-120B
+                          </span>
+                          가 문맥을 고려해 추출하며, Temperature는 표현·분류
+                          변동폭에 영향을 줍니다.
+                        </p>
+                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
+                          엔드포인트: POST /api/ner
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -4578,7 +4930,8 @@ export default function ApiTestPage() {
                 >
                   {selectedApi !== "adCopy" &&
                   selectedApi !== "summarize" &&
-                  selectedApi !== "sentiment" ? (
+                  selectedApi !== "sentiment" &&
+                  selectedApi !== "ner" ? (
                     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
                       <ApiOutputPanel
                         selectedApi={selectedApi}
@@ -4624,7 +4977,8 @@ export default function ApiTestPage() {
                     className={
                       selectedApi === "adCopy" ||
                       selectedApi === "summarize" ||
-                      selectedApi === "sentiment"
+                      selectedApi === "sentiment" ||
+                      selectedApi === "ner"
                         ? "min-h-0 flex-1 overflow-y-auto px-3 py-4"
                         : "flex-shrink-0"
                     }
@@ -4666,6 +5020,14 @@ export default function ApiTestPage() {
                       isSentimentLoading={isSentimentLoading}
                       sentimentAnalysis={sentimentAnalysis}
                       sentimentError={sentimentError}
+                      handleNerRun={() => void handleNerRun()}
+                      nerText={nerText}
+                      setNerText={setNerText}
+                      nerTemperature={nerTemperature}
+                      setNerTemperature={setNerTemperature}
+                      isNerLoading={isNerLoading}
+                      nerResult={nerResult}
+                      nerError={nerError}
                       handleEmbeddingRun={handleEmbeddingRun}
                       embeddingText={embeddingText}
                       setEmbeddingText={setEmbeddingText}
@@ -4760,7 +5122,9 @@ export default function ApiTestPage() {
                                   ? "/api/summarize"
                                   : selectedApi === "sentiment"
                                     ? "/api/sentiment"
-                                    : selectedApi === "stt"
+                                    : selectedApi === "ner"
+                                      ? "/api/ner"
+                                      : selectedApi === "stt"
                                   ? "/api/stt"
                                   : selectedApi === "tts"
                                     ? "Mock TTS (client)"
@@ -4824,7 +5188,8 @@ export default function ApiTestPage() {
                             (selectedApi === "llm" && isChatLoading) ||
                             (selectedApi === "adCopy" && isAdCopyLoading) ||
                             (selectedApi === "summarize" && isSummarizeLoading) ||
-                            (selectedApi === "sentiment" && isSentimentLoading)
+                            (selectedApi === "sentiment" && isSentimentLoading) ||
+                            (selectedApi === "ner" && isNerLoading)
                           }
                           className={[
                             "rounded-xl border px-5 py-3 text-xs font-medium transition-colors",
@@ -4836,7 +5201,8 @@ export default function ApiTestPage() {
                           {(selectedApi === "llm" && isChatLoading) ||
                           (selectedApi === "adCopy" && isAdCopyLoading) ||
                           (selectedApi === "summarize" && isSummarizeLoading) ||
-                          (selectedApi === "sentiment" && isSentimentLoading)
+                          (selectedApi === "sentiment" && isSentimentLoading) ||
+                          (selectedApi === "ner" && isNerLoading)
                             ? "전송 중..."
                             : "요청 전송"}
                         </button>
@@ -4960,6 +5326,21 @@ export default function ApiTestPage() {
                           </>
                         }
                       />
+                    ) : selectedApi === "ner" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={nerDevCodeOpen}
+                        setDevCodeOpen={setNerDevCodeOpen}
+                        devCodeCopied={nerDevCodeCopied}
+                        setDevCodeCopied={setNerDevCodeCopied}
+                        codePython={nerDevCodePython}
+                        footer={
+                          <>
+                            데모 앱은{" "}
+                            <span className="text-foreground/80">/api/ner</span>{" "}
+                            프록시를 통해 개체명 인식 결과를 반환합니다.
+                          </>
+                        }
+                      />
                     ) : selectedApi === "tts" ? (
                       <PlaygroundDeveloperCodeSection
                         devCodeOpen={ttsDevCodeOpen}
@@ -5001,7 +5382,8 @@ export default function ApiTestPage() {
                     {(selectedApi === "llm" && isChatLoading) ||
                     (selectedApi === "adCopy" && isAdCopyLoading) ||
                     (selectedApi === "summarize" && isSummarizeLoading) ||
-                    (selectedApi === "sentiment" && isSentimentLoading) ? (
+                    (selectedApi === "sentiment" && isSentimentLoading) ||
+                    (selectedApi === "ner" && isNerLoading) ? (
                       <div className="rounded-xl border border-[#10b981]/25 bg-[#10b981]/5 p-3 text-xs text-[#10b981]">
                         {selectedApi === "adCopy"
                           ? "카피 생성 중... (응답 대기)"
@@ -5009,7 +5391,9 @@ export default function ApiTestPage() {
                             ? "요약 생성 중... (응답 대기)"
                             : selectedApi === "sentiment"
                               ? "감정 분석 중... (응답 대기)"
-                              : "답변 생성 중... (응답 대기)"}
+                              : selectedApi === "ner"
+                                ? "개체명 추출 중... (응답 대기)"
+                                : "답변 생성 중... (응답 대기)"}
                       </div>
                     ) : null}
                   </div>
@@ -5022,6 +5406,7 @@ export default function ApiTestPage() {
               selectedApi === "adCopy" ||
               selectedApi === "summarize" ||
               selectedApi === "sentiment" ||
+              selectedApi === "ner" ||
               selectedApi === "reranker" ||
               selectedApi === "embedding" ||
               selectedApi === "tts" ||
