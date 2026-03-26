@@ -138,6 +138,27 @@ const SECTIONS: DocSection[] = [
     ],
   },
   {
+    id: "text-to-sql",
+    title: "Text-to-SQL (쿼리 자동 생성)",
+    method: "POST",
+    path: "/api/text-to-sql",
+    description:
+      "자연어 질문을 MySQL 호환 SELECT 문으로 변환합니다. 스키마가 없으면 질문 맥락에서 테이블·컬럼을 추정합니다.",
+    requestLabel: "본문 (application/json)",
+    request: `{
+  "text": "데이터베이스에 묻고 싶은 질문(필수)",
+  "temperature": 0.2
+}`,
+    responseLabel: "성공 (200)",
+    response: `{
+  "sql": "SELECT ..."
+}`,
+    notes: [
+      "`sql`은 단일 쿼리 문자열입니다. 데모는 읽기 전용 분석을 가정해 SELECT 위주로 유도합니다.",
+      "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
+    ],
+  },
+  {
     id: "embedding",
     title: "Embedding",
     method: "POST",

@@ -112,6 +112,17 @@ export function IconSentiment(props: { className?: string }) {
   );
 }
 
+/** 데이터베이스 / Text-to-SQL */
+export function IconDatabase(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+      <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+    </IconBase>
+  );
+}
+
 /** 텍스트 태그 / NER */
 export function IconTag(props: { className?: string }) {
   return (
@@ -140,6 +151,8 @@ export function PlanTaskIcon({
       return <IconSentiment className={className} />;
     case "NER":
       return <IconTag className={className} />;
+    case "Text-to-SQL":
+      return <IconDatabase className={className} />;
     case "Embedding":
       return <IconLayers className={className} />;
     case "Reranker":

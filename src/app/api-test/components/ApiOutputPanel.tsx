@@ -198,6 +198,9 @@ export function ApiOutputPanel({
           case "ner":
             return null;
 
+          case "textToSql":
+            return null;
+
           case "adCopy":
             return (
               <div className="flex h-full min-h-[min(45vh,380px)] flex-col">

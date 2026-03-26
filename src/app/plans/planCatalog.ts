@@ -58,6 +58,12 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     company_id: 1,
     company_name: "GPU Modu",
   },
+  {
+    id: 91010,
+    name: "GPT-OSS Text-to-SQL API",
+    company_id: 1,
+    company_name: "GPU Modu",
+  },
 ];
 
 /**
@@ -119,6 +125,7 @@ export type PlansChapterParam =
   | "summarize"
   | "sentiment"
   | "ner"
+  | "textToSql"
   | "embedding"
   | "reranker"
   | "tts"
@@ -138,6 +145,8 @@ export function chapterQueryToPlanTask(
       return "Sentiment Analysis";
     case "ner":
       return "NER";
+    case "textToSql":
+      return "Text-to-SQL";
     case "embedding":
       return "Embedding";
     case "reranker":
@@ -158,6 +167,7 @@ export type PlanTask =
   | "Text Summary"
   | "Sentiment Analysis"
   | "NER"
+  | "Text-to-SQL"
   | "Embedding"
   | "Reranker"
   | "TTS"
@@ -169,6 +179,7 @@ export const PLAN_TASK_KEYS: PlanTask[] = [
   "Text Summary",
   "Sentiment Analysis",
   "NER",
+  "Text-to-SQL",
   "Embedding",
   "Reranker",
   "TTS",
@@ -203,6 +214,11 @@ const TASK_META: Record<
     sublabel: "GPT-OSS • NER",
     modelDisplay: "gpt-oss-120B",
     tags: ["#NER", "#LLM", "#NLP"],
+  },
+  "Text-to-SQL": {
+    sublabel: "GPT-OSS • Text-to-SQL",
+    modelDisplay: "gpt-oss-120B",
+    tags: ["#Text-to-SQL", "#LLM", "#SQL"],
   },
   Embedding: {
     sublabel: "Qwen-Embedding • Embedding",
@@ -257,6 +273,14 @@ export function inferPlanTask(name: string): PlanTask | null {
     /\bner\s*api/i.test(name)
   ) {
     return "NER";
+  }
+  if (
+    /\btext[-\s]?to[-\s]?sql\b|nl2sql|natural\s*language.*sql|쿼리\s*자동|자연어.*sql|sql\s*생성/i.test(
+      n,
+    ) ||
+    /text[-\s]?to[-\s]?sql\s*api/i.test(name)
+  ) {
+    return "Text-to-SQL";
   }
   if (
     /\bllm\b|\bgpt\b|chat|text.?gen|oss|completion|openai|language.?model/i.test(

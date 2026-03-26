@@ -24,6 +24,7 @@ function getApiTask(api: Api): PlanTask | null {
     k === "Text Summary" ||
     k === "Sentiment Analysis" ||
     k === "NER" ||
+    k === "Text-to-SQL" ||
     k === "Embedding" ||
     k === "Reranker" ||
     k === "TTS" ||

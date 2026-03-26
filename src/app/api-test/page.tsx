@@ -27,7 +27,12 @@ import { buildAdCopyDevCodePython } from "./lib/buildAdCopyDevCodePython";
 import { buildSummarizeDevCodePython } from "./lib/buildSummarizeDevCodePython";
 import { buildSentimentDevCodePython } from "./lib/buildSentimentDevCodePython";
 import { buildNerDevCodePython } from "./lib/buildNerDevCodePython";
-import type { NerPayload, SentimentAnalysisPayload } from "./lib/types";
+import { buildTextToSqlDevCodePython } from "./lib/buildTextToSqlDevCodePython";
+import type {
+  NerPayload,
+  SentimentAnalysisPayload,
+  TextToSqlPayload,
+} from "./lib/types";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 
 type ApiId =
@@ -36,6 +41,7 @@ type ApiId =
   | "summarize"
   | "sentiment"
   | "ner"
+  | "textToSql"
   | "embedding"
   | "reranker"
   | "tts"
@@ -71,6 +77,8 @@ const DEFAULT_SENTIMENT_TEXT =
   "치킨은 맛있는데 배송이 1시간 넘게 걸렸어요. 포장은 괜찮았어요.";
 
 const DEFAULT_NER_TEXT = `내일 오후 2시에 세현님과 영등포 코그로보 사무실에서 3,000,000원 규모의 프로젝트 계약건으로 미팅이 있습니다.`;
+
+const DEFAULT_TEXT_TO_SQL_TEXT = `최근 일주일 동안 PROTOCL 앱에서 루틴을 10번 이상 완료한 유저 수 알려줘.`;
 const TTS_LANGUAGE_OPTIONS = [
   { value: "auto", label: "Auto" },
   { value: "zh", label: "Chinese" },
@@ -348,6 +356,16 @@ function IconTag(props: { className?: string }) {
     <IconBase {...props}>
       <path d="M12 2H2v10l9.29 9.29a1 1 0 001.41 0l6.59-6.59a1 1 0 000-1.41L12 2z" />
       <path d="M7 7h.01" />
+    </IconBase>
+  );
+}
+
+function IconDatabase(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+      <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
     </IconBase>
   );
 }
@@ -783,6 +801,48 @@ function tryParseNerConsoleToPlayground(jsonText: string): {
   }
 }
 
+function buildTextToSqlConsoleRequestJson(text: string, temperature: number) {
+  return JSON.stringify(
+    {
+      text,
+      temperature,
+    },
+    null,
+    2,
+  );
+}
+
+function tryParseTextToSqlConsoleToPlayground(jsonText: string): {
+  text?: string;
+  temperature?: number;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      text?: unknown;
+      temperature?: unknown;
+    };
+    const out: {
+      text?: string;
+      temperature?: number;
+    } = {};
+
+    if (typeof parsed.text === "string") out.text = parsed.text;
+    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+      out.temperature = clamp(parsed.temperature, 0, 1);
+    } else if (
+      typeof parsed.temperature === "string" &&
+      parsed.temperature.trim() !== "" &&
+      Number.isFinite(Number(parsed.temperature))
+    ) {
+      out.temperature = clamp(Number(parsed.temperature), 0, 1);
+    }
+
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 /** Embedding Playground ↔ Developer Console 동기화용 Request JSON */
 function buildEmbeddingConsoleRequestJson(inputText: string) {
   return JSON.stringify(
@@ -1058,6 +1118,11 @@ export default function ApiTestPage() {
         description: "개체명 인식 · 인물·장소·시간·금액 등 추출 (GPT-OSS)",
       },
       {
+        id: "textToSql",
+        name: "Text-to-SQL",
+        description: "자연어 질문을 SQL로 변환 · 분석·리포트 질의 (GPT-OSS)",
+      },
+      {
         id: "embedding",
         name: "Embedding",
         description: "문장을 벡터로 변환",
@@ -1104,6 +1169,7 @@ export default function ApiTestPage() {
       api === "summarize" ||
       api === "sentiment" ||
       api === "ner" ||
+      api === "textToSql" ||
       api === "embedding" ||
       api === "reranker" ||
       api === "tts" ||
@@ -1152,6 +1218,15 @@ export default function ApiTestPage() {
   const [nerDevCodeOpen, setNerDevCodeOpen] = useState(false);
   const [nerDevCodeCopied, setNerDevCodeCopied] = useState(false);
 
+  const [textToSqlText, setTextToSqlText] = useState(DEFAULT_TEXT_TO_SQL_TEXT);
+  const [textToSqlTemperature, setTextToSqlTemperature] = useState(0.2);
+  const [textToSqlResult, setTextToSqlResult] =
+    useState<TextToSqlPayload | null>(null);
+  const [textToSqlError, setTextToSqlError] = useState<string | null>(null);
+  const [isTextToSqlLoading, setIsTextToSqlLoading] = useState(false);
+  const [textToSqlDevCodeOpen, setTextToSqlDevCodeOpen] = useState(false);
+  const [textToSqlDevCodeCopied, setTextToSqlDevCodeCopied] = useState(false);
+
   type ConsoleState = {
     requestJson: string;
     responseJson: string;
@@ -1184,6 +1259,9 @@ export default function ApiTestPage() {
     }
     if (api === "ner") {
       return buildNerConsoleRequestJson(DEFAULT_NER_TEXT, 0.1);
+    }
+    if (api === "textToSql") {
+      return buildTextToSqlConsoleRequestJson(DEFAULT_TEXT_TO_SQL_TEXT, 0.2);
     }
     if (api === "reranker") {
       return buildRerankConsoleRequestJson(
@@ -1228,6 +1306,7 @@ export default function ApiTestPage() {
       summarize: createDefaultConsoleState("summarize"),
       sentiment: createDefaultConsoleState("sentiment"),
       ner: createDefaultConsoleState("ner"),
+      textToSql: createDefaultConsoleState("textToSql"),
       embedding: createDefaultConsoleState("embedding"),
       reranker: createDefaultConsoleState("reranker"),
       tts: createDefaultConsoleState("tts"),
@@ -1246,6 +1325,7 @@ export default function ApiTestPage() {
     | "Text Summary"
     | "Sentiment Analysis"
     | "NER"
+    | "Text-to-SQL"
     | "Embedding"
     | "Reranker"
     | "TTS"
@@ -1311,6 +1391,15 @@ export default function ApiTestPage() {
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
+        id: "text-to-sql-gpt-oss",
+        task: "Text-to-SQL",
+        apiId: "textToSql",
+        model: "GPT-OSS-120B • Text-to-SQL",
+        modelSizeB: 120,
+        taskTags: ["#LLM", "#SQL", "#Analytics"],
+        formats: ["vLLM", "Transformers", "ONNX"],
+      },
+      {
         id: "embedding-70b",
         task: "Embedding",
         apiId: "embedding",
@@ -1366,6 +1455,7 @@ export default function ApiTestPage() {
     "Text Summary": true,
     "Sentiment Analysis": true,
     NER: true,
+    "Text-to-SQL": true,
     Embedding: true,
     Reranker: true,
     TTS: true,
@@ -1379,6 +1469,7 @@ export default function ApiTestPage() {
       "Text Summary",
       "Sentiment Analysis",
       "NER",
+      "Text-to-SQL",
       "Embedding",
       "Reranker",
       "TTS",
@@ -1410,7 +1501,12 @@ export default function ApiTestPage() {
                   taskParam === "named-entity" ||
                   taskParam === "개체명"
                 ? "NER"
-                : taskParam === "embedding"
+                : taskParam === "text-to-sql" ||
+                    taskParam === "texttosql" ||
+                    taskParam === "nl2sql" ||
+                    taskParam === "쿼리"
+                  ? "Text-to-SQL"
+                  : taskParam === "embedding"
               ? "Embedding"
               : taskParam === "reranker" || taskParam === "rerank"
                 ? "Reranker"
@@ -1437,6 +1533,7 @@ export default function ApiTestPage() {
     if (targetTask === "Text Summary") setSelectedApi("summarize");
     if (targetTask === "Sentiment Analysis") setSelectedApi("sentiment");
     if (targetTask === "NER") setSelectedApi("ner");
+    if (targetTask === "Text-to-SQL") setSelectedApi("textToSql");
     if (targetTask === "Embedding") setSelectedApi("embedding");
     if (targetTask === "Reranker") setSelectedApi("reranker");
     if (targetTask === "TTS") setSelectedApi("tts");
@@ -1461,6 +1558,7 @@ export default function ApiTestPage() {
     if (active === "Text Summary") return "TextSummary";
     if (active === "Sentiment Analysis") return "SentimentAnalysis";
     if (active === "NER") return "NERTask";
+    if (active === "Text-to-SQL") return "TextToSqlTask";
     if (active === "Embedding") return "Embedding";
     if (active === "Reranker") return "Rerank";
     if (active === "TTS" || active === "STT") return "TTS/STT";
@@ -1544,6 +1642,20 @@ export default function ApiTestPage() {
               label·category로 정형 추출
             </span>
             하는 GPT-OSS 기반 서비스입니다.
+          </>
+        );
+      case "TextToSqlTask":
+        return (
+          <>
+            🗄️{" "}
+            <span className="text-[#10b981] font-semibold">
+              Text-to-SQL (쿼리 자동 생성)
+            </span>
+            : 기획·마케팅 질문을{" "}
+            <span className="text-[#10b981] font-semibold">
+              MySQL 호환 SELECT
+            </span>
+            로 바꿔 주는 GPT-OSS 기반 서비스입니다.
           </>
         );
       case "Embedding":
@@ -1661,6 +1773,15 @@ export default function ApiTestPage() {
         temperature: nerTemperature,
       }),
     [nerText, nerTemperature],
+  );
+
+  const textToSqlDevCodePython = useMemo(
+    () =>
+      buildTextToSqlDevCodePython({
+        text: textToSqlText,
+        temperature: textToSqlTemperature,
+      }),
+    [textToSqlText, textToSqlTemperature],
   );
 
   // Reranker
@@ -1837,12 +1958,16 @@ export default function ApiTestPage() {
   const nerHasWorkflowResult =
     nerResult !== null && !nerError;
 
+  const textToSqlHasWorkflowResult =
+    textToSqlResult !== null && !textToSqlError;
+
   const hasWorkflowBannerResult =
     (selectedApi === "llm" && llmHasWorkflowResult) ||
     (selectedApi === "adCopy" && adCopyHasWorkflowResult) ||
     (selectedApi === "summarize" && summarizeHasWorkflowResult) ||
     (selectedApi === "sentiment" && sentimentHasWorkflowResult) ||
     (selectedApi === "ner" && nerHasWorkflowResult) ||
+    (selectedApi === "textToSql" && textToSqlHasWorkflowResult) ||
     (selectedApi === "embedding" && embeddingHasWorkflowResult) ||
     (selectedApi === "reranker" && rerankerHasWorkflowResult) ||
     (selectedApi === "tts" && ttsHasWorkflowResult) ||
@@ -1928,6 +2053,8 @@ export default function ApiTestPage() {
         return <IconSentiment className={base} />;
       case "NER":
         return <IconTag className={base} />;
+      case "Text-to-SQL":
+        return <IconDatabase className={base} />;
       case "Embedding":
         return <IconLayers className={base} />;
       case "Reranker":
@@ -2093,6 +2220,23 @@ export default function ApiTestPage() {
   }, [nerText, nerTemperature]);
 
   useEffect(() => {
+    const nextRequestJson = buildTextToSqlConsoleRequestJson(
+      textToSqlText,
+      textToSqlTemperature,
+    );
+    setConsoleByApi((prev) => {
+      if (prev.textToSql.requestJson === nextRequestJson) return prev;
+      return {
+        ...prev,
+        textToSql: {
+          ...prev.textToSql,
+          requestJson: nextRequestJson,
+        },
+      };
+    });
+  }, [textToSqlText, textToSqlTemperature]);
+
+  useEffect(() => {
     const nextRequestJson = buildEmbeddingConsoleRequestJson(embeddingText);
 
     setConsoleByApi((prev) => {
@@ -2157,6 +2301,8 @@ export default function ApiTestPage() {
         return "분석할 리뷰는 하단 입력에서 수정하세요.";
       case "ner":
         return "개체를 추출할 문장은 하단 입력에서 수정하세요.";
+      case "textToSql":
+        return "SQL로 바꿀 자연어 질문은 하단 입력에서 수정하세요.";
       case "embedding":
         return "예: 벡터로 변환할 문장을 입력하세요…";
       case "reranker":
@@ -2258,6 +2404,17 @@ export default function ApiTestPage() {
       }
       if (parsed.temperature !== undefined) {
         setNerTemperature(parsed.temperature);
+      }
+      return;
+    }
+    if (selectedApi === "textToSql") {
+      const parsed = tryParseTextToSqlConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.text !== undefined) {
+        setTextToSqlText(parsed.text);
+      }
+      if (parsed.temperature !== undefined) {
+        setTextToSqlTemperature(parsed.temperature);
       }
       return;
     }
@@ -2386,6 +2543,12 @@ export default function ApiTestPage() {
       setNerResult(null);
       setNerError(null);
     }
+    if (api === "textToSql") {
+      setTextToSqlText(DEFAULT_TEXT_TO_SQL_TEXT);
+      setTextToSqlTemperature(0.2);
+      setTextToSqlResult(null);
+      setTextToSqlError(null);
+    }
     setConsoleCopied(false);
   }
 
@@ -2449,6 +2612,7 @@ export default function ApiTestPage() {
       next["Text Summary"] = selectedApi === "summarize";
       next["Sentiment Analysis"] = selectedApi === "sentiment";
       next.NER = selectedApi === "ner";
+      next["Text-to-SQL"] = selectedApi === "textToSql";
       next.Embedding = selectedApi === "embedding";
       next.Reranker = selectedApi === "reranker";
       next.TTS = selectedApi === "tts";
@@ -3423,6 +3587,77 @@ export default function ApiTestPage() {
     }
   }
 
+  function isTextToSqlPayload(d: unknown): d is TextToSqlPayload {
+    if (!d || typeof d !== "object") return false;
+    const o = d as Record<string, unknown>;
+    return typeof o.sql === "string" && o.sql.trim().length > 0;
+  }
+
+  async function handleTextToSqlRun() {
+    if (isTextToSqlLoading) return;
+    const text = textToSqlText.trim();
+    if (!text) return;
+    setIsTextToSqlLoading(true);
+    setTextToSqlResult(null);
+    setTextToSqlError(null);
+    setConsoleCopied(false);
+    patchConsole("textToSql", {
+      statusCode: null,
+      statusLine: "Pending...",
+      requestJson: buildTextToSqlConsoleRequestJson(
+        textToSqlText,
+        textToSqlTemperature,
+      ),
+      responseJson: "",
+      error: null,
+    });
+    try {
+      const token = getToken();
+      const res = await fetch("/api/text-to-sql", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          text,
+          temperature: textToSqlTemperature,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as unknown;
+      patchConsole("textToSql", {
+        statusCode: res.status,
+        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+        responseJson: JSON.stringify(data ?? {}, null, 2),
+      });
+      if (!res.ok) {
+        if (res.status === 429) setLimitExceededModalOpen(true);
+        const msg =
+          typeof data === "object" &&
+          data !== null &&
+          typeof (data as { error?: unknown }).error === "string"
+            ? (data as { error: string }).error
+            : "요청에 실패했습니다.";
+        setTextToSqlError(msg);
+        return;
+      }
+      if (!isTextToSqlPayload(data)) {
+        setTextToSqlError("응답 형식을 해석하지 못했습니다.");
+        return;
+      }
+      setTextToSqlResult(data);
+    } catch {
+      patchConsole("textToSql", {
+        statusLine: "—",
+        statusCode: 500,
+        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+      });
+      setTextToSqlError("서버 연결에 실패했습니다.");
+    } finally {
+      setIsTextToSqlLoading(false);
+    }
+  }
+
   async function onSend(e: React.FormEvent) {
     e.preventDefault();
     if (selectedApi !== "llm") return;
@@ -3618,7 +3853,8 @@ export default function ApiTestPage() {
       (targetApi === "adCopy" && isAdCopyLoading) ||
       (targetApi === "summarize" && isSummarizeLoading) ||
       (targetApi === "sentiment" && isSentimentLoading) ||
-      (targetApi === "ner" && isNerLoading)
+      (targetApi === "ner" && isNerLoading) ||
+      (targetApi === "textToSql" && isTextToSqlLoading)
     ) {
       return;
     }
@@ -4185,6 +4421,94 @@ export default function ApiTestPage() {
         return;
       }
 
+      if (targetApi === "textToSql") {
+        const body = parsed as {
+          text?: unknown;
+          temperature?: unknown;
+        };
+        const textBody =
+          typeof body.text === "string" ? body.text.trim() : "";
+        if (!textBody) {
+          patchConsole("textToSql", {
+            error: "`text` 문자열을 확인해주세요.",
+            statusLine: "—",
+            statusCode: null,
+            responseJson: "",
+          });
+          setConsoleSubmitShake(true);
+          window.setTimeout(() => {
+            setConsoleSubmitShake(false);
+          }, 420);
+          return;
+        }
+
+        const parsedTemperature =
+          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+            ? body.temperature
+            : typeof body.temperature === "string" &&
+                body.temperature.trim() &&
+                Number.isFinite(Number(body.temperature))
+              ? Number(body.temperature)
+              : textToSqlTemperature;
+
+        setIsTextToSqlLoading(true);
+        setTextToSqlResult(null);
+        setTextToSqlError(null);
+        setTextToSqlText(textBody);
+        setTextToSqlTemperature(
+          Math.min(1, Math.max(0, parsedTemperature)),
+        );
+
+        try {
+          const token = getToken();
+          const res = await fetch("/api/text-to-sql", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              text: textBody,
+              temperature: parsedTemperature,
+            }),
+          });
+          const data = (await res.json().catch(() => null)) as unknown;
+          patchConsole("textToSql", {
+            statusCode: res.status,
+            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+            responseJson: JSON.stringify(data ?? {}, null, 2),
+          });
+          consoleAlreadySet = true;
+
+          if (!res.ok) {
+            if (res.status === 429) setLimitExceededModalOpen(true);
+            const msg =
+              typeof data === "object" &&
+              data !== null &&
+              typeof (data as { error?: unknown }).error === "string"
+                ? (data as { error: string }).error
+                : "요청에 실패했습니다.";
+            setTextToSqlError(msg);
+            return;
+          }
+          if (!isTextToSqlPayload(data)) {
+            setTextToSqlError("응답 형식을 해석하지 못했습니다.");
+            return;
+          }
+          setTextToSqlResult(data);
+        } catch {
+          patchConsole("textToSql", {
+            statusLine: "—",
+            statusCode: 500,
+            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
+          });
+          setTextToSqlError("서버 연결에 실패했습니다.");
+        } finally {
+          setIsTextToSqlLoading(false);
+        }
+        return;
+      }
+
       if (targetApi !== "llm") {
         patchConsole(targetApi, {
           statusLine: "—",
@@ -4544,7 +4868,9 @@ export default function ApiTestPage() {
                                   ? "감성"
                                   : t === "NER"
                                     ? "개체명"
-                                    : t;
+                                    : t === "Text-to-SQL"
+                                      ? "SQL"
+                                      : t;
 
                         return (
                           <button
@@ -4651,7 +4977,9 @@ export default function ApiTestPage() {
                                         ? "GPT-OSS • Sentiment"
                                         : item.task === "NER"
                                           ? "GPT-OSS • NER"
-                                          : item.task === "Embedding"
+                                          : item.task === "Text-to-SQL"
+                                            ? "GPT-OSS • Text-to-SQL"
+                                            : item.task === "Embedding"
                                       ? "Qwen-Embedding • Embedding"
                                       : item.task === "Reranker"
                                         ? "Qwen3 Reranker • Reranker"
@@ -4732,6 +5060,7 @@ export default function ApiTestPage() {
                           "Text Summary": selectedApi === "summarize",
                           "Sentiment Analysis": selectedApi === "sentiment",
                           NER: selectedApi === "ner",
+                          "Text-to-SQL": selectedApi === "textToSql",
                           Embedding: selectedApi === "embedding",
                           Reranker: selectedApi === "reranker",
                           TTS: selectedApi === "tts",
@@ -4763,6 +5092,7 @@ export default function ApiTestPage() {
                     selectedApi === "summarize" ||
                     selectedApi === "sentiment" ||
                     selectedApi === "ner" ||
+                    selectedApi === "textToSql" ||
                     selectedApi === "reranker" ||
                     selectedApi === "embedding" ||
                     selectedApi === "tts" ||
@@ -4779,7 +5109,9 @@ export default function ApiTestPage() {
                                   ? "High-Performance Infra • GPT-OSS-120B • 리뷰 감정"
                                   : selectedApi === "ner"
                                     ? "High-Performance Infra • GPT-OSS-120B • 개체명 인식"
-                                    : selectedApi === "reranker"
+                                    : selectedApi === "textToSql"
+                                      ? "High-Performance Infra • GPT-OSS-120B • Text-to-SQL"
+                                      : selectedApi === "reranker"
                                     ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
                                     : selectedApi === "embedding"
                                       ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
@@ -4885,6 +5217,29 @@ export default function ApiTestPage() {
                         </p>
                       </div>
                     ) : null}
+                    {selectedApi === "textToSql" ? (
+                      <div className="mt-3 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-3 text-[13px] leading-relaxed text-foreground/80">
+                        <p className="font-semibold text-foreground/95">
+                          Text-to-SQL (쿼리 자동 생성) API 안내
+                        </p>
+                        <p className="mt-2">
+                          일상어로 된{" "}
+                          <span className="text-foreground/90">질문(text)</span>
+                          을 넣으면{" "}
+                          <span className="text-[#10b981] font-medium">
+                            GPT-OSS-120B
+                          </span>
+                          가 MySQL 호환{" "}
+                          <span className="text-foreground/90">SELECT</span> 형태의{" "}
+                          <span className="text-foreground/90">sql</span> 문자열로
+                          바꿉니다. 스키마가 없으면 질문 맥락에서 표·컬럼을
+                          추정합니다. Temperature는 문법·표현 변동에 영향을 줍니다.
+                        </p>
+                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
+                          엔드포인트: POST /api/text-to-sql
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -4931,7 +5286,8 @@ export default function ApiTestPage() {
                   {selectedApi !== "adCopy" &&
                   selectedApi !== "summarize" &&
                   selectedApi !== "sentiment" &&
-                  selectedApi !== "ner" ? (
+                  selectedApi !== "ner" &&
+                  selectedApi !== "textToSql" ? (
                     <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
                       <ApiOutputPanel
                         selectedApi={selectedApi}
@@ -4978,7 +5334,8 @@ export default function ApiTestPage() {
                       selectedApi === "adCopy" ||
                       selectedApi === "summarize" ||
                       selectedApi === "sentiment" ||
-                      selectedApi === "ner"
+                      selectedApi === "ner" ||
+                      selectedApi === "textToSql"
                         ? "min-h-0 flex-1 overflow-y-auto px-3 py-4"
                         : "flex-shrink-0"
                     }
@@ -5028,6 +5385,14 @@ export default function ApiTestPage() {
                       isNerLoading={isNerLoading}
                       nerResult={nerResult}
                       nerError={nerError}
+                      handleTextToSqlRun={() => void handleTextToSqlRun()}
+                      textToSqlText={textToSqlText}
+                      setTextToSqlText={setTextToSqlText}
+                      textToSqlTemperature={textToSqlTemperature}
+                      setTextToSqlTemperature={setTextToSqlTemperature}
+                      isTextToSqlLoading={isTextToSqlLoading}
+                      textToSqlResult={textToSqlResult}
+                      textToSqlError={textToSqlError}
                       handleEmbeddingRun={handleEmbeddingRun}
                       embeddingText={embeddingText}
                       setEmbeddingText={setEmbeddingText}
@@ -5124,7 +5489,9 @@ export default function ApiTestPage() {
                                     ? "/api/sentiment"
                                     : selectedApi === "ner"
                                       ? "/api/ner"
-                                      : selectedApi === "stt"
+                                      : selectedApi === "textToSql"
+                                        ? "/api/text-to-sql"
+                                        : selectedApi === "stt"
                                   ? "/api/stt"
                                   : selectedApi === "tts"
                                     ? "Mock TTS (client)"
@@ -5189,7 +5556,8 @@ export default function ApiTestPage() {
                             (selectedApi === "adCopy" && isAdCopyLoading) ||
                             (selectedApi === "summarize" && isSummarizeLoading) ||
                             (selectedApi === "sentiment" && isSentimentLoading) ||
-                            (selectedApi === "ner" && isNerLoading)
+                            (selectedApi === "ner" && isNerLoading) ||
+                            (selectedApi === "textToSql" && isTextToSqlLoading)
                           }
                           className={[
                             "rounded-xl border px-5 py-3 text-xs font-medium transition-colors",
@@ -5202,7 +5570,8 @@ export default function ApiTestPage() {
                           (selectedApi === "adCopy" && isAdCopyLoading) ||
                           (selectedApi === "summarize" && isSummarizeLoading) ||
                           (selectedApi === "sentiment" && isSentimentLoading) ||
-                          (selectedApi === "ner" && isNerLoading)
+                          (selectedApi === "ner" && isNerLoading) ||
+                          (selectedApi === "textToSql" && isTextToSqlLoading)
                             ? "전송 중..."
                             : "요청 전송"}
                         </button>
@@ -5341,6 +5710,23 @@ export default function ApiTestPage() {
                           </>
                         }
                       />
+                    ) : selectedApi === "textToSql" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={textToSqlDevCodeOpen}
+                        setDevCodeOpen={setTextToSqlDevCodeOpen}
+                        devCodeCopied={textToSqlDevCodeCopied}
+                        setDevCodeCopied={setTextToSqlDevCodeCopied}
+                        codePython={textToSqlDevCodePython}
+                        footer={
+                          <>
+                            데모 앱은{" "}
+                            <span className="text-foreground/80">
+                              /api/text-to-sql
+                            </span>{" "}
+                            프록시를 통해 자연어→SQL 결과를 반환합니다.
+                          </>
+                        }
+                      />
                     ) : selectedApi === "tts" ? (
                       <PlaygroundDeveloperCodeSection
                         devCodeOpen={ttsDevCodeOpen}
@@ -5383,7 +5769,8 @@ export default function ApiTestPage() {
                     (selectedApi === "adCopy" && isAdCopyLoading) ||
                     (selectedApi === "summarize" && isSummarizeLoading) ||
                     (selectedApi === "sentiment" && isSentimentLoading) ||
-                    (selectedApi === "ner" && isNerLoading) ? (
+                    (selectedApi === "ner" && isNerLoading) ||
+                    (selectedApi === "textToSql" && isTextToSqlLoading) ? (
                       <div className="rounded-xl border border-[#10b981]/25 bg-[#10b981]/5 p-3 text-xs text-[#10b981]">
                         {selectedApi === "adCopy"
                           ? "카피 생성 중... (응답 대기)"
@@ -5393,7 +5780,9 @@ export default function ApiTestPage() {
                               ? "감정 분석 중... (응답 대기)"
                               : selectedApi === "ner"
                                 ? "개체명 추출 중... (응답 대기)"
-                                : "답변 생성 중... (응답 대기)"}
+                                : selectedApi === "textToSql"
+                                  ? "SQL 생성 중... (응답 대기)"
+                                  : "답변 생성 중... (응답 대기)"}
                       </div>
                     ) : null}
                   </div>
@@ -5407,6 +5796,7 @@ export default function ApiTestPage() {
               selectedApi === "summarize" ||
               selectedApi === "sentiment" ||
               selectedApi === "ner" ||
+              selectedApi === "textToSql" ||
               selectedApi === "reranker" ||
               selectedApi === "embedding" ||
               selectedApi === "tts" ||

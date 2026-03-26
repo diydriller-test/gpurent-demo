@@ -4,6 +4,7 @@ export type ApiId =
   | "summarize"
   | "sentiment"
   | "ner"
+  | "textToSql"
   | "embedding"
   | "reranker"
   | "tts"
@@ -18,6 +19,11 @@ export type SentimentAnalysisPayload = {
 /** POST /api/ner 응답과 동일 구조 */
 export type NerPayload = {
   entities: Array<{ text: string; label: string; category: string }>;
+};
+
+/** POST /api/text-to-sql 응답과 동일 구조 */
+export type TextToSqlPayload = {
+  sql: string;
 };
 
 export type ChatRole = "user" | "assistant";

@@ -6,6 +6,7 @@ type ApiId =
   | "summarize"
   | "sentiment"
   | "ner"
+  | "textToSql"
   | "embedding"
   | "reranker"
   | "tts"
@@ -45,9 +46,29 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
     selectedApi !== "adCopy" &&
     selectedApi !== "summarize" &&
     selectedApi !== "sentiment" &&
-    selectedApi !== "ner"
+    selectedApi !== "ner" &&
+    selectedApi !== "textToSql"
   ) {
     return null;
+  }
+
+  if (selectedApi === "textToSql") {
+    return (
+      <p className="text-sm leading-relaxed text-foreground/90">
+        <span className="mr-2">🗄️</span>
+        <span className="font-semibold text-foreground">
+          SQL 초안이 준비됐습니다.
+        </span>{" "}
+        <GuideApiLink label="Text" api="llm" onNavigateApi={onNavigateApi} />로
+        주석·설명을 붙이거나,{" "}
+        <GuideApiLink
+          label="Text Summary"
+          api="summarize"
+          onNavigateApi={onNavigateApi}
+        />
+        로 결과를 한 줄로 요약해 보세요.
+      </p>
+    );
   }
 
   if (selectedApi === "ner") {
