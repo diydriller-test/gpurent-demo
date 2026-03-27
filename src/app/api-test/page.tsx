@@ -5157,14 +5157,16 @@ export default function ApiTestPage() {
             <section className="w-full lg:min-w-0 lg:flex-1">
               <div
                 className={`relative flex min-h-0 flex-col rounded-2xl border border-white/5 bg-surface/35 backdrop-blur-xl overflow-hidden ${
-                  selectedApi === "adCopy"
+                  selectedApi === "adCopy" || selectedApi === "summarize"
                     ? "h-[calc(100vh-200px)]"
                     : "h-[calc(100vh-240px)]"
                 }`}
               >
                 <div
                   className={`flex items-center justify-between gap-3 border-b border-white/5 bg-background/20 ${
-                    selectedApi === "adCopy" ? "p-3" : "p-4"
+                    selectedApi === "adCopy" || selectedApi === "summarize"
+                      ? "p-3"
+                      : "p-4"
                   }`}
                 >
                   <div className="min-w-0">
@@ -5214,7 +5216,13 @@ export default function ApiTestPage() {
                     selectedApi === "embedding" ||
                     selectedApi === "tts" ||
                     selectedApi === "stt" ? (
-                      <div className="mt-2">
+                      <div
+                        className={
+                          selectedApi === "adCopy" || selectedApi === "summarize"
+                            ? "mt-1"
+                            : "mt-2"
+                        }
+                      >
                         <span className="inline-flex items-center rounded-xl border border-[#10b981]/30 bg-[#10b981]/10 px-3 py-1 text-[11px] font-mono text-[#10b981]">
                           {selectedApi === "llm"
                             ? "High-Performance Infra • GPT-OSS-120B • 실시간"
@@ -5266,24 +5274,23 @@ export default function ApiTestPage() {
                       </div>
                     ) : null}
                     {selectedApi === "summarize" ? (
-                      <div className="mt-3 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-3 text-[13px] leading-relaxed text-foreground/80">
+                      <div className="mt-2 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
                         <p className="font-semibold text-foreground/95">
                           Text Summary API 안내
                         </p>
-                        <p className="mt-2">
+                        <p className="mt-1.5">
                           긴{" "}
-                          <span className="text-foreground/90">본문(text)</span>
-                          을 넣으면{" "}
+                          <span className="text-foreground/90">본문(text)</span>을
+                          넣으면{" "}
                           <span className="text-[#10b981] font-medium">
                             GPT-OSS-120B
                           </span>
-                          가 핵심만 추려 한국어로 압축합니다. 선택 필드{" "}
+                          가 핵심만 압축합니다.{" "}
                           <span className="text-foreground/90">style</span>로
-                          불릿·문단 형식 등을 힌트로 줄 수 있고, Temperature로
-                          표현 다양성을 조절할 수 있어요.
-                        </p>
-                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
-                          엔드포인트: POST /api/summarize
+                          형식 힌트, Temperature로 다양성 조절.{" "}
+                          <span className="font-mono text-[11px] text-foreground/45">
+                            POST /api/summarize
+                          </span>
                         </p>
                       </div>
                     ) : null}
@@ -5450,10 +5457,9 @@ export default function ApiTestPage() {
                   ) : null}
                   <div
                     className={
-                      selectedApi === "adCopy"
+                      selectedApi === "adCopy" || selectedApi === "summarize"
                         ? "min-h-0 flex-1 overflow-y-auto px-3 py-3"
-                        : selectedApi === "summarize" ||
-                            selectedApi === "sentiment" ||
+                        : selectedApi === "sentiment" ||
                             selectedApi === "ner" ||
                             selectedApi === "textToSql"
                           ? "min-h-0 flex-1 overflow-y-auto px-3 py-4"
@@ -5595,7 +5601,7 @@ export default function ApiTestPage() {
             <aside className="w-full lg:w-[38%] lg:min-w-[320px] lg:flex-shrink-0">
               <div
                 className={`flex min-h-0 flex-col rounded-2xl border border-white/5 bg-surface/35 backdrop-blur-xl overflow-hidden ${
-                  selectedApi === "adCopy"
+                  selectedApi === "adCopy" || selectedApi === "summarize"
                     ? "h-[calc(100vh-200px)]"
                     : "h-[calc(100vh-240px)]"
                 }`}
