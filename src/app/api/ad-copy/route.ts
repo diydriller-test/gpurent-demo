@@ -2,6 +2,11 @@ import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { NextResponse } from "next/server";
+import {
+  DEFAULT_AD_COPY_LANGUAGE,
+  getAdCopyLanguageLabel,
+  isAdCopyLanguageCode,
+} from "@/lib/adCopyLanguages";
 import { getVllmOpenAiConfig } from "../_lib/vllm";
 
 type AdCopyBody = {
@@ -9,6 +14,7 @@ type AdCopyBody = {
   tone?: unknown;
   channel?: unknown;
   temperature?: unknown;
+  language?: unknown;
 };
 
 function parseTemperature(value: unknown): number {
@@ -42,6 +48,25 @@ export async function POST(req: Request) {
     const toneLine = tone || "(지정 없음 — 적절한 톤을 선택하세요)";
     const channelLine = channel || "(지정 없음 — 범용 카피로 작성하세요)";
 
+    const rawLang =
+      typeof body?.language === "string" ? body.language.trim() : "";
+    const languageCode =
+      rawLang === ""
+        ? DEFAULT_AD_COPY_LANGUAGE
+        : isAdCopyLanguageCode(rawLang)
+          ? rawLang
+          : null;
+    if (languageCode === null) {
+      return NextResponse.json(
+        {
+          error:
+            "`language`는 지원되는 언어 코드여야 합니다. (예: ko, en, ja, zh)",
+        },
+        { status: 400 },
+      );
+    }
+    const languageLabel = getAdCopyLanguageLabel(languageCode);
+
     const parsedTemperature = parseTemperature(body?.temperature);
 
     const { baseURL, apiKey } = getVllmOpenAiConfig();
@@ -54,8 +79,11 @@ export async function POST(req: Request) {
       timeout: 120_000,
     });
 
-    const prompt = ChatPromptTemplate.fromTemplate(`당신은 한국어 광고 카피 전문가입니다.
-아래 브리프를 바탕으로 효과적인 광고 문구를 한국어로 작성하세요.
+    const prompt = ChatPromptTemplate.fromTemplate(`당신은 글로벌 광고 카피 전문가입니다.
+아래 브리프를 바탕으로 효과적인 광고 문구를 작성하세요.
+
+[출력 언어]
+반드시 {languageLabel}로만 작성하세요. 헤드라인·본문·슬로건 모두 이 언어로만 출력합니다. 다른 언어를 섞지 마세요.
 
 [브리프]
 {brief}
@@ -69,7 +97,6 @@ export async function POST(req: Request) {
 요구사항:
 - 헤드라인(또는 메인 슬로건)과 본문(또는 짧은 설명 문구)을 구분해 제시
 - 과장·허위 표현은 피하고, 브리프에 맞는 매력 포인트를 살릴 것
-- 출력은 한국어만 사용
 - 불필요한 메타 설명(“다음은 카피입니다” 등)은 생략`);
 
     const chain = prompt.pipe(llm).pipe(new StringOutputParser());
@@ -78,6 +105,7 @@ export async function POST(req: Request) {
       brief,
       toneLine,
       channelLine,
+      languageLabel,
     });
 
     return NextResponse.json({ copy });

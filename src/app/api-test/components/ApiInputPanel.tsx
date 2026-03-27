@@ -1,5 +1,6 @@
 import type React from "react";
 
+import { AD_COPY_LANGUAGE_OPTIONS } from "@/lib/adCopyLanguages";
 import type {
   ApiId,
   NerPayload,
@@ -7,6 +8,12 @@ import type {
   TextToSqlPayload,
 } from "../lib/types";
 import { ChatMarkdown } from "./ChatMarkdown";
+
+/** range 슬라이더 값 파싱 — `0`은 falsy라 `|| 기본값` 패턴으로는 0을 쓸 수 없음 */
+function parseTemperatureRange(value: string, fallback: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
 
 type SttHelpTooltipId = "vad" | "beam";
 
@@ -30,6 +37,8 @@ type Props = {
   setAdCopyTone: React.Dispatch<React.SetStateAction<string>>;
   adCopyChannel: string;
   setAdCopyChannel: React.Dispatch<React.SetStateAction<string>>;
+  adCopyLanguage: string;
+  setAdCopyLanguage: React.Dispatch<React.SetStateAction<string>>;
   adCopyTemperature: number;
   setAdCopyTemperature: React.Dispatch<React.SetStateAction<number>>;
   isAdCopyLoading: boolean;
@@ -129,13 +138,9 @@ type Props = {
   SttHelpTooltip: React.ComponentType<{
     id: SttHelpTooltipId;
     pinnedId: SttHelpTooltipId | null;
-    setPinnedId: React.Dispatch<
-      React.SetStateAction<SttHelpTooltipId | null>
-    >;
+    setPinnedId: React.Dispatch<React.SetStateAction<SttHelpTooltipId | null>>;
     hoverId: SttHelpTooltipId | null;
-    setHoverId: React.Dispatch<
-      React.SetStateAction<SttHelpTooltipId | null>
-    >;
+    setHoverId: React.Dispatch<React.SetStateAction<SttHelpTooltipId | null>>;
     content: string;
   }>;
 
@@ -176,6 +181,8 @@ export function ApiInputPanel({
   setAdCopyTone,
   adCopyChannel,
   setAdCopyChannel,
+  adCopyLanguage,
+  setAdCopyLanguage,
   adCopyTemperature,
   setAdCopyTemperature,
   isAdCopyLoading,
@@ -363,7 +370,7 @@ export function ApiInputPanel({
                 step={0.05}
                 value={llmTemperature}
                 onChange={(e) =>
-                  setLlmTemperature(Number(e.target.value) || 0.1)
+                  setLlmTemperature(parseTemperatureRange(e.target.value, 0.1))
                 }
                 className="mt-2 w-full accent-[#10b981]"
               />
@@ -374,8 +381,8 @@ export function ApiInputPanel({
                 비슷하고 안정적인 문장을,{" "}
                 <span className="text-foreground/60">높으면</span> 표현이 더
                 다양해지고 때로는 예측하기 어려울 수 있어요. 요약·보고서처럼
-                톤을 맞추고 싶을 땐 낮게, 아이디어나 문장을 넓게 펼치고 싶을
-                땐 높게 써보세요.
+                톤을 맞추고 싶을 땐 낮게, 아이디어나 문장을 넓게 펼치고 싶을 땐
+                높게 써보세요.
               </p>
             </div>
           </div>
@@ -389,129 +396,155 @@ export function ApiInputPanel({
             handleAdCopyRun();
           }}
         >
-          <div className="flex flex-col gap-3">
-            <div>
-              <p className="font-mono text-xs text-foreground/60">브리프 (필수)</p>
-              <textarea
-                value={adCopyBrief}
-                onChange={(e) => setAdCopyBrief(e.target.value)}
-                rows={3}
-                placeholder="제품·서비스 설명을 입력하세요"
-                className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
-              />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-2.5 lg:grid lg:min-h-0 lg:grid-cols-2 lg:items-stretch lg:gap-4">
+            <div className="order-2 flex min-h-0 flex-col gap-2.5 lg:order-1">
               <div>
-                <p className="font-mono text-xs text-foreground/60">톤 (선택)</p>
-                <input
-                  type="text"
-                  value={adCopyTone}
-                  onChange={(e) => setAdCopyTone(e.target.value)}
-                  placeholder="예: 친근, 전문"
-                  className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                <p className="font-mono text-xs text-foreground/60">
+                  브리프 (필수)
+                </p>
+                <textarea
+                  value={adCopyBrief}
+                  onChange={(e) => setAdCopyBrief(e.target.value)}
+                  rows={2}
+                  placeholder="제품·서비스 설명을 입력하세요"
+                  className="mt-1.5 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
                 />
               </div>
               <div>
-                <p className="font-mono text-xs text-foreground/60">채널 (선택)</p>
+                <p className="font-mono text-xs text-foreground/60">
+                  출력 언어
+                </p>
+                <select
+                  value={adCopyLanguage}
+                  onChange={(e) => setAdCopyLanguage(e.target.value)}
+                  className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                >
+                  {AD_COPY_LANGUAGE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                <div>
+                  <p className="font-mono text-xs text-foreground/60">
+                    톤 (선택)
+                  </p>
+                  <input
+                    type="text"
+                    value={adCopyTone}
+                    onChange={(e) => setAdCopyTone(e.target.value)}
+                    placeholder="예: 친근, 전문"
+                    className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                  />
+                </div>
+                <div>
+                  <p className="font-mono text-xs text-foreground/60">
+                    채널 (선택)
+                  </p>
+                  <input
+                    type="text"
+                    value={adCopyChannel}
+                    onChange={(e) => setAdCopyChannel(e.target.value)}
+                    placeholder="예: SNS 배너"
+                    className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-mono text-xs text-foreground/60">
+                    Temperature
+                  </p>
+                  <span className="font-mono text-xs text-foreground/70">
+                    {adCopyTemperature.toFixed(2)}
+                  </span>
+                </div>
                 <input
-                  type="text"
-                  value={adCopyChannel}
-                  onChange={(e) => setAdCopyChannel(e.target.value)}
-                  placeholder="예: SNS 배너"
-                  className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={adCopyTemperature}
+                  onChange={(e) =>
+                    setAdCopyTemperature(
+                      parseTemperatureRange(e.target.value, 0.7),
+                    )
+                  }
+                  className="mt-1.5 w-full accent-[#10b981]"
                 />
+                <p className="mt-1.5 text-[11px] leading-relaxed text-foreground/50">
+                  낮을수록 톤이 안정적이고, 높을수록 표현이 다양해집니다. 브랜드
+                  톤을 맞출 땐 낮게, 여러 초안을 넓게 볼 땐 높게 조절해 보세요.
+                </p>
               </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-xs text-foreground/60">Temperature</p>
-                <span className="font-mono text-xs text-foreground/70">
-                  {adCopyTemperature.toFixed(2)}
-                </span>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isAdCopyLoading || !adCopyBrief.trim()}
+                  className={[
+                    "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
+                    "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                  ].join(" ")}
+                >
+                  {isAdCopyLoading ? (
+                    <>
+                      <svg
+                        className="h-4 w-4 animate-spin text-background"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                      <span>카피 생성 중...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>카피 생성</span>
+                      <span className="transition-transform group-hover:translate-x-1">
+                        →
+                      </span>
+                    </>
+                  )}
+                </button>
               </div>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={adCopyTemperature}
-                onChange={(e) =>
-                  setAdCopyTemperature(Number(e.target.value) || 0.7)
-                }
-                className="mt-2 w-full accent-[#10b981]"
-              />
-              <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
-                <span className="text-foreground/55">Temperature</span>는 문구가
-                얼마나 “정해진 느낌”으로 나올지를 조절해요.{" "}
-                <span className="text-foreground/60">낮으면</span> 비슷하고
-                안정적인 카피를,{" "}
-                <span className="text-foreground/60">높으면</span> 표현이 더
-                다양해지고 때로는 예측하기 어려울 수 있어요. 브랜드 톤을 맞추고
-                싶을 땐 낮게, 여러 버전을 넓게 시도해 보고 싶을 땐 높게
-                써보세요.
-              </p>
-            </div>
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={isAdCopyLoading || !adCopyBrief.trim()}
-                className={[
-                  "inline-flex items-center gap-2 rounded-xl px-6 py-3 font-medium text-background transition-all",
-                  "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
-                ].join(" ")}
-              >
-                {isAdCopyLoading ? (
-                  <>
-                    <svg
-                      className="h-4 w-4 animate-spin text-background"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
-                    <span>카피 생성 중...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>카피 생성</span>
-                    <span className="transition-transform group-hover:translate-x-1">
-                      →
-                    </span>
-                  </>
-                )}
-              </button>
             </div>
 
-            <div className="rounded-2xl border border-[#10b981]/25 bg-background/35 p-4 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)]">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-mono text-xs font-medium text-[#10b981]">
-                  생성 결과
-                </p>
-                {isAdCopyLoading ? (
-                  <span className="text-[11px] text-foreground/50">생성 중…</span>
-                ) : adCopyResult ? (
-                  <span className="text-[11px] text-foreground/50">완료</span>
-                ) : null}
-              </div>
-              <div className="mt-3 max-h-[min(50vh,440px)] min-h-[140px] overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3">
-                {isAdCopyLoading ? (
-                  <p className="text-sm leading-relaxed text-foreground/55">
-                    카피를 생성하는 중입니다…
+            <div className="order-1 flex min-h-0 flex-col lg:order-2">
+              <div className="flex min-h-0 flex-col rounded-2xl border border-[#10b981]/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-mono text-xs font-medium text-[#10b981]">
+                    생성 결과
                   </p>
-                ) : adCopyResult ? (
-                  <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                    <ChatMarkdown content={adCopyResult} />
-                  </div>
-                ) : (
-                  <p className="text-sm leading-relaxed text-foreground/45">
-                    <span className="text-foreground/65">카피 생성</span>을 누르면
-                    이곳에 생성된 문구가 표시됩니다.
-                  </p>
-                )}
+                  {isAdCopyLoading ? (
+                    <span className="text-[11px] text-foreground/50">
+                      생성 중…
+                    </span>
+                  ) : adCopyResult ? (
+                    <span className="text-[11px] text-foreground/50">완료</span>
+                  ) : null}
+                </div>
+                <div className="mt-2.5 min-h-[120px] max-h-[min(38vh,280px)] overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3 lg:min-h-[200px] lg:max-h-none lg:flex-1">
+                  {isAdCopyLoading ? (
+                    <p className="text-sm leading-relaxed text-foreground/55">
+                      카피를 생성하는 중입니다…
+                    </p>
+                  ) : adCopyResult ? (
+                    <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+                      <ChatMarkdown content={adCopyResult} />
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed text-foreground/45">
+                      <span className="text-foreground/65">카피 생성</span>을
+                      누르면 이곳에 생성된 문구가 표시됩니다.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -552,7 +585,9 @@ export function ApiInputPanel({
             </div>
             <div>
               <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-xs text-foreground/60">Temperature</p>
+                <p className="font-mono text-xs text-foreground/60">
+                  Temperature
+                </p>
                 <span className="font-mono text-xs text-foreground/70">
                   {summarizeTemperature.toFixed(2)}
                 </span>
@@ -564,17 +599,18 @@ export function ApiInputPanel({
                 step={0.05}
                 value={summarizeTemperature}
                 onChange={(e) =>
-                  setSummarizeTemperature(Number(e.target.value) || 0.3)
+                  setSummarizeTemperature(
+                    parseTemperatureRange(e.target.value, 0.3),
+                  )
                 }
                 className="mt-2 w-full accent-[#10b981]"
               />
               <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
                 <span className="text-foreground/55">Temperature</span>는 요약
                 문장의 다양성을 조절합니다.{" "}
-                <span className="text-foreground/60">낮으면</span> 일관된
-                핵심 위주로,{" "}
-                <span className="text-foreground/60">높으면</span> 표현이 더
-                달라질 수 있어요.
+                <span className="text-foreground/60">낮으면</span> 일관된 핵심
+                위주로, <span className="text-foreground/60">높으면</span>{" "}
+                표현이 더 달라질 수 있어요.
               </p>
             </div>
             <div className="flex justify-end">
@@ -618,7 +654,9 @@ export function ApiInputPanel({
                   요약 결과
                 </p>
                 {isSummarizeLoading ? (
-                  <span className="text-[11px] text-foreground/50">생성 중…</span>
+                  <span className="text-[11px] text-foreground/50">
+                    생성 중…
+                  </span>
                 ) : summarizeResult ? (
                   <span className="text-[11px] text-foreground/50">완료</span>
                 ) : null}
@@ -634,8 +672,8 @@ export function ApiInputPanel({
                   </div>
                 ) : (
                   <p className="text-sm leading-relaxed text-foreground/45">
-                    <span className="text-foreground/65">요약 생성</span>을 누르면
-                    이곳에 요약 문장이 표시됩니다.
+                    <span className="text-foreground/65">요약 생성</span>을
+                    누르면 이곳에 요약 문장이 표시됩니다.
                   </p>
                 )}
               </div>
@@ -666,7 +704,9 @@ export function ApiInputPanel({
             </div>
             <div>
               <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-xs text-foreground/60">Temperature</p>
+                <p className="font-mono text-xs text-foreground/60">
+                  Temperature
+                </p>
                 <span className="font-mono text-xs text-foreground/70">
                   {sentimentTemperature.toFixed(2)}
                 </span>
@@ -678,15 +718,17 @@ export function ApiInputPanel({
                 step={0.05}
                 value={sentimentTemperature}
                 onChange={(e) =>
-                  setSentimentTemperature(Number(e.target.value) || 0.2)
+                  setSentimentTemperature(
+                    parseTemperatureRange(e.target.value, 0.2),
+                  )
                 }
                 className="mt-2 w-full accent-[#10b981]"
               />
               <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
                 분류·라벨 안정성을 원하면{" "}
                 <span className="text-foreground/60">낮게</span>, 표현 변동을
-                허용하려면{" "}
-                <span className="text-foreground/60">높게</span> 조절해 보세요.
+                허용하려면 <span className="text-foreground/60">높게</span>{" "}
+                조절해 보세요.
               </p>
             </div>
             <div className="flex justify-end">
@@ -730,7 +772,9 @@ export function ApiInputPanel({
                   분석 결과
                 </p>
                 {isSentimentLoading ? (
-                  <span className="text-[11px] text-foreground/50">분석 중…</span>
+                  <span className="text-[11px] text-foreground/50">
+                    분석 중…
+                  </span>
                 ) : sentimentAnalysis ? (
                   <span className="text-[11px] text-foreground/50">완료</span>
                 ) : null}
@@ -764,8 +808,8 @@ export function ApiInputPanel({
                           {sentimentAnalysis.overall.label}
                         </span>
                         <span className="font-mono text-foreground/80">
-                          score{" "}
-                          {sentimentAnalysis.overall.score.toFixed(3)} (0~1)
+                          score {sentimentAnalysis.overall.score.toFixed(3)}{" "}
+                          (0~1)
                         </span>
                       </p>
                     </div>
@@ -816,8 +860,8 @@ export function ApiInputPanel({
                   </div>
                 ) : (
                   <p className="text-sm leading-relaxed text-foreground/45">
-                    <span className="text-foreground/65">감정 분석</span>을 누르면
-                    이곳에 전체·측면별 결과가 표시됩니다.
+                    <span className="text-foreground/65">감정 분석</span>을
+                    누르면 이곳에 전체·측면별 결과가 표시됩니다.
                   </p>
                 )}
               </div>
@@ -848,7 +892,9 @@ export function ApiInputPanel({
             </div>
             <div>
               <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-xs text-foreground/60">Temperature</p>
+                <p className="font-mono text-xs text-foreground/60">
+                  Temperature
+                </p>
                 <span className="font-mono text-xs text-foreground/70">
                   {nerTemperature.toFixed(2)}
                 </span>
@@ -860,15 +906,15 @@ export function ApiInputPanel({
                 step={0.05}
                 value={nerTemperature}
                 onChange={(e) =>
-                  setNerTemperature(Number(e.target.value) || 0.1)
+                  setNerTemperature(parseTemperatureRange(e.target.value, 0.1))
                 }
                 className="mt-2 w-full accent-[#10b981]"
               />
               <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
                 태그·라벨 안정성을 원하면{" "}
                 <span className="text-foreground/60">낮게</span>, 표현 변동을
-                허용하려면{" "}
-                <span className="text-foreground/60">높게</span> 조절해 보세요.
+                허용하려면 <span className="text-foreground/60">높게</span>{" "}
+                조절해 보세요.
               </p>
             </div>
             <div className="flex justify-end">
@@ -912,7 +958,9 @@ export function ApiInputPanel({
                   추출 결과
                 </p>
                 {isNerLoading ? (
-                  <span className="text-[11px] text-foreground/50">추출 중…</span>
+                  <span className="text-[11px] text-foreground/50">
+                    추출 중…
+                  </span>
                 ) : nerResult ? (
                   <span className="text-[11px] text-foreground/50">완료</span>
                 ) : null}
@@ -959,13 +1007,14 @@ export function ApiInputPanel({
                     </div>
                   ) : (
                     <p className="text-[12px] text-foreground/45">
-                      추출된 개체가 없습니다. 문장을 조금 더 구체적으로 적어 보세요.
+                      추출된 개체가 없습니다. 문장을 조금 더 구체적으로 적어
+                      보세요.
                     </p>
                   )
                 ) : (
                   <p className="text-sm leading-relaxed text-foreground/45">
-                    <span className="text-foreground/65">개체명 추출</span>을 누르면
-                    이곳에 표면·라벨·범주가 표시됩니다.
+                    <span className="text-foreground/65">개체명 추출</span>을
+                    누르면 이곳에 표면·라벨·범주가 표시됩니다.
                   </p>
                 )}
               </div>
@@ -996,7 +1045,9 @@ export function ApiInputPanel({
             </div>
             <div>
               <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-xs text-foreground/60">Temperature</p>
+                <p className="font-mono text-xs text-foreground/60">
+                  Temperature
+                </p>
                 <span className="font-mono text-xs text-foreground/70">
                   {textToSqlTemperature.toFixed(2)}
                 </span>
@@ -1008,15 +1059,17 @@ export function ApiInputPanel({
                 step={0.05}
                 value={textToSqlTemperature}
                 onChange={(e) =>
-                  setTextToSqlTemperature(Number(e.target.value) || 0.2)
+                  setTextToSqlTemperature(
+                    parseTemperatureRange(e.target.value, 0.2),
+                  )
                 }
                 className="mt-2 w-full accent-[#10b981]"
               />
               <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
                 SQL 문법을 안정적으로 맞추려면{" "}
                 <span className="text-foreground/60">낮게</span>, 표현 다양성을
-                허용하려면{" "}
-                <span className="text-foreground/60">높게</span> 조절해 보세요.
+                허용하려면 <span className="text-foreground/60">높게</span>{" "}
+                조절해 보세요.
               </p>
             </div>
             <div className="flex justify-end">
@@ -1060,7 +1113,9 @@ export function ApiInputPanel({
                   생성된 SQL
                 </p>
                 {isTextToSqlLoading ? (
-                  <span className="text-[11px] text-foreground/50">생성 중…</span>
+                  <span className="text-[11px] text-foreground/50">
+                    생성 중…
+                  </span>
                 ) : textToSqlResult ? (
                   <span className="text-[11px] text-foreground/50">완료</span>
                 ) : null}
@@ -1080,8 +1135,8 @@ export function ApiInputPanel({
                   </pre>
                 ) : (
                   <p className="text-sm leading-relaxed text-foreground/45">
-                    <span className="text-foreground/65">SQL 생성</span>을 누르면
-                    이곳에 쿼리가 표시됩니다.
+                    <span className="text-foreground/65">SQL 생성</span>을
+                    누르면 이곳에 쿼리가 표시됩니다.
                   </p>
                 )}
               </div>
@@ -1187,7 +1242,7 @@ export function ApiInputPanel({
               <input
                 value={ttsStyleInstruction}
                 onChange={(e) => setTtsStyleInstruction(e.target.value)}
-                placeholder='e.g., Speak in a cheerful and energetic tone'
+                placeholder="e.g., Speak in a cheerful and energetic tone"
                 className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-[13px] text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
               />
             </div>
@@ -1563,4 +1618,3 @@ export function ApiInputPanel({
     </div>
   );
 }
-

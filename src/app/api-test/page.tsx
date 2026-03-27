@@ -10,6 +10,7 @@ import React, {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import { DEFAULT_AD_COPY_LANGUAGE } from "@/lib/adCopyLanguages";
 import { getToken } from "@/lib/token";
 import { SmartSolutionGuide } from "./components/SmartSolutionGuide";
 import { JsonCode } from "./components/JsonCode";
@@ -109,8 +110,7 @@ const TTS_SPEAKER_OPTIONS = [
 type TtsSpeaker = (typeof TTS_SPEAKER_OPTIONS)[number]["value"];
 const DEFAULT_TTS_SPEAKER: TtsSpeaker = "ryan";
 
-const DEFAULT_RERANK_QUERY =
-  "사람 없고 한적한 곳에서 힐링하고 싶어";
+const DEFAULT_RERANK_QUERY = "사람 없고 한적한 곳에서 힐링하고 싶어";
 const DEFAULT_RERANK_DOCS_TEXT =
   "- 사람들이 가장 많이 찾는 서울 핫플레이스 TOP 10\n- 여름 휴가철 인파로 북적이는 해운대 해수욕장 현황\n- 숲소리만 들리는 깊은 산속 프라이빗 독채 펜션\n- 친구들과 시끌벅적하게 즐기는 강남역 맛집 탐방";
 
@@ -574,7 +574,10 @@ function tryParseLlmConsoleToPlayground(jsonText: string): {
     };
     const out: { prompt?: string; temperature?: number } = {};
 
-    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+    if (
+      typeof parsed.temperature === "number" &&
+      Number.isFinite(parsed.temperature)
+    ) {
       out.temperature = clamp(parsed.temperature, 0, 1);
     } else if (
       typeof parsed.temperature === "string" &&
@@ -615,6 +618,7 @@ function buildAdCopyConsoleRequestJson(
   tone: string,
   channel: string,
   temperature: number,
+  language: string,
 ) {
   return JSON.stringify(
     {
@@ -622,6 +626,7 @@ function buildAdCopyConsoleRequestJson(
       tone,
       channel,
       temperature,
+      language,
     },
     null,
     2,
@@ -633,6 +638,7 @@ function tryParseAdCopyConsoleToPlayground(jsonText: string): {
   tone?: string;
   channel?: string;
   temperature?: number;
+  language?: string;
 } | null {
   try {
     const parsed = JSON.parse(jsonText) as {
@@ -640,18 +646,24 @@ function tryParseAdCopyConsoleToPlayground(jsonText: string): {
       tone?: unknown;
       channel?: unknown;
       temperature?: unknown;
+      language?: unknown;
     };
     const out: {
       brief?: string;
       tone?: string;
       channel?: string;
       temperature?: number;
+      language?: string;
     } = {};
 
     if (typeof parsed.brief === "string") out.brief = parsed.brief;
     if (typeof parsed.tone === "string") out.tone = parsed.tone;
     if (typeof parsed.channel === "string") out.channel = parsed.channel;
-    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+    if (typeof parsed.language === "string") out.language = parsed.language;
+    if (
+      typeof parsed.temperature === "number" &&
+      Number.isFinite(parsed.temperature)
+    ) {
       out.temperature = clamp(parsed.temperature, 0, 1);
     } else if (
       typeof parsed.temperature === "string" &&
@@ -702,7 +714,10 @@ function tryParseSummarizeConsoleToPlayground(jsonText: string): {
 
     if (typeof parsed.text === "string") out.text = parsed.text;
     if (typeof parsed.style === "string") out.style = parsed.style;
-    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+    if (
+      typeof parsed.temperature === "number" &&
+      Number.isFinite(parsed.temperature)
+    ) {
       out.temperature = clamp(parsed.temperature, 0, 1);
     } else if (
       typeof parsed.temperature === "string" &&
@@ -744,7 +759,10 @@ function tryParseSentimentConsoleToPlayground(jsonText: string): {
     } = {};
 
     if (typeof parsed.text === "string") out.text = parsed.text;
-    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+    if (
+      typeof parsed.temperature === "number" &&
+      Number.isFinite(parsed.temperature)
+    ) {
       out.temperature = clamp(parsed.temperature, 0, 1);
     } else if (
       typeof parsed.temperature === "string" &&
@@ -786,7 +804,10 @@ function tryParseNerConsoleToPlayground(jsonText: string): {
     } = {};
 
     if (typeof parsed.text === "string") out.text = parsed.text;
-    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+    if (
+      typeof parsed.temperature === "number" &&
+      Number.isFinite(parsed.temperature)
+    ) {
       out.temperature = clamp(parsed.temperature, 0, 1);
     } else if (
       typeof parsed.temperature === "string" &&
@@ -828,7 +849,10 @@ function tryParseTextToSqlConsoleToPlayground(jsonText: string): {
     } = {};
 
     if (typeof parsed.text === "string") out.text = parsed.text;
-    if (typeof parsed.temperature === "number" && Number.isFinite(parsed.temperature)) {
+    if (
+      typeof parsed.temperature === "number" &&
+      Number.isFinite(parsed.temperature)
+    ) {
       out.temperature = clamp(parsed.temperature, 0, 1);
     } else if (
       typeof parsed.temperature === "string" &&
@@ -949,7 +973,10 @@ function sanitizeRerankDocLine(line: string): string {
 }
 
 /** Reranker Playground ↔ Developer Console 동기화용 Request JSON */
-function buildRerankConsoleRequestJson(query: string, docsText: string): string {
+function buildRerankConsoleRequestJson(
+  query: string,
+  docsText: string,
+): string {
   const input = docsText
     .split("\n")
     .map((line) => sanitizeRerankDocLine(line))
@@ -1056,7 +1083,10 @@ function tryParseSttConsoleToPlayground(jsonText: string): {
       recordedFileInfo?: string | null;
     } = {};
 
-    if (typeof parsed.language === "string" && isSttLanguageCode(parsed.language)) {
+    if (
+      typeof parsed.language === "string" &&
+      isSttLanguageCode(parsed.language)
+    ) {
       out.language = parsed.language;
     }
 
@@ -1064,7 +1094,10 @@ function tryParseSttConsoleToPlayground(jsonText: string): {
       out.vadOn = parsed.vad_filter;
     }
 
-    if (typeof parsed.beam_size === "number" && Number.isFinite(parsed.beam_size)) {
+    if (
+      typeof parsed.beam_size === "number" &&
+      Number.isFinite(parsed.beam_size)
+    ) {
       out.beamSize = clampSttBeamSize(parsed.beam_size);
     } else if (
       typeof parsed.beam_size === "string" &&
@@ -1188,6 +1221,7 @@ export default function ApiTestPage() {
   const [adCopyBrief, setAdCopyBrief] = useState(DEFAULT_AD_COPY_BRIEF);
   const [adCopyTone, setAdCopyTone] = useState("");
   const [adCopyChannel, setAdCopyChannel] = useState("");
+  const [adCopyLanguage, setAdCopyLanguage] = useState(DEFAULT_AD_COPY_LANGUAGE);
   const [adCopyTemperature, setAdCopyTemperature] = useState(0.7);
   const [adCopyResult, setAdCopyResult] = useState<string | null>(null);
   const [isAdCopyLoading, setIsAdCopyLoading] = useState(false);
@@ -1237,59 +1271,58 @@ export default function ApiTestPage() {
   };
   const getDefaultConsoleRequestJson = useCallback(
     (api: ApiId): string => {
-    if (api === "llm") {
-      return buildLlmConsoleRequestJson("", llmTemperature);
-    }
-    if (api === "adCopy") {
-      return buildAdCopyConsoleRequestJson(
-        DEFAULT_AD_COPY_BRIEF,
-        "",
-        "",
-        0.7,
-      );
-    }
-    if (api === "summarize") {
-      return buildSummarizeConsoleRequestJson(
-        DEFAULT_SUMMARY_TEXT,
-        "",
-        0.3,
-      );
-    }
-    if (api === "sentiment") {
-      return buildSentimentConsoleRequestJson(DEFAULT_SENTIMENT_TEXT, 0.2);
-    }
-    if (api === "ner") {
-      return buildNerConsoleRequestJson(DEFAULT_NER_TEXT, 0.1);
-    }
-    if (api === "textToSql") {
-      return buildTextToSqlConsoleRequestJson(DEFAULT_TEXT_TO_SQL_TEXT, 0.2);
-    }
-    if (api === "reranker") {
-      return buildRerankConsoleRequestJson(
-        DEFAULT_RERANK_QUERY,
-        DEFAULT_RERANK_DOCS_TEXT,
-      );
-    }
-    if (api === "embedding") {
-      return buildEmbeddingConsoleRequestJson(DEFAULT_EMBEDDING_PLAYGROUND_TEXT);
-    }
-    if (api === "stt") {
-      return buildSttConsoleRequestJson(
-        STT_DEFAULT_LANGUAGE,
-        STT_DEFAULT_VAD_ON,
-        STT_DEFAULT_BEAM_SIZE,
-        null,
-      );
-    }
-    if (api === "tts") {
-      return buildTtsConsoleRequestJson(
-        DEFAULT_TTS_PLAYGROUND_TEXT,
-        DEFAULT_TTS_LANGUAGE,
-        DEFAULT_TTS_SPEAKER,
-        "",
-      );
-    }
-    return "{}";
+      if (api === "llm") {
+        return buildLlmConsoleRequestJson("", llmTemperature);
+      }
+      if (api === "adCopy") {
+        return buildAdCopyConsoleRequestJson(
+          DEFAULT_AD_COPY_BRIEF,
+          "",
+          "",
+          0.7,
+          DEFAULT_AD_COPY_LANGUAGE,
+        );
+      }
+      if (api === "summarize") {
+        return buildSummarizeConsoleRequestJson(DEFAULT_SUMMARY_TEXT, "", 0.3);
+      }
+      if (api === "sentiment") {
+        return buildSentimentConsoleRequestJson(DEFAULT_SENTIMENT_TEXT, 0.2);
+      }
+      if (api === "ner") {
+        return buildNerConsoleRequestJson(DEFAULT_NER_TEXT, 0.1);
+      }
+      if (api === "textToSql") {
+        return buildTextToSqlConsoleRequestJson(DEFAULT_TEXT_TO_SQL_TEXT, 0.2);
+      }
+      if (api === "reranker") {
+        return buildRerankConsoleRequestJson(
+          DEFAULT_RERANK_QUERY,
+          DEFAULT_RERANK_DOCS_TEXT,
+        );
+      }
+      if (api === "embedding") {
+        return buildEmbeddingConsoleRequestJson(
+          DEFAULT_EMBEDDING_PLAYGROUND_TEXT,
+        );
+      }
+      if (api === "stt") {
+        return buildSttConsoleRequestJson(
+          STT_DEFAULT_LANGUAGE,
+          STT_DEFAULT_VAD_ON,
+          STT_DEFAULT_BEAM_SIZE,
+          null,
+        );
+      }
+      if (api === "tts") {
+        return buildTtsConsoleRequestJson(
+          DEFAULT_TTS_PLAYGROUND_TEXT,
+          DEFAULT_TTS_LANGUAGE,
+          DEFAULT_TTS_SPEAKER,
+          "",
+        );
+      }
+      return "{}";
     },
     [llmTemperature],
   );
@@ -1508,14 +1541,14 @@ export default function ApiTestPage() {
                     taskParam === "쿼리"
                   ? "Text-to-SQL"
                   : taskParam === "embedding"
-              ? "Embedding"
-              : taskParam === "reranker" || taskParam === "rerank"
-                ? "Reranker"
-                : taskParam === "tts"
-                  ? "TTS"
-                  : taskParam === "stt" || taskParam === "sst"
-                    ? "STT"
-                    : null;
+                    ? "Embedding"
+                    : taskParam === "reranker" || taskParam === "rerank"
+                      ? "Reranker"
+                      : taskParam === "tts"
+                        ? "TTS"
+                        : taskParam === "stt" || taskParam === "sst"
+                          ? "STT"
+                          : null;
 
     if (!targetTask) return;
 
@@ -1606,10 +1639,7 @@ export default function ApiTestPage() {
       case "TextSummary":
         return (
           <>
-            📄{" "}
-            <span className="text-[#10b981] font-semibold">
-              텍스트 요약
-            </span>
+            📄 <span className="text-[#10b981] font-semibold">텍스트 요약</span>
             : 리뷰·뉴스·회의록 등 긴 본문에서{" "}
             <span className="text-[#10b981] font-semibold">
               핵심만 추려 짧게 압축
@@ -1621,14 +1651,10 @@ export default function ApiTestPage() {
         return (
           <>
             💬{" "}
-            <span className="text-[#10b981] font-semibold">
-              리뷰 감정 분석
-            </span>
+            <span className="text-[#10b981] font-semibold">리뷰 감정 분석</span>
             : 긍·부정·중립과{" "}
-            <span className="text-[#10b981] font-semibold">
-              측면별 점수
-            </span>
-            로 브랜드 평판·이슈를 빠르게 파악하는 GPT-OSS 기반 서비스입니다.
+            <span className="text-[#10b981] font-semibold">측면별 점수</span>로
+            브랜드 평판·이슈를 빠르게 파악하는 GPT-OSS 기반 서비스입니다.
           </>
         );
       case "NERTask":
@@ -1744,8 +1770,9 @@ export default function ApiTestPage() {
         tone: adCopyTone,
         channel: adCopyChannel,
         temperature: adCopyTemperature,
+        language: adCopyLanguage,
       }),
-    [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature],
+    [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature, adCopyLanguage],
   );
 
   const summarizeDevCodePython = useMemo(
@@ -1787,7 +1814,9 @@ export default function ApiTestPage() {
 
   // Reranker
   const [rerankQuestion, setRerankQuestion] = useState(DEFAULT_RERANK_QUERY);
-  const [rerankDocsText, setRerankDocsText] = useState(DEFAULT_RERANK_DOCS_TEXT);
+  const [rerankDocsText, setRerankDocsText] = useState(
+    DEFAULT_RERANK_DOCS_TEXT,
+  );
   const [rerankResults, setRerankResults] = useState<Array<{
     rank: number;
     doc: string;
@@ -1799,9 +1828,8 @@ export default function ApiTestPage() {
 
   // TTS (Playground: Mock 합성 + blob 오디오 재생)
   const [ttsText, setTtsText] = useState(DEFAULT_TTS_PLAYGROUND_TEXT);
-  const [ttsLanguage, setTtsLanguage] = useState<TtsLanguage>(
-    DEFAULT_TTS_LANGUAGE,
-  );
+  const [ttsLanguage, setTtsLanguage] =
+    useState<TtsLanguage>(DEFAULT_TTS_LANGUAGE);
   const [ttsSpeaker, setTtsSpeaker] = useState<TtsSpeaker>(DEFAULT_TTS_SPEAKER);
   const [ttsStyleInstruction, setTtsStyleInstruction] = useState("");
   const [isSynthesizing, setIsSynthesizing] = useState(false);
@@ -1825,9 +1853,8 @@ export default function ApiTestPage() {
   const [sttTranscript, setSttTranscript] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [audioChunks, setAudioChunks] = useState<BlobPart[]>([]);
-  const [sttLanguage, setSttLanguage] = useState<SttLanguage>(
-    STT_DEFAULT_LANGUAGE,
-  );
+  const [sttLanguage, setSttLanguage] =
+    useState<SttLanguage>(STT_DEFAULT_LANGUAGE);
   const [sttVadOn, setSttVadOn] = useState<boolean>(STT_DEFAULT_VAD_ON);
   const [sttBeamSize, setSttBeamSize] = useState<number>(STT_DEFAULT_BEAM_SIZE);
   const [isSttLoading, setIsSttLoading] = useState(false);
@@ -1836,17 +1863,17 @@ export default function ApiTestPage() {
   );
   const [sttError, setSttError] = useState<string | null>(null);
 
-  const [sttMicBars, setSttMicBars] = useState<number[]>(
-    () =>
-      Array.from({ length: STT_WAVE_BARS_COUNT }, () => STT_WAVE_BAR_MIN_HEIGHT_PX),
+  const [sttMicBars, setSttMicBars] = useState<number[]>(() =>
+    Array.from(
+      { length: STT_WAVE_BARS_COUNT },
+      () => STT_WAVE_BAR_MIN_HEIGHT_PX,
+    ),
   );
 
-  const [sttTooltipPinned, setSttTooltipPinned] = useState<SttHelpTooltipId | null>(
-    null,
-  );
-  const [sttTooltipHoverId, setSttTooltipHoverId] = useState<SttHelpTooltipId | null>(
-    null,
-  );
+  const [sttTooltipPinned, setSttTooltipPinned] =
+    useState<SttHelpTooltipId | null>(null);
+  const [sttTooltipHoverId, setSttTooltipHoverId] =
+    useState<SttHelpTooltipId | null>(null);
 
   const [sttUploadClearMounted, setSttUploadClearMounted] = useState(false);
   const sttUploadClearTimerRef = useRef<number | null>(null);
@@ -1956,8 +1983,7 @@ export default function ApiTestPage() {
   const sentimentHasWorkflowResult =
     sentimentAnalysis !== null && !sentimentError;
 
-  const nerHasWorkflowResult =
-    nerResult !== null && !nerError;
+  const nerHasWorkflowResult = nerResult !== null && !nerError;
 
   const textToSqlHasWorkflowResult =
     textToSqlResult !== null && !textToSqlError;
@@ -2024,7 +2050,10 @@ export default function ApiTestPage() {
   const freqDataRef = useRef<Uint8Array | null>(null);
   const sttMicRafRef = useRef<number | null>(null);
   const sttMicBarsHeightsRef = useRef<number[]>(
-    Array.from({ length: STT_WAVE_BARS_COUNT }, () => STT_WAVE_BAR_MIN_HEIGHT_PX),
+    Array.from(
+      { length: STT_WAVE_BARS_COUNT },
+      () => STT_WAVE_BAR_MIN_HEIGHT_PX,
+    ),
   );
 
   const endRef = useRef<HTMLDivElement | null>(null);
@@ -2158,6 +2187,7 @@ export default function ApiTestPage() {
       adCopyTone,
       adCopyChannel,
       adCopyTemperature,
+      adCopyLanguage,
     );
     setConsoleByApi((prev) => {
       if (prev.adCopy.requestJson === nextRequestJson) return prev;
@@ -2169,7 +2199,7 @@ export default function ApiTestPage() {
         },
       };
     });
-  }, [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature]);
+  }, [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature, adCopyLanguage]);
 
   useEffect(() => {
     const nextRequestJson = buildSummarizeConsoleRequestJson(
@@ -2370,6 +2400,9 @@ export default function ApiTestPage() {
       if (parsed.temperature !== undefined) {
         setAdCopyTemperature(parsed.temperature);
       }
+      if (parsed.language !== undefined) {
+        setAdCopyLanguage(parsed.language);
+      }
       return;
     }
     if (selectedApi === "summarize") {
@@ -2523,6 +2556,7 @@ export default function ApiTestPage() {
       setAdCopyBrief(DEFAULT_AD_COPY_BRIEF);
       setAdCopyTone("");
       setAdCopyChannel("");
+      setAdCopyLanguage(DEFAULT_AD_COPY_LANGUAGE);
       setAdCopyTemperature(0.7);
       setAdCopyResult(null);
     }
@@ -2659,9 +2693,10 @@ export default function ApiTestPage() {
         body: JSON.stringify({ text }),
       });
 
-      const data = (await res.json().catch(() => null)) as
-        | { embeddingVector?: unknown; error?: unknown }
-        | null;
+      const data = (await res.json().catch(() => null)) as {
+        embeddingVector?: unknown;
+        error?: unknown;
+      } | null;
 
       patchConsole("embedding", {
         statusCode: res.status,
@@ -2753,7 +2788,10 @@ export default function ApiTestPage() {
     patchConsole("reranker", {
       statusCode: null,
       statusLine: "Pending...",
-      requestJson: buildRerankConsoleRequestJson(rerankQuestion, rerankDocsText),
+      requestJson: buildRerankConsoleRequestJson(
+        rerankQuestion,
+        rerankDocsText,
+      ),
       responseJson: "",
       error: null,
     });
@@ -2856,9 +2894,9 @@ export default function ApiTestPage() {
       });
 
       if (!res.ok) {
-        const errJson = (await res.json().catch(() => null)) as
-          | { error?: string }
-          | null;
+        const errJson = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
         if (res.status === 429) {
           setLimitExceededModalOpen(true);
         }
@@ -2937,9 +2975,12 @@ export default function ApiTestPage() {
       setTtsPlaying(false);
       return;
     }
-    void el.play().then(() => setTtsPlaying(true)).catch(() => {
-      setTtsPlaying(false);
-    });
+    void el
+      .play()
+      .then(() => setTtsPlaying(true))
+      .catch(() => {
+        setTtsPlaying(false);
+      });
   }
 
   async function startRecording() {
@@ -2993,12 +3034,16 @@ export default function ApiTestPage() {
           () => STT_WAVE_BAR_MIN_HEIGHT_PX,
         );
         setSttMicBars(
-          Array.from({ length: STT_WAVE_BARS_COUNT }, () =>
-            STT_WAVE_BAR_MIN_HEIGHT_PX,
+          Array.from(
+            { length: STT_WAVE_BARS_COUNT },
+            () => STT_WAVE_BAR_MIN_HEIGHT_PX,
           ),
         );
 
-        const barRange = Math.max(1, Math.floor(bufferLength / STT_WAVE_BARS_COUNT));
+        const barRange = Math.max(
+          1,
+          Math.floor(bufferLength / STT_WAVE_BARS_COUNT),
+        );
         const animate = () => {
           const a = analyserNodeRef.current;
           const fd = freqDataRef.current;
@@ -3037,7 +3082,11 @@ export default function ApiTestPage() {
                 Math.sin(now / 120 + i) * 0.9 + (Math.random() - 0.5) * 0.6;
             }
 
-            target = clamp(target, STT_WAVE_BAR_MIN_HEIGHT_PX, STT_WAVE_BAR_MAX_HEIGHT_PX);
+            target = clamp(
+              target,
+              STT_WAVE_BAR_MIN_HEIGHT_PX,
+              STT_WAVE_BAR_MAX_HEIGHT_PX,
+            );
 
             const prev = heights[i] ?? STT_WAVE_BAR_MIN_HEIGHT_PX;
             heights[i] = prev + (target - prev) * 0.35;
@@ -3142,7 +3191,9 @@ export default function ApiTestPage() {
 
       setIsRecording(false);
       setSttError(
-        isDenied ? "마이크 접근 권한이 필요합니다." : "마이크 사용에 실패했습니다.",
+        isDenied
+          ? "마이크 접근 권한이 필요합니다."
+          : "마이크 사용에 실패했습니다.",
       );
       setSttTranscript(null);
       setSttRecordedFileInfo(null);
@@ -3172,7 +3223,10 @@ export default function ApiTestPage() {
     freqDataRef.current = null;
 
     setSttMicBars(
-      Array.from({ length: STT_WAVE_BARS_COUNT }, () => STT_WAVE_BAR_MIN_HEIGHT_PX),
+      Array.from(
+        { length: STT_WAVE_BARS_COUNT },
+        () => STT_WAVE_BAR_MIN_HEIGHT_PX,
+      ),
     );
 
     const ctx = audioContextRef.current;
@@ -3264,7 +3318,11 @@ export default function ApiTestPage() {
         if (res.status === 429) {
           setLimitExceededModalOpen(true);
         }
-        const responseJson = JSON.stringify(data ?? { error: "Request failed" }, null, 2);
+        const responseJson = JSON.stringify(
+          data ?? { error: "Request failed" },
+          null,
+          2,
+        );
         setSttError("STT 요청이 실패했습니다.");
         patchConsole("stt", {
           statusCode: res.status,
@@ -3289,8 +3347,7 @@ export default function ApiTestPage() {
         error: null,
       });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "STT 서버 연결 실패";
+      const message = err instanceof Error ? err.message : "STT 서버 연결 실패";
       setSttTranscript(null);
       setSttError("서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.");
       patchConsole("stt", {
@@ -3309,9 +3366,7 @@ export default function ApiTestPage() {
     setSttSelectedAudioFile(file);
     setSttTranscript(null);
     setIsRecording(false);
-    setSttRecordedFileInfo(
-      file ? `${file.name} (binary from upload)` : null,
-    );
+    setSttRecordedFileInfo(file ? `${file.name} (binary from upload)` : null);
     setSttError(null);
     setAudioChunks([]);
     audioChunksRef.current = [];
@@ -3365,6 +3420,7 @@ export default function ApiTestPage() {
         adCopyTone,
         adCopyChannel,
         adCopyTemperature,
+        adCopyLanguage,
       ),
       responseJson: "",
       error: null,
@@ -3382,6 +3438,7 @@ export default function ApiTestPage() {
           tone: adCopyTone.trim() || undefined,
           channel: adCopyChannel.trim() || undefined,
           temperature: adCopyTemperature,
+          language: adCopyLanguage,
         }),
       });
       const data = (await res.json().catch(() => null)) as {
@@ -3483,7 +3540,10 @@ export default function ApiTestPage() {
     const ov = o.overall;
     if (!ov || typeof ov !== "object") return false;
     const overall = ov as Record<string, unknown>;
-    if (typeof overall.label !== "string" || typeof overall.score !== "number") {
+    if (
+      typeof overall.label !== "string" ||
+      typeof overall.score !== "number"
+    ) {
       return false;
     }
     if (!Array.isArray(o.aspects)) return false;
@@ -4001,8 +4061,7 @@ export default function ApiTestPage() {
 
       if (targetApi === "embedding") {
         const body = parsed as { input?: unknown; input_type?: unknown };
-        const input =
-          typeof body.input === "string" ? body.input.trim() : "";
+        const input = typeof body.input === "string" ? body.input.trim() : "";
         const inputType =
           typeof body.input_type === "string" ? body.input_type : "string";
 
@@ -4033,9 +4092,9 @@ export default function ApiTestPage() {
           body: JSON.stringify({ input, input_type: inputType }),
         });
 
-        const responseJson = (await res.json().catch(() => null)) as
-          | { embeddingVector?: unknown }
-          | null;
+        const responseJson = (await res.json().catch(() => null)) as {
+          embeddingVector?: unknown;
+        } | null;
         patchConsole("embedding", {
           statusCode: res.status,
           statusLine: `${res.status} ${
@@ -4073,8 +4132,7 @@ export default function ApiTestPage() {
           voice?: unknown;
           format?: unknown;
         };
-        const text =
-          typeof body.text === "string" ? body.text.trim() : "";
+        const text = typeof body.text === "string" ? body.text.trim() : "";
         const language =
           typeof body.language === "string" && isTtsLanguage(body.language)
             ? body.language
@@ -4118,9 +4176,9 @@ export default function ApiTestPage() {
           tone?: unknown;
           channel?: unknown;
           temperature?: unknown;
+          language?: unknown;
         };
-        const brief =
-          typeof body.brief === "string" ? body.brief.trim() : "";
+        const brief = typeof body.brief === "string" ? body.brief.trim() : "";
         if (!brief) {
           patchConsole("adCopy", {
             error: "`brief` 문자열을 확인해주세요.",
@@ -4135,12 +4193,12 @@ export default function ApiTestPage() {
           return;
         }
 
-        const tone =
-          typeof body.tone === "string" ? body.tone.trim() : "";
+        const tone = typeof body.tone === "string" ? body.tone.trim() : "";
         const channel =
           typeof body.channel === "string" ? body.channel.trim() : "";
         const parsedTemperature =
-          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+          typeof body.temperature === "number" &&
+          Number.isFinite(body.temperature)
             ? body.temperature
             : typeof body.temperature === "string" &&
                 body.temperature.trim() &&
@@ -4148,14 +4206,18 @@ export default function ApiTestPage() {
               ? Number(body.temperature)
               : adCopyTemperature;
 
+        const langRaw =
+          typeof body.language === "string" ? body.language.trim() : "";
+        const parsedLanguage =
+          langRaw !== "" ? langRaw : DEFAULT_AD_COPY_LANGUAGE;
+
         setIsAdCopyLoading(true);
         setAdCopyResult(null);
         setAdCopyBrief(brief);
         setAdCopyTone(tone);
         setAdCopyChannel(channel);
-        setAdCopyTemperature(
-          Math.min(1, Math.max(0, parsedTemperature)),
-        );
+        setAdCopyLanguage(parsedLanguage);
+        setAdCopyTemperature(Math.min(1, Math.max(0, parsedTemperature)));
 
         try {
           const token = getToken();
@@ -4170,6 +4232,7 @@ export default function ApiTestPage() {
               tone: tone || undefined,
               channel: channel || undefined,
               temperature: parsedTemperature,
+              language: parsedLanguage,
             }),
           });
           const data = (await res.json().catch(() => null)) as {
@@ -4213,8 +4276,7 @@ export default function ApiTestPage() {
           style?: unknown;
           temperature?: unknown;
         };
-        const textBody =
-          typeof body.text === "string" ? body.text.trim() : "";
+        const textBody = typeof body.text === "string" ? body.text.trim() : "";
         if (!textBody) {
           patchConsole("summarize", {
             error: "`text` 문자열을 확인해주세요.",
@@ -4229,10 +4291,10 @@ export default function ApiTestPage() {
           return;
         }
 
-        const style =
-          typeof body.style === "string" ? body.style.trim() : "";
+        const style = typeof body.style === "string" ? body.style.trim() : "";
         const parsedTemperature =
-          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+          typeof body.temperature === "number" &&
+          Number.isFinite(body.temperature)
             ? body.temperature
             : typeof body.temperature === "string" &&
                 body.temperature.trim() &&
@@ -4244,9 +4306,7 @@ export default function ApiTestPage() {
         setSummarizeResult(null);
         setSummarizeText(textBody);
         setSummarizeStyle(style);
-        setSummarizeTemperature(
-          Math.min(1, Math.max(0, parsedTemperature)),
-        );
+        setSummarizeTemperature(Math.min(1, Math.max(0, parsedTemperature)));
 
         try {
           const token = getToken();
@@ -4303,8 +4363,7 @@ export default function ApiTestPage() {
           text?: unknown;
           temperature?: unknown;
         };
-        const textBody =
-          typeof body.text === "string" ? body.text.trim() : "";
+        const textBody = typeof body.text === "string" ? body.text.trim() : "";
         if (!textBody) {
           patchConsole("sentiment", {
             error: "`text` 문자열을 확인해주세요.",
@@ -4320,7 +4379,8 @@ export default function ApiTestPage() {
         }
 
         const parsedTemperature =
-          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+          typeof body.temperature === "number" &&
+          Number.isFinite(body.temperature)
             ? body.temperature
             : typeof body.temperature === "string" &&
                 body.temperature.trim() &&
@@ -4332,9 +4392,7 @@ export default function ApiTestPage() {
         setSentimentAnalysis(null);
         setSentimentError(null);
         setSentimentText(textBody);
-        setSentimentTemperature(
-          Math.min(1, Math.max(0, parsedTemperature)),
-        );
+        setSentimentTemperature(Math.min(1, Math.max(0, parsedTemperature)));
 
         try {
           const token = getToken();
@@ -4391,8 +4449,7 @@ export default function ApiTestPage() {
           text?: unknown;
           temperature?: unknown;
         };
-        const textBody =
-          typeof body.text === "string" ? body.text.trim() : "";
+        const textBody = typeof body.text === "string" ? body.text.trim() : "";
         if (!textBody) {
           patchConsole("ner", {
             error: "`text` 문자열을 확인해주세요.",
@@ -4408,7 +4465,8 @@ export default function ApiTestPage() {
         }
 
         const parsedTemperature =
-          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+          typeof body.temperature === "number" &&
+          Number.isFinite(body.temperature)
             ? body.temperature
             : typeof body.temperature === "string" &&
                 body.temperature.trim() &&
@@ -4420,9 +4478,7 @@ export default function ApiTestPage() {
         setNerResult(null);
         setNerError(null);
         setNerText(textBody);
-        setNerTemperature(
-          Math.min(1, Math.max(0, parsedTemperature)),
-        );
+        setNerTemperature(Math.min(1, Math.max(0, parsedTemperature)));
 
         try {
           const token = getToken();
@@ -4479,8 +4535,7 @@ export default function ApiTestPage() {
           text?: unknown;
           temperature?: unknown;
         };
-        const textBody =
-          typeof body.text === "string" ? body.text.trim() : "";
+        const textBody = typeof body.text === "string" ? body.text.trim() : "";
         if (!textBody) {
           patchConsole("textToSql", {
             error: "`text` 문자열을 확인해주세요.",
@@ -4496,7 +4551,8 @@ export default function ApiTestPage() {
         }
 
         const parsedTemperature =
-          typeof body.temperature === "number" && Number.isFinite(body.temperature)
+          typeof body.temperature === "number" &&
+          Number.isFinite(body.temperature)
             ? body.temperature
             : typeof body.temperature === "string" &&
                 body.temperature.trim() &&
@@ -4508,9 +4564,7 @@ export default function ApiTestPage() {
         setTextToSqlResult(null);
         setTextToSqlError(null);
         setTextToSqlText(textBody);
-        setTextToSqlTemperature(
-          Math.min(1, Math.max(0, parsedTemperature)),
-        );
+        setTextToSqlTemperature(Math.min(1, Math.max(0, parsedTemperature)));
 
         try {
           const token = getToken();
@@ -4597,7 +4651,8 @@ export default function ApiTestPage() {
       ).trim();
 
       const parsedTemperature =
-        typeof body.temperature === "number" && Number.isFinite(body.temperature)
+        typeof body.temperature === "number" &&
+        Number.isFinite(body.temperature)
           ? body.temperature
           : typeof body.temperature === "string" &&
               body.temperature.trim() &&
@@ -4908,8 +4963,7 @@ export default function ApiTestPage() {
 
                       {taskKeys.map((t) => {
                         // "All"이 켜져 있을 때는 전 태스크가 true라서, 개별 버튼은 강조하지 않음
-                        const isActive =
-                          filterTasks[t] && !isAllTasksActive;
+                        const isActive = filterTasks[t] && !isAllTasksActive;
                         const label =
                           t === "Text Generation"
                             ? "Text"
@@ -5033,10 +5087,10 @@ export default function ApiTestPage() {
                                           : item.task === "Text-to-SQL"
                                             ? "GPT-OSS • Text-to-SQL"
                                             : item.task === "Embedding"
-                                      ? "Qwen-Embedding • Embedding"
-                                      : item.task === "Reranker"
-                                        ? "Qwen3 Reranker • Reranker"
-                                        : `Model Size ${item.modelSizeB}B • ${item.task}`}
+                                              ? "Qwen-Embedding • Embedding"
+                                              : item.task === "Reranker"
+                                                ? "Qwen3 Reranker • Reranker"
+                                                : `Model Size ${item.modelSizeB}B • ${item.task}`}
                           </p>
                           <p className="mt-1 text-lg font-semibold text-foreground leading-tight break-words">
                             {item.model}
@@ -5101,8 +5155,18 @@ export default function ApiTestPage() {
           <div className="relative flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:gap-3">
             {/* Center: Playground */}
             <section className="w-full lg:min-w-0 lg:flex-1">
-              <div className="relative flex h-[calc(100vh-240px)] min-h-0 flex-col rounded-2xl border border-white/5 bg-surface/35 backdrop-blur-xl overflow-hidden">
-                <div className="flex items-center justify-between gap-3 border-b border-white/5 bg-background/20 p-4">
+              <div
+                className={`relative flex min-h-0 flex-col rounded-2xl border border-white/5 bg-surface/35 backdrop-blur-xl overflow-hidden ${
+                  selectedApi === "adCopy"
+                    ? "h-[calc(100vh-200px)]"
+                    : "h-[calc(100vh-240px)]"
+                }`}
+              >
+                <div
+                  className={`flex items-center justify-between gap-3 border-b border-white/5 bg-background/20 ${
+                    selectedApi === "adCopy" ? "p-3" : "p-4"
+                  }`}
+                >
                   <div className="min-w-0">
                     <button
                       type="button"
@@ -5165,38 +5229,39 @@ export default function ApiTestPage() {
                                     : selectedApi === "textToSql"
                                       ? "High-Performance Infra • GPT-OSS-120B • Text-to-SQL"
                                       : selectedApi === "reranker"
-                                    ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
-                                    : selectedApi === "embedding"
-                                      ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
-                                      : selectedApi === "tts"
-                                        ? "High-Performance Infra • Qwen3-TTS • 실시간"
-                                        : "High-Performance Infra • Qwen3-STT • 실시간"}
+                                        ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
+                                        : selectedApi === "embedding"
+                                          ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
+                                          : selectedApi === "tts"
+                                            ? "High-Performance Infra • Qwen3-TTS • 실시간"
+                                            : "High-Performance Infra • Qwen3-STT • 실시간"}
                         </span>
                       </div>
                     ) : null}
                     {selectedApi === "adCopy" ? (
-                      <div className="mt-3 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-3 text-[13px] leading-relaxed text-foreground/80">
+                      <div className="mt-2 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
                         <p className="font-semibold text-foreground/95">
                           Ad Copy API 안내
                         </p>
-                        <p className="mt-2">
+                        <p className="mt-1.5">
                           제품·서비스{" "}
                           <span className="text-foreground/90">브리프</span>와
                           원하는{" "}
                           <span className="text-foreground/90">톤·채널</span>
-                          (예: SNS 배너)을 넣으면,{" "}
+                          (예: SNS 배너)을 넣으면{" "}
                           <span className="text-[#10b981] font-medium">
                             GPT-OSS-120B
                           </span>
-                          가 광고에 쓸 수 있는{" "}
+                          가{" "}
                           <span className="text-foreground/90">
-                            한국어 카피(슬로건·본문 등)
+                            지정한 출력 언어
                           </span>
-                          를 생성합니다. Temperature로 문구의 다양성을 조절할 수
-                          있어요.
-                        </p>
-                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
-                          엔드포인트: POST /api/ad-copy
+                          로 광고 카피(슬로건·본문 등)를 생성합니다. 글로벌
+                          캠페인에 맞게 언어를 바꿀 수 있어요. Temperature로
+                          문구 다양성을 조절할 수 있어요.{" "}
+                          <span className="font-mono text-[11px] text-foreground/45">
+                            POST /api/ad-copy
+                          </span>
                         </p>
                       </div>
                     ) : null}
@@ -5283,10 +5348,11 @@ export default function ApiTestPage() {
                             GPT-OSS-120B
                           </span>
                           가 MySQL 호환{" "}
-                          <span className="text-foreground/90">SELECT</span> 형태의{" "}
-                          <span className="text-foreground/90">sql</span> 문자열로
-                          바꿉니다. 스키마가 없으면 질문 맥락에서 표·컬럼을
-                          추정합니다. Temperature는 문법·표현 변동에 영향을 줍니다.
+                          <span className="text-foreground/90">SELECT</span>{" "}
+                          형태의 <span className="text-foreground/90">sql</span>{" "}
+                          문자열로 바꿉니다. 스키마가 없으면 질문 맥락에서
+                          표·컬럼을 추정합니다. Temperature는 문법·표현 변동에
+                          영향을 줍니다.
                         </p>
                         <p className="mt-2 font-mono text-[11px] text-foreground/50">
                           엔드포인트: POST /api/text-to-sql
@@ -5384,13 +5450,14 @@ export default function ApiTestPage() {
                   ) : null}
                   <div
                     className={
-                      selectedApi === "adCopy" ||
-                      selectedApi === "summarize" ||
-                      selectedApi === "sentiment" ||
-                      selectedApi === "ner" ||
-                      selectedApi === "textToSql"
-                        ? "min-h-0 flex-1 overflow-y-auto px-3 py-4"
-                        : "flex-shrink-0"
+                      selectedApi === "adCopy"
+                        ? "min-h-0 flex-1 overflow-y-auto px-3 py-3"
+                        : selectedApi === "summarize" ||
+                            selectedApi === "sentiment" ||
+                            selectedApi === "ner" ||
+                            selectedApi === "textToSql"
+                          ? "min-h-0 flex-1 overflow-y-auto px-3 py-4"
+                          : "flex-shrink-0"
                     }
                   >
                     <ApiInputPanel
@@ -5409,6 +5476,8 @@ export default function ApiTestPage() {
                       setAdCopyTone={setAdCopyTone}
                       adCopyChannel={adCopyChannel}
                       setAdCopyChannel={setAdCopyChannel}
+                      adCopyLanguage={adCopyLanguage}
+                      setAdCopyLanguage={setAdCopyLanguage}
                       adCopyTemperature={adCopyTemperature}
                       setAdCopyTemperature={setAdCopyTemperature}
                       isAdCopyLoading={isAdCopyLoading}
@@ -5455,7 +5524,9 @@ export default function ApiTestPage() {
                       setTtsText={setTtsText}
                       ttsLanguage={ttsLanguage}
                       setTtsLanguage={
-                        setTtsLanguage as React.Dispatch<React.SetStateAction<string>>
+                        setTtsLanguage as React.Dispatch<
+                          React.SetStateAction<string>
+                        >
                       }
                       ttsLanguageOptions={TTS_LANGUAGE_OPTIONS.map((opt) => ({
                         value: opt.value,
@@ -5463,7 +5534,9 @@ export default function ApiTestPage() {
                       }))}
                       ttsSpeaker={ttsSpeaker}
                       setTtsSpeaker={
-                        setTtsSpeaker as React.Dispatch<React.SetStateAction<string>>
+                        setTtsSpeaker as React.Dispatch<
+                          React.SetStateAction<string>
+                        >
                       }
                       ttsSpeakerOptions={TTS_SPEAKER_OPTIONS.map((opt) => ({
                         value: opt.value,
@@ -5520,7 +5593,13 @@ export default function ApiTestPage() {
 
             {/* Right: Developer Console */}
             <aside className="w-full lg:w-[38%] lg:min-w-[320px] lg:flex-shrink-0">
-              <div className="flex h-[calc(100vh-240px)] min-h-0 flex-col rounded-2xl border border-white/5 bg-surface/35 backdrop-blur-xl overflow-hidden">
+              <div
+                className={`flex min-h-0 flex-col rounded-2xl border border-white/5 bg-surface/35 backdrop-blur-xl overflow-hidden ${
+                  selectedApi === "adCopy"
+                    ? "h-[calc(100vh-200px)]"
+                    : "h-[calc(100vh-240px)]"
+                }`}
+              >
                 <div className="border-b border-white/5 bg-background/20 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -5545,10 +5624,10 @@ export default function ApiTestPage() {
                                       : selectedApi === "textToSql"
                                         ? "/api/text-to-sql"
                                         : selectedApi === "stt"
-                                  ? "/api/stt"
-                                  : selectedApi === "tts"
-                                    ? "Mock TTS (client)"
-                                    : "/api/chat"}
+                                          ? "/api/stt"
+                                          : selectedApi === "tts"
+                                            ? "Mock TTS (client)"
+                                            : "/api/chat"}
                         </span>
                       </p>
                     </div>
@@ -5607,8 +5686,10 @@ export default function ApiTestPage() {
                           disabled={
                             (selectedApi === "llm" && isChatLoading) ||
                             (selectedApi === "adCopy" && isAdCopyLoading) ||
-                            (selectedApi === "summarize" && isSummarizeLoading) ||
-                            (selectedApi === "sentiment" && isSentimentLoading) ||
+                            (selectedApi === "summarize" &&
+                              isSummarizeLoading) ||
+                            (selectedApi === "sentiment" &&
+                              isSentimentLoading) ||
                             (selectedApi === "ner" && isNerLoading) ||
                             (selectedApi === "textToSql" && isTextToSqlLoading)
                           }
@@ -5652,7 +5733,10 @@ export default function ApiTestPage() {
                               setConsoleCopied(false);
                             }
                           }}
-                          disabled={!currentConsole.responseJson || selectedApi === "tts"}
+                          disabled={
+                            !currentConsole.responseJson ||
+                            selectedApi === "tts"
+                          }
                           className={[
                             "rounded-lg border px-3 py-1 text-[11px] font-mono transition-colors",
                             "border-white/10 bg-background/30 text-foreground/70",
@@ -5714,7 +5798,9 @@ export default function ApiTestPage() {
                         footer={
                           <>
                             51087 Reranker 엔드포인트 예시입니다. 데모 앱은{" "}
-                            <span className="text-foreground/80">/api/rerank</span>{" "}
+                            <span className="text-foreground/80">
+                              /api/rerank
+                            </span>{" "}
                             프록시를 통해 호출합니다.
                           </>
                         }
@@ -5728,9 +5814,18 @@ export default function ApiTestPage() {
                         codePython={adCopyDevCodePython}
                         footer={
                           <>
-                            데모 앱은{" "}
-                            <span className="text-foreground/80">/api/ad-copy</span>{" "}
-                            프록시를 통해 광고 카피를 생성합니다.
+                            <span className="text-foreground/80">
+                              POST /api/ad-copy
+                            </span>
+                            와 동일한 JSON 본문입니다.{" "}
+                            <span className="font-mono text-foreground/70">
+                              BASE_URL
+                            </span>
+                            을 실행 환경에 맞게 바꾸고, 필요 시{" "}
+                            <span className="font-mono text-foreground/70">
+                              Authorization
+                            </span>{" "}
+                            헤더를 켜세요.
                           </>
                         }
                       />
@@ -5744,7 +5839,9 @@ export default function ApiTestPage() {
                         footer={
                           <>
                             데모 앱은{" "}
-                            <span className="text-foreground/80">/api/summarize</span>{" "}
+                            <span className="text-foreground/80">
+                              /api/summarize
+                            </span>{" "}
                             프록시를 통해 텍스트 요약을 생성합니다.
                           </>
                         }
@@ -5759,7 +5856,9 @@ export default function ApiTestPage() {
                         footer={
                           <>
                             데모 앱은{" "}
-                            <span className="text-foreground/80">/api/sentiment</span>{" "}
+                            <span className="text-foreground/80">
+                              /api/sentiment
+                            </span>{" "}
                             프록시를 통해 리뷰 감정 분석 결과를 반환합니다.
                           </>
                         }
@@ -5805,9 +5904,9 @@ export default function ApiTestPage() {
                         codePython={ttsDevCodePython}
                         footer={
                           <>
-                            Playground는 클라이언트에서 파형을 시뮬레이션합니다. 위
-                            코드는 Text API와 동일 호스트(51089) 기준 OpenAI 호환
-                            음성 합성 예시입니다.
+                            Playground는 클라이언트에서 파형을 시뮬레이션합니다.
+                            위 코드는 Text API와 동일 호스트(51089) 기준 OpenAI
+                            호환 음성 합성 예시입니다.
                           </>
                         }
                       />

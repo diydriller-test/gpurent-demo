@@ -49,20 +49,21 @@ const SECTIONS: DocSection[] = [
     method: "POST",
     path: "/api/ad-copy",
     description:
-      "동일한 GPT-OSS LLM을 광고 카피라이팅 전용 프롬프트로 감싸 생성합니다.",
+      "동일한 GPT-OSS LLM을 광고 카피라이팅 전용 프롬프트로 감싸 생성합니다. `language`로 출력 언어를 지정할 수 있습니다.",
     requestLabel: "본문 (application/json)",
     request: `{
   "brief": "제품·서비스 설명(필수)",
   "tone": "친근 / 전문 등 (선택)",
   "channel": "배너, SNS 등 (선택)",
-  "temperature": 0.7
+  "temperature": 0.7,
+  "language": "ko"
 }`,
     responseLabel: "성공 (200)",
     response: `{
-  "copy": "생성된 한국어 광고 카피"
+  "copy": "생성된 광고 카피 (지정 언어)"
 }`,
     notes: [
-      "`brief`만 필수입니다.",
+      "`brief`만 필수입니다. `language`는 `ko`, `en`, `ja`, `zh` 등 지원 코드(생략 시 ko).",
       "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
     ],
   },
