@@ -5160,7 +5160,8 @@ export default function ApiTestPage() {
                   selectedApi === "adCopy" ||
                   selectedApi === "summarize" ||
                   selectedApi === "sentiment" ||
-                  selectedApi === "ner"
+                  selectedApi === "ner" ||
+                  selectedApi === "textToSql"
                     ? "h-[calc(100vh-200px)]"
                     : "h-[calc(100vh-240px)]"
                 }`}
@@ -5170,7 +5171,8 @@ export default function ApiTestPage() {
                     selectedApi === "adCopy" ||
                     selectedApi === "summarize" ||
                     selectedApi === "sentiment" ||
-                    selectedApi === "ner"
+                    selectedApi === "ner" ||
+                    selectedApi === "textToSql"
                       ? "p-3"
                       : "p-4"
                   }`}
@@ -5227,7 +5229,8 @@ export default function ApiTestPage() {
                           selectedApi === "adCopy" ||
                           selectedApi === "summarize" ||
                           selectedApi === "sentiment" ||
-                          selectedApi === "ner"
+                          selectedApi === "ner" ||
+                          selectedApi === "textToSql"
                             ? "mt-1"
                             : "mt-2"
                         }
@@ -5346,26 +5349,23 @@ export default function ApiTestPage() {
                       </div>
                     ) : null}
                     {selectedApi === "textToSql" ? (
-                      <div className="mt-3 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-3 text-[13px] leading-relaxed text-foreground/80">
+                      <div className="mt-2 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
                         <p className="font-semibold text-foreground/95">
-                          Text-to-SQL (쿼리 자동 생성) API 안내
+                          Text-to-SQL API 안내
                         </p>
-                        <p className="mt-2">
-                          일상어로 된{" "}
-                          <span className="text-foreground/90">질문(text)</span>
-                          을 넣으면{" "}
+                        <p className="mt-1.5">
+                          <span className="text-foreground/90">질문(text)</span>을
+                          MySQL 호환{" "}
+                          <span className="text-foreground/90">SELECT</span>{" "}
+                          <span className="text-foreground/90">sql</span>로
+                          바꿉니다. 스키마 없으면 맥락에서 표·컬럼 추정.{" "}
                           <span className="text-[#10b981] font-medium">
                             GPT-OSS-120B
                           </span>
-                          가 MySQL 호환{" "}
-                          <span className="text-foreground/90">SELECT</span>{" "}
-                          형태의 <span className="text-foreground/90">sql</span>{" "}
-                          문자열로 바꿉니다. 스키마가 없으면 질문 맥락에서
-                          표·컬럼을 추정합니다. Temperature는 문법·표현 변동에
-                          영향을 줍니다.
-                        </p>
-                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
-                          엔드포인트: POST /api/text-to-sql
+                          , Temperature는 문법 변동.{" "}
+                          <span className="font-mono text-[11px] text-foreground/45">
+                            POST /api/text-to-sql
+                          </span>
                         </p>
                       </div>
                     ) : null}
@@ -5463,11 +5463,10 @@ export default function ApiTestPage() {
                       selectedApi === "adCopy" ||
                       selectedApi === "summarize" ||
                       selectedApi === "sentiment" ||
-                      selectedApi === "ner"
+                      selectedApi === "ner" ||
+                      selectedApi === "textToSql"
                         ? "min-h-0 flex-1 overflow-y-auto px-3 py-3"
-                        : selectedApi === "textToSql"
-                          ? "min-h-0 flex-1 overflow-y-auto px-3 py-4"
-                          : "flex-shrink-0"
+                        : "flex-shrink-0"
                     }
                   >
                     <ApiInputPanel
@@ -5608,7 +5607,8 @@ export default function ApiTestPage() {
                   selectedApi === "adCopy" ||
                   selectedApi === "summarize" ||
                   selectedApi === "sentiment" ||
-                  selectedApi === "ner"
+                  selectedApi === "ner" ||
+                  selectedApi === "textToSql"
                     ? "h-[calc(100vh-200px)]"
                     : "h-[calc(100vh-240px)]"
                 }`}

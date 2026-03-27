@@ -1042,115 +1042,119 @@ export function ApiInputPanel({
             handleTextToSqlRun();
           }}
         >
-          <div className="flex flex-col gap-3">
-            <div>
-              <p className="font-mono text-xs text-foreground/60">
-                자연어 질문 (필수)
-              </p>
-              <textarea
-                value={textToSqlText}
-                onChange={(e) => setTextToSqlText(e.target.value)}
-                rows={6}
-                placeholder="예: 지난달 서울 지역 매출 상위 상품 5개를 보여줘"
-                className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
-              />
-            </div>
-            <div>
-              <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-2.5 lg:grid lg:min-h-0 lg:grid-cols-2 lg:items-stretch lg:gap-4">
+            <div className="flex min-h-0 flex-col gap-2.5 lg:order-1">
+              <div className="flex min-h-0 flex-1 flex-col">
                 <p className="font-mono text-xs text-foreground/60">
-                  Temperature
+                  자연어 질문 (필수)
                 </p>
-                <span className="font-mono text-xs text-foreground/70">
-                  {textToSqlTemperature.toFixed(2)}
-                </span>
+                <textarea
+                  value={textToSqlText}
+                  onChange={(e) => setTextToSqlText(e.target.value)}
+                  rows={4}
+                  placeholder="예: 지난달 서울 지역 매출 상위 상품 5개를 보여줘"
+                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
+                />
               </div>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={textToSqlTemperature}
-                onChange={(e) =>
-                  setTextToSqlTemperature(
-                    parseTemperatureRange(e.target.value, 0.2),
-                  )
-                }
-                className="mt-2 w-full accent-[#10b981]"
-              />
-              <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
-                SQL 문법을 안정적으로 맞추려면{" "}
-                <span className="text-foreground/60">낮게</span>, 표현 다양성을
-                허용하려면 <span className="text-foreground/60">높게</span>{" "}
-                조절해 보세요.
-              </p>
-            </div>
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={isTextToSqlLoading || !textToSqlText.trim()}
-                className={[
-                  "inline-flex items-center gap-2 rounded-xl px-6 py-3 font-medium text-background transition-all",
-                  "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
-                ].join(" ")}
-              >
-                {isTextToSqlLoading ? (
-                  <>
-                    <svg
-                      className="h-4 w-4 animate-spin text-background"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
-                    <span>생성 중...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>SQL 생성</span>
-                    <span className="transition-transform group-hover:translate-x-1">
-                      →
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-mono text-xs text-foreground/60">
+                      Temperature
+                    </p>
+                    <span className="font-mono text-xs text-foreground/70">
+                      {textToSqlTemperature.toFixed(2)}
                     </span>
-                  </>
-                )}
-              </button>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={textToSqlTemperature}
+                    onChange={(e) =>
+                      setTextToSqlTemperature(
+                        parseTemperatureRange(e.target.value, 0.2),
+                      )
+                    }
+                    className="mt-1.5 w-full accent-[#10b981]"
+                  />
+                  <p className="mt-1 text-[11px] leading-snug text-foreground/45">
+                    낮을수록 SQL 문법이 안정적이고, 높을수록 표현이 달라질 수
+                    있어요.
+                  </p>
+                </div>
+                <div className="flex shrink-0 justify-end sm:pb-0.5">
+                  <button
+                    type="submit"
+                    disabled={isTextToSqlLoading || !textToSqlText.trim()}
+                    className={[
+                      "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
+                      "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                    ].join(" ")}
+                  >
+                    {isTextToSqlLoading ? (
+                      <>
+                        <svg
+                          className="h-4 w-4 animate-spin text-background"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                        <span>생성 중...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>SQL 생성</span>
+                        <span className="transition-transform group-hover:translate-x-1">
+                          →
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="rounded-2xl border border-[#10b981]/25 bg-background/35 p-4 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)]">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-mono text-xs font-medium text-[#10b981]">
-                  생성된 SQL
-                </p>
-                {isTextToSqlLoading ? (
-                  <span className="text-[11px] text-foreground/50">
-                    생성 중…
-                  </span>
-                ) : textToSqlResult ? (
-                  <span className="text-[11px] text-foreground/50">완료</span>
-                ) : null}
-              </div>
-              <div className="mt-3 max-h-[min(50vh,440px)] min-h-[140px] overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3">
-                {isTextToSqlLoading ? (
-                  <p className="text-sm leading-relaxed text-foreground/55">
-                    SQL을 생성하는 중입니다…
+            <div className="flex min-h-0 flex-col lg:order-2">
+              <div className="flex min-h-0 flex-col rounded-2xl border border-[#10b981]/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-mono text-xs font-medium text-[#10b981]">
+                    생성된 SQL
                   </p>
-                ) : textToSqlError ? (
-                  <p className="text-sm leading-relaxed text-red-300">
-                    {textToSqlError}
-                  </p>
-                ) : textToSqlResult ? (
-                  <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-foreground/90">
-                    {textToSqlResult.sql}
-                  </pre>
-                ) : (
-                  <p className="text-sm leading-relaxed text-foreground/45">
-                    <span className="text-foreground/65">SQL 생성</span>을
-                    누르면 이곳에 쿼리가 표시됩니다.
-                  </p>
-                )}
+                  {isTextToSqlLoading ? (
+                    <span className="text-[11px] text-foreground/50">
+                      생성 중…
+                    </span>
+                  ) : textToSqlResult ? (
+                    <span className="text-[11px] text-foreground/50">완료</span>
+                  ) : null}
+                </div>
+                <div className="mt-2.5 min-h-[120px] max-h-[min(38vh,280px)] flex-1 overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3 lg:min-h-[200px] lg:max-h-none">
+                  {isTextToSqlLoading ? (
+                    <p className="text-sm leading-relaxed text-foreground/55">
+                      SQL을 생성하는 중입니다…
+                    </p>
+                  ) : textToSqlError ? (
+                    <p className="text-sm leading-relaxed text-red-300">
+                      {textToSqlError}
+                    </p>
+                  ) : textToSqlResult ? (
+                    <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-foreground/90">
+                      {textToSqlResult.sql}
+                    </pre>
+                  ) : (
+                    <p className="text-sm leading-relaxed text-foreground/45">
+                      <span className="text-foreground/65">SQL 생성</span>을
+                      누르면 이곳에 쿼리가 표시됩니다.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
