@@ -49,7 +49,7 @@ const SECTIONS: DocSection[] = [
     method: "POST",
     path: "/api/ad-copy",
     description:
-      "동일한 GPT-OSS LLM을 광고 카피라이팅 전용 프롬프트로 감싸 생성합니다. `language`로 출력 언어를 지정할 수 있습니다.",
+      "자사 광고 카피 생성 엔진으로 브리프·톤·채널에 맞는 문구를 생성합니다. `language`로 출력 언어를 지정할 수 있습니다.",
     requestLabel: "본문 (application/json)",
     request: `{
   "brief": "제품·서비스 설명(필수)",

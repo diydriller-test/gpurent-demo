@@ -1134,27 +1134,27 @@ export default function ApiTestPage() {
       {
         id: "adCopy",
         name: "Ad Copy",
-        description: "광고 카피라이팅 생성 (GPT-OSS)",
+        description: "광고 카피라이팅 생성 (자사 NLP 엔진)",
       },
       {
         id: "summarize",
         name: "Text Summary",
-        description: "긴 문서·리뷰를 핵심만 압축 요약 (GPT-OSS)",
+        description: "긴 문서·리뷰를 핵심만 압축 요약 (자사 NLP 엔진)",
       },
       {
         id: "sentiment",
         name: "Sentiment",
-        description: "리뷰 감정 분석 · 측면별 긍·부정·점수 (GPT-OSS)",
+        description: "리뷰 감정 분석 · 측면별 긍·부정·점수 (자사 NLP 엔진)",
       },
       {
         id: "ner",
         name: "NER",
-        description: "개체명 인식 · 인물·장소·시간·금액 등 추출 (GPT-OSS)",
+        description: "개체명 인식 · 인물·장소·시간·금액 등 추출 (자사 NLP 엔진)",
       },
       {
         id: "textToSql",
         name: "Text-to-SQL",
-        description: "자연어 질문을 SQL로 변환 · 분석·리포트 질의 (GPT-OSS)",
+        description: "자연어 질문을 SQL로 변환 · 분석·리포트 질의 (자사 엔진)",
       },
       {
         id: "embedding",
@@ -1389,46 +1389,46 @@ export default function ApiTestPage() {
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
-        id: "ad-copy-gpt-oss",
+        id: "ad-copy-modu-nlp",
         task: "Ad Copy",
         apiId: "adCopy",
-        model: "GPT-OSS-120B • Ad Copy",
+        model: "Modu NLP 엔진 • Ad Copy",
         modelSizeB: 120,
         taskTags: ["#LLM", "#Ad-Copy"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
-        id: "text-summary-gpt-oss",
+        id: "text-summary-modu-nlp",
         task: "Text Summary",
         apiId: "summarize",
-        model: "GPT-OSS-120B • Text Summary",
+        model: "Modu NLP 엔진 • Text Summary",
         modelSizeB: 120,
         taskTags: ["#LLM", "#Summary", "#NLP"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
-        id: "review-sentiment-gpt-oss",
+        id: "review-sentiment-modu-nlp",
         task: "Sentiment Analysis",
         apiId: "sentiment",
-        model: "GPT-OSS-120B • Sentiment",
+        model: "Modu NLP 엔진 • Sentiment",
         modelSizeB: 120,
         taskTags: ["#LLM", "#Sentiment", "#Reviews"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
-        id: "ner-gpt-oss",
+        id: "ner-modu-nlp",
         task: "NER",
         apiId: "ner",
-        model: "GPT-OSS-120B • NER",
+        model: "Modu NLP 엔진 • NER",
         modelSizeB: 120,
         taskTags: ["#LLM", "#NER", "#NLP"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
-        id: "text-to-sql-gpt-oss",
+        id: "text-to-sql-modu-nlp",
         task: "Text-to-SQL",
         apiId: "textToSql",
-        model: "GPT-OSS-120B • Text-to-SQL",
+        model: "Modu NLP 엔진 • Text-to-SQL",
         modelSizeB: 120,
         taskTags: ["#LLM", "#SQL", "#Analytics"],
         formats: ["vLLM", "Transformers", "ONNX"],
@@ -1633,7 +1633,7 @@ export default function ApiTestPage() {
             <span className="text-[#10b981] font-semibold">
               배너·SNS 등 문구
             </span>
-            를 생성하는 GPT-OSS 기반 서비스입니다.
+            를 생성하는 자사 자연어 처리 엔진 기반 서비스입니다.
           </>
         );
       case "TextSummary":
@@ -1644,7 +1644,7 @@ export default function ApiTestPage() {
             <span className="text-[#10b981] font-semibold">
               핵심만 추려 짧게 압축
             </span>
-            하는 GPT-OSS 기반 서비스입니다.
+            하는 자사 자연어 처리 엔진 기반 서비스입니다.
           </>
         );
       case "SentimentAnalysis":
@@ -1654,7 +1654,7 @@ export default function ApiTestPage() {
             <span className="text-[#10b981] font-semibold">리뷰 감정 분석</span>
             : 긍·부정·중립과{" "}
             <span className="text-[#10b981] font-semibold">측면별 점수</span>로
-            브랜드 평판·이슈를 빠르게 파악하는 GPT-OSS 기반 서비스입니다.
+            브랜드 평판·이슈를 빠르게 파악하는 자사 자연어 처리 엔진 기반 서비스입니다.
           </>
         );
       case "NERTask":
@@ -1668,7 +1668,7 @@ export default function ApiTestPage() {
             <span className="text-[#10b981] font-semibold">
               label·category로 정형 추출
             </span>
-            하는 GPT-OSS 기반 서비스입니다.
+            하는 자사 자연어 처리 엔진 기반 서비스입니다.
           </>
         );
       case "TextToSqlTask":
@@ -1682,7 +1682,7 @@ export default function ApiTestPage() {
             <span className="text-[#10b981] font-semibold">
               MySQL 호환 SELECT
             </span>
-            로 바꿔 주는 GPT-OSS 기반 서비스입니다.
+            로 바꿔 주는 자사 자연어 처리 엔진 기반 서비스입니다.
           </>
         );
       case "Embedding":
@@ -5077,15 +5077,15 @@ export default function ApiTestPage() {
                                 : item.task === "Text Generation"
                                   ? "GPT-OSS • Text Generation"
                                   : item.task === "Ad Copy"
-                                    ? "GPT-OSS • Ad Copy"
+                                    ? "Modu NLP • Ad Copy"
                                     : item.task === "Text Summary"
-                                      ? "GPT-OSS • Text Summary"
+                                      ? "Modu NLP • Text Summary"
                                       : item.task === "Sentiment Analysis"
-                                        ? "GPT-OSS • Sentiment"
+                                        ? "Modu NLP • Sentiment"
                                         : item.task === "NER"
-                                          ? "GPT-OSS • NER"
+                                          ? "Modu NLP • NER"
                                           : item.task === "Text-to-SQL"
-                                            ? "GPT-OSS • Text-to-SQL"
+                                            ? "Modu NLP • Text-to-SQL"
                                             : item.task === "Embedding"
                                               ? "Qwen-Embedding • Embedding"
                                               : item.task === "Reranker"
@@ -5239,15 +5239,15 @@ export default function ApiTestPage() {
                           {selectedApi === "llm"
                             ? "High-Performance Infra • GPT-OSS-120B • 실시간"
                             : selectedApi === "adCopy"
-                              ? "High-Performance Infra • GPT-OSS-120B • 광고 카피"
+                              ? "High-Performance Infra • 자사 NLP • 광고 카피"
                               : selectedApi === "summarize"
-                                ? "High-Performance Infra • GPT-OSS-120B • 텍스트 요약"
+                                ? "High-Performance Infra • 자사 NLP • 텍스트 요약"
                                 : selectedApi === "sentiment"
-                                  ? "High-Performance Infra • GPT-OSS-120B • 리뷰 감정"
+                                  ? "High-Performance Infra • 자사 NLP • 리뷰 감정"
                                   : selectedApi === "ner"
-                                    ? "High-Performance Infra • GPT-OSS-120B • 개체명 인식"
+                                    ? "High-Performance Infra • 자사 NLP • 개체명 인식"
                                     : selectedApi === "textToSql"
-                                      ? "High-Performance Infra • GPT-OSS-120B • Text-to-SQL"
+                                      ? "High-Performance Infra • 자사 NLP • Text-to-SQL"
                                       : selectedApi === "reranker"
                                         ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
                                         : selectedApi === "embedding"
@@ -5270,9 +5270,9 @@ export default function ApiTestPage() {
                           <span className="text-foreground/90">톤·채널</span>
                           (예: SNS 배너)을 넣으면{" "}
                           <span className="text-[#10b981] font-medium">
-                            GPT-OSS-120B
+                            자사 NLP 엔진
                           </span>
-                          가{" "}
+                          이{" "}
                           <span className="text-foreground/90">
                             지정한 출력 언어
                           </span>
@@ -5295,9 +5295,9 @@ export default function ApiTestPage() {
                           <span className="text-foreground/90">본문(text)</span>을
                           넣으면{" "}
                           <span className="text-[#10b981] font-medium">
-                            GPT-OSS-120B
+                            자사 NLP 엔진
                           </span>
-                          가 핵심만 압축합니다.{" "}
+                          이 핵심만 압축합니다.{" "}
                           <span className="text-foreground/90">style</span>로
                           형식 힌트, Temperature로 다양성 조절.{" "}
                           <span className="font-mono text-[11px] text-foreground/45">
@@ -5315,9 +5315,9 @@ export default function ApiTestPage() {
                           <span className="text-foreground/90">리뷰(text)</span>에
                           대해{" "}
                           <span className="text-[#10b981] font-medium">
-                            GPT-OSS-120B
+                            자사 NLP 엔진
                           </span>
-                          가 전체·측면(aspect)별 긍·부정·중립과 0~1 점수를
+                          이 전체·측면(aspect)별 긍·부정·중립과 0~1 점수를
                           반환합니다. Temperature는 분류 변동폭에 영향을 줍니다.{" "}
                           <span className="font-mono text-[11px] text-foreground/45">
                             POST /api/sentiment
@@ -5339,9 +5339,9 @@ export default function ApiTestPage() {
                           </span>
                           로 추출합니다.{" "}
                           <span className="text-[#10b981] font-medium">
-                            GPT-OSS-120B
+                            자사 NLP 엔진
                           </span>
-                          , Temperature는 분류 변동폭.{" "}
+                          이 처리하며, Temperature는 분류 변동폭에 영향을 줍니다.{" "}
                           <span className="font-mono text-[11px] text-foreground/45">
                             POST /api/ner
                           </span>
@@ -5360,9 +5360,9 @@ export default function ApiTestPage() {
                           <span className="text-foreground/90">sql</span>로
                           바꿉니다. 스키마 없으면 맥락에서 표·컬럼 추정.{" "}
                           <span className="text-[#10b981] font-medium">
-                            GPT-OSS-120B
+                            자사 NLP 엔진
                           </span>
-                          , Temperature는 문법 변동.{" "}
+                          이 처리하며, Temperature는 문법 변동에 영향을 줍니다.{" "}
                           <span className="font-mono text-[11px] text-foreground/45">
                             POST /api/text-to-sql
                           </span>
