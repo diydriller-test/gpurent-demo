@@ -6,7 +6,16 @@ type SummarizeBody = {
   /** 업스트림 전달용 (문서·클라이언트에서 흔히 쓰는 이름) */
   style?: unknown;
   styleLine?: unknown;
+  temperature?: unknown;
 };
+
+function parseTemperatureOptional(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && Number.isFinite(Number(value))) {
+    return Number(value);
+  }
+  return undefined;
+}
 
 function asOptionalString(value: unknown): string {
   if (typeof value === "string") return value.trim();
@@ -32,6 +41,8 @@ export async function POST(req: Request) {
       styleLineInput ||
       "(지정 없음 — 문맥에 맞게 한두 문단 또는 불릿 형태로 요약하세요)";
 
+    const temperature = parseTemperatureOptional(body?.temperature);
+
     const upstreamBasePath = await resolveUpstreamBasePath(req);
     const upstreamUrl = `${upstreamBasePath}/summarize/api/summarize`;
 
@@ -42,7 +53,11 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
         ...(authHeader ? { Authorization: authHeader } : {}),
       },
-      body: JSON.stringify({ text, styleLine }),
+      body: JSON.stringify({
+        text,
+        styleLine,
+        ...(typeof temperature === "number" ? { temperature } : {}),
+      }),
       cache: "no-store",
       signal: AbortSignal.timeout(120_000),
     });

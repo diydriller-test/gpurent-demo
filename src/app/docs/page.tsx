@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getToken, removeToken } from "@/lib/token";
+import { getToken } from "@/lib/token";
+import { AD_COPY_LANGUAGE_OPTIONS } from "@/lib/adCopyLanguages";
 
 type DocSection = {
   id: string;
@@ -20,6 +20,10 @@ type DocSection = {
 
 const BASE_URL_NOTE =
   "브라우저에서 호출 시 동일 오리진 기준 상대 경로(예: /api/chat)를 사용합니다.";
+
+const AD_COPY_SUPPORTED_LANGUAGE_CODES = AD_COPY_LANGUAGE_OPTIONS.map(
+  (o) => o.value,
+).join(", ");
 
 const SECTIONS: DocSection[] = [
   {
@@ -63,8 +67,35 @@ const SECTIONS: DocSection[] = [
   "copy": "생성된 광고 카피 (지정 언어)"
 }`,
     notes: [
-      "`brief`만 필수입니다. `language`는 `ko`, `en`, `ja`, `zh` 등 지원 코드(생략 시 ko).",
+      "`brief`만 필수입니다. `language`는 아래 코드 중 하나여야 합니다(생략 시 ko): " +
+        AD_COPY_SUPPORTED_LANGUAGE_CODES +
+        ".",
       "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
+    ],
+  },
+  {
+    id: "copy-api",
+    title: "광고 카피 (Copywrite 엔진)",
+    method: "POST",
+    path: "/api/copy",
+    description:
+      "`/api/ad-copy`와 다른 업스트림(카피라이트) 경로입니다. 헤드라인·본문을 분리한 JSON을 반환합니다. 톤·채널은 `tone`/`channel` 대신 `toneLine`/`channelLine` 필드명을 사용합니다.",
+    requestLabel: "본문 (application/json)",
+    request: `{
+  "brief": "제품·서비스 설명(필수)",
+  "toneLine": "톤 힌트 (선택)",
+  "channelLine": "채널 힌트 (선택)",
+  "temperature": 0.7
+}`,
+    responseLabel: "성공 (200)",
+    response: `{
+  "headline": "메인 헤드라인 또는 슬로건",
+  "body": "본문·설명 문구"
+}`,
+    notes: [
+      "`brief`만 필수입니다. `toneLine`·`channelLine`을 생략하면 서버가 기본 힌트 문구로 채웁니다.",
+      "출력 언어 지정 필드는 없으며, 업스트림 Copywrite 엔진 동작에 따릅니다.",
+      "한도 초과 시 429 등은 `/api/ad-copy`와 유사하게 처리될 수 있습니다.",
     ],
   },
   {
@@ -73,7 +104,7 @@ const SECTIONS: DocSection[] = [
     method: "POST",
     path: "/api/summarize",
     description:
-      "긴 본문을 받아 핵심만 추린 한국어 요약 문자열을 반환합니다. 리뷰·뉴스·회의록 등 비정형 텍스트 정리에 활용할 수 있습니다.",
+      "긴 본문을 받아 핵심만 추린 요약 문자열을 반환합니다. 리뷰·뉴스·회의록 등 비정형 텍스트 정리에 활용할 수 있습니다.",
     requestLabel: "본문 (application/json)",
     request: `{
   "text": "요약할 원문(필수)",
@@ -82,10 +113,11 @@ const SECTIONS: DocSection[] = [
 }`,
     responseLabel: "성공 (200)",
     response: `{
-  "summary": "압축된 한국어 요약"
+  "summary": "압축된 요약 문자열"
 }`,
     notes: [
       "`text`만 필수입니다. 요약 형식·톤 힌트는 `style` 또는 `styleLine`(동일 의미)으로 선택할 수 있습니다.",
+      "`temperature`는 선택이며, 숫자로 보내면 업스트림 요약 API에 함께 전달됩니다.",
       "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
     ],
   },

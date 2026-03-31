@@ -54,7 +54,7 @@ const APIS: ApiCard[] = [
 
 const BENEFITS = [
   {
-    title: "트래픽픽 기반 과금",
+    title: "트래픽 기반 과금",
     description: "토큰량이 아닌 최대 RPS만 제한. 예측 가능한 비용 관리",
   },
   {
