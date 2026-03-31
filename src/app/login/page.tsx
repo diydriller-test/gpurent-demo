@@ -63,6 +63,14 @@ export default function LoginPage() {
       <main className="flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
           <div className="rounded-2xl border border-white/5 bg-surface/80 p-8 shadow-xl backdrop-blur-sm">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-1 text-xs text-foreground/60 transition-colors hover:text-accent"
+            >
+              <span>←</span>
+              <span>뒤로가기</span>
+            </button>
             <div className="mb-8 text-center">
               <h1 className="text-2xl font-bold text-foreground">로그인</h1>
               <p className="mt-2 text-sm text-foreground/60">
