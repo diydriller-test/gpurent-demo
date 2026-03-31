@@ -404,6 +404,15 @@ function IconPause(props: { className?: string }) {
   );
 }
 
+function IconArrowLeft(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M19 12H5" />
+      <path d="M12 19l-7-7 7-7" />
+    </IconBase>
+  );
+}
+
 function IconUpload(props: { className?: string }) {
   return (
     <IconBase {...props}>
@@ -5286,27 +5295,39 @@ export default function ApiTestPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setSidebarMode("all");
-                        setFilterTasks({
-                          "Text Generation": selectedApi === "llm",
-                          "Ad Copy": selectedApi === "adCopy",
-                          "Text Summary": selectedApi === "summarize",
-                          "Sentiment Analysis": selectedApi === "sentiment",
-                          NER: selectedApi === "ner",
-                          "Text-to-SQL": selectedApi === "textToSql",
-                          Embedding: selectedApi === "embedding",
-                          Reranker: selectedApi === "reranker",
-                          TTS: selectedApi === "tts",
-                          STT: selectedApi === "stt",
-                          Vision: false,
-                        });
-                        setViewMode("list");
+                        if (typeof window === "undefined") return;
+
+                        const params = new URLSearchParams(window.location.search);
+                        const openedFromDeepLink =
+                          params.has("api") || params.get("view") === "detail";
+
+                        if (!openedFromDeepLink) {
+                          setSidebarMode("all");
+                          setFilterTasks((prev) => {
+                            const next = { ...prev };
+                            taskKeys.forEach((k) => {
+                              next[k] = true;
+                            });
+                            next.Vision = false;
+                            return next;
+                          });
+                          setViewMode("list");
+                          return;
+                        }
+
+                        if (window.history.length > 1) {
+                          router.back();
+                        } else {
+                          router.push("/");
+                        }
                       }}
-                      className="inline-flex items-center rounded-lg px-1 py-0.5 text-xs text-foreground/55 transition-colors hover:text-accent"
+                      aria-label="이전 화면으로 돌아가기"
+                      className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-background/45 px-3 py-2 text-sm font-medium text-foreground/82 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-accent/35 hover:bg-accent/8 hover:text-accent"
                     >
-                      ← 목록으로 돌아가기
+                      <IconArrowLeft className="h-4 w-4 shrink-0" />
+                      <span>API 목록으로</span>
                     </button>
-                    <p className="mt-2 font-mono text-xs text-foreground/60">
+                    <p className="mt-2 font-mono text-xs text-foreground/45">
                       Test Playground
                     </p>
                     <div className="mt-1 flex w-full min-w-0 items-center justify-between gap-3">
