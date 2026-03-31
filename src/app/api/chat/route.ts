@@ -25,12 +25,17 @@ export async function POST(req: Request) {
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamUrl = `${upstreamBasePath}/llm/v1/chat/completions`;
+    const authHeader = req.headers.get("authorization");
 
     const upstreamRes = await fetch(upstreamUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        ...(apiKey
+          ? { Authorization: `Bearer ${apiKey}` }
+          : authHeader
+            ? { Authorization: authHeader }
+            : {}),
       },
       body: JSON.stringify({
         model: "openai/gpt-oss-120b",
