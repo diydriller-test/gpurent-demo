@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getApis, getPlans, getMe, updatePlan, type Api, type Plan, type User } from "@/lib/api";
 import { getToken } from "@/lib/token";
+import { NavAuthButton } from "@/components/NavAuthButton";
 import {
   chapterQueryToPlanTask,
   DEMO_APIS_FALLBACK,
@@ -256,46 +257,34 @@ function PlansPageContent() {
             </span>
             <span className="font-mono text-lg font-medium text-wood">오마카세</span>
           </Link>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              홈
-            </Link>
-            <Link
-              href="/api-test"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              API 체험
-            </Link>
-            <span
-              aria-disabled="true"
-              className="cursor-not-allowed text-sm text-foreground/35"
-            >
-              플랜
-            </span>
-            <Link
-              href="/docs"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              API 문서
-            </Link>
-            {hasToken ? (
+          <div className="flex items-center gap-8">
+            <div className="flex items-center gap-5">
               <Link
-                href="/profile"
+                href="/"
                 className="text-sm text-foreground/70 transition-colors hover:text-accent"
               >
-                프로필
+                홈
               </Link>
-            ) : (
               <Link
-                href="/signup"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+                href="/api-test"
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
               >
-                시작하기
+                API 체험
               </Link>
-            )}
+              <span
+                aria-current="page"
+                className="rounded-lg border border-accent/35 bg-accent/10 px-2.5 py-1.5 text-sm font-medium text-accent"
+              >
+                플랜
+              </span>
+              <Link
+                href="/docs"
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              >
+                API 문서
+              </Link>
+            </div>
+            <NavAuthButton />
           </div>
         </div>
       </nav>

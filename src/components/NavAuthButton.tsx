@@ -23,28 +23,36 @@ export function NavAuthButton() {
 
   if (!mounted) {
     return (
-      <Link
-        href="/signup"
-        className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
-      >
-        시작하기
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/login"
+          className="rounded-lg border border-white/25 bg-white/[0.03] px-4 py-2 text-sm font-medium text-foreground/95 transition-colors hover:border-accent/45 hover:bg-accent/5 hover:text-accent"
+        >
+          로그인
+        </Link>
+        <Link
+          href="/signup"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+        >
+          시작하기
+        </Link>
+      </div>
     );
   }
 
   if (isLoggedIn) {
     return (
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3">
         <Link
           href="/profile"
-          className="text-sm text-foreground/70 transition-colors hover:text-accent"
+          className="rounded-lg border border-white/20 bg-white/[0.02] px-4 py-2 text-sm font-medium text-foreground/90 transition-colors hover:border-accent/45 hover:bg-accent/5 hover:text-accent"
         >
           프로필
         </Link>
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+          className="rounded-lg border border-white/20 bg-transparent px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:border-red-300/40 hover:bg-red-400/10 hover:text-red-200"
         >
           로그아웃
         </button>
@@ -53,11 +61,19 @@ export function NavAuthButton() {
   }
 
   return (
-    <Link
-      href="/signup"
-      className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
-    >
-      시작하기
-    </Link>
+      <div className="flex items-center gap-3">
+      <Link
+        href="/login"
+        className="rounded-lg border border-white/25 bg-white/[0.03] px-4 py-2 text-sm font-medium text-foreground/95 transition-colors hover:border-accent/45 hover:bg-accent/5 hover:text-accent"
+      >
+        로그인
+      </Link>
+      <Link
+        href="/signup"
+        className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+      >
+        시작하기
+      </Link>
+    </div>
   );
 }

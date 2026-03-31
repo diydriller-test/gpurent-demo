@@ -180,10 +180,10 @@ export default function Home() {
               오마카세
             </span>
           </Link>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3">
             <Link
               href="/plans"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              className="rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-foreground/85 transition-colors hover:border-accent/40 hover:bg-accent/5 hover:text-accent"
             >
               플랜
             </Link>

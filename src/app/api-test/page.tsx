@@ -12,6 +12,7 @@ import React, {
 import { useRouter } from "next/navigation";
 import { DEFAULT_AD_COPY_LANGUAGE } from "@/lib/adCopyLanguages";
 import { getApis, getMe, type Api, type User } from "@/lib/api";
+import { NavAuthButton } from "@/components/NavAuthButton";
 import { getToken } from "@/lib/token";
 import { SmartSolutionGuide } from "./components/SmartSolutionGuide";
 import { JsonCode } from "./components/JsonCode";
@@ -1209,8 +1210,6 @@ export default function ApiTestPage() {
   const [limitExceededModalOpen, setLimitExceededModalOpen] = useState(false);
   const comingSoonTimerRef = useRef<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  /** localStorage는 클라에만 있어 SSR/첫 페인트와 동일한 네비를 유지 (hydration 오류 방지) */
-  const [navAuthMounted, setNavAuthMounted] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1234,10 +1233,6 @@ export default function ApiTestPage() {
       // 홈 카드에서 들어올 때는 바로 해당 챕터 상세를 보여줌
       setViewMode(view === "list" ? "list" : "detail");
     }
-  }, []);
-
-  useEffect(() => {
-    setNavAuthMounted(true);
   }, []);
 
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -4923,53 +4918,34 @@ export default function ApiTestPage() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              홈
-            </Link>
-            <span
-              aria-disabled="true"
-              className="cursor-not-allowed text-sm text-foreground/35"
-            >
-              API 체험
-            </span>
-            <Link
-              href="/plans"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              플랜
-            </Link>
-            <Link
-              href="/docs"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              API 문서
-            </Link>
-            {!navAuthMounted ? (
+          <div className="flex items-center gap-8">
+            <div className="flex items-center gap-5">
               <Link
-                href="/signup"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
-              >
-                시작하기
-              </Link>
-            ) : getToken() ? (
-              <Link
-                href="/profile"
+                href="/"
                 className="text-sm text-foreground/70 transition-colors hover:text-accent"
               >
-                프로필
+                홈
               </Link>
-            ) : (
-              <Link
-                href="/signup"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              <span
+                aria-current="page"
+                className="rounded-lg border border-accent/35 bg-accent/10 px-2.5 py-1.5 text-sm font-medium text-accent"
               >
-                시작하기
+                API 체험
+              </span>
+              <Link
+                href="/plans"
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              >
+                플랜
               </Link>
-            )}
+              <Link
+                href="/docs"
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              >
+                API 문서
+              </Link>
+            </div>
+            <NavAuthButton />
           </div>
         </div>
       </nav>

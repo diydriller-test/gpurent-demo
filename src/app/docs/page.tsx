@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getToken } from "@/lib/token";
 import { AD_COPY_LANGUAGE_OPTIONS } from "@/lib/adCopyLanguages";
+import { NavAuthButton } from "@/components/NavAuthButton";
 
 type DocSection = {
   id: string;
@@ -319,7 +319,6 @@ function docsTocLinkClass(isActive: boolean) {
 }
 
 export default function DocsPage() {
-  const hasToken = !!getToken();
   const [activeSectionId, setActiveSectionId] = useState<string>("overview");
 
   useEffect(() => {
@@ -357,46 +356,34 @@ export default function DocsPage() {
             </span>
             <span className="font-mono text-lg font-medium text-wood">오마카세</span>
           </Link>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              홈
-            </Link>
-            <Link
-              href="/api-test"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              API 체험
-            </Link>
-            <Link
-              href="/plans"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              플랜
-            </Link>
-            <span
-              aria-disabled="true"
-              className="cursor-not-allowed text-sm text-foreground/35"
-            >
-              API 문서
-            </span>
-            {hasToken ? (
+          <div className="flex items-center gap-8">
+            <div className="flex items-center gap-5">
               <Link
-                href="/profile"
+                href="/"
                 className="text-sm text-foreground/70 transition-colors hover:text-accent"
               >
-                프로필
+                홈
               </Link>
-            ) : (
               <Link
-                href="/signup"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+                href="/api-test"
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
               >
-                시작하기
+                API 체험
               </Link>
-            )}
+              <Link
+                href="/plans"
+                className="text-sm text-foreground/70 transition-colors hover:text-accent"
+              >
+                플랜
+              </Link>
+              <span
+                aria-current="page"
+                className="rounded-lg border border-accent/35 bg-accent/10 px-2.5 py-1.5 text-sm font-medium text-accent"
+              >
+                API 문서
+              </span>
+            </div>
+            <NavAuthButton />
           </div>
         </div>
       </nav>
