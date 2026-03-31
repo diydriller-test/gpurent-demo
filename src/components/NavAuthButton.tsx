@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getToken, removeToken } from "@/lib/token";
 
 export function NavAuthButton() {
   const router = useRouter();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const loginHref = pathname ? `/login?redirect=${encodeURIComponent(pathname)}` : "/login";
 
   useEffect(() => {
     setMounted(true);
@@ -25,7 +27,7 @@ export function NavAuthButton() {
     return (
       <div className="flex items-center gap-3">
         <Link
-          href="/login"
+          href={loginHref}
           className="rounded-lg border border-white/25 bg-white/[0.03] px-4 py-2 text-sm font-medium text-foreground/95 transition-colors hover:border-accent/45 hover:bg-accent/5 hover:text-accent"
         >
           로그인
@@ -63,7 +65,7 @@ export function NavAuthButton() {
   return (
       <div className="flex items-center gap-3">
       <Link
-        href="/login"
+        href={loginHref}
         className="rounded-lg border border-white/25 bg-white/[0.03] px-4 py-2 text-sm font-medium text-foreground/95 transition-colors hover:border-accent/45 hover:bg-accent/5 hover:text-accent"
       >
         로그인

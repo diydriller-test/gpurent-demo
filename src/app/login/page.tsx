@@ -1,15 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 import { login } from "@/lib/api";
 import { setToken } from "@/lib/token";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const redirectPath = useMemo(() => {
+    const raw = searchParams.get("redirect");
+    if (!raw) return null;
+    if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+    if (raw === "/login") return null;
+    return raw;
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,7 +39,7 @@ export default function LoginPage() {
     try {
       const { access_token } = await login({ email, password });
       setToken(access_token);
-      router.push("/docs");
+      router.push(redirectPath ?? "/api-test");
     } catch (err) {
       setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");
     } finally {
@@ -132,7 +140,10 @@ export default function LoginPage() {
 
             <p className="mt-6 text-center text-sm text-foreground/60">
               계정이 없으신가요?{" "}
-              <Link href="/signup" className="font-medium text-accent hover:underline">
+              <Link
+                href={redirectPath ? `/signup?redirect=${encodeURIComponent(redirectPath)}` : "/signup"}
+                className="font-medium text-accent hover:underline"
+              >
                 회원가입
               </Link>
             </p>

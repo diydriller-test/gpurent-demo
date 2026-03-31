@@ -142,7 +142,7 @@ export default function ProfilePage() {
 
   const fetchData = useCallback(async () => {
     if (!getToken()) {
-      router.replace("/login");
+      router.replace("/login?redirect=%2Fprofile");
       return;
     }
 
@@ -157,7 +157,7 @@ export default function ProfilePage() {
       }
     } catch (err) {
       if (err instanceof Error && err.message === "UNAUTHORIZED") {
-        router.replace("/login");
+        router.replace("/login?redirect=%2Fprofile");
       } else {
         setError(err instanceof Error ? err.message : "프로필을 불러올 수 없습니다.");
       }

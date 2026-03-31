@@ -823,7 +823,7 @@ function PlansPageContent() {
         {!isLoading && !error && !selectedApi && !isLoggedIn && !isAuthChecking && (
           <p className="mt-12 text-center text-sm text-foreground/50">
             플랜 등록을 하려면{" "}
-            <Link href="/login" className="text-accent hover:underline">
+            <Link href="/login?redirect=%2Fplans" className="text-accent hover:underline">
               로그인
             </Link>
             {" "}해주세요.
