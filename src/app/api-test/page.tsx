@@ -1527,6 +1527,11 @@ export default function ApiTestPage() {
     Vision: false,
   });
   const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
+  /** 목록 → 상세 진입 직전의 Tasks 필터(복귀 시 복원). 상세 내 API 전환(moveToApiDetail)에서는 갱신하지 않음 */
+  const listViewFilterSnapshotRef = useRef<{
+    filterTasks: Record<MarketplaceTask, boolean>;
+    sidebarMode: "all" | "my";
+  } | null>(null);
   const [apisFromBackend, setApisFromBackend] = useState<Api[]>([]);
   const [userMe, setUserMe] = useState<User | null>(null);
 
@@ -1806,6 +1811,10 @@ export default function ApiTestPage() {
 
   function enterDetailFor(item: MarketplaceItem) {
     if (item.apiId) {
+      listViewFilterSnapshotRef.current = {
+        filterTasks: { ...filterTasks },
+        sidebarMode,
+      };
       setSelectedApi(item.apiId);
       setViewMode("detail");
       return;
@@ -5302,15 +5311,22 @@ export default function ApiTestPage() {
                           params.has("api") || params.get("view") === "detail";
 
                         if (!openedFromDeepLink) {
-                          setSidebarMode("all");
-                          setFilterTasks((prev) => {
-                            const next = { ...prev };
-                            taskKeys.forEach((k) => {
-                              next[k] = true;
+                          const snap = listViewFilterSnapshotRef.current;
+                          if (snap) {
+                            setSidebarMode(snap.sidebarMode);
+                            setFilterTasks(snap.filterTasks);
+                            listViewFilterSnapshotRef.current = null;
+                          } else {
+                            setSidebarMode("all");
+                            setFilterTasks((prev) => {
+                              const next = { ...prev };
+                              taskKeys.forEach((k) => {
+                                next[k] = true;
+                              });
+                              next.Vision = false;
+                              return next;
                             });
-                            next.Vision = false;
-                            return next;
-                          });
+                          }
                           setViewMode("list");
                           return;
                         }
