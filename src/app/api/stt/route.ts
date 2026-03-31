@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveUpstreamBasePath } from "../_lib/upstream";
+import { resolveUpstreamContext } from "../_lib/upstream";
 
 export const maxDuration = 60;
 
@@ -57,11 +57,11 @@ export async function POST(req: Request) {
     if (fields.vad_filter)
       upstreamForm.append("vad_filter", fields.vad_filter);
 
-    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamRes = await fetch(`${upstreamBasePath}/stt/_inference/stt/my_stt`, {
       method: "POST",
       headers: {
-        // access_token: apiKey,
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       },
       body: upstreamForm,
       signal: controller.signal,

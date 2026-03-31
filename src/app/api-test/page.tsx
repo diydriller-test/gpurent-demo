@@ -2761,10 +2761,12 @@ export default function ApiTestPage() {
     });
 
     try {
+      const token = getToken();
       const res = await fetch("/api/embedding", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ text }),
       });
@@ -4164,10 +4166,12 @@ export default function ApiTestPage() {
         setEmbeddingError(null);
         setEmbeddingVector(null);
 
+        const token = getToken();
         const res = await fetch("/api/embedding", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({ input, input_type: inputType }),
         });

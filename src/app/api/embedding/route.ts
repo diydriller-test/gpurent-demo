@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveUpstreamBasePath } from "../_lib/upstream";
+import { resolveUpstreamContext } from "../_lib/upstream";
 
 type EmbeddingRequestBody = {
   // playground에서 보낼 때
@@ -40,20 +40,27 @@ export async function POST(req: Request) {
     //   );
     // }
 
-    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
+    const authHeader = req.headers.get("authorization");
     const upstreamRes = await fetch(
       `${upstreamBasePath}/embedding/_inference/text_embedding/qwen3`,
       {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // access_token: apiKey,
-      },
-      body: JSON.stringify({
-        input: text,
-        task_settings: { additionalProp1: {} },
-        input_type: inputType,
-      }),
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(apiKey
+            ? { Authorization: `Bearer ${apiKey}` }
+            : authHeader
+              ? { Authorization: authHeader }
+              : {}),
+        },
+        body: JSON.stringify({
+          input: text,
+          task_settings: { additionalProp1: {} },
+          input_type: inputType,
+        }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(120_000),
       },
     );
 

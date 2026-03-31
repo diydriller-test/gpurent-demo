@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveUpstreamBasePath } from "../_lib/upstream";
+import { resolveUpstreamContext } from "../_lib/upstream";
 
 export async function POST(req: Request) {
   try {
@@ -27,12 +27,12 @@ export async function POST(req: Request) {
     //   );
     // }
 
-    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamRes = await fetch(`${upstreamBasePath}/rerank/_inference/rerank/qwen3`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // access_token: apiKey,
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       },
       body: JSON.stringify({
         query,

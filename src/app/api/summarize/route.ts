@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveUpstreamBasePath } from "../_lib/upstream";
+import { resolveUpstreamContext } from "../_lib/upstream";
 
 type SummarizeBody = {
   text?: unknown;
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     const temperature = parseTemperatureOptional(body?.temperature);
 
-    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamUrl = `${upstreamBasePath}/summarize/api/summarize`;
 
     const authHeader = req.headers.get("authorization");
@@ -51,7 +51,11 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(authHeader ? { Authorization: authHeader } : {}),
+        ...(apiKey
+          ? { Authorization: `Bearer ${apiKey}` }
+          : authHeader
+            ? { Authorization: authHeader }
+            : {}),
       },
       body: JSON.stringify({
         text,
