@@ -3,9 +3,10 @@ import { resolveUpstreamContext } from "../_lib/upstream";
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json().catch(() => null)) as
-      | { input?: unknown; temperature?: unknown }
-      | null;
+    const body = (await req.json().catch(() => null)) as {
+      input?: unknown;
+      temperature?: unknown;
+    } | null;
 
     const input = typeof body?.input === "string" ? body.input.trim() : "";
     if (!input) {
@@ -51,7 +52,9 @@ export async function POST(req: Request) {
       signal: AbortSignal.timeout(120_000),
     });
 
-    const upstreamJson = (await upstreamRes.json().catch(() => null)) as unknown;
+    const upstreamJson = (await upstreamRes
+      .json()
+      .catch(() => null)) as unknown;
 
     if (!upstreamRes.ok) {
       const status = upstreamRes.status || 500;
@@ -65,13 +68,17 @@ export async function POST(req: Request) {
     }
 
     const text =
-      typeof (upstreamJson as {
-        choices?: Array<{ message?: { content?: unknown } }>;
-      } | null)?.choices?.[0]?.message?.content === "string"
+      typeof (
+        upstreamJson as {
+          choices?: Array<{ message?: { content?: unknown } }>;
+        } | null
+      )?.choices?.[0]?.message?.content === "string"
         ? String(
-            (upstreamJson as {
-              choices: Array<{ message?: { content?: string } }>;
-            }).choices[0]?.message?.content ?? "",
+            (
+              upstreamJson as {
+                choices: Array<{ message?: { content?: string } }>;
+              }
+            ).choices[0]?.message?.content ?? "",
           ).trim()
         : "";
 

@@ -117,7 +117,9 @@ export function ApiOutputPanel({
                           <div className="mt-2 text-sm leading-relaxed text-foreground/90">
                             <span className="font-semibold">
                               ✨{" "}
-                              <span className="text-accent">AI API 오마카세</span>{" "}
+                              <span className="text-accent">
+                                AI API 오마카세
+                              </span>{" "}
                               텍스트 코스와{" "}
                               <span className="text-accent font-bold">
                                 실시간
@@ -132,7 +134,8 @@ export function ApiOutputPanel({
                               으로 질문을 분석할 준비를 마쳤습니다.
                             </span>
                             <br />
-                            하단 입력창에 비즈니스 분석이나 텍스트 생성을 요청해보세요.
+                            하단 입력창에 비즈니스 분석이나 텍스트 생성을
+                            요청해보세요.
                           </div>
                         </div>
                       </div>
@@ -151,9 +154,10 @@ export function ApiOutputPanel({
                   return (
                     <div
                       key={m.id}
-                      className={["flex", isUser ? "justify-end" : "justify-start"].join(
-                        " ",
-                      )}
+                      className={[
+                        "flex",
+                        isUser ? "justify-end" : "justify-start",
+                      ].join(" ")}
                     >
                       <div
                         className={[
@@ -241,9 +245,7 @@ export function ApiOutputPanel({
             return (
               <div className="space-y-2">
                 <div className="rounded-2xl border border-accent/25 bg-accent/5 p-3">
-                  {embeddingError &&
-                  !isEmbeddingLoading &&
-                  !embeddingVector ? (
+                  {embeddingError && !isEmbeddingLoading && !embeddingVector ? (
                     <div className="mt-3 rounded-xl border border-white/5 bg-background/20 p-3">
                       <p className="text-sm font-semibold text-foreground">
                         {embeddingError}
@@ -271,7 +273,8 @@ export function ApiOutputPanel({
 
                       {embeddingVector && !isEmbeddingLoading ? (
                         <p className="text-[11px] text-foreground/60">
-                          이 지문 패턴이 비슷할수록 문장의 의미가 가깝다는 뜻입니다.
+                          이 지문 패턴이 비슷할수록 문장의 의미가 가깝다는
+                          뜻입니다.
                         </p>
                       ) : null}
                     </div>
@@ -356,7 +359,8 @@ export function ApiOutputPanel({
                             Qwen3 Reranker Output
                           </p>
                           <p className="mt-0.5 text-xs text-foreground/60">
-                            단어가 겹치지 않아도 문맥을 정확히 읽어내는 Qwen3의 성능을 확인해보세요.
+                            단어가 겹치지 않아도 문맥을 정확히 읽어내는 Qwen3의
+                            성능을 확인해보세요.
                           </p>
                           {displayedQuery && rerankResults ? (
                             <p className="mt-1 text-xs text-foreground/60">
@@ -434,7 +438,8 @@ export function ApiOutputPanel({
                               아직 재정렬 결과가 없습니다.
                             </p>
                             <p className="mt-1 text-xs text-foreground/60">
-                              Query와 Documents를 입력한 뒤 “재정렬 실행”을 눌러보세요.
+                              Query와 Documents를 입력한 뒤 “재정렬 실행”을
+                              눌러보세요.
                             </p>
                           </div>
                         )}
@@ -455,9 +460,7 @@ export function ApiOutputPanel({
                   className="hidden"
                 />
                 <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
-                  <p className="font-mono text-xs text-accent">
-                    Audio Player
-                  </p>
+                  <p className="font-mono text-xs text-accent">Audio Player</p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
                     합성 후 실제 오디오 재생 · 진행률은 재생 시간에 따라
                     갱신됩니다.
@@ -507,7 +510,7 @@ export function ApiOutputPanel({
                         </div>
                         <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-foreground/50">
                           <span>
-                            {(ttsDurationMs * ttsProgress / 1000).toFixed(1)}s
+                            {((ttsDurationMs * ttsProgress) / 1000).toFixed(1)}s
                           </span>
                           <span>{(ttsDurationMs / 1000).toFixed(1)}s</span>
                         </div>
@@ -520,7 +523,10 @@ export function ApiOutputPanel({
                   <div className="relative mt-4 overflow-hidden rounded-xl border border-accent/15 bg-zinc-950/40 px-2 py-3">
                     <div className="flex h-14 items-end justify-center gap-[3px]">
                       {(ttsIsSynthesizing
-                        ? Array.from({ length: 32 }, (_, i) => 0.35 + (i % 5) * 0.1)
+                        ? Array.from(
+                            { length: 32 },
+                            (_, i) => 0.35 + (i % 5) * 0.1,
+                          )
                         : ttsWave?.length
                           ? ttsWave
                           : Array.from({ length: 32 }, () => 0.12)
@@ -569,9 +575,12 @@ export function ApiOutputPanel({
             return (
               <div className="space-y-3">
                 <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
-                  <p className="font-mono text-xs text-accent">Transcript Output</p>
+                  <p className="font-mono text-xs text-accent">
+                    Transcript Output
+                  </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
-                    최첨단 Whisper 알고리즘 기반의 Qwen3 STT 엔진이 소리를 텍스트로 정교하게 추출합니다.
+                    최첨단 Whisper 알고리즘 기반의 Qwen3 STT 엔진이 소리를
+                    텍스트로 정교하게 추출합니다.
                   </p>
 
                   {sttTranscript ? (
@@ -603,7 +612,8 @@ export function ApiOutputPanel({
                         아직 변환 결과가 없습니다.
                       </p>
                       <p className="mt-1 text-xs text-foreground/60">
-                        하단에서 파일 업로드 또는 마이크 UI 후 “변환하기”를 눌러보세요.
+                        하단에서 파일 업로드 또는 마이크 UI 후 “변환하기”를
+                        눌러보세요.
                       </p>
                     </div>
                   )}
@@ -617,7 +627,8 @@ export function ApiOutputPanel({
                   <div className="mt-3 flex flex-wrap gap-2">
                     <span className="rounded-lg border border-white/10 bg-background/30 px-3 py-1 text-[11px] text-foreground/60">
                       Source:{" "}
-                      {sttFileName ?? (isRecording ? "Microphone(녹음 중)" : "Upload/Mic")}
+                      {sttFileName ??
+                        (isRecording ? "Microphone(녹음 중)" : "Upload/Mic")}
                     </span>
                   </div>
                 </div>
@@ -627,7 +638,9 @@ export function ApiOutputPanel({
           default:
             return (
               <div className="rounded-2xl border border-white/5 bg-background/20 p-4">
-                <p className="text-sm font-semibold text-foreground">지원 준비 중입니다.</p>
+                <p className="text-sm font-semibold text-foreground">
+                  지원 준비 중입니다.
+                </p>
               </div>
             );
         }
@@ -635,4 +648,3 @@ export function ApiOutputPanel({
     </>
   );
 }
-

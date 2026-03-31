@@ -731,8 +731,7 @@ function tryParseSummarizeConsoleToPlayground(jsonText: string): {
 
     if (typeof parsed.text === "string") out.text = parsed.text;
     if (typeof parsed.style === "string") out.style = parsed.style;
-    else if (typeof parsed.styleLine === "string")
-      out.style = parsed.styleLine;
+    else if (typeof parsed.styleLine === "string") out.style = parsed.styleLine;
     if (
       typeof parsed.temperature === "number" &&
       Number.isFinite(parsed.temperature)
@@ -1643,13 +1642,7 @@ export default function ApiTestPage() {
       }
       return filterTasks[item.task];
     });
-  }, [
-    filterTasks,
-    marketplaceItems,
-    sidebarMode,
-    apisFromBackend,
-    userMe,
-  ]);
+  }, [filterTasks, marketplaceItems, sidebarMode, apisFromBackend, userMe]);
 
   const allTasksFilterOn = taskKeys.every((t) => filterTasks[t]);
   const isAllTasksActive = sidebarMode === "all" && allTasksFilterOn;
@@ -5177,56 +5170,58 @@ export default function ApiTestPage() {
                   {filteredMarketplace.map((item) => {
                     const currentPlan = resolveMarketplacePlan(item);
                     return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => enterDetailFor(item)}
-                      className={[
-                        "group relative flex h-full flex-col rounded-2xl border bg-background/20 p-4 text-left transition-all",
-                        "border-white/5 hover:-translate-y-0.5 hover:border-accent/45 hover:bg-background/30",
-                        "hover:shadow-[0_0_60px_rgba(232, 136, 138,0.12)]",
-                      ].join(" ")}
-                    >
-                      <p className="font-mono text-[11px] text-foreground/50">
-                        {item.task === "Vision"
-                          ? `Model Size ${item.modelSizeB}B • ${item.task}`
-                          : getPlanTaskSublabel(item.task as PlanTask)}
-                      </p>
-                      <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
-                        {item.model}
-                      </p>
-                      <p className="mt-1 text-[11px] text-foreground/40">코그로보</p>
-                      <p className="mt-2 text-[11px] text-foreground/45">
-                        트래픽 기반 · 등급별 과금
-                      </p>
-
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {item.taskTags.slice(0, 3).map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-lg border border-accent/25 bg-accent/5 px-2 py-1 text-[11px] font-mono text-accent"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-
-                      {currentPlan ? (
-                        <p className="mt-3 rounded-lg bg-accent/10 px-2.5 py-1.5 text-[11px] font-medium text-accent">
-                          현재: {currentPlan.plan_name} ({currentPlan.max_rps}{" "}
-                          RPS)
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => enterDetailFor(item)}
+                        className={[
+                          "group relative flex h-full flex-col rounded-2xl border bg-background/20 p-4 text-left transition-all",
+                          "border-white/5 hover:-translate-y-0.5 hover:border-accent/45 hover:bg-background/30",
+                          "hover:shadow-[0_0_60px_rgba(232, 136, 138,0.12)]",
+                        ].join(" ")}
+                      >
+                        <p className="font-mono text-[11px] text-foreground/50">
+                          {item.task === "Vision"
+                            ? `Model Size ${item.modelSizeB}B • ${item.task}`
+                            : getPlanTaskSublabel(item.task as PlanTask)}
                         </p>
-                      ) : null}
+                        <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
+                          {item.model}
+                        </p>
+                        <p className="mt-1 text-[11px] text-foreground/40">
+                          코그로보
+                        </p>
+                        <p className="mt-2 text-[11px] text-foreground/45">
+                          트래픽 기반 · 등급별 과금
+                        </p>
 
-                      <div className="mt-auto flex items-center justify-start gap-2 pt-4">
-                        <span className="text-xs text-foreground/50">
-                          테스트 하러가기
-                        </span>
-                        <span className="text-accent transition-transform group-hover:translate-x-0.5">
-                          →
-                        </span>
-                      </div>
-                    </button>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {item.taskTags.slice(0, 3).map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-lg border border-accent/25 bg-accent/5 px-2 py-1 text-[11px] font-mono text-accent"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        {currentPlan ? (
+                          <p className="mt-3 rounded-lg bg-accent/10 px-2.5 py-1.5 text-[11px] font-medium text-accent">
+                            현재: {currentPlan.plan_name} ({currentPlan.max_rps}{" "}
+                            RPS)
+                          </p>
+                        ) : null}
+
+                        <div className="mt-auto flex items-center justify-start gap-2 pt-4">
+                          <span className="text-xs text-foreground/50">
+                            테스트 하러가기
+                          </span>
+                          <span className="text-accent transition-transform group-hover:translate-x-0.5">
+                            →
+                          </span>
+                        </div>
+                      </button>
                     );
                   })}
 
