@@ -705,6 +705,7 @@ function tryParseSummarizeConsoleToPlayground(jsonText: string): {
     const parsed = JSON.parse(jsonText) as {
       text?: unknown;
       style?: unknown;
+      styleLine?: unknown;
       temperature?: unknown;
     };
     const out: {
@@ -715,6 +716,8 @@ function tryParseSummarizeConsoleToPlayground(jsonText: string): {
 
     if (typeof parsed.text === "string") out.text = parsed.text;
     if (typeof parsed.style === "string") out.style = parsed.style;
+    else if (typeof parsed.styleLine === "string")
+      out.style = parsed.styleLine;
     if (
       typeof parsed.temperature === "number" &&
       Number.isFinite(parsed.temperature)

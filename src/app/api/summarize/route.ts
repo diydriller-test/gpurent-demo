@@ -3,6 +3,8 @@ import { resolveUpstreamBasePath } from "../_lib/upstream";
 
 type SummarizeBody = {
   text?: unknown;
+  /** 업스트림 전달용 (문서·클라이언트에서 흔히 쓰는 이름) */
+  style?: unknown;
   styleLine?: unknown;
 };
 
@@ -24,7 +26,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const styleLineInput = asOptionalString(body?.styleLine);
+    const styleLineInput =
+      asOptionalString(body?.styleLine) || asOptionalString(body?.style);
     const styleLine =
       styleLineInput ||
       "(지정 없음 — 문맥에 맞게 한두 문단 또는 불릿 형태로 요약하세요)";

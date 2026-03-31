@@ -85,7 +85,7 @@ const SECTIONS: DocSection[] = [
   "summary": "압축된 한국어 요약"
 }`,
     notes: [
-      "`text`만 필수입니다. `style`은 요약 형식·톤 힌트로 선택입니다.",
+      "`text`만 필수입니다. 요약 형식·톤 힌트는 `style` 또는 `styleLine`(동일 의미)으로 선택할 수 있습니다.",
       "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
     ],
   },
