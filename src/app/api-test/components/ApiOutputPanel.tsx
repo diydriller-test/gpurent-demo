@@ -103,13 +103,13 @@ export function ApiOutputPanel({
                     <div className="max-w-[94%] rounded-2xl border border-white/10 bg-background/30 p-3 text-foreground">
                       <div className="flex items-start gap-3">
                         <span className="relative mt-1 inline-flex h-2.5 w-2.5">
-                          <span className="absolute inline-flex h-full w-full rounded-full bg-[#10b981] opacity-75 animate-ping" />
-                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#10b981]" />
+                          <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-75 animate-ping" />
+                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
                         </span>
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-xl border border-[#10b981]/25 bg-[#10b981]/5 px-2.5 py-1 text-[11px] font-mono text-[#10b981]">
+                            <span className="rounded-xl border border-accent/25 bg-accent/5 px-2.5 py-1 text-[11px] font-mono text-accent">
                               LIVE
                             </span>
                           </div>
@@ -117,21 +117,19 @@ export function ApiOutputPanel({
                           <div className="mt-2 text-sm leading-relaxed text-foreground/90">
                             <span className="font-semibold">
                               ✨{" "}
-                              <span className="text-[#10b981]">
-                                GPT-OSS-120B
-                              </span>{" "}
-                              모델과{" "}
-                              <span className="text-[#10b981] font-bold">
+                              <span className="text-accent">AI API 오마카세</span>{" "}
+                              텍스트 코스와{" "}
+                              <span className="text-accent font-bold">
                                 실시간
                               </span>
                               으로 연결되었습니다.
                             </span>
                             <br />
                             <span>
-                              <span className="text-[#10b981] font-bold">
-                                1,200억 개의 파라미터
+                              <span className="font-bold text-wood">
+                                고성능 언어 추론
                               </span>
-                              가 당신의 질문을 분석할 준비를 마쳤습니다.
+                              으로 질문을 분석할 준비를 마쳤습니다.
                             </span>
                             <br />
                             하단 입력창에 비즈니스 분석이나 텍스트 생성을 요청해보세요.
@@ -204,10 +202,10 @@ export function ApiOutputPanel({
           case "adCopy":
             return (
               <div className="flex h-full min-h-[min(45vh,380px)] flex-col">
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-[#10b981]/20 bg-background/40">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-accent/20 bg-background/40">
                   <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
                     <div className="min-w-0">
-                      <p className="font-mono text-xs text-[#10b981]/90">
+                      <p className="font-mono text-xs text-accent/90">
                         생성 결과
                       </p>
                       <p className="truncate text-sm font-semibold text-foreground">
@@ -242,7 +240,7 @@ export function ApiOutputPanel({
           case "embedding":
             return (
               <div className="space-y-3">
-                <div className="rounded-2xl border border-[#10b981]/25 bg-[#10b981]/5 p-4">
+                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
                   {embeddingError &&
                   !isEmbeddingLoading &&
                   !embeddingVector ? (
@@ -253,8 +251,8 @@ export function ApiOutputPanel({
                     </div>
                   ) : isEmbeddingLoading || embeddingVector ? (
                     <div className="mt-3 space-y-3">
-                      <div className="rounded-xl border border-[#10b981]/15 bg-zinc-950/40 px-3 py-4">
-                        <p className="text-center font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a7f3d0]/95">
+                      <div className="rounded-xl border border-accent/15 bg-zinc-950/40 px-3 py-4">
+                        <p className="text-center font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-bright/95">
                           의미적 지문 (Semantic Fingerprint)
                         </p>
                         <p className="mt-1 text-center text-[10px] text-foreground/45">
@@ -306,7 +304,7 @@ export function ApiOutputPanel({
                             value={rerankQuestion}
                             onChange={(e) => setRerankQuestion(e.target.value)}
                             rows={2}
-                            className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                            className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                           />
                         </div>
                         <div className="mt-3">
@@ -317,7 +315,7 @@ export function ApiOutputPanel({
                             value={rerankDocsText}
                             onChange={(e) => setRerankDocsText(e.target.value)}
                             rows={5}
-                            className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                            className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                           />
                         </div>
                         <p className="mt-3 text-xs text-foreground/60">
@@ -327,7 +325,7 @@ export function ApiOutputPanel({
                           type="button"
                           onClick={handleRerankRun}
                           disabled={isRerankLoading}
-                          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#10b981] px-5 py-3 font-medium text-background shadow-[0_0_40px_rgba(16,185,129,0.22)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 font-medium text-background shadow-[0_0_40px_rgba(232, 136, 138,0.22)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {isRerankLoading ? (
                             <>
@@ -351,10 +349,10 @@ export function ApiOutputPanel({
                       </div>
                     </div>
 
-                    <div className="min-h-0 w-full rounded-2xl border border-[#10b981]/25 bg-[#10b981]/5 p-4 lg:w-7/12 lg:flex lg:flex-col">
+                    <div className="min-h-0 w-full rounded-2xl border border-accent/25 bg-accent/5 p-4 lg:w-7/12 lg:flex lg:flex-col">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="font-mono text-xs text-[#10b981]">
+                          <p className="font-mono text-xs text-accent">
                             Qwen3 Reranker Output
                           </p>
                           <p className="mt-0.5 text-xs text-foreground/60">
@@ -366,15 +364,15 @@ export function ApiOutputPanel({
                             </p>
                           ) : null}
                         </div>
-                        <span className="rounded-xl border border-[#10b981]/20 bg-background/30 px-3 py-1 text-[11px] text-[#10b981]">
+                        <span className="rounded-xl border border-accent/20 bg-background/30 px-3 py-1 text-[11px] text-accent">
                           Live API
                         </span>
                       </div>
 
                       <div className="mt-2 min-h-0 flex-1 overflow-y-auto pr-1">
                         {isRerankLoading ? (
-                          <div className="rounded-xl border border-[#10b981]/20 bg-background/30 p-3">
-                            <div className="inline-flex items-center gap-2 text-xs text-[#10b981]">
+                          <div className="rounded-xl border border-accent/20 bg-background/30 p-3">
+                            <div className="inline-flex items-center gap-2 text-xs text-accent">
                               <svg
                                 className="h-4 w-4 animate-spin"
                                 viewBox="0 0 24 24"
@@ -405,7 +403,7 @@ export function ApiOutputPanel({
                                 className={[
                                   "rounded-xl border bg-background/30 p-3",
                                   r.rank === 1
-                                    ? "border-2 border-[#10b981] bg-[#10b981]/10 shadow-[0_0_40px_rgba(16,185,129,0.28)]"
+                                    ? "border-2 border-accent bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.28)]"
                                     : "border-white/10",
                                 ].join(" ")}
                               >
@@ -414,13 +412,13 @@ export function ApiOutputPanel({
                                     className={[
                                       "font-mono text-[11px]",
                                       r.rank === 1
-                                        ? "text-[#10b981]"
+                                        ? "text-accent"
                                         : "text-foreground/55",
                                     ].join(" ")}
                                   >
                                     Rank {r.rank}
                                   </span>
-                                  <span className="rounded-lg border border-[#10b981]/30 bg-[#10b981]/10 px-2 py-0.5 font-mono text-[11px] text-[#10b981]">
+                                  <span className="rounded-lg border border-accent/30 bg-accent/10 px-2 py-0.5 font-mono text-[11px] text-accent">
                                     Score {r.score.toFixed(4)}
                                   </span>
                                 </div>
@@ -456,8 +454,8 @@ export function ApiOutputPanel({
                   preload="auto"
                   className="hidden"
                 />
-                <div className="rounded-2xl border border-[#10b981]/25 bg-[#10b981]/5 p-4">
-                  <p className="font-mono text-xs text-[#10b981]">
+                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                  <p className="font-mono text-xs text-accent">
                     Audio Player
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
@@ -486,7 +484,7 @@ export function ApiOutputPanel({
                         disabled={!ttsAudioUrl}
                         onClick={handleTtsPlayPause}
                         className={[
-                          "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#10b981] text-background shadow-[0_0_40px_rgba(16,185,129,0.22)] transition-opacity",
+                          "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-background shadow-[0_0_40px_rgba(232, 136, 138,0.22)] transition-opacity",
                           ttsAudioUrl
                             ? "hover:opacity-90"
                             : "cursor-not-allowed opacity-40",
@@ -501,7 +499,7 @@ export function ApiOutputPanel({
                       <div className="flex-1">
                         <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
                           <div
-                            className="h-2 rounded-full bg-[#10b981] transition-[width] duration-100 ease-linear"
+                            className="h-2 rounded-full bg-accent transition-[width] duration-100 ease-linear"
                             style={{
                               width: `${Math.round(ttsProgress * 100)}%`,
                             }}
@@ -519,7 +517,7 @@ export function ApiOutputPanel({
 
                   {ttsMockResponse ? null : null}
 
-                  <div className="relative mt-4 overflow-hidden rounded-xl border border-[#10b981]/15 bg-zinc-950/40 px-2 py-3">
+                  <div className="relative mt-4 overflow-hidden rounded-xl border border-accent/15 bg-zinc-950/40 px-2 py-3">
                     <div className="flex h-14 items-end justify-center gap-[3px]">
                       {(ttsIsSynthesizing
                         ? Array.from({ length: 32 }, (_, i) => 0.35 + (i % 5) * 0.1)
@@ -535,7 +533,7 @@ export function ApiOutputPanel({
                               key={`tts-w-${idx}-${ttsIsSynthesizing ? "s" : "d"}`}
                               className={[
                                 "w-[5px] origin-bottom rounded-sm bg-white/10",
-                                ttsPlaying ? "bg-[#10b981]" : "bg-white/15",
+                                ttsPlaying ? "bg-accent" : "bg-white/15",
                               ].join(" ")}
                               style={{
                                 height: h,
@@ -552,7 +550,7 @@ export function ApiOutputPanel({
                         })}
                     </div>
                     {ttsIsSynthesizing ? (
-                      <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-[11px] font-medium text-[#10b981]/90">
+                      <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-[11px] font-medium text-accent/90">
                         음성 합성 중…
                       </p>
                     ) : null}
@@ -570,8 +568,8 @@ export function ApiOutputPanel({
           case "stt":
             return (
               <div className="space-y-3">
-                <div className="rounded-2xl border border-[#10b981]/25 bg-[#10b981]/5 p-4">
-                  <p className="font-mono text-xs text-[#10b981]">Transcript Output</p>
+                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                  <p className="font-mono text-xs text-accent">Transcript Output</p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
                     최첨단 Whisper 알고리즘 기반의 Qwen3 STT 엔진이 소리를 텍스트로 정교하게 추출합니다.
                   </p>
@@ -583,8 +581,8 @@ export function ApiOutputPanel({
                       </pre>
                     </div>
                   ) : isSttLoading ? (
-                    <div className="mt-3 rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 p-3">
-                      <div className="inline-flex items-center gap-2 text-xs text-[#10b981]">
+                    <div className="mt-3 rounded-xl border border-accent/20 bg-accent/5 p-3">
+                      <div className="inline-flex items-center gap-2 text-xs text-accent">
                         <svg
                           className="h-4 w-4 animate-spin"
                           viewBox="0 0 24 24"

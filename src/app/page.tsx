@@ -151,9 +151,9 @@ export default function Home() {
     <div className="min-h-screen bg-grid-pattern">
       {comingSoonMessage ? (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[2px] px-4">
-          <div className="w-[min(520px,90%)] rounded-2xl border border-[#10b981]/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(16,185,129,0.18)]">
+          <div className="w-[min(520px,90%)] rounded-2xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#10b981]/30 bg-[#10b981]/10 text-[#10b981]">
+              <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
                 +
               </div>
               <div className="min-w-0">
@@ -170,12 +170,14 @@ export default function Home() {
       ) : null}
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-wood/15 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-mono text-lg font-bold text-accent">GPU</span>
-            <span className="font-mono text-lg font-medium text-foreground/90">
-              Modu
+          <Link href="/" className="flex flex-wrap items-baseline gap-x-2 gap-y-0">
+            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
+              AI API
+            </span>
+            <span className="font-mono text-lg font-medium text-wood">
+              오마카세
             </span>
           </Link>
           <div className="flex items-center gap-8">
@@ -193,16 +195,17 @@ export default function Home() {
       {/* Hero */}
       <section className="relative px-6 pt-32 pb-24 md:pt-40 md:pb-32">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="mb-4 font-mono text-sm text-accent">
-            GPU 기반 AI API 플랫폼
+          <p className="mb-4 font-mono text-sm uppercase tracking-[0.2em] text-accent text-omakase-neon">
+            오늘의 API 코스
           </p>
-          <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
-            고성능 AI API를
-            <br />
-            <span className="text-accent">저렴하게</span> 이용하세요
+          <h1 className="mb-6 text-4xl font-bold leading-[1.15] tracking-tight md:text-6xl">
+            <span className="text-omakase-gradient">AI API 오마카세</span>
           </h1>
+          <p className="mx-auto mb-3 max-w-2xl text-base font-medium text-wood md:text-lg">
+            셰프가 고른 API 코스를 한 상차림에 — 검증된 인프라로 안정적으로
+          </p>
           <p className="mx-auto mb-10 max-w-2xl text-lg text-foreground/70">
-            자체 GPU로 구축한 임베딩, 리랭킹, TTS 등 다양한 API.
+            임베딩, 리랭킹, TTS 등 필요한 API만 골라 쓰세요.
             <br className="hidden sm:block" />
             토큰 과금이 아닌{" "}
             <strong className="text-foreground">트래픽 기반</strong>으로 예측
@@ -321,8 +324,8 @@ export default function Home() {
             단순하고 예측 가능한 과금
           </h2>
           <p className="mx-auto mb-16 max-w-2xl text-center text-foreground/70">
-            토큰량 측정 없이, 최대 RPS만 제한하는 구조로 비용을 명확히 파악할 수
-            있습니다.
+            이제 토큰 스트레스는 그만. 토큰량 측정 없이 최대 RPS만 제한하는
+            구조로 비용을 명확히 파악할 수 있습니다.
           </p>
           <div className="grid gap-8 md:grid-cols-3">
             {BENEFITS.map((benefit) => (
@@ -380,14 +383,14 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 px-6 py-12">
+      <footer className="border-t border-wood/15 px-6 py-12">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-accent">GPU</span>
-            <span className="font-mono text-foreground/70">Modu</span>
+            <span className="font-mono font-bold text-accent">AI API</span>
+            <span className="font-mono text-wood">오마카세</span>
           </div>
           <p className="text-sm text-foreground/50">
-            © {new Date().getFullYear()} GPUModu. All rights reserved.
+            © {new Date().getFullYear()} AI API 오마카세. All rights reserved.
           </p>
         </div>
       </footer>

@@ -142,22 +142,6 @@ function PlansPageContent() {
     }
   }, []);
 
-  const refetchApis = useCallback(() => {
-    setIsLoading(true);
-    getApis()
-      .then((data) => {
-        setApis(data);
-        setUsingDemoApis(false);
-        setError(null);
-      })
-      .catch(() => {
-        setApis(DEMO_APIS_FALLBACK);
-        setUsingDemoApis(true);
-        setError(null);
-      })
-      .finally(() => setIsLoading(false));
-  }, []);
-
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);
@@ -260,11 +244,13 @@ function PlansPageContent() {
   return (
     <div className="min-h-screen bg-grid-pattern">
       {/* Navigation */}
-      <nav className="border-b border-white/5 bg-background/80 backdrop-blur-xl">
+      <nav className="border-b border-wood/15 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-mono text-lg font-bold text-accent">GPU</span>
-            <span className="font-mono text-lg font-medium text-foreground/90">Modu</span>
+          <Link href="/" className="flex flex-wrap items-baseline gap-x-2">
+            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
+              AI API
+            </span>
+            <span className="font-mono text-lg font-medium text-wood">오마카세</span>
           </Link>
           <div className="flex items-center gap-6">
             <Link
@@ -388,29 +374,6 @@ function PlansPageContent() {
           </div>
         )}
 
-        {usingDemoApis && !selectedApi ? (
-          <div className="mb-6 flex flex-col gap-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-foreground/85">
-              <span className="font-semibold text-amber-200/95">오프라인 데모</span>
-              {" — "}
-              백엔드 <code className="rounded bg-black/30 px-1 py-0.5 font-mono text-[11px]">/apis</code>
-              에 연결되지 않아 예시 API 목록만 보여줍니다. 실제 요금은{" "}
-              <code className="rounded bg-black/30 px-1 py-0.5 font-mono text-[11px]">
-                NEXT_PUBLIC_API_URL
-              </code>
-              을 설정한 뒤 사용하세요.
-            </p>
-            <button
-              type="button"
-              onClick={() => refetchApis()}
-              disabled={isLoading}
-              className="shrink-0 rounded-lg border border-amber-500/50 bg-transparent px-3 py-1.5 text-xs font-medium text-amber-100 transition-colors hover:bg-amber-500/15 disabled:opacity-50"
-            >
-              백엔드 다시 연결
-            </button>
-          </div>
-        ) : null}
-
         {!selectedApi ? (
           isLoading ? (
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-6">
@@ -440,7 +403,7 @@ function PlansPageContent() {
                     return next;
                   });
                 }}
-                className="mt-4 rounded-xl border border-[#10b981]/45 bg-transparent px-4 py-2 text-sm font-medium text-[#10b981] transition-colors hover:bg-[#10b981]/10"
+                className="mt-4 rounded-xl border border-accent/45 bg-transparent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10"
               >
                 전체 보기 (All)
               </button>
@@ -474,9 +437,9 @@ function PlansPageContent() {
                         }}
                         className={[
                           "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                          "border-white/10 bg-background/30 hover:border-[#10b981]/30 hover:bg-[#10b981]/10",
+                          "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
                           isAllTasksActive
-                            ? "border-[#10b981]/50 bg-[#10b981]/10 shadow-[0_0_40px_rgba(16,185,129,0.12)]"
+                            ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
                             : "",
                         ].join(" ")}
                       >
@@ -484,7 +447,7 @@ function PlansPageContent() {
                           className={[
                             "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
                             isAllTasksActive
-                              ? "border-[#10b981]/40 bg-[#10b981]/10 text-[#10b981]"
+                              ? "border-accent/40 bg-accent/10 text-accent"
                               : "border-white/10 bg-background/20 text-foreground/70",
                           ].join(" ")}
                         >
@@ -525,9 +488,9 @@ function PlansPageContent() {
                             }}
                             className={[
                               "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                              "border-white/10 bg-background/30 hover:border-[#10b981]/30 hover:bg-[#10b981]/10",
+                              "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
                               isActive
-                                ? "border-[#10b981]/50 bg-[#10b981]/10 shadow-[0_0_40px_rgba(16,185,129,0.12)]"
+                                ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
                                 : "",
                             ].join(" ")}
                           >
@@ -535,7 +498,7 @@ function PlansPageContent() {
                               className={[
                                 "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
                                 isActive
-                                  ? "border-[#10b981]/40 bg-[#10b981]/10 text-[#10b981]"
+                                  ? "border-accent/40 bg-accent/10 text-accent"
                                   : "border-white/10 bg-background/20 text-foreground/70",
                               ].join(" ")}
                             >
@@ -566,7 +529,7 @@ function PlansPageContent() {
                         카드를 눌러 해당 API의 월 요금·RPS 플랜을 확인하세요.
                       </p>
                     </div>
-                    <span className="rounded-xl border border-[#10b981]/25 bg-[#10b981]/5 px-3 py-1 font-mono text-xs text-[#10b981]">
+                    <span className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-1 font-mono text-xs text-accent">
                       {filteredApis.length} APIs
                     </span>
                   </div>
@@ -591,8 +554,8 @@ function PlansPageContent() {
                           onClick={() => handleSelectApi(api)}
                           className={[
                             "group relative rounded-2xl border bg-background/20 p-4 text-left transition-all",
-                            "border-white/5 hover:-translate-y-0.5 hover:border-[#10b981]/45 hover:bg-background/30",
-                            "hover:shadow-[0_0_60px_rgba(16,185,129,0.12)]",
+                            "border-white/5 hover:-translate-y-0.5 hover:border-accent/45 hover:bg-background/30",
+                            "hover:shadow-[0_0_60px_rgba(232, 136, 138,0.12)]",
                           ].join(" ")}
                         >
                           <p className="font-mono text-[11px] text-foreground/50">
@@ -612,7 +575,7 @@ function PlansPageContent() {
                             {display.tags.slice(0, 3).map((tag) => (
                               <span
                                 key={tag}
-                                className="rounded-lg border border-[#10b981]/25 bg-[#10b981]/5 px-2 py-1 text-[11px] font-mono text-[#10b981]"
+                                className="rounded-lg border border-accent/25 bg-accent/5 px-2 py-1 text-[11px] font-mono text-accent"
                               >
                                 {tag}
                               </span>
@@ -630,7 +593,7 @@ function PlansPageContent() {
                             <span className="text-xs text-foreground/50">
                               플랜 보기
                             </span>
-                            <span className="text-[#10b981] transition-transform group-hover:translate-x-0.5">
+                            <span className="text-accent transition-transform group-hover:translate-x-0.5">
                               →
                             </span>
                           </div>
@@ -681,15 +644,6 @@ function PlansPageContent() {
             </div>
           ) : (
             <>
-              {usingDemoApis && selectedApi ? (
-                <div className="mb-6 rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-foreground/80">
-                  <span className="font-semibold text-amber-200/95">데모 요금표</span>
-                  {" — "}
-                  아래 금액·RPS·혜택은{" "}
-                  <strong className="text-foreground/90">UI 예시</strong>이며,
-                  실제 과금은 백엔드 연결 후 확정됩니다.
-                </div>
-              ) : null}
               <div className="grid gap-8 lg:grid-cols-3">
               {plans.map((plan) => {
                 const currentApiPlan = user?.api_plans?.find((p) => p.api_id === selectedApi.id);

@@ -316,7 +316,7 @@ export function ApiInputPanel({
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder={placeholder}
-                  className="h-11 w-full rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                  className="h-11 w-full rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                 />
               </div>
 
@@ -325,7 +325,7 @@ export function ApiInputPanel({
                 disabled={!prompt.trim() || isChatLoading}
                 className={[
                   "group inline-flex items-center gap-2 rounded-xl px-6 py-3 font-medium text-background transition-all",
-                  "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                  "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                 ].join(" ")}
               >
                 {isChatLoading ? (
@@ -372,7 +372,7 @@ export function ApiInputPanel({
                 onChange={(e) =>
                   setLlmTemperature(parseTemperatureRange(e.target.value, 0.1))
                 }
-                className="mt-2 w-full accent-[#10b981]"
+                className="mt-2 w-full accent-accent"
               />
               <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
                 <span className="text-foreground/55">Temperature</span>는 답이
@@ -407,7 +407,7 @@ export function ApiInputPanel({
                   onChange={(e) => setAdCopyBrief(e.target.value)}
                   rows={2}
                   placeholder="제품·서비스 설명을 입력하세요"
-                  className="mt-1.5 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                  className="mt-1.5 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                 />
               </div>
               <div>
@@ -417,7 +417,7 @@ export function ApiInputPanel({
                 <select
                   value={adCopyLanguage}
                   onChange={(e) => setAdCopyLanguage(e.target.value)}
-                  className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                  className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                 >
                   {AD_COPY_LANGUAGE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -436,7 +436,7 @@ export function ApiInputPanel({
                     value={adCopyTone}
                     onChange={(e) => setAdCopyTone(e.target.value)}
                     placeholder="예: 친근, 전문"
-                    className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                    className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                   />
                 </div>
                 <div>
@@ -448,7 +448,7 @@ export function ApiInputPanel({
                     value={adCopyChannel}
                     onChange={(e) => setAdCopyChannel(e.target.value)}
                     placeholder="예: SNS 배너"
-                    className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                    className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                   />
                 </div>
               </div>
@@ -472,7 +472,7 @@ export function ApiInputPanel({
                       parseTemperatureRange(e.target.value, 0.7),
                     )
                   }
-                  className="mt-1.5 w-full accent-[#10b981]"
+                  className="mt-1.5 w-full accent-accent"
                 />
                 <p className="mt-1.5 text-[11px] leading-relaxed text-foreground/50">
                   낮을수록 톤이 안정적이고, 높을수록 표현이 다양해집니다. 브랜드
@@ -485,7 +485,7 @@ export function ApiInputPanel({
                   disabled={isAdCopyLoading || !adCopyBrief.trim()}
                   className={[
                     "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
-                    "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                    "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                   ].join(" ")}
                 >
                   {isAdCopyLoading ? (
@@ -516,9 +516,9 @@ export function ApiInputPanel({
             </div>
 
             <div className="order-1 flex min-h-0 flex-col lg:order-2">
-              <div className="flex min-h-0 flex-col rounded-2xl border border-[#10b981]/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
+              <div className="flex min-h-0 flex-col rounded-2xl border border-accent/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(232, 136, 138,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-mono text-xs font-medium text-[#10b981]">
+                  <p className="font-mono text-xs font-medium text-accent">
                     생성 결과
                   </p>
                   {isAdCopyLoading ? (
@@ -569,7 +569,7 @@ export function ApiInputPanel({
                   onChange={(e) => setSummarizeText(e.target.value)}
                   rows={4}
                   placeholder="요약할 긴 문서·리뷰·회의록을 붙여 넣으세요"
-                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
+                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
                 />
               </div>
               <div>
@@ -581,7 +581,7 @@ export function ApiInputPanel({
                   value={summarizeStyle}
                   onChange={(e) => setSummarizeStyle(e.target.value)}
                   placeholder="예: 3줄 불릿, 한 문단, 결론 먼저"
-                  className="mt-1.5 h-9 w-full rounded-lg border border-white/10 bg-background/40 px-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-1 focus:ring-[#10b981]/30"
+                  className="mt-1.5 h-9 w-full rounded-lg border border-white/10 bg-background/40 px-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/30"
                 />
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
@@ -605,7 +605,7 @@ export function ApiInputPanel({
                         parseTemperatureRange(e.target.value, 0.3),
                       )
                     }
-                    className="mt-1.5 w-full accent-[#10b981]"
+                    className="mt-1.5 w-full accent-accent"
                   />
                   <p className="mt-1 text-[11px] leading-snug text-foreground/45">
                     낮을수록 톤이 안정적이고, 높을수록 표현이 달라질 수 있어요.
@@ -617,7 +617,7 @@ export function ApiInputPanel({
                     disabled={isSummarizeLoading || !summarizeText.trim()}
                     className={[
                       "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
-                      "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                      "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                     ].join(" ")}
                   >
                     {isSummarizeLoading ? (
@@ -649,9 +649,9 @@ export function ApiInputPanel({
             </div>
 
             <div className="flex min-h-0 flex-col lg:order-2">
-              <div className="flex min-h-0 flex-col rounded-2xl border border-[#10b981]/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
+              <div className="flex min-h-0 flex-col rounded-2xl border border-accent/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(232, 136, 138,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-mono text-xs font-medium text-[#10b981]">
+                  <p className="font-mono text-xs font-medium text-accent">
                     요약 결과
                   </p>
                   {isSummarizeLoading ? (
@@ -702,7 +702,7 @@ export function ApiInputPanel({
                   onChange={(e) => setSentimentText(e.target.value)}
                   rows={4}
                   placeholder="예: 치킨은 맛있는데 배송이 너무 늦었어요"
-                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
+                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
                 />
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
@@ -726,7 +726,7 @@ export function ApiInputPanel({
                         parseTemperatureRange(e.target.value, 0.2),
                       )
                     }
-                    className="mt-1.5 w-full accent-[#10b981]"
+                    className="mt-1.5 w-full accent-accent"
                   />
                   <p className="mt-1 text-[11px] leading-snug text-foreground/45">
                     낮을수록 분류가 안정적이고, 높을수록 표현 변동이 커질 수
@@ -739,7 +739,7 @@ export function ApiInputPanel({
                     disabled={isSentimentLoading || !sentimentText.trim()}
                     className={[
                       "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
-                      "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                      "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                     ].join(" ")}
                   >
                     {isSentimentLoading ? (
@@ -771,9 +771,9 @@ export function ApiInputPanel({
             </div>
 
             <div className="flex min-h-0 flex-col lg:order-2">
-              <div className="flex min-h-0 flex-col rounded-2xl border border-[#10b981]/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
+              <div className="flex min-h-0 flex-col rounded-2xl border border-accent/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(232, 136, 138,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-mono text-xs font-medium text-[#10b981]">
+                  <p className="font-mono text-xs font-medium text-accent">
                     분석 결과
                   </p>
                   {isSentimentLoading ? (
@@ -894,7 +894,7 @@ export function ApiInputPanel({
                   onChange={(e) => setNerText(e.target.value)}
                   rows={4}
                   placeholder="예: 일정·인명·장소·금액이 섞인 문장을 붙여 넣으세요"
-                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
+                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
                 />
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
@@ -918,7 +918,7 @@ export function ApiInputPanel({
                         parseTemperatureRange(e.target.value, 0.1),
                       )
                     }
-                    className="mt-1.5 w-full accent-[#10b981]"
+                    className="mt-1.5 w-full accent-accent"
                   />
                   <p className="mt-1 text-[11px] leading-snug text-foreground/45">
                     낮을수록 태그·라벨이 안정적이고, 높을수록 변동이 커질 수
@@ -931,7 +931,7 @@ export function ApiInputPanel({
                     disabled={isNerLoading || !nerText.trim()}
                     className={[
                       "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
-                      "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                      "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                     ].join(" ")}
                   >
                     {isNerLoading ? (
@@ -963,9 +963,9 @@ export function ApiInputPanel({
             </div>
 
             <div className="flex min-h-0 flex-col lg:order-2">
-              <div className="flex min-h-0 flex-col rounded-2xl border border-[#10b981]/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
+              <div className="flex min-h-0 flex-col rounded-2xl border border-accent/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(232, 136, 138,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-mono text-xs font-medium text-[#10b981]">
+                  <p className="font-mono text-xs font-medium text-accent">
                     추출 결과
                   </p>
                   {isNerLoading ? (
@@ -1005,7 +1005,7 @@ export function ApiInputPanel({
                                 <td className="px-2 py-2 text-foreground/90">
                                   {row.text}
                                 </td>
-                                <td className="px-2 py-2 font-mono text-[#10b981]/90">
+                                <td className="px-2 py-2 font-mono text-accent/90">
                                   {row.label}
                                 </td>
                                 <td className="px-2 py-2 text-foreground/80">
@@ -1053,7 +1053,7 @@ export function ApiInputPanel({
                   onChange={(e) => setTextToSqlText(e.target.value)}
                   rows={4}
                   placeholder="예: 지난달 서울 지역 매출 상위 상품 5개를 보여줘"
-                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
+                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
                 />
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
@@ -1077,7 +1077,7 @@ export function ApiInputPanel({
                         parseTemperatureRange(e.target.value, 0.2),
                       )
                     }
-                    className="mt-1.5 w-full accent-[#10b981]"
+                    className="mt-1.5 w-full accent-accent"
                   />
                   <p className="mt-1 text-[11px] leading-snug text-foreground/45">
                     낮을수록 SQL 문법이 안정적이고, 높을수록 표현이 달라질 수
@@ -1090,7 +1090,7 @@ export function ApiInputPanel({
                     disabled={isTextToSqlLoading || !textToSqlText.trim()}
                     className={[
                       "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
-                      "bg-[#10b981] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+                      "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                     ].join(" ")}
                   >
                     {isTextToSqlLoading ? (
@@ -1122,9 +1122,9 @@ export function ApiInputPanel({
             </div>
 
             <div className="flex min-h-0 flex-col lg:order-2">
-              <div className="flex min-h-0 flex-col rounded-2xl border border-[#10b981]/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(16,185,129,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
+              <div className="flex min-h-0 flex-col rounded-2xl border border-accent/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(232, 136, 138,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-mono text-xs font-medium text-[#10b981]">
+                  <p className="font-mono text-xs font-medium text-accent">
                     생성된 SQL
                   </p>
                   {isTextToSqlLoading ? (
@@ -1177,7 +1177,7 @@ export function ApiInputPanel({
                 value={embeddingText}
                 onChange={(e) => setEmbeddingText(e.target.value)}
                 rows={3}
-                className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
               />
             </div>
             <div className="flex items-center justify-between gap-3">
@@ -1187,7 +1187,7 @@ export function ApiInputPanel({
               <button
                 type="submit"
                 disabled={isEmbeddingLoading || !embeddingText.trim()}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#10b981] px-5 py-3 text-background font-medium shadow-[0_0_40px_rgba(16,185,129,0.22)] hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-background font-medium shadow-[0_0_40px_rgba(232, 136, 138,0.22)] hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isEmbeddingLoading ? (
                   <>
@@ -1227,7 +1227,7 @@ export function ApiInputPanel({
                 <select
                   value={ttsLanguage}
                   onChange={(e) => setTtsLanguage(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-[13px] text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                  className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-[13px] text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                 >
                   {ttsLanguageOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -1241,7 +1241,7 @@ export function ApiInputPanel({
                 <select
                   value={ttsSpeaker}
                   onChange={(e) => setTtsSpeaker(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-[13px] text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                  className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-[13px] text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                 >
                   {ttsSpeakerOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -1259,7 +1259,7 @@ export function ApiInputPanel({
                 value={ttsStyleInstruction}
                 onChange={(e) => setTtsStyleInstruction(e.target.value)}
                 placeholder="e.g., Speak in a cheerful and energetic tone"
-                className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-[13px] text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-[13px] text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
               />
             </div>
             <div>
@@ -1270,7 +1270,7 @@ export function ApiInputPanel({
                 value={ttsText}
                 onChange={(e) => setTtsText(e.target.value)}
                 rows={2}
-                className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] leading-snug text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] leading-snug text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
               />
             </div>
             <div className="flex items-center justify-between gap-3">
@@ -1281,7 +1281,7 @@ export function ApiInputPanel({
                 type="submit"
                 disabled={isTtsSynthesizing || !ttsText.trim()}
                 className={[
-                  "inline-flex items-center gap-2 rounded-xl bg-[#10b981] px-4 py-2 text-sm text-background font-medium shadow-[0_0_40px_rgba(16,185,129,0.22)] transition-opacity",
+                  "inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm text-background font-medium shadow-[0_0_40px_rgba(232, 136, 138,0.22)] transition-opacity",
                   isTtsSynthesizing || !ttsText.trim()
                     ? "cursor-not-allowed opacity-50"
                     : "hover:opacity-90",
@@ -1322,8 +1322,8 @@ export function ApiInputPanel({
                 className={[
                   "mt-2 block cursor-pointer rounded-xl border border-dashed px-3 py-3 transition-colors relative",
                   sttFileName
-                    ? "border-[#10b981]/40 bg-[#10b981]/5"
-                    : "border-white/10 bg-background/30 hover:border-[#10b981]/30",
+                    ? "border-accent/40 bg-accent/5"
+                    : "border-white/10 bg-background/30 hover:border-accent/30",
                 ].join(" ")}
               >
                 <input
@@ -1379,7 +1379,7 @@ export function ApiInputPanel({
                       {sttFileName ? sttFileName : "파일 선택"}
                     </p>
                     {sttFileName ? (
-                      <p className="mt-1 text-xs text-[#10b981]">
+                      <p className="mt-1 text-xs text-accent">
                         변환 준비 완료
                       </p>
                     ) : null}
@@ -1402,7 +1402,7 @@ export function ApiInputPanel({
                   "mt-2 w-full rounded-xl border px-4 py-3 text-sm font-medium transition-colors",
                   isRecording
                     ? "border-red-500/40 bg-red-500/10 text-[#ef4444]"
-                    : "border-white/10 bg-background/30 text-foreground/80 hover:border-[#10b981]/30",
+                    : "border-white/10 bg-background/30 text-foreground/80 hover:border-accent/30",
                 ].join(" ")}
               >
                 <span className="inline-flex flex-wrap items-center gap-2 justify-center">
@@ -1428,7 +1428,7 @@ export function ApiInputPanel({
                               style={{
                                 height: h,
                                 backgroundColor: mint
-                                  ? "#10b981"
+                                  ? "#e8888a"
                                   : "rgba(239,68,68,0.65)",
                               }}
                             />
@@ -1491,7 +1491,7 @@ export function ApiInputPanel({
                         }
                       }}
                       placeholder="언어 코드/이름 검색"
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-background/40 px-3 py-2 pr-3 text-sm text-foreground outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-background/40 px-3 py-2 pr-3 text-sm text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                     />
                   </div>
 
@@ -1517,8 +1517,8 @@ export function ApiInputPanel({
                                 "w-full px-3 py-2 text-left text-sm leading-tight transition-colors",
                                 "break-words whitespace-normal",
                                 sttLanguage === code
-                                  ? "text-[#10b981]"
-                                  : "text-foreground/80 hover:bg-[#10b981]/10",
+                                  ? "text-accent"
+                                  : "text-foreground/80 hover:bg-accent/10",
                               ].join(" ")}
                             >
                               {getSttLanguageLabel(code)}
@@ -1555,8 +1555,8 @@ export function ApiInputPanel({
                   className={[
                     "mt-2 w-full rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
                     sttVadOn
-                      ? "border-[#10b981]/40 bg-[#10b981]/10 text-[#10b981]"
-                      : "border-white/10 bg-background/30 text-foreground/80 hover:border-[#10b981]/30",
+                      ? "border-accent/40 bg-accent/10 text-accent"
+                      : "border-white/10 bg-background/30 text-foreground/80 hover:border-accent/30",
                   ].join(" ")}
                 >
                   {sttVadOn ? "On" : "Off"}
@@ -1589,7 +1589,7 @@ export function ApiInputPanel({
                         Number(e.target.value) || STT_DEFAULT_BEAM_SIZE,
                       )
                     }
-                    className="w-full accent-[#10b981]"
+                    className="w-full accent-accent"
                   />
                   <span className="font-mono text-xs text-foreground/70">
                     {sttBeamSize}
@@ -1607,7 +1607,7 @@ export function ApiInputPanel({
               type="button"
               onClick={() => void onSttRun()}
               disabled={isSttLoading || isRecording}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#10b981] px-5 py-3 text-background font-medium shadow-[0_0_40px_rgba(16,185,129,0.22)] hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-background font-medium shadow-[0_0_40px_rgba(232, 136, 138,0.22)] hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSttLoading ? (
                 <>

@@ -142,7 +142,7 @@ export function EmbeddingFingerprintHeatmap({
   return (
     <div className="relative w-full">
       <div
-        className="relative mx-auto aspect-square w-full max-w-[min(100%,360px)] overflow-hidden rounded-xl border border-[#10b981]/20 bg-zinc-950/80 shadow-[0_0_48px_rgba(16,185,129,0.08)]"
+        className="relative mx-auto aspect-square w-full max-w-[min(100%,360px)] overflow-hidden rounded-xl border border-accent/20 bg-zinc-950/80 shadow-[0_0_48px_rgba(232, 136, 138,0.08)]"
         role="img"
         aria-label="4096차원 임베딩 히트맵, 64×64 그리드"
       >
@@ -184,14 +184,14 @@ export function EmbeddingFingerprintHeatmap({
 
       {hover && mode === "data" ? (
         <div
-          className="pointer-events-none fixed z-50 rounded-lg border border-[#10b981]/40 bg-zinc-950/95 px-3 py-2 text-[11px] shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur"
+          className="pointer-events-none fixed z-50 rounded-lg border border-accent/40 bg-zinc-950/95 px-3 py-2 text-[11px] shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur"
           style={{
             left: hover.left + 12,
             top: hover.top + 12,
             transform: "translate(0, 0)",
           }}
         >
-          <div className="font-mono text-[#a7f3d0]/90">dim #{hover.index}</div>
+          <div className="font-mono text-accent-bright/90">dim #{hover.index}</div>
           <div className="mt-0.5 font-mono tabular-nums text-foreground/90">
             {Number.isFinite(hover.value)
               ? hover.value.toFixed(6)

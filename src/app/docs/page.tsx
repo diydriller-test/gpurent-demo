@@ -47,13 +47,12 @@ const SECTIONS: DocSection[] = [
     id: "ad-copy",
     title: "광고 카피라이팅",
     method: "POST",
-    path: "/api/copy",
+    path: "/api/ad-copy",
     description:
       "자사 광고 카피 생성 엔진으로 브리프·톤·채널에 맞는 문구를 생성합니다. `language`로 출력 언어를 지정할 수 있습니다.",
     requestLabel: "본문 (application/json)",
     request: `{
   "brief": "제품·서비스 설명(필수)",
-<<<<<<< HEAD
   "tone": "친근 / 전문 등 (선택)",
   "channel": "배너, SNS 등 (선택)",
   "temperature": 0.7,
@@ -62,16 +61,6 @@ const SECTIONS: DocSection[] = [
     responseLabel: "성공 (200)",
     response: `{
   "copy": "생성된 광고 카피 (지정 언어)"
-=======
-  "toneLine": "친근 / 전문 등 (선택)",
-  "channelLine": "배너, SNS 등 (선택)",
-  "temperature": 0.7
-}`,
-    responseLabel: "성공 (200)",
-    response: `{
-  "headline": "짧고 임팩트 있는 메인 카피 한 줄",
-  "body": "보조 설명/본문 카피 1~2문장"
->>>>>>> bf39ed3 (feat: llm wrapping 연동)
 }`,
     notes: [
       "`brief`만 필수입니다. `language`는 `ko`, `en`, `ja`, `zh` 등 지원 코드(생략 시 ko).",
@@ -211,6 +200,31 @@ const SECTIONS: DocSection[] = [
     ],
   },
   {
+    id: "tts",
+    title: "TTS (텍스트 음성 변환)",
+    method: "POST",
+    path: "/api/tts",
+    description:
+      "텍스트를 음성으로 합성합니다. 업스트림 TTS로 프록시하며, 성공 시 오디오 바이너리를 반환합니다. 음성 목록은 `GET /api/tts`로 조회할 수 있습니다.",
+    requestLabel: "본문 (application/json)",
+    request: `{
+  "text": "읽을 문장(필수)",
+  "language": "ko | korean | english | japanese 등 (선택)",
+  "speaker": "ryan 등 (선택)",
+  "instruct": "스타일·톤 지시 (선택)",
+  "style_instruction": "instruct 별칭 (선택)"
+}`,
+    responseLabel: "성공 (200)",
+    response: `Content-Type: audio/mpeg 등 (업스트림이 반환한 오디오 타입)
+<바이너리 오디오 스트림>`,
+    notes: [
+      "`text`만 필수입니다. `language`는 짧은 코드(ko, en) 또는 korean/english 등으로 보낼 수 있습니다.",
+      "오류 시 JSON `{ \"error\": \"...\" }`와 함께 400·429·500·504 등이 반환될 수 있습니다. 한도 초과 시 429 메시지가 올 수 있습니다.",
+      "합성 요청은 최대 약 58초 제한이 있어, 초과 시 504가 날 수 있습니다.",
+      "스피커 목록: `GET /api/tts` (업스트림 `/tts/speakers` 프록시).",
+    ],
+  },
+  {
     id: "stt",
     title: "STT (Speech-to-Text)",
     method: "POST",
@@ -233,11 +247,7 @@ const SECTIONS: DocSection[] = [
   },
 ];
 
-const TOC_SECTION_IDS = [
-  "overview",
-  "tts-note",
-  ...SECTIONS.map((s) => s.id),
-];
+const TOC_SECTION_IDS = ["overview", ...SECTIONS.map((s) => s.id)];
 
 const LAST_TOC_SECTION_ID = TOC_SECTION_IDS[TOC_SECTION_IDS.length - 1];
 
@@ -246,7 +256,7 @@ const TOC_ACTIVATION_LINE_PX = 112;
 
 /**
  * 스크롤 위치에 맞는 TOC 항목 1개만 계산합니다.
- * - 맨 아래에 도달하면 항상 마지막 섹션(현재 stt)
+ * - 맨 아래에 도달하면 항상 마지막 섹션
  * - 그 외에는 `rect.top <= 기준선`인 섹션들 중 문서 순서상 마지막
  * (중간에 `break` 하면 안 됨 — 그게 두 칸 점프 원인이 됩니다)
  */
@@ -307,11 +317,13 @@ export default function DocsPage() {
   }, []);
   return (
     <div className="min-h-screen bg-grid-pattern">
-      <nav className="border-b border-white/5 bg-background/80 backdrop-blur-xl">
+      <nav className="border-b border-wood/15 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-mono text-lg font-bold text-accent">GPU</span>
-            <span className="font-mono text-lg font-medium text-foreground/90">Modu</span>
+          <Link href="/" className="flex flex-wrap items-baseline gap-x-2">
+            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
+              AI API
+            </span>
+            <span className="font-mono text-lg font-medium text-wood">오마카세</span>
           </Link>
           <div className="flex items-center gap-6">
             <Link
@@ -378,17 +390,6 @@ export default function DocsPage() {
                   개요 · 인증
                 </a>
               </li>
-              <li>
-                <a
-                  href="#tts-note"
-                  aria-current={
-                    activeSectionId === "tts-note" ? "location" : undefined
-                  }
-                  className={docsTocLinkClass(activeSectionId === "tts-note")}
-                >
-                  TTS (체험)
-                </a>
-              </li>
               {SECTIONS.map((s) => (
                 <li key={s.id}>
                   <a
@@ -412,7 +413,7 @@ export default function DocsPage() {
               API 문서
             </h1>
             <p className="mt-4 max-w-2xl text-foreground/70">
-              GPUModu 데모 앱이 제공하는 HTTP 엔드포인트 요약입니다. 요청 시
+              AI API 오마카세 데모 앱이 제공하는 HTTP 엔드포인트 요약입니다. 요청 시
               발급받은 액세스 토큰이 필요한 경우, 아래 헤더를 포함합니다.
             </p>
             <p className="mt-3 max-w-2xl border-l-2 border-accent/40 pl-4 text-sm leading-relaxed text-foreground/60">
@@ -427,26 +428,6 @@ export default function DocsPage() {
               </p>
             </div>
           </header>
-
-          <section
-            id="tts-note"
-            className="mb-12 scroll-mt-28 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6"
-          >
-            <h2 className="text-lg font-semibold text-foreground">
-              TTS (텍스트 음성 변환)
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-foreground/70">
-              <Link href="/api-test" className="text-accent underline-offset-2 hover:underline">
-                API 체험
-              </Link>
-              화면에서는 TTS를 Mock으로 미리 들어볼 수 있습니다. 현재 이 저장소에는{" "}
-              <code className="rounded bg-background/60 px-1.5 py-0.5 font-mono text-xs">
-                /api/tts
-              </code>{" "}
-              같은 별도 REST 라우트가 없으며, Embedding · Re-ranking · STT · Text(LLM)는 아래
-              엔드포인트로 호출합니다.
-            </p>
-          </section>
 
           <div className="space-y-12">
             {SECTIONS.map((api) => (

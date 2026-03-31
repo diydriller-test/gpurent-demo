@@ -19,13 +19,13 @@ export function renderHighlightedJson(text: string) {
     const valueStr = match[2];
 
     let className = "text-foreground/50";
-    if (keyStr !== undefined) className = "text-[#10b981]";
-    else if (valueStr !== undefined) className = "text-[#a7f3d0]";
+    if (keyStr !== undefined) className = "text-accent";
+    else if (valueStr !== undefined) className = "text-accent-bright/95";
     else if (token === "true" || token === "false")
       className = "text-[#fbbf24]";
     else if (token === "null") className = "text-[#f87171]";
-    else if (token.startsWith('"')) className = "text-[#a7f3d0]";
-    else if (/^-?\d/.test(token)) className = "text-[#93c5fd]";
+    else if (token.startsWith('"')) className = "text-accent-bright/95";
+    else if (/^-?\d/.test(token)) className = "text-wood";
     else if (/[{}\[\]:,]/.test(token)) className = "text-foreground/50";
 
     parts.push(
@@ -67,9 +67,9 @@ export function renderHighlightedPython(code: string) {
 
     let className = "text-foreground/60";
     if (comment) className = "text-[#f87171]";
-    else if (str) className = "text-[#a7f3d0]";
-    else if (num) className = "text-[#93c5fd]";
-    else if (keyword) className = "text-[#10b981]";
+    else if (str) className = "text-accent-bright/95";
+    else if (num) className = "text-wood";
+    else if (keyword) className = "text-accent";
 
     parts.push(
       <span key={`${start}-${token}`} className={className}>

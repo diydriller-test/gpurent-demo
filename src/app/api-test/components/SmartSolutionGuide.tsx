@@ -30,7 +30,7 @@ function GuideApiLink({
     <button
       type="button"
       onClick={() => onNavigateApi(api)}
-      className="font-semibold text-[#10b981] underline decoration-[#10b981]/60 underline-offset-2 transition-colors hover:text-[#34d399]"
+      className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
     >
       [{label}]
     </button>

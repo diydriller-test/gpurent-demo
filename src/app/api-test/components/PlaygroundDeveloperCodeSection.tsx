@@ -26,7 +26,7 @@ export function PlaygroundDeveloperCodeSection({
         className={[
           "w-full rounded-xl border px-4 py-3 text-xs font-medium",
           "border-white/10 bg-transparent text-foreground/70",
-          "hover:border-[#10b981]/60 hover:text-[#34d399]",
+          "hover:border-accent/60 hover:text-accent-bright",
           "transition-colors",
         ].join(" ")}
       >
@@ -58,7 +58,7 @@ export function PlaygroundDeveloperCodeSection({
             className={[
               "absolute right-3 top-3 rounded-lg border px-3 py-1 text-[11px] font-mono transition-colors",
               "border-white/10 bg-background/20 text-foreground/60",
-              "hover:border-[#10b981]/50 hover:text-[#34d399]",
+              "hover:border-accent/50 hover:text-accent-bright",
             ].join(" ")}
           >
             {devCodeCopied ? "Copied!" : "Copy"}

@@ -14,8 +14,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GPUModu | 고성능 GPU API — 임베딩, 리랭킹, TTS",
-  description: "자체 GPU로 구축한 저렴한 AI API. 임베딩, 리랭킹, TTS 등 다양한 API를 RPS 기반 과금으로 이용하세요.",
+  title: "AI API 오마카세 | 셰프 추천 코스처럼 고르는 AI API",
+  description:
+    "필요한 API만 골라 쓰는 AI API 오마카세. 임베딩, 리랭킹, TTS 등 다양한 API를 RPS 기반으로 이용하세요.",
 };
 
 export default function RootLayout({

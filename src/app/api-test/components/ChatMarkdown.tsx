@@ -33,14 +33,14 @@ const markdownComponents: Components = {
   ),
   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
   blockquote: ({ children }) => (
-    <blockquote className="my-3 border-l-2 border-[#10b981]/50 bg-white/[0.03] py-1 pl-4 text-foreground/85">
+    <blockquote className="my-3 border-l-2 border-accent/50 bg-white/[0.03] py-1 pl-4 text-foreground/85">
       {children}
     </blockquote>
   ),
   a: ({ href, children }) => (
     <a
       href={href}
-      className="font-medium text-[#34d399] underline decoration-[#34d399]/40 underline-offset-2 hover:text-[#6ee7b7]"
+      className="font-medium text-accent underline decoration-accent/40 underline-offset-2 hover:text-accent-bright"
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -88,7 +88,7 @@ const markdownComponents: Components = {
     }
     return (
       <code
-        className="rounded-md bg-white/[0.08] px-1.5 py-0.5 font-mono text-[0.9em] text-[#a7f3d0]"
+        className="rounded-md bg-white/[0.08] px-1.5 py-0.5 font-mono text-[0.9em] text-accent-bright"
         {...props}
       >
         {children}

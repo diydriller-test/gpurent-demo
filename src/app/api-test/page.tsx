@@ -67,7 +67,7 @@ const DEFAULT_EMBEDDING_PLAYGROUND_TEXT =
   "인공지능을 활용한 기업용 지식 관리 시스템 구축 및 운영 전략";
 
 const DEFAULT_TTS_PLAYGROUND_TEXT =
-  "안녕하세요. GPU Modu API 데모를 재생합니다.";
+  "안녕하세요. AI API 오마카세 데모를 재생합니다.";
 
 const DEFAULT_AD_COPY_BRIEF =
   "신제품 커피 머신 — 집에서 캡슐 커피 한 잔, 아침 루틴에 맞춘 광고 카피";
@@ -482,7 +482,7 @@ function SttHelpTooltip({
       <div
         className={[
           "absolute bottom-full right-0 z-30 mb-2 w-[280px] max-w-[78vw] rounded-xl border p-3 text-xs backdrop-blur",
-          "bg-popover border-primary/30 shadow-[0_0_40px_rgba(16,185,129,0.10)]",
+          "bg-popover border-primary/30 shadow-[0_0_40px_rgba(232, 136, 138,0.10)]",
           "transition-opacity duration-150",
           isVisible ? "opacity-100" : "opacity-0 pointer-events-none",
         ].join(" ")}
@@ -1612,11 +1612,11 @@ export default function ApiTestPage() {
         return (
           <>
             ✨{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               비즈니스 대화 및 요약
             </span>
             : 복잡한 문서를 요약하거나 자연스러운 챗봇 답변을 생성하는{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               초거대 언어 모델(LLM)
             </span>{" "}
             서비스입니다.
@@ -1626,11 +1626,11 @@ export default function ApiTestPage() {
         return (
           <>
             ✍️{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               광고·마케팅 카피
             </span>
             : 브리프·톤·채널에 맞춰{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               배너·SNS 등 문구
             </span>
             를 생성하는 자사 자연어 처리 엔진 기반 서비스입니다.
@@ -1639,9 +1639,9 @@ export default function ApiTestPage() {
       case "TextSummary":
         return (
           <>
-            📄 <span className="text-[#10b981] font-semibold">텍스트 요약</span>
+            📄 <span className="text-accent font-semibold">텍스트 요약</span>
             : 리뷰·뉴스·회의록 등 긴 본문에서{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               핵심만 추려 짧게 압축
             </span>
             하는 자사 자연어 처리 엔진 기반 서비스입니다.
@@ -1651,9 +1651,9 @@ export default function ApiTestPage() {
         return (
           <>
             💬{" "}
-            <span className="text-[#10b981] font-semibold">리뷰 감정 분석</span>
+            <span className="text-accent font-semibold">리뷰 감정 분석</span>
             : 긍·부정·중립과{" "}
-            <span className="text-[#10b981] font-semibold">측면별 점수</span>로
+            <span className="text-accent font-semibold">측면별 점수</span>로
             브랜드 평판·이슈를 빠르게 파악하는 자사 자연어 처리 엔진 기반 서비스입니다.
           </>
         );
@@ -1661,11 +1661,11 @@ export default function ApiTestPage() {
         return (
           <>
             🏷️{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               개체명 인식 (NER)
             </span>
             : 인물·장소·시간·금액 등을{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               label·category로 정형 추출
             </span>
             하는 자사 자연어 처리 엔진 기반 서비스입니다.
@@ -1675,11 +1675,11 @@ export default function ApiTestPage() {
         return (
           <>
             🗄️{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               Text-to-SQL (쿼리 자동 생성)
             </span>
             : 기획·마케팅 질문을{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               MySQL 호환 SELECT
             </span>
             로 바꿔 주는 자사 자연어 처리 엔진 기반 서비스입니다.
@@ -1689,12 +1689,12 @@ export default function ApiTestPage() {
         return (
           <>
             🔍{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               지능형 데이터 검색
             </span>
             : 문장의 의미를 분석하여 대규모 문서에서 원하는 정보를 정확히
             찾아내는{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               RAG(검색 증강 생성)
             </span>
             의 핵심 기술입니다.
@@ -1704,11 +1704,11 @@ export default function ApiTestPage() {
         return (
           <>
             🎯{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               검색 결과 최적화
             </span>
             : 단순 검색을 넘어, 사용자의 의도에 가장 가까운 순서로{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               정확도를 극대화
             </span>
             하여 정렬합니다.
@@ -1718,11 +1718,11 @@ export default function ApiTestPage() {
         return (
           <>
             🎙️{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               음성-텍스트 전환
             </span>
             : 회의록 자동 작성부터 자연스러운 음성 안내까지,{" "}
-            <span className="text-[#10b981] font-semibold">
+            <span className="text-accent font-semibold">
               소리를 데이터로
             </span>{" "}
             바꾸는 멀티모달 기술입니다.
@@ -2323,7 +2323,7 @@ export default function ApiTestPage() {
   const placeholder = useMemo(() => {
     switch (selectedApi) {
       case "llm":
-        return "GPT-OSS-120B에게 질문하거나 요약을 요청해보세요.";
+        return "질문이나 요약을 요청해 보세요. (AI API 오마카세 텍스트 코스)";
       case "adCopy":
         return "브리프는 하단 입력에서 수정하세요.";
       case "summarize":
@@ -4827,16 +4827,18 @@ export default function ApiTestPage() {
         </div>
       ) : null}
       {/* Header */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-wood/15 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link
             href="/"
             aria-label="Go to home"
-            className="flex items-center gap-2 transition-all hover:opacity-90 hover:drop-shadow-[0_0_18px_rgba(16,185,129,0.35)]"
+            className="flex items-center gap-2 transition-all hover:opacity-90 hover:drop-shadow-[0_0_18px_rgba(232, 136, 138,0.35)]"
           >
-            <span className="font-mono text-lg font-bold text-accent">GPU</span>
-            <span className="font-mono text-lg font-medium text-foreground/90">
-              Modu
+            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
+              AI API
+            </span>
+            <span className="font-mono text-lg font-medium text-wood">
+              오마카세
             </span>
           </Link>
 
@@ -4886,15 +4888,15 @@ export default function ApiTestPage() {
 
       {/* Content */}
       <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-12">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,212,170,0.14),transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(232,136,138,0.14),transparent_55%)]" />
 
         {viewMode === "list" ? (
           <div className="relative flex flex-col gap-6 lg:flex-row lg:gap-6">
             {comingSoonMessage ? (
               <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
-                <div className="w-[min(520px,90%)] rounded-2xl border border-[#10b981]/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(16,185,129,0.18)]">
+                <div className="w-[min(520px,90%)] rounded-2xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#10b981]/30 bg-[#10b981]/10 text-[#10b981]">
+                    <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
                       <IconPlus className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
@@ -4915,7 +4917,7 @@ export default function ApiTestPage() {
                 <div className="mb-4 space-y-3">
                   <Link
                     href="/"
-                    className="inline-flex w-full items-center justify-center rounded-xl border border-[#10b981]/45 bg-transparent px-2.5 py-2 text-center text-[11px] font-medium tracking-[0.01em] text-[#10b981] transition-colors hover:bg-[#10b981]/10"
+                    className="inline-flex w-full items-center justify-center rounded-xl border border-accent/45 bg-transparent px-2.5 py-2 text-center text-[11px] font-medium tracking-[0.01em] text-accent transition-colors hover:bg-accent/10"
                   >
                     <span>홈으로 가기</span>
                   </Link>
@@ -4949,9 +4951,9 @@ export default function ApiTestPage() {
                         }}
                         className={[
                           "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                          "border-white/10 bg-background/30 hover:border-[#10b981]/30 hover:bg-[#10b981]/10",
+                          "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
                           isAllTasksActive
-                            ? "border-[#10b981]/50 bg-[#10b981]/10 shadow-[0_0_40px_rgba(16,185,129,0.12)]"
+                            ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
                             : "",
                         ].join(" ")}
                       >
@@ -4959,7 +4961,7 @@ export default function ApiTestPage() {
                           className={[
                             "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
                             isAllTasksActive
-                              ? "border-[#10b981]/40 bg-[#10b981]/10 text-[#10b981]"
+                              ? "border-accent/40 bg-accent/10 text-accent"
                               : "border-white/10 bg-background/20 text-foreground/70",
                           ].join(" ")}
                         >
@@ -5004,9 +5006,9 @@ export default function ApiTestPage() {
                             }}
                             className={[
                               "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                              "border-white/10 bg-background/30 hover:border-[#10b981]/30 hover:bg-[#10b981]/10",
+                              "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
                               isActive
-                                ? "border-[#10b981]/50 bg-[#10b981]/10 shadow-[0_0_40px_rgba(16,185,129,0.12)]"
+                                ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
                                 : "",
                             ].join(" ")}
                           >
@@ -5014,7 +5016,7 @@ export default function ApiTestPage() {
                               className={[
                                 "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
                                 isActive
-                                  ? "border-[#10b981]/40 bg-[#10b981]/10 text-[#10b981]"
+                                  ? "border-accent/40 bg-accent/10 text-accent"
                                   : "border-white/10 bg-background/20 text-foreground/70",
                               ].join(" ")}
                             >
@@ -5059,8 +5061,10 @@ export default function ApiTestPage() {
                       {renderTaskGuide()}
                     </div>
                   </div>
-                  <span className="rounded-xl border border-[#10b981]/25 bg-[#10b981]/5 px-3 py-1 font-mono text-xs text-[#10b981]">
-                    {filteredMarketplace.length} APIs
+                  <span className="whitespace-nowrap rounded-xl border border-accent/25 bg-accent/5 px-3 py-1 font-mono text-xs text-accent">
+                    {filteredMarketplace.length === 1
+                      ? "1 API"
+                      : `${filteredMarketplace.length} APIs`}
                   </span>
                 </div>
 
@@ -5072,8 +5076,8 @@ export default function ApiTestPage() {
                       onClick={() => enterDetailFor(item)}
                       className={[
                         "group relative rounded-2xl border bg-background/20 p-4 text-left transition-all",
-                        "border-white/5 hover:-translate-y-0.5 hover:border-[#10b981]/45 hover:bg-background/30",
-                        "hover:shadow-[0_0_60px_rgba(16,185,129,0.12)]",
+                        "border-white/5 hover:-translate-y-0.5 hover:border-accent/45 hover:bg-background/30",
+                        "hover:shadow-[0_0_60px_rgba(232, 136, 138,0.12)]",
                       ].join(" ")}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -5084,7 +5088,7 @@ export default function ApiTestPage() {
                               : item.task === "STT"
                                 ? "Qwen3 Audio • STT"
                                 : item.task === "Text Generation"
-                                  ? "GPT-OSS • Text Generation"
+                                  ? "Omakase • Text Generation"
                                   : item.task === "Ad Copy"
                                     ? "Modu NLP • Ad Copy"
                                     : item.task === "Text Summary"
@@ -5111,7 +5115,7 @@ export default function ApiTestPage() {
                         {item.taskTags.slice(0, 3).map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-lg border border-[#10b981]/25 bg-[#10b981]/5 px-2 py-1 text-[11px] font-mono text-[#10b981]"
+                            className="rounded-lg border border-accent/25 bg-accent/5 px-2 py-1 text-[11px] font-mono text-accent"
                           >
                             {tag}
                           </span>
@@ -5122,7 +5126,7 @@ export default function ApiTestPage() {
                         <span className="text-xs text-foreground/50">
                           Let&apos;s try
                         </span>
-                        <span className="text-[#10b981] transition-transform group-hover:translate-x-0.5">
+                        <span className="text-accent transition-transform group-hover:translate-x-0.5">
                           →
                         </span>
                       </div>
@@ -5139,7 +5143,7 @@ export default function ApiTestPage() {
                     }
                     className={[
                       "group rounded-2xl border border-dashed border-white/10 bg-transparent p-4 text-left transition-colors",
-                      "hover:border-[#10b981]/40 hover:bg-[#10b981]/5",
+                      "hover:border-accent/40 hover:bg-accent/5",
                     ].join(" ")}
                   >
                     <p className="font-mono text-xs text-foreground/60">
@@ -5151,7 +5155,7 @@ export default function ApiTestPage() {
                     <p className="mt-2 text-xs text-foreground/60">
                       나중에 나만의 API를 등록해 직접 테스트해볼 수 있어요.
                     </p>
-                    <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-background/20 px-3 py-2 text-xs text-foreground/70 transition-colors group-hover:border-[#10b981]/30 group-hover:text-[#10b981]">
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-background/20 px-3 py-2 text-xs text-foreground/70 transition-colors group-hover:border-accent/30 group-hover:text-accent">
                       <span>입점 등록</span>
                       <span>+</span>
                     </div>
@@ -5186,7 +5190,7 @@ export default function ApiTestPage() {
                       : "p-4"
                   }`}
                 >
-                  <div className="min-w-0">
+                  <div className="min-w-0 w-full flex-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -5205,20 +5209,20 @@ export default function ApiTestPage() {
                         });
                         setViewMode("list");
                       }}
-                      className="inline-flex items-center rounded-lg px-1 py-0.5 text-xs text-foreground/55 transition-colors hover:text-[#10b981]"
+                      className="inline-flex items-center rounded-lg px-1 py-0.5 text-xs text-foreground/55 transition-colors hover:text-accent"
                     >
                       ← 목록으로 돌아가기
                     </button>
                     <p className="mt-2 font-mono text-xs text-foreground/60">
                       Test Playground
                     </p>
-                    <div className="mt-1 flex items-center justify-between gap-3">
-                      <h3 className="min-w-0 truncate text-lg font-semibold text-foreground">
+                    <div className="mt-1 flex w-full min-w-0 items-center justify-between gap-3">
+                      <h3 className="min-w-0 flex-1 truncate pr-2 text-lg font-semibold text-foreground">
                         {selectedApiItem?.name ?? "API"} Playground
                       </h3>
                       <Link
                         href={`/plans?chapter=${selectedApi}&auto=1`}
-                        className="shrink-0 rounded-lg border border-[#10b981]/45 bg-transparent px-2.5 py-1 text-[11px] font-medium text-[#10b981] transition-colors hover:bg-[#10b981]/10 hover:border-[#10b981]/60"
+                        className="shrink-0 self-center rounded-lg border border-accent/45 bg-transparent px-2.5 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10 hover:border-accent/60"
                       >
                         플랜 보기
                       </Link>
@@ -5244,9 +5248,9 @@ export default function ApiTestPage() {
                             : "mt-2"
                         }
                       >
-                        <span className="inline-flex items-center rounded-xl border border-[#10b981]/30 bg-[#10b981]/10 px-3 py-1 text-[11px] font-mono text-[#10b981]">
+                        <span className="inline-flex items-center rounded-xl border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-mono text-accent">
                           {selectedApi === "llm"
-                            ? "High-Performance Infra • GPT-OSS-120B • 실시간"
+                            ? "High-Performance Infra • Omakase Text • 실시간"
                             : selectedApi === "adCopy"
                               ? "High-Performance Infra • 자사 NLP • 광고 카피"
                               : selectedApi === "summarize"
@@ -5268,7 +5272,7 @@ export default function ApiTestPage() {
                       </div>
                     ) : null}
                     {selectedApi === "adCopy" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
+                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
                         <p className="font-semibold text-foreground/95">
                           Ad Copy API 안내
                         </p>
@@ -5278,7 +5282,7 @@ export default function ApiTestPage() {
                           원하는{" "}
                           <span className="text-foreground/90">톤·채널</span>
                           (예: SNS 배너)을 넣으면{" "}
-                          <span className="text-[#10b981] font-medium">
+                          <span className="text-accent font-medium">
                             자사 NLP 엔진
                           </span>
                           이{" "}
@@ -5300,7 +5304,7 @@ export default function ApiTestPage() {
                       </div>
                     ) : null}
                     {selectedApi === "summarize" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
+                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
                         <p className="font-semibold text-foreground/95">
                           Text Summary API 안내
                         </p>
@@ -5308,7 +5312,7 @@ export default function ApiTestPage() {
                           긴{" "}
                           <span className="text-foreground/90">본문(text)</span>을
                           넣으면{" "}
-                          <span className="text-[#10b981] font-medium">
+                          <span className="text-accent font-medium">
                             자사 NLP 엔진
                           </span>
                           이 핵심만 압축합니다.{" "}
@@ -5321,14 +5325,14 @@ export default function ApiTestPage() {
                       </div>
                     ) : null}
                     {selectedApi === "sentiment" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
+                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
                         <p className="font-semibold text-foreground/95">
                           Review Sentiment API 안내
                         </p>
                         <p className="mt-1.5">
                           <span className="text-foreground/90">리뷰(text)</span>에
                           대해{" "}
-                          <span className="text-[#10b981] font-medium">
+                          <span className="text-accent font-medium">
                             자사 NLP 엔진
                           </span>
                           이 전체·측면(aspect)별 긍·부정·중립과 0~1 점수를
@@ -5340,7 +5344,7 @@ export default function ApiTestPage() {
                       </div>
                     ) : null}
                     {selectedApi === "ner" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
+                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
                         <p className="font-semibold text-foreground/95">
                           NER (개체명 인식) API 안내
                         </p>
@@ -5352,7 +5356,7 @@ export default function ApiTestPage() {
                             표면·라벨·범주
                           </span>
                           로 추출합니다.{" "}
-                          <span className="text-[#10b981] font-medium">
+                          <span className="text-accent font-medium">
                             자사 NLP 엔진
                           </span>
                           이 처리하며, Temperature는 분류 변동폭에 영향을 줍니다.{" "}
@@ -5363,7 +5367,7 @@ export default function ApiTestPage() {
                       </div>
                     ) : null}
                     {selectedApi === "textToSql" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-[#10b981]/20 bg-[#10b981]/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
+                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
                         <p className="font-semibold text-foreground/95">
                           Text-to-SQL API 안내
                         </p>
@@ -5373,7 +5377,7 @@ export default function ApiTestPage() {
                           <span className="text-foreground/90">SELECT</span>{" "}
                           <span className="text-foreground/90">sql</span>로
                           바꿉니다. 스키마 없으면 맥락에서 표·컬럼 추정.{" "}
-                          <span className="text-[#10b981] font-medium">
+                          <span className="text-accent font-medium">
                             자사 NLP 엔진
                           </span>
                           이 처리하며, Temperature는 문법 변동에 영향을 줍니다.{" "}
@@ -5396,9 +5400,9 @@ export default function ApiTestPage() {
 
                 {comingSoonMessage ? (
                   <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
-                    <div className="w-[min(520px,90%)] rounded-2xl border border-[#10b981]/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(16,185,129,0.18)]">
+                    <div className="w-[min(520px,90%)] rounded-2xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
                       <div className="flex items-start gap-3">
-                        <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#10b981]/30 bg-[#10b981]/10 text-[#10b981]">
+                        <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
                           <IconPlus className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
@@ -5643,7 +5647,7 @@ export default function ApiTestPage() {
                       </p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         POST{" "}
-                        <span className="text-[#10b981]">
+                        <span className="text-accent">
                           {selectedApi === "embedding"
                             ? "/api/embedding"
                             : selectedApi === "reranker"
@@ -5670,7 +5674,7 @@ export default function ApiTestPage() {
                       <button
                         type="button"
                         onClick={() => resetConsoleForApi(selectedApi)}
-                        className="rounded-lg border border-white/10 bg-background/30 px-3 py-1 text-[11px] font-mono text-foreground/70 transition-colors hover:border-[#10b981]/40 hover:text-[#10b981]"
+                        className="rounded-lg border border-white/10 bg-background/30 px-3 py-1 text-[11px] font-mono text-foreground/70 transition-colors hover:border-accent/40 hover:text-accent"
                       >
                         Reset
                       </button>
@@ -5678,7 +5682,7 @@ export default function ApiTestPage() {
                         className={[
                           "rounded-lg border border-white/10 bg-background/30 px-3 py-1 text-[11px] font-mono",
                           currentConsole.statusCode === 200
-                            ? "text-[#10b981]"
+                            ? "text-accent"
                             : currentConsole.statusCode &&
                                 currentConsole.statusCode >= 400
                               ? "text-[#f87171]"
@@ -5709,7 +5713,7 @@ export default function ApiTestPage() {
                         }}
                         placeholder={`{\n  "model": "openai/gpt-oss-120b",\n  "input": "직접 입력한 내용"\n}`}
                         rows={9}
-                        className="mt-3 min-h-[180px] w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 font-mono text-[12px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-[#10b981]/60 focus:ring-2 focus:ring-[#10b981]/30"
+                        className="mt-3 min-h-[180px] w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 font-mono text-[12px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                       />
                       <div className="mt-3 flex items-center justify-between gap-3">
                         <p className="text-xs text-foreground/60">
@@ -5730,7 +5734,7 @@ export default function ApiTestPage() {
                           }
                           className={[
                             "rounded-xl border px-5 py-3 text-xs font-medium transition-colors",
-                            "border-[#10b981]/40 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981]/15",
+                            "border-accent/40 bg-accent/10 text-accent hover:bg-accent/15",
                             "disabled:cursor-not-allowed disabled:opacity-50",
                             consoleSubmitShake ? "console-shake" : "",
                           ].join(" ")}
@@ -5775,7 +5779,7 @@ export default function ApiTestPage() {
                           className={[
                             "rounded-lg border px-3 py-1 text-[11px] font-mono transition-colors",
                             "border-white/10 bg-background/30 text-foreground/70",
-                            "hover:border-[#10b981]/40 hover:text-[#10b981]",
+                            "hover:border-accent/40 hover:text-accent",
                             "disabled:cursor-not-allowed disabled:opacity-50",
                           ].join(" ")}
                         >
@@ -5788,7 +5792,7 @@ export default function ApiTestPage() {
                             <button
                               type="button"
                               onClick={handleTtsPlayPause}
-                              className="inline-flex items-center gap-2 rounded-xl bg-[#10b981] px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+                              className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
                             >
                               {ttsPlaying ? "일시정지" : "오디오 재생"}
                             </button>
@@ -5977,7 +5981,7 @@ export default function ApiTestPage() {
                     (selectedApi === "sentiment" && isSentimentLoading) ||
                     (selectedApi === "ner" && isNerLoading) ||
                     (selectedApi === "textToSql" && isTextToSqlLoading) ? (
-                      <div className="rounded-xl border border-[#10b981]/25 bg-[#10b981]/5 p-3 text-xs text-[#10b981]">
+                      <div className="rounded-xl border border-accent/25 bg-accent/5 p-3 text-xs text-accent">
                         {selectedApi === "adCopy"
                           ? "카피 생성 중... (응답 대기)"
                           : selectedApi === "summarize"
@@ -6008,7 +6012,7 @@ export default function ApiTestPage() {
               selectedApi === "tts" ||
               selectedApi === "stt") ? (
               <section className="w-full lg:basis-full">
-                <div className="rounded-xl border-t border-[#10b981]/20 bg-[#10b981]/5 px-4 py-3">
+                <div className="rounded-xl border-t border-accent/20 bg-accent/5 px-4 py-3">
                   <div
                     className={[
                       "transition-opacity duration-200",
@@ -6022,7 +6026,7 @@ export default function ApiTestPage() {
                       </p>
                       <Link
                         href={`/plans?chapter=${selectedApi}&auto=1`}
-                        className="inline-flex shrink-0 items-center justify-center rounded-lg border border-[#10b981]/35 bg-transparent px-3 py-1.5 text-[11px] font-medium text-[#10b981] transition-colors hover:bg-[#10b981]/10 hover:border-[#10b981]/55"
+                        className="inline-flex shrink-0 items-center justify-center rounded-lg border border-accent/35 bg-transparent px-3 py-1.5 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10 hover:border-accent/55"
                       >
                         플랜 보기
                       </Link>
@@ -6034,7 +6038,7 @@ export default function ApiTestPage() {
                         <button
                           type="button"
                           onClick={() => moveToApiDetail("llm")}
-                          className="font-semibold text-[#10b981] underline decoration-[#10b981]/60 underline-offset-2 transition-colors hover:text-[#34d399]"
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
                         >
                           [LLM]
                         </button>{" "}
@@ -6042,7 +6046,7 @@ export default function ApiTestPage() {
                         <button
                           type="button"
                           onClick={() => moveToApiDetail("embedding")}
-                          className="font-semibold text-[#10b981] underline decoration-[#10b981]/60 underline-offset-2 transition-colors hover:text-[#34d399]"
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
                         >
                           [Embedding]
                         </button>
