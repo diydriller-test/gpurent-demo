@@ -252,7 +252,9 @@ export function inferPlanTask(name: string): PlanTask | null {
   if (/\bstt\b|speech-to-text|transcri/i.test(n)) return "STT";
   if (/\btts\b|text-to-speech/i.test(n)) return "TTS";
   if (
-    /\bad[-\s]?copy\b|광고\s*카피|advertising\s*copy|copywriting/i.test(name)
+    /\bad[-\s]?copy\b|광고\s*카피|advertising\s*copy|copywriting|copy[-\s]?write/i.test(
+      name,
+    )
   ) {
     return "Ad Copy";
   }
@@ -275,7 +277,7 @@ export function inferPlanTask(name: string): PlanTask | null {
     return "NER";
   }
   if (
-    /\btext[-\s]?to[-\s]?sql\b|nl2sql|natural\s*language.*sql|쿼리\s*자동|자연어.*sql|sql\s*생성/i.test(
+    /\btext[-\s]?to[-\s]?sql\b|nl2sql|natural\s*language.*sql|쿼리\s*자동|자연어.*sql|sql\s*생성|\bsql\b/i.test(
       n,
     ) ||
     /text[-\s]?to[-\s]?sql\s*api/i.test(name)

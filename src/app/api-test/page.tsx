@@ -1149,7 +1149,8 @@ export default function ApiTestPage() {
       {
         id: "ner",
         name: "NER",
-        description: "개체명 인식 · 인물·장소·시간·금액 등 추출 (자사 NLP 엔진)",
+        description:
+          "개체명 인식 · 인물·장소·시간·금액 등 추출 (자사 NLP 엔진)",
       },
       {
         id: "textToSql",
@@ -1221,7 +1222,9 @@ export default function ApiTestPage() {
   const [adCopyBrief, setAdCopyBrief] = useState(DEFAULT_AD_COPY_BRIEF);
   const [adCopyTone, setAdCopyTone] = useState("");
   const [adCopyChannel, setAdCopyChannel] = useState("");
-  const [adCopyLanguage, setAdCopyLanguage] = useState(DEFAULT_AD_COPY_LANGUAGE);
+  const [adCopyLanguage, setAdCopyLanguage] = useState(
+    DEFAULT_AD_COPY_LANGUAGE,
+  );
   const [adCopyTemperature, setAdCopyTemperature] = useState(0.7);
   const [adCopyResult, setAdCopyResult] = useState<string | null>(null);
   const [isAdCopyLoading, setIsAdCopyLoading] = useState(false);
@@ -1626,21 +1629,17 @@ export default function ApiTestPage() {
         return (
           <>
             ✍️{" "}
-            <span className="text-accent font-semibold">
-              광고·마케팅 카피
-            </span>
-            : 브리프·톤·채널에 맞춰{" "}
-            <span className="text-accent font-semibold">
-              배너·SNS 등 문구
-            </span>
+            <span className="text-accent font-semibold">광고·마케팅 카피</span>:
+            브리프·톤·채널에 맞춰{" "}
+            <span className="text-accent font-semibold">배너·SNS 등 문구</span>
             를 생성하는 자사 자연어 처리 엔진 기반 서비스입니다.
           </>
         );
       case "TextSummary":
         return (
           <>
-            📄 <span className="text-accent font-semibold">텍스트 요약</span>
-            : 리뷰·뉴스·회의록 등 긴 본문에서{" "}
+            📄 <span className="text-accent font-semibold">텍스트 요약</span>:
+            리뷰·뉴스·회의록 등 긴 본문에서{" "}
             <span className="text-accent font-semibold">
               핵심만 추려 짧게 압축
             </span>
@@ -1650,20 +1649,18 @@ export default function ApiTestPage() {
       case "SentimentAnalysis":
         return (
           <>
-            💬{" "}
-            <span className="text-accent font-semibold">리뷰 감정 분석</span>
+            💬 <span className="text-accent font-semibold">리뷰 감정 분석</span>
             : 긍·부정·중립과{" "}
             <span className="text-accent font-semibold">측면별 점수</span>로
-            브랜드 평판·이슈를 빠르게 파악하는 자사 자연어 처리 엔진 기반 서비스입니다.
+            브랜드 평판·이슈를 빠르게 파악하는 자사 자연어 처리 엔진 기반
+            서비스입니다.
           </>
         );
       case "NERTask":
         return (
           <>
             🏷️{" "}
-            <span className="text-accent font-semibold">
-              개체명 인식 (NER)
-            </span>
+            <span className="text-accent font-semibold">개체명 인식 (NER)</span>
             : 인물·장소·시간·금액 등을{" "}
             <span className="text-accent font-semibold">
               label·category로 정형 추출
@@ -1679,9 +1676,7 @@ export default function ApiTestPage() {
               Text-to-SQL (쿼리 자동 생성)
             </span>
             : 기획·마케팅 질문을{" "}
-            <span className="text-accent font-semibold">
-              MySQL 호환 SELECT
-            </span>
+            <span className="text-accent font-semibold">MySQL 호환 SELECT</span>
             로 바꿔 주는 자사 자연어 처리 엔진 기반 서비스입니다.
           </>
         );
@@ -1704,13 +1699,9 @@ export default function ApiTestPage() {
         return (
           <>
             🎯{" "}
-            <span className="text-accent font-semibold">
-              검색 결과 최적화
-            </span>
-            : 단순 검색을 넘어, 사용자의 의도에 가장 가까운 순서로{" "}
-            <span className="text-accent font-semibold">
-              정확도를 극대화
-            </span>
+            <span className="text-accent font-semibold">검색 결과 최적화</span>:
+            단순 검색을 넘어, 사용자의 의도에 가장 가까운 순서로{" "}
+            <span className="text-accent font-semibold">정확도를 극대화</span>
             하여 정렬합니다.
           </>
         );
@@ -1718,13 +1709,9 @@ export default function ApiTestPage() {
         return (
           <>
             🎙️{" "}
-            <span className="text-accent font-semibold">
-              음성-텍스트 전환
-            </span>
-            : 회의록 자동 작성부터 자연스러운 음성 안내까지,{" "}
-            <span className="text-accent font-semibold">
-              소리를 데이터로
-            </span>{" "}
+            <span className="text-accent font-semibold">음성-텍스트 전환</span>:
+            회의록 자동 작성부터 자연스러운 음성 안내까지,{" "}
+            <span className="text-accent font-semibold">소리를 데이터로</span>{" "}
             바꾸는 멀티모달 기술입니다.
           </>
         );
@@ -2199,7 +2186,13 @@ export default function ApiTestPage() {
         },
       };
     });
-  }, [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature, adCopyLanguage]);
+  }, [
+    adCopyBrief,
+    adCopyTone,
+    adCopyChannel,
+    adCopyTemperature,
+    adCopyLanguage,
+  ]);
 
   useEffect(() => {
     const nextRequestJson = buildSummarizeConsoleRequestJson(
@@ -4263,7 +4256,8 @@ export default function ApiTestPage() {
           }
           const headline =
             typeof data?.headline === "string" ? data.headline.trim() : "";
-          const copyBody = typeof data?.body === "string" ? data.body.trim() : "";
+          const copyBody =
+            typeof data?.body === "string" ? data.body.trim() : "";
           const composed = [headline, copyBody].filter(Boolean).join("\n\n");
           setAdCopyResult(composed || "응답이 비어있습니다.");
         } catch {
@@ -5310,8 +5304,8 @@ export default function ApiTestPage() {
                         </p>
                         <p className="mt-1.5">
                           긴{" "}
-                          <span className="text-foreground/90">본문(text)</span>을
-                          넣으면{" "}
+                          <span className="text-foreground/90">본문(text)</span>
+                          을 넣으면{" "}
                           <span className="text-accent font-medium">
                             자사 NLP 엔진
                           </span>
@@ -5330,8 +5324,8 @@ export default function ApiTestPage() {
                           Review Sentiment API 안내
                         </p>
                         <p className="mt-1.5">
-                          <span className="text-foreground/90">리뷰(text)</span>에
-                          대해{" "}
+                          <span className="text-foreground/90">리뷰(text)</span>
+                          에 대해{" "}
                           <span className="text-accent font-medium">
                             자사 NLP 엔진
                           </span>
@@ -5359,7 +5353,8 @@ export default function ApiTestPage() {
                           <span className="text-accent font-medium">
                             자사 NLP 엔진
                           </span>
-                          이 처리하며, Temperature는 분류 변동폭에 영향을 줍니다.{" "}
+                          이 처리하며, Temperature는 분류 변동폭에 영향을
+                          줍니다.{" "}
                           <span className="font-mono text-[11px] text-foreground/45">
                             POST /api/ner
                           </span>
@@ -5372,8 +5367,8 @@ export default function ApiTestPage() {
                           Text-to-SQL API 안내
                         </p>
                         <p className="mt-1.5">
-                          <span className="text-foreground/90">질문(text)</span>을
-                          MySQL 호환{" "}
+                          <span className="text-foreground/90">질문(text)</span>
+                          을 MySQL 호환{" "}
                           <span className="text-foreground/90">SELECT</span>{" "}
                           <span className="text-foreground/90">sql</span>로
                           바꿉니다. 스키마 없으면 맥락에서 표·컬럼 추정.{" "}
@@ -5385,10 +5380,11 @@ export default function ApiTestPage() {
                             POST /api/text-to-sql
                           </span>
                           가 MySQL 호환{" "}
-                          <span className="text-foreground/90">SELECT</span> 형태의{" "}
-                          <span className="text-foreground/90">sql</span> 문자열로
-                          바꿉니다. 스키마가 없으면 질문 맥락에서 표·컬럼을
-                          추정합니다. Temperature는 문법·표현 변동에 영향을 줍니다.
+                          <span className="text-foreground/90">SELECT</span>{" "}
+                          형태의 <span className="text-foreground/90">sql</span>{" "}
+                          문자열로 바꿉니다. 스키마가 없으면 질문 맥락에서
+                          표·컬럼을 추정합니다. Temperature는 문법·표현 변동에
+                          영향을 줍니다.
                         </p>
                         <p className="mt-2 font-mono text-[11px] text-foreground/50">
                           엔드포인트: POST /api/text2sql
@@ -5864,9 +5860,10 @@ export default function ApiTestPage() {
                             <span className="font-mono text-foreground/70">
                               Authorization
                             </span>{" "}
-                            헤더를 켜세요.
-                            데모 앱은{" "}
-                            <span className="text-foreground/80">/api/copy</span>{" "}
+                            헤더를 켜세요. 데모 앱은{" "}
+                            <span className="text-foreground/80">
+                              /api/copy
+                            </span>{" "}
                             프록시를 통해 광고 카피를 생성합니다.
                           </>
                         }
