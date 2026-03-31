@@ -1195,6 +1195,8 @@ export default function ApiTestPage() {
   const [limitExceededModalOpen, setLimitExceededModalOpen] = useState(false);
   const comingSoonTimerRef = useRef<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  /** localStorage는 클라에만 있어 SSR/첫 페인트와 동일한 네비를 유지 (hydration 오류 방지) */
+  const [navAuthMounted, setNavAuthMounted] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1218,6 +1220,10 @@ export default function ApiTestPage() {
       // 홈 카드에서 들어올 때는 바로 해당 챕터 상세를 보여줌
       setViewMode(view === "list" ? "list" : "detail");
     }
+  }, []);
+
+  useEffect(() => {
+    setNavAuthMounted(true);
   }, []);
 
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -4865,7 +4871,14 @@ export default function ApiTestPage() {
             >
               API 문서
             </Link>
-            {getToken() ? (
+            {!navAuthMounted ? (
+              <Link
+                href="/signup"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              >
+                시작하기
+              </Link>
+            ) : getToken() ? (
               <Link
                 href="/profile"
                 className="text-sm text-foreground/70 transition-colors hover:text-accent"

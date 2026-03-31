@@ -2,17 +2,34 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getToken, removeToken } from "@/lib/token";
 
 export function NavAuthButton() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getToken());
+  const [mounted, setMounted] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setIsLoggedIn(!!getToken());
+  }, []);
 
   function handleLogout() {
     removeToken();
     setIsLoggedIn(false);
     router.refresh();
+  }
+
+  if (!mounted) {
+    return (
+      <Link
+        href="/signup"
+        className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+      >
+        시작하기
+      </Link>
+    );
   }
 
   if (isLoggedIn) {
