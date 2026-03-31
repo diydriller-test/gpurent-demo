@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -11,7 +12,9 @@ import {
 
 const GRID = 64;
 const TOTAL = GRID * GRID;
-const MINT = "16, 185, 129";
+const ROSE_LOW: [number, number, number] = [29, 18, 27];
+const ROSE_MID: [number, number, number] = [104, 43, 77];
+const ROSE_HIGH: [number, number, number] = [232, 136, 138];
 
 function mulberry32(seed: number) {
   return function () {
@@ -27,6 +30,23 @@ function clampDim(v: number): number {
   return Math.max(-1, Math.min(1, v));
 }
 
+function toRgba(rgb: [number, number, number], alpha: number): string {
+  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`;
+}
+
+function mix(
+  from: [number, number, number],
+  to: [number, number, number],
+  t: number,
+): [number, number, number] {
+  const k = Math.max(0, Math.min(1, t));
+  return [
+    Math.round(from[0] + (to[0] - from[0]) * k),
+    Math.round(from[1] + (to[1] - from[1]) * k),
+    Math.round(from[2] + (to[2] - from[2]) * k),
+  ];
+}
+
 function cellBackground(
   mode: "scan" | "data",
   value: number,
@@ -35,13 +55,15 @@ function cellBackground(
 ): string {
   if (mode === "scan") {
     const rnd = mulberry32(index * 2654435761 + scanTick * 1103515245)();
-    const flicker = 0.12 + rnd * 0.55;
-    return `rgba(${MINT}, ${flicker})`;
+    const flicker = 0.24 + rnd * 0.46;
+    const rgb = mix(ROSE_MID, ROSE_HIGH, rnd);
+    return toRgba(rgb, flicker);
   }
   const v = clampDim(value);
   const mag = Math.abs(v);
-  const alpha = 0.06 + mag * 0.94;
-  return `rgba(${MINT}, ${alpha})`;
+  const alpha = 0.28 + mag * 0.72;
+  const rgb = mag < 0.5 ? mix(ROSE_LOW, ROSE_MID, mag * 2) : mix(ROSE_MID, ROSE_HIGH, (mag - 0.5) * 2);
+  return toRgba(rgb, alpha);
 }
 
 type Props = {
@@ -50,6 +72,59 @@ type Props = {
   /** 새 임베딩이 생성될 때마다 바뀌면 DNA 스태거 애니메이션을 다시 실행합니다 */
   animationKey: string | null;
 };
+
+const HeatmapGrid = memo(function HeatmapGrid({
+  mode,
+  padded,
+  revealed,
+  scanTick,
+  onCellPointer,
+  onCellPointerLeave,
+}: {
+  mode: "scan" | "data";
+  padded: Float32Array;
+  revealed: number;
+  scanTick: number;
+  onCellPointer: (e: PointerEvent<HTMLDivElement>, index: number) => void;
+  onCellPointerLeave: () => void;
+}) {
+  return (
+    <div
+      className="grid h-full w-full gap-0"
+      style={{
+        gridTemplateColumns: `repeat(${GRID}, minmax(0, 1fr))`,
+        gridTemplateRows: `repeat(${GRID}, minmax(0, 1fr))`,
+      }}
+    >
+      {Array.from({ length: TOTAL }, (_, i) => {
+        const value = padded[i] ?? 0;
+        const isRevealed = mode === "data" && i < revealed;
+        const bg =
+          mode === "scan"
+            ? cellBackground("scan", 0, i, scanTick)
+            : cellBackground("data", value, i, 0);
+
+        return (
+          <div
+            key={i}
+            className={[
+              "min-h-0 min-w-0 transition-[opacity,background-color] duration-75",
+              mode === "data" && isRevealed
+                ? "opacity-100"
+                : mode === "data"
+                  ? "opacity-0"
+                  : "opacity-100",
+            ].join(" ")}
+            style={{ backgroundColor: bg }}
+            onPointerEnter={(e) => onCellPointer(e, i)}
+            onPointerMove={(e) => onCellPointer(e, i)}
+            onPointerLeave={onCellPointerLeave}
+          />
+        );
+      })}
+    </div>
+  );
+});
 
 export function EmbeddingFingerprintHeatmap({
   vector,
@@ -139,56 +214,71 @@ export function EmbeddingFingerprintHeatmap({
     [mode, vector],
   );
 
+  const tooltipPos = useMemo(() => {
+    if (!hover) return null;
+
+    const pad = 8;
+    const tipW = 170;
+    const tipH = 72;
+
+    // 기본: 커서 바로 위/오른쪽
+    let left = hover.left + 8;
+    let top = hover.top - 8;
+    let tx = "0%";
+    let ty = "-100%";
+
+    if (typeof window !== "undefined") {
+      // 오른쪽 경계에 가까우면 커서 왼쪽으로
+      if (left + tipW > window.innerWidth - pad) {
+        left = hover.left - 8;
+        tx = "-100%";
+      }
+      // 상단 경계에 가까우면 커서 아래로
+      if (top - tipH < pad) {
+        top = hover.top + 8;
+        ty = "0%";
+      }
+    }
+
+    return { left, top, transform: `translate(${tx}, ${ty})` };
+  }, [hover]);
+
+  const handleCellPointerLeave = useCallback(() => {
+    setHover(null);
+  }, []);
+
   return (
     <div className="relative w-full">
       <div
-        className="relative mx-auto aspect-square w-full max-w-[min(100%,360px)] overflow-hidden rounded-xl border border-accent/20 bg-zinc-950/80 shadow-[0_0_48px_rgba(232, 136, 138,0.08)]"
+        className="relative mx-auto aspect-square w-full max-w-[min(100%,300px)] overflow-hidden rounded-xl border border-accent/20 bg-zinc-950/80 shadow-[0_0_48px_rgba(232, 136, 138,0.08)]"
         role="img"
         aria-label="4096차원 임베딩 히트맵, 64×64 그리드"
       >
+        <HeatmapGrid
+          mode={mode}
+          padded={padded}
+          revealed={revealed}
+          scanTick={scanTick}
+          onCellPointer={onCellPointer}
+          onCellPointerLeave={handleCellPointerLeave}
+        />
         <div
-          className="grid h-full w-full gap-0"
+          className="pointer-events-none absolute inset-0"
           style={{
-            gridTemplateColumns: `repeat(${GRID}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${GRID}, minmax(0, 1fr))`,
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px)",
+            backgroundSize: `calc(100% / ${GRID}) calc(100% / ${GRID})`,
           }}
-        >
-          {Array.from({ length: TOTAL }, (_, i) => {
-            const value = padded[i] ?? 0;
-            const isRevealed = mode === "data" && i < revealed;
-            const bg =
-              mode === "scan"
-                ? cellBackground("scan", 0, i, scanTick)
-                : cellBackground("data", value, i, 0);
-
-            return (
-              <div
-                key={i}
-                className={[
-                  "min-h-0 min-w-0 transition-[opacity,background-color] duration-75",
-                  mode === "data" && isRevealed
-                    ? "opacity-100"
-                    : mode === "data"
-                      ? "opacity-0"
-                      : "opacity-100",
-                ].join(" ")}
-                style={{ backgroundColor: bg }}
-                onPointerEnter={(e) => onCellPointer(e, i)}
-                onPointerMove={(e) => onCellPointer(e, i)}
-                onPointerLeave={() => setHover(null)}
-              />
-            );
-          })}
-        </div>
+        />
       </div>
 
-      {hover && mode === "data" ? (
+      {hover && mode === "data" && tooltipPos ? (
         <div
           className="pointer-events-none fixed z-50 rounded-lg border border-accent/40 bg-zinc-950/95 px-3 py-2 text-[11px] shadow-[0_8px_32px_rgba(0,0,0,0.45)] backdrop-blur"
           style={{
-            left: hover.left + 12,
-            top: hover.top + 12,
-            transform: "translate(0, 0)",
+            left: tooltipPos.left,
+            top: tooltipPos.top,
+            transform: tooltipPos.transform,
           }}
         >
           <div className="font-mono text-accent-bright/90">dim #{hover.index}</div>

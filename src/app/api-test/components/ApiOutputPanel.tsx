@@ -239,8 +239,8 @@ export function ApiOutputPanel({
 
           case "embedding":
             return (
-              <div className="space-y-3">
-                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+              <div className="space-y-2">
+                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-3">
                   {embeddingError &&
                   !isEmbeddingLoading &&
                   !embeddingVector ? (
@@ -250,17 +250,17 @@ export function ApiOutputPanel({
                       </p>
                     </div>
                   ) : isEmbeddingLoading || embeddingVector ? (
-                    <div className="mt-3 space-y-3">
-                      <div className="rounded-xl border border-accent/15 bg-zinc-950/40 px-3 py-4">
+                    <div className="mt-2 space-y-2">
+                      <div className="rounded-xl border border-accent/15 bg-zinc-950/40 px-3 py-3">
                         <p className="text-center font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-bright/95">
                           의미적 지문 (Semantic Fingerprint)
                         </p>
                         <p className="mt-1 text-center text-[10px] text-foreground/45">
-                          4,096차원을 64×64 민트 히트맵으로 시각화합니다. 셀에
+                          4,096차원을 64×64 히트맵으로 시각화합니다. 셀에
                           마우스를 올리면 차원 인덱스와 값을 확인할 수 있습니다.
                         </p>
 
-                        <div className="mt-4">
+                        <div className="mt-2.5">
                           <EmbeddingFingerprintHeatmap
                             vector={embeddingVector}
                             isLoading={isEmbeddingLoading}
@@ -270,7 +270,7 @@ export function ApiOutputPanel({
                       </div>
 
                       {embeddingVector && !isEmbeddingLoading ? (
-                        <p className="text-xs text-foreground/60">
+                        <p className="text-[11px] text-foreground/60">
                           이 지문 패턴이 비슷할수록 문장의 의미가 가깝다는 뜻입니다.
                         </p>
                       ) : null}

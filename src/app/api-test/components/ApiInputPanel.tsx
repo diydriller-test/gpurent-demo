@@ -1176,8 +1176,8 @@ export function ApiInputPanel({
               <textarea
                 value={embeddingText}
                 onChange={(e) => setEmbeddingText(e.target.value)}
-                rows={3}
-                className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+                rows={2}
+                className="mt-1.5 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
               />
             </div>
             <div className="flex items-center justify-between gap-3">
