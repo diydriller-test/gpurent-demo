@@ -186,6 +186,26 @@ export const PLAN_TASK_KEYS: PlanTask[] = [
   "STT",
 ];
 
+/** 플랜/마켓 API 카드와 `Api`의 task_key를 매칭 */
+export function getApiTask(api: Api): PlanTask | null {
+  const k = api.task_key;
+  if (
+    k === "Text Generation" ||
+    k === "Ad Copy" ||
+    k === "Text Summary" ||
+    k === "Sentiment Analysis" ||
+    k === "NER" ||
+    k === "Text-to-SQL" ||
+    k === "Embedding" ||
+    k === "Reranker" ||
+    k === "TTS" ||
+    k === "STT"
+  ) {
+    return k;
+  }
+  return inferPlanTask(api.name);
+}
+
 /** 카드 상단: 백엔드 `card_sublabel` 대신 TASK_META 고정 문구 사용 (베이스 모델명 비노출) */
 export const MODU_NLP_SURFACE_TASKS: readonly PlanTask[] = [
   "Ad Copy",

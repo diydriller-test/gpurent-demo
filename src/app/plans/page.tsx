@@ -9,33 +9,14 @@ import {
   chapterQueryToPlanTask,
   DEMO_APIS_FALLBACK,
   DEMO_PLANS_THREE_TIERS,
+  getApiTask,
   getPlanCardDisplay,
   getPlanTaskSublabel,
-  inferPlanTask,
   MODU_NLP_SURFACE_TASKS,
   PLAN_TASK_KEYS,
   type PlanTask,
 } from "./planCatalog";
-import { IconLayers, PlanTaskIcon } from "./TaskFilterIcons";
-
-function getApiTask(api: Api): PlanTask | null {
-  const k = api.task_key;
-  if (
-    k === "Text Generation" ||
-    k === "Ad Copy" ||
-    k === "Text Summary" ||
-    k === "Sentiment Analysis" ||
-    k === "NER" ||
-    k === "Text-to-SQL" ||
-    k === "Embedding" ||
-    k === "Reranker" ||
-    k === "TTS" ||
-    k === "STT"
-  ) {
-    return k;
-  }
-  return inferPlanTask(api.name);
-}
+import { IconLayers, IconUser, PlanTaskIcon } from "./TaskFilterIcons";
 
 /** API 문서(`docs` SECTIONS)와 `PLAN_TASK_KEYS` 순서에 맞춤 */
 function planTaskDocOrderIndex(task: PlanTask | null): number {
@@ -87,16 +68,22 @@ function PlansPageContent() {
       return o;
     },
   );
+  const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
 
-  const isAllTasksActive = useMemo(
+  const allTasksFilterOn = useMemo(
     () => PLAN_TASK_KEYS.every((k) => filterTasks[k]),
     [filterTasks],
   );
 
+  const isAllTasksActive = sidebarMode === "all" && allTasksFilterOn;
+
   const filteredApis = useMemo(() => {
     const filtered = apis.filter((api) => {
+      if (sidebarMode === "my") {
+        return !!user?.api_plans?.some((p) => p.api_id === api.id);
+      }
       const task = getApiTask(api);
-      if (isAllTasksActive) return true;
+      if (allTasksFilterOn) return true;
       if (!task) return false;
       return filterTasks[task];
     });
@@ -107,7 +94,7 @@ function PlansPageContent() {
       if (d !== 0) return d;
       return a.name.localeCompare(b.name, "ko");
     });
-  }, [apis, filterTasks, isAllTasksActive]);
+  }, [apis, filterTasks, allTasksFilterOn, sidebarMode, user]);
 
   useEffect(() => {
     if (!chapterParam) {
@@ -122,6 +109,7 @@ function PlansPageContent() {
     if (!task) return;
 
     if (chapterLinkFilterAppliedRef.current !== chapterParam) {
+      setSidebarMode("all");
       setFilterTasks((prev) => {
         const next = { ...prev } as Record<PlanTask, boolean>;
         PLAN_TASK_KEYS.forEach((k) => {
@@ -406,11 +394,14 @@ function PlansPageContent() {
           ) : filteredApis.length === 0 ? (
             <div className="rounded-2xl border border-white/10 bg-background/20 px-6 py-12 text-center">
               <p className="text-foreground/70">
-                선택한 필터에 해당하는 API가 없습니다.
+                {sidebarMode === "my"
+                  ? "구독 중인 API가 없습니다. 로그인 후 플랜을 구매하면 여기에 표시됩니다."
+                  : "선택한 필터에 해당하는 API가 없습니다."}
               </p>
               <button
                 type="button"
                 onClick={() => {
+                  setSidebarMode("all");
                   setFilterTasks((prev) => {
                     const next = { ...prev };
                     PLAN_TASK_KEYS.forEach((k) => {
@@ -443,6 +434,7 @@ function PlansPageContent() {
                       <button
                         type="button"
                         onClick={() => {
+                          setSidebarMode("all");
                           setFilterTasks((prev) => {
                             const next = { ...prev };
                             PLAN_TASK_KEYS.forEach((k) => {
@@ -474,8 +466,39 @@ function PlansPageContent() {
                         </span>
                       </button>
 
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSidebarMode("my");
+                        }}
+                        className={[
+                          "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
+                          "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
+                          sidebarMode === "my"
+                            ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
+                            : "",
+                        ].join(" ")}
+                      >
+                        <span
+                          className={[
+                            "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
+                            sidebarMode === "my"
+                              ? "border-accent/40 bg-accent/10 text-accent"
+                              : "border-white/10 bg-background/20 text-foreground/70",
+                          ].join(" ")}
+                        >
+                          <IconUser className="h-4 w-4" />
+                        </span>
+                        <span className="font-mono text-[11px] text-foreground/80">
+                          My
+                        </span>
+                      </button>
+
                       {PLAN_TASK_KEYS.map((t) => {
-                        const isActive = filterTasks[t] && !isAllTasksActive;
+                        const isActive =
+                          sidebarMode === "all" &&
+                          filterTasks[t] &&
+                          !allTasksFilterOn;
                         const label =
                           t === "Text Generation"
                             ? "Text"
@@ -494,6 +517,7 @@ function PlansPageContent() {
                             key={t}
                             type="button"
                             onClick={() => {
+                              setSidebarMode("all");
                               setFilterTasks((prev) => {
                                 const next = { ...prev };
                                 PLAN_TASK_KEYS.forEach((k) => {

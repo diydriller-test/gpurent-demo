@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import { useRouter } from "next/navigation";
 import { DEFAULT_AD_COPY_LANGUAGE } from "@/lib/adCopyLanguages";
+import { getApis, getMe, type Api, type User } from "@/lib/api";
 import { getToken } from "@/lib/token";
 import { SmartSolutionGuide } from "./components/SmartSolutionGuide";
 import { JsonCode } from "./components/JsonCode";
@@ -35,7 +36,11 @@ import type {
   TextToSqlPayload,
 } from "./lib/types";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
-import { getPlanTaskSublabel, type PlanTask } from "@/app/plans/planCatalog";
+import {
+  getApiTask,
+  getPlanTaskSublabel,
+  type PlanTask,
+} from "@/app/plans/planCatalog";
 
 type ApiId =
   | "llm"
@@ -277,6 +282,15 @@ function IconLayers(props: { className?: string }) {
       <path d="M12 3l9 5-9 5-9-5 9-5z" />
       <path d="M3 12l9 5 9-5" />
       <path d="M3 16l9 5 9-5" />
+    </IconBase>
+  );
+}
+
+function IconUser(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 11a4 4 0 100-8 4 4 0 000 8z" />
+      <path d="M4 20a8 8 0 0116 0" />
     </IconBase>
   );
 }
@@ -1509,6 +1523,35 @@ export default function ApiTestPage() {
     STT: true,
     Vision: false,
   });
+  const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
+  const [apisFromBackend, setApisFromBackend] = useState<Api[]>([]);
+  const [userMe, setUserMe] = useState<User | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const apis = await getApis();
+        if (!cancelled) setApisFromBackend(apis);
+      } catch {
+        if (!cancelled) setApisFromBackend([]);
+      }
+      if (!getToken()) {
+        if (!cancelled) setUserMe(null);
+        return;
+      }
+      try {
+        const user = await getMe();
+        if (!cancelled) setUserMe(user);
+      } catch {
+        if (!cancelled) setUserMe(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const taskKeys = useMemo<MarketplaceTask[]>(
     () => [
       "Text Generation",
@@ -1566,6 +1609,7 @@ export default function ApiTestPage() {
     if (!targetTask) return;
 
     setViewMode("list");
+    setSidebarMode("all");
     setFilterTasks((prev) => {
       const next = { ...prev };
       taskKeys.forEach((k) => {
@@ -1587,17 +1631,37 @@ export default function ApiTestPage() {
     if (targetTask === "STT") setSelectedApi("stt");
   }, [taskKeys]);
 
+  function resolveMarketplacePlan(item: MarketplaceItem) {
+    if (item.task === "Vision") return null;
+    const task = item.task as PlanTask;
+    const api = apisFromBackend.find((a) => getApiTask(a) === task);
+    if (!api) return null;
+    return userMe?.api_plans?.find((p) => p.api_id === api.id) ?? null;
+  }
+
   const filteredMarketplace = useMemo(() => {
     return marketplaceItems.filter((item) => {
       if (item.task === "Vision") return false;
+      if (sidebarMode === "my") {
+        const plan = resolveMarketplacePlan(item);
+        return plan != null;
+      }
       return filterTasks[item.task];
     });
-  }, [filterTasks, marketplaceItems]);
+  }, [
+    filterTasks,
+    marketplaceItems,
+    sidebarMode,
+    apisFromBackend,
+    userMe,
+  ]);
 
-  const isAllTasksActive = taskKeys.every((t) => filterTasks[t]);
+  const allTasksFilterOn = taskKeys.every((t) => filterTasks[t]);
+  const isAllTasksActive = sidebarMode === "all" && allTasksFilterOn;
 
   const activeTaskKey = useMemo(() => {
-    if (isAllTasksActive) return "All";
+    if (sidebarMode === "my") return "My";
+    if (allTasksFilterOn) return "All";
     const active = taskKeys.find((t) => filterTasks[t]);
     if (!active) return "All";
     if (active === "Text Generation") return "Text";
@@ -1610,7 +1674,7 @@ export default function ApiTestPage() {
     if (active === "Reranker") return "Rerank";
     if (active === "TTS" || active === "STT") return "TTS/STT";
     return "All";
-  }, [filterTasks, isAllTasksActive, taskKeys]);
+  }, [filterTasks, sidebarMode, allTasksFilterOn, taskKeys]);
 
   function renderTaskGuide() {
     switch (activeTaskKey) {
@@ -1619,6 +1683,14 @@ export default function ApiTestPage() {
           <>
             입점된 다양한 API 모델의 성능을 실시간으로 테스트해 볼 수 있는
             체험존입니다. 🚀
+          </>
+        );
+      case "My":
+        return (
+          <>
+            <span className="text-accent font-semibold">내 구독(My)</span>:
+            플랜에서 구매한 API만 모아서 볼 수 있습니다. 로그인 후 구독이 있으면
+            카드에 현재 플랜이 표시됩니다.
           </>
         );
       case "Text":
@@ -2643,6 +2715,7 @@ export default function ApiTestPage() {
   useEffect(() => {
     if (viewMode !== "detail") return;
 
+    setSidebarMode("all");
     setFilterTasks((prev) => {
       const next = { ...prev };
       next["Text Generation"] = selectedApi === "llm";
@@ -4951,6 +5024,7 @@ export default function ApiTestPage() {
                       <button
                         type="button"
                         onClick={() => {
+                          setSidebarMode("all");
                           setFilterTasks((prev) => {
                             const next = { ...prev };
                             taskKeys.forEach((k) => {
@@ -4983,9 +5057,40 @@ export default function ApiTestPage() {
                         </span>
                       </button>
 
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSidebarMode("my");
+                        }}
+                        className={[
+                          "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
+                          "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
+                          sidebarMode === "my"
+                            ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
+                            : "",
+                        ].join(" ")}
+                      >
+                        <span
+                          className={[
+                            "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
+                            sidebarMode === "my"
+                              ? "border-accent/40 bg-accent/10 text-accent"
+                              : "border-white/10 bg-background/20 text-foreground/70",
+                          ].join(" ")}
+                        >
+                          <IconUser className="h-4 w-4" />
+                        </span>
+                        <span className="font-mono text-[11px] text-foreground/80">
+                          My
+                        </span>
+                      </button>
+
                       {taskKeys.map((t) => {
                         // "All"이 켜져 있을 때는 전 태스크가 true라서, 개별 버튼은 강조하지 않음
-                        const isActive = filterTasks[t] && !isAllTasksActive;
+                        const isActive =
+                          sidebarMode === "all" &&
+                          filterTasks[t] &&
+                          !allTasksFilterOn;
                         const label =
                           t === "Text Generation"
                             ? "Text"
@@ -5006,6 +5111,7 @@ export default function ApiTestPage() {
                             key={t}
                             type="button"
                             onClick={() => {
+                              setSidebarMode("all");
                               setFilterTasks((prev) => {
                                 const next = { ...prev };
                                 taskKeys.forEach((k) => {
@@ -5080,7 +5186,9 @@ export default function ApiTestPage() {
                 </div>
 
                 <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {filteredMarketplace.map((item) => (
+                  {filteredMarketplace.map((item) => {
+                    const currentPlan = resolveMarketplacePlan(item);
+                    return (
                     <button
                       key={item.id}
                       type="button"
@@ -5115,6 +5223,13 @@ export default function ApiTestPage() {
                         ))}
                       </div>
 
+                      {currentPlan ? (
+                        <p className="mt-3 rounded-lg bg-accent/10 px-2.5 py-1.5 text-[11px] font-medium text-accent">
+                          현재: {currentPlan.plan_name} ({currentPlan.max_rps}{" "}
+                          RPS)
+                        </p>
+                      ) : null}
+
                       <div className="mt-auto flex items-center justify-start gap-2 pt-4">
                         <span className="text-xs text-foreground/50">
                           테스트 하러가기
@@ -5124,7 +5239,8 @@ export default function ApiTestPage() {
                         </span>
                       </div>
                     </button>
-                  ))}
+                    );
+                  })}
 
                   {/* Register Your API */}
                   <button
@@ -5187,6 +5303,7 @@ export default function ApiTestPage() {
                     <button
                       type="button"
                       onClick={() => {
+                        setSidebarMode("all");
                         setFilterTasks({
                           "Text Generation": selectedApi === "llm",
                           "Ad Copy": selectedApi === "adCopy",

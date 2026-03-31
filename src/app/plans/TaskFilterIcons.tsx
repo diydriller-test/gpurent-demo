@@ -46,6 +46,15 @@ export function IconLayers(props: { className?: string }) {
   );
 }
 
+export function IconUser(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 11a4 4 0 100-8 4 4 0 000 8z" />
+      <path d="M4 20a8 8 0 0116 0" />
+    </IconBase>
+  );
+}
+
 export function IconShuffle(props: { className?: string }) {
   return (
     <IconBase {...props}>
