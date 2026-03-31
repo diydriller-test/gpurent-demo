@@ -3069,6 +3069,17 @@ export default function ApiTestPage() {
       });
   }
 
+  function handleTtsSave() {
+    if (!audioUrl || typeof document === "undefined") return;
+
+    const link = document.createElement("a");
+    link.href = audioUrl;
+    link.download = `ai-api-omakase-tts-${Date.now()}.wav`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
   async function startRecording() {
     if (isRecording) return;
     setSttError(null);
@@ -5606,6 +5617,7 @@ export default function ApiTestPage() {
                         ttsAudioUrl={audioUrl}
                         ttsIsSynthesizing={isSynthesizing}
                         ttsMockResponse={mockResponse}
+                        handleTtsSave={handleTtsSave}
                         IconPlay={IconPlay}
                         IconPause={IconPause}
                         sttTranscript={sttTranscript}

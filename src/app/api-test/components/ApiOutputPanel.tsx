@@ -42,6 +42,7 @@ type Props = {
   ttsAudioUrl: string | null;
   ttsIsSynthesizing: boolean;
   ttsMockResponse: Record<string, unknown> | null;
+  handleTtsSave: () => void;
   IconPlay: React.ComponentType<{ className?: string }>;
   IconPause: React.ComponentType<{ className?: string }>;
 
@@ -83,6 +84,7 @@ export function ApiOutputPanel({
   ttsAudioUrl,
   ttsIsSynthesizing,
   ttsMockResponse,
+  handleTtsSave,
   IconPlay,
   IconPause,
   sttTranscript,
@@ -452,7 +454,7 @@ export function ApiOutputPanel({
 
           case "tts":
             return (
-              <div className="space-y-3">
+              <div className="min-w-0 space-y-3">
                 <audio
                   ref={ttsAudioRef}
                   src={ttsAudioUrl ?? undefined}
@@ -460,11 +462,43 @@ export function ApiOutputPanel({
                   className="hidden"
                 />
                 <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
-                  <p className="font-mono text-xs text-accent">Audio Player</p>
-                  <p className="mt-1 text-sm font-semibold text-foreground">
-                    합성 후 실제 오디오 재생 · 진행률은 재생 시간에 따라
-                    갱신됩니다.
-                  </p>
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-xs text-accent">Audio Player</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        합성 후 실제 오디오 재생 · 진행률은 재생 시간에 따라
+                        갱신됩니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleTtsSave}
+                      disabled={!ttsAudioUrl}
+                      title="합성 음성 파일 저장"
+                      className={[
+                        "inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors",
+                        ttsAudioUrl
+                          ? "border-accent/45 bg-background/35 text-accent hover:border-accent/70 hover:bg-accent/10"
+                          : "cursor-not-allowed border-white/10 bg-background/20 text-foreground/35",
+                      ].join(" ")}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-3.5 w-3.5"
+                        aria-hidden="true"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <path d="M7 10l5 5 5-5" />
+                        <path d="M12 15V3" />
+                      </svg>
+                      <span className="whitespace-nowrap">녹음 결과 저장</span>
+                    </button>
+                  </div>
 
                   <div
                     className={[
