@@ -1,22 +1,15 @@
 import { NextResponse } from "next/server";
 import { resolveUpstreamBasePath } from "../_lib/upstream";
 
-type NerBody = {
+type TextToSqlBody = {
   text?: unknown;
+  schema?: unknown;
   temperature?: unknown;
 };
 
-export type NerEntity = {
-  /** 원문에서의 표면 형태 */
-  text: string;
-  /** 짧은 태그 (예: PER, LOC, ORG, DAT, MON) */
-  label: string;
-  /** 범주 설명 (영문·한글 가능, 예: Person / 인물) */
-  category: string;
-};
-
-export type NerResult = {
-  entities: NerEntity[];
+export type TextToSqlResult = {
+  /** 생성된 SQL 한 문장(또는 세미콜론 없이 단일 쿼리) */
+  sql: string;
 };
 
 function parseTemperatureOptional(value: unknown): number | undefined {
@@ -27,43 +20,36 @@ function parseTemperatureOptional(value: unknown): number | undefined {
   return undefined;
 }
 
-function normalizeEntity(raw: unknown): NerEntity | null {
-  if (!raw || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
-  const text = typeof o.text === "string" ? o.text.trim() : "";
-  const label = typeof o.label === "string" ? o.label.trim() : "";
-  const category = typeof o.category === "string" ? o.category.trim() : "";
-  if (!text || !label || !category) return null;
-  return { text, label, category };
+function asOptionalString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
 }
 
-function normalizePayload(data: unknown): NerResult | null {
+function normalizePayload(data: unknown): TextToSqlResult | null {
   if (!data || typeof data !== "object") return null;
   const o = data as Record<string, unknown>;
-  const raw = Array.isArray(o.entities) ? o.entities : [];
-  const entities = raw
-    .map((e) => normalizeEntity(e))
-    .filter((x): x is NerEntity => x !== null);
-  return { entities };
+  const sql = typeof o.sql === "string" ? o.sql.trim() : "";
+  if (!sql) return null;
+  return { sql };
 }
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json().catch(() => null)) as NerBody | null;
+    const body = (await req.json().catch(() => null)) as TextToSqlBody | null;
 
     const text =
       typeof body?.text === "string" ? body.text.trim() : "";
     if (!text) {
       return NextResponse.json(
-        { error: "text(분석할 문장)를 문자열로 보내주세요." },
+        { error: "text(자연어 질문)를 문자열로 보내주세요." },
         { status: 400 },
       );
     }
 
+    const schema = asOptionalString(body?.schema);
     const temperature = parseTemperatureOptional(body?.temperature);
 
     const upstreamBasePath = await resolveUpstreamBasePath(req);
-    const upstreamUrl = `${upstreamBasePath}/ner/api/ner`;
+    const upstreamUrl = `${upstreamBasePath}/sql/api/text2sql`;
 
     const authHeader = req.headers.get("authorization");
     const upstreamRes = await fetch(upstreamUrl, {
@@ -74,6 +60,7 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         text,
+        ...(schema ? { schema } : {}),
         ...(typeof temperature === "number" ? { temperature } : {}),
       }),
       cache: "no-store",
@@ -89,24 +76,24 @@ export async function POST(req: Request) {
           ? "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요."
           : (upstreamJson as { error?: string; message?: string })?.error ||
             (upstreamJson as { error?: string; message?: string })?.message ||
-            "NER API 요청 실패";
+            "Text2SQL API 요청 실패";
       return NextResponse.json({ error: message }, { status });
     }
 
     const normalized = normalizePayload(upstreamJson);
     if (!normalized) {
       return NextResponse.json(
-        { error: "NER 결과 형식이 올바르지 않습니다." },
+        { error: "SQL 결과 형식이 올바르지 않습니다." },
         { status: 502 },
       );
     }
 
     return NextResponse.json(normalized);
   } catch (error: unknown) {
-    console.error("NER API Error:", error);
+    console.error("Text-to-SQL API Error:", error);
     if (error instanceof Error && error.name === "TimeoutError") {
       return NextResponse.json(
-        { error: "NER 요청이 시간 초과되었습니다." },
+        { error: "Text2SQL 요청이 시간 초과되었습니다." },
         { status: 504 },
       );
     }

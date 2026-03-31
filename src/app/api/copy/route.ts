@@ -1,22 +1,16 @@
 import { NextResponse } from "next/server";
 import { resolveUpstreamBasePath } from "../_lib/upstream";
 
-type NerBody = {
-  text?: unknown;
+type AdCopyBody = {
+  brief?: unknown;
+  toneLine?: unknown;
+  channelLine?: unknown;
   temperature?: unknown;
 };
 
-export type NerEntity = {
-  /** 원문에서의 표면 형태 */
-  text: string;
-  /** 짧은 태그 (예: PER, LOC, ORG, DAT, MON) */
-  label: string;
-  /** 범주 설명 (영문·한글 가능, 예: Person / 인물) */
-  category: string;
-};
-
-export type NerResult = {
-  entities: NerEntity[];
+export type AdCopyResult = {
+  headline: string;
+  body: string;
 };
 
 function parseTemperatureOptional(value: unknown): number | undefined {
@@ -27,43 +21,44 @@ function parseTemperatureOptional(value: unknown): number | undefined {
   return undefined;
 }
 
-function normalizeEntity(raw: unknown): NerEntity | null {
-  if (!raw || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
-  const text = typeof o.text === "string" ? o.text.trim() : "";
-  const label = typeof o.label === "string" ? o.label.trim() : "";
-  const category = typeof o.category === "string" ? o.category.trim() : "";
-  if (!text || !label || !category) return null;
-  return { text, label, category };
+function asOptionalString(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+  return "";
 }
 
-function normalizePayload(data: unknown): NerResult | null {
+function normalizePayload(data: unknown): AdCopyResult | null {
   if (!data || typeof data !== "object") return null;
   const o = data as Record<string, unknown>;
-  const raw = Array.isArray(o.entities) ? o.entities : [];
-  const entities = raw
-    .map((e) => normalizeEntity(e))
-    .filter((x): x is NerEntity => x !== null);
-  return { entities };
+  const headline = typeof o.headline === "string" ? o.headline.trim() : "";
+  const body = typeof o.body === "string" ? o.body.trim() : "";
+  if (!headline || !body) return null;
+  return { headline, body };
 }
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json().catch(() => null)) as NerBody | null;
+    const body = (await req.json().catch(() => null)) as AdCopyBody | null;
 
-    const text =
-      typeof body?.text === "string" ? body.text.trim() : "";
-    if (!text) {
+    const brief =
+      typeof body?.brief === "string" ? body.brief.trim() : "";
+    if (!brief) {
       return NextResponse.json(
-        { error: "text(분석할 문장)를 문자열로 보내주세요." },
+        { error: "brief(제품·서비스 브리프)를 문자열로 보내주세요." },
         { status: 400 },
       );
     }
 
+    const toneLine =
+      asOptionalString(body?.toneLine) ||
+      "(지정 없음 — 적절한 톤을 선택하세요)";
+    const channelLine =
+      asOptionalString(body?.channelLine) ||
+      "(지정 없음 — 범용 카피로 작성하세요)";
+
     const temperature = parseTemperatureOptional(body?.temperature);
 
     const upstreamBasePath = await resolveUpstreamBasePath(req);
-    const upstreamUrl = `${upstreamBasePath}/ner/api/ner`;
+    const upstreamUrl = `${upstreamBasePath}/copywrite/api/copy`;
 
     const authHeader = req.headers.get("authorization");
     const upstreamRes = await fetch(upstreamUrl, {
@@ -73,7 +68,9 @@ export async function POST(req: Request) {
         ...(authHeader ? { Authorization: authHeader } : {}),
       },
       body: JSON.stringify({
-        text,
+        brief,
+        toneLine,
+        channelLine,
         ...(typeof temperature === "number" ? { temperature } : {}),
       }),
       cache: "no-store",
@@ -89,24 +86,24 @@ export async function POST(req: Request) {
           ? "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요."
           : (upstreamJson as { error?: string; message?: string })?.error ||
             (upstreamJson as { error?: string; message?: string })?.message ||
-            "NER API 요청 실패";
+            "카피 API 요청 실패";
       return NextResponse.json({ error: message }, { status });
     }
 
     const normalized = normalizePayload(upstreamJson);
     if (!normalized) {
       return NextResponse.json(
-        { error: "NER 결과 형식이 올바르지 않습니다." },
+        { error: "카피 결과 형식이 올바르지 않습니다." },
         { status: 502 },
       );
     }
 
     return NextResponse.json(normalized);
   } catch (error: unknown) {
-    console.error("NER API Error:", error);
+    console.error("Ad copy API Error:", error);
     if (error instanceof Error && error.name === "TimeoutError") {
       return NextResponse.json(
-        { error: "NER 요청이 시간 초과되었습니다." },
+        { error: "카피 요청이 시간 초과되었습니다." },
         { status: 504 },
       );
     }

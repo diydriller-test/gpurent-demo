@@ -1,22 +1,10 @@
-import { ChatOpenAI } from "@langchain/openai";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
 import { NextResponse } from "next/server";
-import { getVllmOpenAiConfig } from "../_lib/vllm";
+import { resolveUpstreamBasePath } from "../_lib/upstream";
 
 type SummarizeBody = {
   text?: unknown;
-  temperature?: unknown;
-  style?: unknown;
+  styleLine?: unknown;
 };
-
-function parseTemperature(value: unknown): number {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string" && Number.isFinite(Number(value))) {
-    return Number(value);
-  }
-  return 0.3;
-}
 
 function asOptionalString(value: unknown): string {
   if (typeof value === "string") return value.trim();
@@ -36,63 +24,58 @@ export async function POST(req: Request) {
       );
     }
 
-    const style = asOptionalString(body?.style);
+    const styleLineInput = asOptionalString(body?.styleLine);
     const styleLine =
-      style ||
+      styleLineInput ||
       "(지정 없음 — 문맥에 맞게 한두 문단 또는 불릿 형태로 요약하세요)";
-    const parsedTemperature = parseTemperature(body?.temperature);
 
-    const { baseURL, apiKey } = getVllmOpenAiConfig();
+    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const upstreamUrl = `${upstreamBasePath}/summarize/api/summarize`;
 
-    const llm = new ChatOpenAI({
-      apiKey,
-      configuration: { baseURL },
-      model: "openai/gpt-oss-120b",
-      temperature: parsedTemperature,
-      timeout: 120_000,
+    const authHeader = req.headers.get("authorization");
+    const upstreamRes = await fetch(upstreamUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
+      body: JSON.stringify({ text, styleLine }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(120_000),
     });
 
-    const prompt = ChatPromptTemplate.fromTemplate(`당신은 한국어 텍스트 요약 전문가입니다.
-아래 본문을 읽고 핵심만 추려 짧게 압축하세요. 리뷰·뉴스·회의록·긴 설명문 등 비정형 텍스트를 정리하는 데 활용됩니다.
+    const upstreamJson = (await upstreamRes.json().catch(() => null)) as unknown;
 
-[원문]
-{text}
+    if (!upstreamRes.ok) {
+      const status = upstreamRes.status || 500;
+      const message =
+        status === 429
+          ? "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요."
+          : (upstreamJson as { error?: string; message?: string })?.error ||
+            (upstreamJson as { error?: string; message?: string })?.message ||
+            "요약 API 요청 실패";
+      return NextResponse.json({ error: message }, { status });
+    }
 
-[요약 형식·톤 지시]
-{styleLine}
+    const summary =
+      typeof (upstreamJson as { summary?: unknown } | null)?.summary === "string"
+        ? ((upstreamJson as { summary?: string }).summary ?? "").trim()
+        : "";
 
-요구사항:
-- 원문에 없는 사실을 지어내지 말 것
-- 핵심 메시지·결론·행동 항목이 있으면 드러낼 것
-- 출력은 한국어만 사용
-- 불필요한 메타 문장(“다음은 요약입니다” 등)은 생략`);
-
-    const chain = prompt.pipe(llm).pipe(new StringOutputParser());
-
-    const summary = await chain.invoke({
-      text,
-      styleLine,
-    });
+    if (!summary) {
+      return NextResponse.json(
+        { error: "요약 응답 형식이 올바르지 않습니다." },
+        { status: 502 },
+      );
+    }
 
     return NextResponse.json({ summary });
   } catch (error: unknown) {
     console.error("Summarize API Error:", error);
-    const err = error as {
-      response?: { status?: number };
-      status?: number;
-      message?: string;
-    };
-    const msg = String(err?.message ?? "").toLowerCase();
-    const is429 =
-      err?.response?.status === 429 ||
-      err?.status === 429 ||
-      msg.includes("429") ||
-      msg.includes("rate limit") ||
-      msg.includes("too many requests");
-    if (is429) {
+    if (error instanceof Error && error.name === "TimeoutError") {
       return NextResponse.json(
-        { error: "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요." },
-        { status: 429 },
+        { error: "요약 요청이 시간 초과되었습니다." },
+        { status: 504 },
       );
     }
     return NextResponse.json(

@@ -3427,7 +3427,7 @@ export default function ApiTestPage() {
     });
     try {
       const token = getToken();
-      const res = await fetch("/api/ad-copy", {
+      const res = await fetch("/api/copy", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3435,14 +3435,15 @@ export default function ApiTestPage() {
         },
         body: JSON.stringify({
           brief,
-          tone: adCopyTone.trim() || undefined,
-          channel: adCopyChannel.trim() || undefined,
+          toneLine: adCopyTone.trim() || undefined,
+          channelLine: adCopyChannel.trim() || undefined,
           temperature: adCopyTemperature,
           language: adCopyLanguage,
         }),
       });
       const data = (await res.json().catch(() => null)) as {
-        copy?: unknown;
+        headline?: unknown;
+        body?: unknown;
         error?: unknown;
       } | null;
       patchConsole("adCopy", {
@@ -3457,8 +3458,11 @@ export default function ApiTestPage() {
         );
         return;
       }
-      const copy = typeof data?.copy === "string" ? data.copy.trim() : "";
-      setAdCopyResult(copy || "응답이 비어있습니다.");
+      const headline =
+        typeof data?.headline === "string" ? data.headline.trim() : "";
+      const body = typeof data?.body === "string" ? data.body.trim() : "";
+      const composed = [headline, body].filter(Boolean).join("\n\n");
+      setAdCopyResult(composed || "응답이 비어있습니다.");
     } catch {
       patchConsole("adCopy", {
         statusLine: "—",
@@ -3726,7 +3730,7 @@ export default function ApiTestPage() {
     });
     try {
       const token = getToken();
-      const res = await fetch("/api/text-to-sql", {
+      const res = await fetch("/api/text2sql", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -4173,8 +4177,8 @@ export default function ApiTestPage() {
       if (targetApi === "adCopy") {
         const body = parsed as {
           brief?: unknown;
-          tone?: unknown;
-          channel?: unknown;
+          toneLine?: unknown;
+          channelLine?: unknown;
           temperature?: unknown;
           language?: unknown;
         };
@@ -4193,9 +4197,10 @@ export default function ApiTestPage() {
           return;
         }
 
-        const tone = typeof body.tone === "string" ? body.tone.trim() : "";
+        const tone =
+          typeof body.toneLine === "string" ? body.toneLine.trim() : "";
         const channel =
-          typeof body.channel === "string" ? body.channel.trim() : "";
+          typeof body.channelLine === "string" ? body.channelLine.trim() : "";
         const parsedTemperature =
           typeof body.temperature === "number" &&
           Number.isFinite(body.temperature)
@@ -4221,7 +4226,7 @@ export default function ApiTestPage() {
 
         try {
           const token = getToken();
-          const res = await fetch("/api/ad-copy", {
+          const res = await fetch("/api/copy", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -4229,14 +4234,15 @@ export default function ApiTestPage() {
             },
             body: JSON.stringify({
               brief,
-              tone: tone || undefined,
-              channel: channel || undefined,
+              toneLine: tone || undefined,
+              channelLine: channel || undefined,
               temperature: parsedTemperature,
               language: parsedLanguage,
             }),
           });
           const data = (await res.json().catch(() => null)) as {
-            copy?: unknown;
+            headline?: unknown;
+            body?: unknown;
             error?: unknown;
           } | null;
           patchConsole("adCopy", {
@@ -4255,8 +4261,11 @@ export default function ApiTestPage() {
             );
             return;
           }
-          const copy = typeof data?.copy === "string" ? data.copy.trim() : "";
-          setAdCopyResult(copy || "응답이 비어있습니다.");
+          const headline =
+            typeof data?.headline === "string" ? data.headline.trim() : "";
+          const copyBody = typeof data?.body === "string" ? data.body.trim() : "";
+          const composed = [headline, copyBody].filter(Boolean).join("\n\n");
+          setAdCopyResult(composed || "응답이 비어있습니다.");
         } catch {
           patchConsole("adCopy", {
             statusLine: "—",
@@ -4568,7 +4577,7 @@ export default function ApiTestPage() {
 
         try {
           const token = getToken();
-          const res = await fetch("/api/text-to-sql", {
+          const res = await fetch("/api/text2sql", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -5282,6 +5291,11 @@ export default function ApiTestPage() {
                           <span className="font-mono text-[11px] text-foreground/45">
                             POST /api/ad-copy
                           </span>
+                          를 생성합니다. Temperature로 문구의 다양성을 조절할 수
+                          있어요.
+                        </p>
+                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
+                          엔드포인트: POST /api/copy
                         </p>
                       </div>
                     ) : null}
@@ -5366,6 +5380,14 @@ export default function ApiTestPage() {
                           <span className="font-mono text-[11px] text-foreground/45">
                             POST /api/text-to-sql
                           </span>
+                          가 MySQL 호환{" "}
+                          <span className="text-foreground/90">SELECT</span> 형태의{" "}
+                          <span className="text-foreground/90">sql</span> 문자열로
+                          바꿉니다. 스키마가 없으면 질문 맥락에서 표·컬럼을
+                          추정합니다. Temperature는 문법·표현 변동에 영향을 줍니다.
+                        </p>
+                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
+                          엔드포인트: POST /api/text2sql
                         </p>
                       </div>
                     ) : null}
@@ -5627,7 +5649,7 @@ export default function ApiTestPage() {
                             : selectedApi === "reranker"
                               ? "/api/rerank"
                               : selectedApi === "adCopy"
-                                ? "/api/ad-copy"
+                                ? "/api/copy"
                                 : selectedApi === "summarize"
                                   ? "/api/summarize"
                                   : selectedApi === "sentiment"
@@ -5635,7 +5657,7 @@ export default function ApiTestPage() {
                                     : selectedApi === "ner"
                                       ? "/api/ner"
                                       : selectedApi === "textToSql"
-                                        ? "/api/text-to-sql"
+                                        ? "/api/text2sql"
                                         : selectedApi === "stt"
                                           ? "/api/stt"
                                           : selectedApi === "tts"
@@ -5839,6 +5861,9 @@ export default function ApiTestPage() {
                               Authorization
                             </span>{" "}
                             헤더를 켜세요.
+                            데모 앱은{" "}
+                            <span className="text-foreground/80">/api/copy</span>{" "}
+                            프록시를 통해 광고 카피를 생성합니다.
                           </>
                         }
                       />
@@ -5902,7 +5927,7 @@ export default function ApiTestPage() {
                           <>
                             데모 앱은{" "}
                             <span className="text-foreground/80">
-                              /api/text-to-sql
+                              /api/text2sql
                             </span>{" "}
                             프록시를 통해 자연어→SQL 결과를 반환합니다.
                           </>

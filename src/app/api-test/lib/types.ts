@@ -21,7 +21,7 @@ export type NerPayload = {
   entities: Array<{ text: string; label: string; category: string }>;
 };
 
-/** POST /api/text-to-sql 응답과 동일 구조 */
+/** POST /api/text2sql 응답과 동일 구조 */
 export type TextToSqlPayload = {
   sql: string;
 };

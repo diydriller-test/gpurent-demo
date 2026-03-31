@@ -1,8 +1,5 @@
-import { ChatOpenAI } from "@langchain/openai";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
 import { NextResponse } from "next/server";
-import { getVllmOpenAiConfig } from "../_lib/vllm";
+import { resolveUpstreamBasePath } from "../_lib/upstream";
 
 type SentimentBody = {
   text?: unknown;
@@ -27,24 +24,12 @@ export type SentimentAnalysisResult = {
   aspects: SentimentAspect[];
 };
 
-function parseTemperature(value: unknown): number {
+function parseTemperatureOptional(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string" && Number.isFinite(Number(value))) {
     return Number(value);
   }
-  return 0.2;
-}
-
-function extractJsonObject(raw: string): unknown {
-  const trimmed = raw.trim();
-  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  const candidate = fenced ? fenced[1].trim() : trimmed;
-  const start = candidate.indexOf("{");
-  const end = candidate.lastIndexOf("}");
-  if (start === -1 || end === -1 || end <= start) {
-    throw new SyntaxError("JSON object not found");
-  }
-  return JSON.parse(candidate.slice(start, end + 1));
+  return undefined;
 }
 
 function isSentimentLabel(v: unknown): v is SentimentLabel {
@@ -112,61 +97,40 @@ export async function POST(req: Request) {
       );
     }
 
-    const parsedTemperature = parseTemperature(body?.temperature);
+    const temperature = parseTemperatureOptional(body?.temperature);
 
-    const { baseURL, apiKey } = getVllmOpenAiConfig();
+    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const upstreamUrl = `${upstreamBasePath}/sentiment/api/sentiment`;
 
-    const llm = new ChatOpenAI({
-      apiKey,
-      configuration: { baseURL },
-      model: "openai/gpt-oss-120b",
-      temperature: parsedTemperature,
-      timeout: 120_000,
+    const authHeader = req.headers.get("authorization");
+    const upstreamRes = await fetch(upstreamUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
+      body: JSON.stringify({
+        text,
+        ...(typeof temperature === "number" ? { temperature } : {}),
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(120_000),
     });
 
-    const prompt = ChatPromptTemplate.fromTemplate(`당신은 한국어 고객 리뷰 감정 분석 전문가입니다.
-아래 텍스트의 문맥을 읽고, 작성자의 감정을 긍정·부정·중립으로 분류하고, 근거가 될 만큼 구체적인 점수로 수치화합니다.
-복합적인 리뷰(예: 음식은 좋고 배송은 나쁨)인 경우 **측면(aspect)별**로 나누어 분석합니다.
+    const upstreamJson = (await upstreamRes.json().catch(() => null)) as unknown;
 
-[분석 대상 텍스트]
-{text}
-
-출력 형식 (반드시 아래 JSON만 출력. 다른 설명·마크다운·코드펜스 금지):
-{{
-  "overall": {{
-    "label": "positive" | "negative" | "neutral",
-    "score": 0.0에서 1.0 사이의 실수 (1에 가까울수록 긍정, 0에 가까울수록 부정, 중립은 대략 0.4~0.6)
-  }},
-  "aspects": [
-    {{
-      "aspect": "한글로 짧은 측면 이름 (예: 음식, 배송, 시설, 색감, 만족도)",
-      "label": "positive" | "negative" | "neutral",
-      "score": 0.0~1.0
-    }}
-  ]
-}}
-
-규칙:
-- 원문에 없는 사실을 지어내지 말 것
-- aspects는 문맥상 구분되는 주제가 있으면 2개 이상 채우고, 짧은 단일 감정 문장이면 1개 또는 빈 배열 가능
-- score는 해당 측면에 대한 **긍정적 극성**으로 통일 (높을수록 그 측면에 대한 만족·호의)
-- JSON 키 이름과 label 값은 위 스키마를 정확히 따를 것`);
-
-    const chain = prompt.pipe(llm).pipe(new StringOutputParser());
-
-    const raw = await chain.invoke({ text });
-
-    let parsed: unknown;
-    try {
-      parsed = extractJsonObject(raw);
-    } catch {
-      return NextResponse.json(
-        { error: "모델 응답을 JSON으로 해석하지 못했습니다." },
-        { status: 502 },
-      );
+    if (!upstreamRes.ok) {
+      const status = upstreamRes.status || 500;
+      const message =
+        status === 429
+          ? "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요."
+          : (upstreamJson as { error?: string; message?: string })?.error ||
+            (upstreamJson as { error?: string; message?: string })?.message ||
+            "감정 분석 API 요청 실패";
+      return NextResponse.json({ error: message }, { status });
     }
 
-    const normalized = normalizePayload(parsed);
+    const normalized = normalizePayload(upstreamJson);
     if (!normalized) {
       return NextResponse.json(
         { error: "감정 분석 결과 형식이 올바르지 않습니다." },
@@ -177,22 +141,10 @@ export async function POST(req: Request) {
     return NextResponse.json(normalized);
   } catch (error: unknown) {
     console.error("Sentiment API Error:", error);
-    const err = error as {
-      response?: { status?: number };
-      status?: number;
-      message?: string;
-    };
-    const msg = String(err?.message ?? "").toLowerCase();
-    const is429 =
-      err?.response?.status === 429 ||
-      err?.status === 429 ||
-      msg.includes("429") ||
-      msg.includes("rate limit") ||
-      msg.includes("too many requests");
-    if (is429) {
+    if (error instanceof Error && error.name === "TimeoutError") {
       return NextResponse.json(
-        { error: "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요." },
-        { status: 429 },
+        { error: "감정 분석 요청이 시간 초과되었습니다." },
+        { status: 504 },
       );
     }
     return NextResponse.json(

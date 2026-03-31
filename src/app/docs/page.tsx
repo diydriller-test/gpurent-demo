@@ -47,12 +47,13 @@ const SECTIONS: DocSection[] = [
     id: "ad-copy",
     title: "광고 카피라이팅",
     method: "POST",
-    path: "/api/ad-copy",
+    path: "/api/copy",
     description:
       "자사 광고 카피 생성 엔진으로 브리프·톤·채널에 맞는 문구를 생성합니다. `language`로 출력 언어를 지정할 수 있습니다.",
     requestLabel: "본문 (application/json)",
     request: `{
   "brief": "제품·서비스 설명(필수)",
+<<<<<<< HEAD
   "tone": "친근 / 전문 등 (선택)",
   "channel": "배너, SNS 등 (선택)",
   "temperature": 0.7,
@@ -61,6 +62,16 @@ const SECTIONS: DocSection[] = [
     responseLabel: "성공 (200)",
     response: `{
   "copy": "생성된 광고 카피 (지정 언어)"
+=======
+  "toneLine": "친근 / 전문 등 (선택)",
+  "channelLine": "배너, SNS 등 (선택)",
+  "temperature": 0.7
+}`,
+    responseLabel: "성공 (200)",
+    response: `{
+  "headline": "짧고 임팩트 있는 메인 카피 한 줄",
+  "body": "보조 설명/본문 카피 1~2문장"
+>>>>>>> bf39ed3 (feat: llm wrapping 연동)
 }`,
     notes: [
       "`brief`만 필수입니다. `language`는 `ko`, `en`, `ja`, `zh` 등 지원 코드(생략 시 ko).",
@@ -142,12 +153,13 @@ const SECTIONS: DocSection[] = [
     id: "text-to-sql",
     title: "Text-to-SQL (쿼리 자동 생성)",
     method: "POST",
-    path: "/api/text-to-sql",
+    path: "/api/text2sql",
     description:
       "자연어 질문을 MySQL 호환 SELECT 문으로 변환합니다. 스키마가 없으면 질문 맥락에서 테이블·컬럼을 추정합니다.",
     requestLabel: "본문 (application/json)",
     request: `{
   "text": "데이터베이스에 묻고 싶은 질문(필수)",
+  "schema": "스키마(선택)",
   "temperature": 0.2
 }`,
     responseLabel: "성공 (200)",
