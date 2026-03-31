@@ -186,6 +186,15 @@ export const PLAN_TASK_KEYS: PlanTask[] = [
   "STT",
 ];
 
+/** 카드 상단: 백엔드 `card_sublabel` 대신 TASK_META 고정 문구 사용 (베이스 모델명 비노출) */
+export const MODU_NLP_SURFACE_TASKS: readonly PlanTask[] = [
+  "Ad Copy",
+  "Text Summary",
+  "Sentiment Analysis",
+  "NER",
+  "Text-to-SQL",
+];
+
 const TASK_META: Record<
   PlanTask,
   { sublabel: string; modelDisplay: string; tags: string[] }
@@ -196,29 +205,29 @@ const TASK_META: Record<
     tags: ["#LLM", "#Text-Gen"],
   },
   "Ad Copy": {
-    sublabel: "Modu NLP • Ad Copy",
-    modelDisplay: "Modu NLP Engine",
-    tags: ["#Ad-Copy", "#LLM", "#Marketing"],
+    sublabel: "광고 카피",
+    modelDisplay: "CopyWrite",
+    tags: ["#Ad-Copy", "#Marketing"],
   },
   "Text Summary": {
-    sublabel: "Modu NLP • Text Summary",
-    modelDisplay: "Modu NLP Engine",
-    tags: ["#Summary", "#LLM", "#NLP"],
+    sublabel: "텍스트 요약",
+    modelDisplay: "Summarize",
+    tags: ["#Summary", "#NLP"],
   },
   "Sentiment Analysis": {
-    sublabel: "Modu NLP • Sentiment",
-    modelDisplay: "Modu NLP Engine",
-    tags: ["#Sentiment", "#LLM", "#Reviews"],
+    sublabel: "리뷰 감정 분석",
+    modelDisplay: "Sentiment",
+    tags: ["#Sentiment", "#Reviews"],
   },
   NER: {
-    sublabel: "Modu NLP • NER",
-    modelDisplay: "Modu NLP Engine",
-    tags: ["#NER", "#LLM", "#NLP"],
+    sublabel: "개체명 인식",
+    modelDisplay: "NER",
+    tags: ["#NER", "#NLP"],
   },
   "Text-to-SQL": {
-    sublabel: "Modu NLP • Text-to-SQL",
-    modelDisplay: "Modu NLP Engine",
-    tags: ["#Text-to-SQL", "#LLM", "#SQL"],
+    sublabel: "Text-to-SQL",
+    modelDisplay: "SQL",
+    tags: ["#Text-to-SQL", "#SQL"],
   },
   Embedding: {
     sublabel: "Qwen-Embedding • Embedding",
@@ -241,6 +250,11 @@ const TASK_META: Record<
     tags: ["#STT", "#Transcription"],
   },
 };
+
+/** 플랜·API 체험 카드 상단 문구 — API 문서·TASK_META와 동일 체계 */
+export function getPlanTaskSublabel(task: PlanTask): string {
+  return TASK_META[task].sublabel;
+}
 
 /**
  * 백엔드 Api.name 기준으로 태스크 추정 (키워드 순서 중요)

@@ -10,7 +10,9 @@ import {
   DEMO_APIS_FALLBACK,
   DEMO_PLANS_THREE_TIERS,
   getPlanCardDisplay,
+  getPlanTaskSublabel,
   inferPlanTask,
+  MODU_NLP_SURFACE_TASKS,
   PLAN_TASK_KEYS,
   type PlanTask,
 } from "./planCatalog";
@@ -33,6 +35,13 @@ function getApiTask(api: Api): PlanTask | null {
     return k;
   }
   return inferPlanTask(api.name);
+}
+
+/** API 문서(`docs` SECTIONS)와 `PLAN_TASK_KEYS` 순서에 맞춤 */
+function planTaskDocOrderIndex(task: PlanTask | null): number {
+  if (!task) return PLAN_TASK_KEYS.length + 1;
+  const i = PLAN_TASK_KEYS.indexOf(task);
+  return i === -1 ? PLAN_TASK_KEYS.length : i;
 }
 
 function formatPrice(priceMonthly: string): string {
@@ -85,11 +94,18 @@ function PlansPageContent() {
   );
 
   const filteredApis = useMemo(() => {
-    return apis.filter((api) => {
+    const filtered = apis.filter((api) => {
       const task = getApiTask(api);
       if (isAllTasksActive) return true;
       if (!task) return false;
       return filterTasks[task];
+    });
+    return [...filtered].sort((a, b) => {
+      const d =
+        planTaskDocOrderIndex(getApiTask(a)) -
+        planTaskDocOrderIndex(getApiTask(b));
+      if (d !== 0) return d;
+      return a.name.localeCompare(b.name, "ko");
     });
   }, [apis, filterTasks, isAllTasksActive]);
 
@@ -536,11 +552,18 @@ function PlansPageContent() {
 
                   <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filteredApis.map((api) => {
+                      const task = getApiTask(api);
                       const fallbackDisplay = getPlanCardDisplay(api);
+                      const useModuNlpSublabel =
+                        task !== null &&
+                        MODU_NLP_SURFACE_TASKS.includes(task);
                       const display = {
                         ...fallbackDisplay,
-                        task: getApiTask(api),
-                        sublabel: api.card_sublabel ?? fallbackDisplay.sublabel,
+                        task,
+                        sublabel:
+                          useModuNlpSublabel && task
+                            ? getPlanTaskSublabel(task)
+                            : (api.card_sublabel ?? fallbackDisplay.sublabel),
                         modelDisplay: api.model_display ?? fallbackDisplay.modelDisplay,
                         tags: api.tags && api.tags.length > 0 ? api.tags : fallbackDisplay.tags,
                       };

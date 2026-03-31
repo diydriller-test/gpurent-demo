@@ -35,6 +35,7 @@ import type {
   TextToSqlPayload,
 } from "./lib/types";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
+import { getPlanTaskSublabel, type PlanTask } from "@/app/plans/planCatalog";
 
 type ApiId =
   | "llm"
@@ -1386,7 +1387,7 @@ export default function ApiTestPage() {
         id: "gpt-oss-120b",
         task: "Text Generation",
         apiId: "llm",
-        model: "gpt-oss-120B",
+        model: "LLM",
         modelSizeB: 120,
         taskTags: ["#LLM", "#Text-Gen"],
         formats: ["vLLM", "Transformers", "ONNX"],
@@ -1395,52 +1396,52 @@ export default function ApiTestPage() {
         id: "ad-copy-modu-nlp",
         task: "Ad Copy",
         apiId: "adCopy",
-        model: "Modu NLP 엔진 • Ad Copy",
+        model: "CopyWrite",
         modelSizeB: 120,
-        taskTags: ["#LLM", "#Ad-Copy"],
+        taskTags: ["#Ad-Copy", "#Marketing"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
         id: "text-summary-modu-nlp",
         task: "Text Summary",
         apiId: "summarize",
-        model: "Modu NLP 엔진 • Text Summary",
+        model: "Summarize",
         modelSizeB: 120,
-        taskTags: ["#LLM", "#Summary", "#NLP"],
+        taskTags: ["#Summary", "#NLP"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
         id: "review-sentiment-modu-nlp",
         task: "Sentiment Analysis",
         apiId: "sentiment",
-        model: "Modu NLP 엔진 • Sentiment",
+        model: "Sentiment",
         modelSizeB: 120,
-        taskTags: ["#LLM", "#Sentiment", "#Reviews"],
+        taskTags: ["#Sentiment", "#Reviews"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
         id: "ner-modu-nlp",
         task: "NER",
         apiId: "ner",
-        model: "Modu NLP 엔진 • NER",
+        model: "NER",
         modelSizeB: 120,
-        taskTags: ["#LLM", "#NER", "#NLP"],
+        taskTags: ["#NER", "#NLP"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
         id: "text-to-sql-modu-nlp",
         task: "Text-to-SQL",
         apiId: "textToSql",
-        model: "Modu NLP 엔진 • Text-to-SQL",
+        model: "SQL",
         modelSizeB: 120,
-        taskTags: ["#LLM", "#SQL", "#Analytics"],
+        taskTags: ["#Text-to-SQL", "#SQL", "#Analytics"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
         id: "embedding-70b",
         task: "Embedding",
         apiId: "embedding",
-        model: "Qwen-Embedding-8B",
+        model: "Embedding",
         modelSizeB: 8,
         taskTags: ["#Embedding", "#Semantic-Search"],
         formats: ["Transformers", "ONNX"],
@@ -1449,7 +1450,7 @@ export default function ApiTestPage() {
         id: "reranker-8b",
         task: "Reranker",
         apiId: "reranker",
-        model: "Qwen3 Reranker-8B",
+        model: "Reranker",
         modelSizeB: 8,
         taskTags: ["#Reranker", "#Qwen3", "#Search-Quality"],
         formats: ["GGUF", "Transformers"],
@@ -1458,7 +1459,7 @@ export default function ApiTestPage() {
         id: "tts-13b",
         task: "TTS",
         apiId: "tts",
-        model: "Qwen3-TTS",
+        model: "TTS",
         modelSizeB: 13,
         taskTags: ["#TTS", "#Audio"],
         formats: ["vLLM", "ONNX"],
@@ -1467,7 +1468,7 @@ export default function ApiTestPage() {
         id: "stt-13b",
         task: "STT",
         apiId: "stt",
-        model: "Qwen3-STT",
+        model: "STT",
         modelSizeB: 13,
         taskTags: ["#STT", "#Transcription"],
         formats: ["ONNX"],
@@ -4881,8 +4882,8 @@ export default function ApiTestPage() {
       </nav>
 
       {/* Content */}
-      <div className="relative mx-auto max-w-6xl px-6 pt-24 pb-12">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(232,136,138,0.14),transparent_55%)]" />
+      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-12">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(232,136,138,0.06),transparent_62%)]" />
 
         {viewMode === "list" ? (
           <div className="relative flex flex-col gap-6 lg:flex-row lg:gap-6">
@@ -5069,41 +5070,23 @@ export default function ApiTestPage() {
                       type="button"
                       onClick={() => enterDetailFor(item)}
                       className={[
-                        "group relative rounded-2xl border bg-background/20 p-4 text-left transition-all",
+                        "group relative flex h-full flex-col rounded-2xl border bg-background/20 p-4 text-left transition-all",
                         "border-white/5 hover:-translate-y-0.5 hover:border-accent/45 hover:bg-background/30",
                         "hover:shadow-[0_0_60px_rgba(232, 136, 138,0.12)]",
                       ].join(" ")}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="font-mono text-[11px] text-foreground/50">
-                            {item.task === "TTS"
-                              ? "Qwen3 Generation • TTS"
-                              : item.task === "STT"
-                                ? "Qwen3 Audio • STT"
-                                : item.task === "Text Generation"
-                                  ? "Omakase • Text Generation"
-                                  : item.task === "Ad Copy"
-                                    ? "Modu NLP • Ad Copy"
-                                    : item.task === "Text Summary"
-                                      ? "Modu NLP • Text Summary"
-                                      : item.task === "Sentiment Analysis"
-                                        ? "Modu NLP • Sentiment"
-                                        : item.task === "NER"
-                                          ? "Modu NLP • NER"
-                                          : item.task === "Text-to-SQL"
-                                            ? "Modu NLP • Text-to-SQL"
-                                            : item.task === "Embedding"
-                                              ? "Qwen-Embedding • Embedding"
-                                              : item.task === "Reranker"
-                                                ? "Qwen3 Reranker • Reranker"
-                                                : `Model Size ${item.modelSizeB}B • ${item.task}`}
-                          </p>
-                          <p className="mt-1 text-lg font-semibold text-foreground leading-tight break-words">
-                            {item.model}
-                          </p>
-                        </div>
-                      </div>
+                      <p className="font-mono text-[11px] text-foreground/50">
+                        {item.task === "Vision"
+                          ? `Model Size ${item.modelSizeB}B • ${item.task}`
+                          : getPlanTaskSublabel(item.task as PlanTask)}
+                      </p>
+                      <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
+                        {item.model}
+                      </p>
+                      <p className="mt-1 text-[11px] text-foreground/40">코그로보</p>
+                      <p className="mt-2 text-[11px] text-foreground/45">
+                        트래픽 기반 · 등급별 과금
+                      </p>
 
                       <div className="mt-3 flex flex-wrap gap-2">
                         {item.taskTags.slice(0, 3).map((tag) => (
@@ -5116,9 +5099,9 @@ export default function ApiTestPage() {
                         ))}
                       </div>
 
-                      <div className="mt-4 flex items-center justify-start gap-2">
+                      <div className="mt-auto flex items-center justify-start gap-2 pt-4">
                         <span className="text-xs text-foreground/50">
-                          Let&apos;s try
+                          테스트 하러가기
                         </span>
                         <span className="text-accent transition-transform group-hover:translate-x-0.5">
                           →
