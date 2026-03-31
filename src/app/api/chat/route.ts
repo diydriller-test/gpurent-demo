@@ -1,53 +1,89 @@
-// src/app/api/chat/route.ts
-import { ChatOpenAI } from "@langchain/openai";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
 import { NextResponse } from "next/server";
-import { getVllmOpenAiConfig } from "../_lib/vllm";
+import { resolveUpstreamContext } from "../_lib/upstream";
 
 export async function POST(req: Request) {
   try {
-    const { input, temperature } = await req.json();
+    const body = (await req.json().catch(() => null)) as
+      | { input?: unknown; temperature?: unknown }
+      | null;
+
+    const input = typeof body?.input === "string" ? body.input.trim() : "";
+    if (!input) {
+      return NextResponse.json(
+        { error: "input(질문/지시문)를 문자열로 보내주세요." },
+        { status: 400 },
+      );
+    }
 
     const parsedTemperature =
-      typeof temperature === "number" && Number.isFinite(temperature)
-        ? temperature
-        : typeof temperature === "string" &&
-            Number.isFinite(Number(temperature))
-          ? Number(temperature)
+      typeof body?.temperature === "number" && Number.isFinite(body.temperature)
+        ? body.temperature
+        : typeof body?.temperature === "string" &&
+            Number.isFinite(Number(body.temperature))
+          ? Number(body.temperature)
           : 0.1;
 
-    const { baseURL, apiKey } = getVllmOpenAiConfig();
+    const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
+    const upstreamUrl = `${upstreamBasePath}/llm/v1/chat/completions`;
 
-    const llm = new ChatOpenAI({
-      apiKey,
-      configuration: { baseURL },
-      model: "openai/gpt-oss-120b",
-      temperature: parsedTemperature,
-      timeout: 120_000,
+    const upstreamRes = await fetch(upstreamUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-oss-120b",
+        temperature: parsedTemperature,
+        messages: [
+          {
+            role: "user",
+            content: `${input} 한국어로 답변해줘.`,
+          },
+        ],
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(120_000),
     });
 
-    const prompt =
-      ChatPromptTemplate.fromTemplate("{input} 한국어로 답변해줘.");
-    const chain = prompt.pipe(llm).pipe(new StringOutputParser());
+    const upstreamJson = (await upstreamRes.json().catch(() => null)) as unknown;
 
-    const response = await chain.invoke({ input });
+    if (!upstreamRes.ok) {
+      const status = upstreamRes.status || 500;
+      const message =
+        status === 429
+          ? "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요."
+          : (upstreamJson as { error?: string; message?: string })?.error ||
+            (upstreamJson as { error?: string; message?: string })?.message ||
+            "Chat API 요청 실패";
+      return NextResponse.json({ error: message }, { status });
+    }
 
-    return NextResponse.json({ text: response });
+    const text =
+      typeof (upstreamJson as {
+        choices?: Array<{ message?: { content?: unknown } }>;
+      } | null)?.choices?.[0]?.message?.content === "string"
+        ? String(
+            (upstreamJson as {
+              choices: Array<{ message?: { content?: string } }>;
+            }).choices[0]?.message?.content ?? "",
+          ).trim()
+        : "";
+
+    if (!text) {
+      return NextResponse.json(
+        { error: "Chat 응답 형식이 올바르지 않습니다." },
+        { status: 502 },
+      );
+    }
+
+    return NextResponse.json({ text });
   } catch (error: unknown) {
     console.error("API Error:", error);
-    const err = error as { response?: { status?: number }; status?: number; message?: string };
-    const msg = String(err?.message ?? "").toLowerCase();
-    const is429 =
-      err?.response?.status === 429 ||
-      err?.status === 429 ||
-      msg.includes("429") ||
-      msg.includes("rate limit") ||
-      msg.includes("too many requests");
-    if (is429) {
+    if (error instanceof Error && error.name === "TimeoutError") {
       return NextResponse.json(
-        { error: "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요." },
-        { status: 429 },
+        { error: "Chat 요청이 시간 초과되었습니다." },
+        { status: 504 },
       );
     }
     return NextResponse.json(

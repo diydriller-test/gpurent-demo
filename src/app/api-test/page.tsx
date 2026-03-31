@@ -2872,10 +2872,12 @@ export default function ApiTestPage() {
     let consoleAlreadySet = false;
 
     try {
+      const token = getToken();
       const res = await fetch("/api/rerank", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(requestBody),
       });
@@ -3380,8 +3382,12 @@ export default function ApiTestPage() {
       formData.append("beam_size", String(sttBeamSize));
       formData.append("vad_filter", vad_filter);
 
+      const token = getToken();
       const res = await fetch("/api/stt", {
         method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: formData,
       });
 
@@ -4104,10 +4110,12 @@ export default function ApiTestPage() {
         setRerankError(null);
         setRerankResults(null);
 
+        const token = getToken();
         const res = await fetch("/api/rerank", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({ query, input }),
         });

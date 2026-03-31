@@ -49,6 +49,7 @@ export async function resolveUpstreamContext(
   req: Request,
 ): Promise<{ upstreamBasePath: string; apiKey?: string }> {
   const authHeader = req.headers.get("authorization");
+  console.log("authHeader", authHeader);
   if (!authHeader) {
     return { upstreamBasePath: `${UPSTREAM_BASE_URL}/trial` };
   }
@@ -69,10 +70,13 @@ export async function resolveUpstreamContext(
     }
 
     const data = (await res.json().catch(() => null)) as unknown;
+    console.log("data", data);
     const keys = parseApiKeys(data);
+    console.log("keys", keys);
     const active = keys.find((k) => k.is_active !== false);
     const apiKey =
       active && typeof active.api_key === "string" ? active.api_key : undefined;
+    console.log("apiKey", apiKey);
 
     return {
       upstreamBasePath: apiKey ? UPSTREAM_BASE_URL : `${UPSTREAM_BASE_URL}/trial`,

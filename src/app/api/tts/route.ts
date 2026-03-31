@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { resolveUpstreamBasePath } from "../_lib/upstream";
+import { resolveUpstreamContext } from "../_lib/upstream";
 
 type TtsRequestBody = {
   text?: unknown;
@@ -33,11 +33,12 @@ function randomIntPathSegment(): string {
 
 export async function GET(req: Request) {
   try {
-    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamRes = await fetch(`${upstreamBasePath}/tts/speakers`, {
       method: "GET",
       headers: {
         Accept: "application/json",
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       },
       cache: "no-store",
       signal: AbortSignal.timeout(8_000),
@@ -82,7 +83,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const upstreamBasePath = await resolveUpstreamBasePath(req);
+    const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const rand = randomIntPathSegment();
     const upstreamUrl = `${upstreamBasePath}/tts/_inference/tts/${rand}`;
 
@@ -97,6 +98,7 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       },
       body: form.toString(),
       signal: controller.signal,

@@ -28,7 +28,8 @@ export async function POST(req: Request) {
     // }
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
-    const upstreamRes = await fetch(`${upstreamBasePath}/rerank/_inference/rerank/qwen3`, {
+    console.log("apiKey", apiKey);
+    const upstreamRes = await fetch(`${upstreamBasePath}/reranker/_inference/rerank/qwen3`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
