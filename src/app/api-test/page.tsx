@@ -2137,20 +2137,6 @@ export default function ApiTestPage() {
     useResultTriggeredBanner(hasWorkflowBannerResult);
 
   useEffect(() => {
-    if (!sttLangDropdownOpen) return;
-    const onMouseDown = (e: MouseEvent) => {
-      const target = e.target as Node | null;
-      if (!target) return;
-      const root = sttLangDropdownRootRef.current;
-      if (!root) return;
-      if (root.contains(target)) return;
-      setSttLangDropdownOpen(false);
-    };
-    document.addEventListener("mousedown", onMouseDown);
-    return () => document.removeEventListener("mousedown", onMouseDown);
-  }, [sttLangDropdownOpen]);
-
-  useEffect(() => {
     if (!sttLangDropdownOpen) {
       setSttLangQuery(getSttLanguageLabel(sttLanguage));
     }
@@ -3598,7 +3584,7 @@ export default function ApiTestPage() {
     });
     try {
       const token = getToken();
-      const res = await fetch("/api/copy", {
+      const res = await fetch("/api/ad-copy", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3606,15 +3592,14 @@ export default function ApiTestPage() {
         },
         body: JSON.stringify({
           brief,
-          toneLine: adCopyTone.trim() || undefined,
-          channelLine: adCopyChannel.trim() || undefined,
+          tone: adCopyTone.trim() || undefined,
+          channel: adCopyChannel.trim() || undefined,
           temperature: adCopyTemperature,
           language: adCopyLanguage,
         }),
       });
       const data = (await res.json().catch(() => null)) as {
-        headline?: unknown;
-        body?: unknown;
+        copy?: unknown;
         error?: unknown;
       } | null;
       patchConsole("adCopy", {
@@ -3629,11 +3614,8 @@ export default function ApiTestPage() {
         );
         return;
       }
-      const headline =
-        typeof data?.headline === "string" ? data.headline.trim() : "";
-      const body = typeof data?.body === "string" ? data.body.trim() : "";
-      const composed = [headline, body].filter(Boolean).join("\n\n");
-      setAdCopyResult(composed || "응답이 비어있습니다.");
+      const copy = typeof data?.copy === "string" ? data.copy.trim() : "";
+      setAdCopyResult(copy || "응답이 비어있습니다.");
     } catch {
       patchConsole("adCopy", {
         statusLine: "—",
@@ -4404,7 +4386,7 @@ export default function ApiTestPage() {
 
         try {
           const token = getToken();
-          const res = await fetch("/api/copy", {
+          const res = await fetch("/api/ad-copy", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -4412,15 +4394,14 @@ export default function ApiTestPage() {
             },
             body: JSON.stringify({
               brief,
-              toneLine: tone || undefined,
-              channelLine: channel || undefined,
+              tone: tone || undefined,
+              channel: channel || undefined,
               temperature: parsedTemperature,
               language: parsedLanguage,
             }),
           });
           const data = (await res.json().catch(() => null)) as {
-            headline?: unknown;
-            body?: unknown;
+            copy?: unknown;
             error?: unknown;
           } | null;
           patchConsole("adCopy", {
@@ -4439,12 +4420,8 @@ export default function ApiTestPage() {
             );
             return;
           }
-          const headline =
-            typeof data?.headline === "string" ? data.headline.trim() : "";
-          const copyBody =
-            typeof data?.body === "string" ? data.body.trim() : "";
-          const composed = [headline, copyBody].filter(Boolean).join("\n\n");
-          setAdCopyResult(composed || "응답이 비어있습니다.");
+          const copy = typeof data?.copy === "string" ? data.copy.trim() : "";
+          setAdCopyResult(copy || "응답이 비어있습니다.");
         } catch {
           patchConsole("adCopy", {
             statusLine: "—",

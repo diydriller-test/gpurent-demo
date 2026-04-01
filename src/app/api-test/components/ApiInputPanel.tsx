@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { AD_COPY_LANGUAGE_OPTIONS } from "@/lib/adCopyLanguages";
 import type {
@@ -47,6 +48,264 @@ function CheckIcon({ className }: { className?: string }) {
     >
       <path d="M20 6 9 17l-5-5" />
     </svg>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+type CustomSelectOption = {
+  value: string;
+  label: string;
+};
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  className,
+  triggerClassName,
+  optionClassName,
+  panelClassName,
+  openDirection = "down",
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  options: readonly CustomSelectOption[];
+  className?: string;
+  triggerClassName?: string;
+  optionClassName?: string;
+  panelClassName?: string;
+  openDirection?: "down" | "up";
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [panelStyle, setPanelStyle] = useState<React.CSSProperties | null>(null);
+  const listboxId = useId();
+  const selected =
+    options.find((option) => option.value === value) ?? options[0] ?? null;
+  const selectedLabel = selected?.label ?? value;
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredOptions = normalizedQuery
+    ? options.filter((option) => {
+        const label = option.label.toLowerCase();
+        const optionValue = option.value.toLowerCase();
+        return (
+          label.includes(normalizedQuery) || optionValue.includes(normalizedQuery)
+        );
+      })
+    : options;
+
+  useEffect(() => {
+    if (open) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function updatePanelPosition() {
+      const root = rootRef.current;
+      if (!root) return;
+      const rect = root.getBoundingClientRect();
+      const panelMaxHeight = 256;
+      const gap = 8;
+      const top =
+        openDirection === "up"
+          ? Math.max(8, rect.top - panelMaxHeight - gap)
+          : rect.bottom + gap;
+
+      setPanelStyle({
+        position: "fixed",
+        left: rect.left,
+        top,
+        width: rect.width,
+        maxHeight: panelMaxHeight,
+        zIndex: 2000,
+      });
+    }
+
+    updatePanelPosition();
+    window.addEventListener("resize", updatePanelPosition);
+    window.addEventListener("scroll", updatePanelPosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePanelPosition);
+      window.removeEventListener("scroll", updatePanelPosition, true);
+    };
+  }, [open, openDirection]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: MouseEvent) {
+      const root = rootRef.current;
+      const panel = panelRef.current;
+      const target = event.target as Node;
+      if (!root) return;
+      if (root.contains(target) || (panel && panel.contains(target))) return;
+      setOpen(false);
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        setQuery(selectedLabel);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [open, selectedLabel]);
+
+  return (
+    <div ref={rootRef} className={["relative", className ?? ""].join(" ")}>
+      <div
+        className={[
+          "relative h-full w-full rounded-xl text-left outline-none transition-colors",
+          triggerClassName ?? "",
+        ].join(" ")}
+      >
+        <input
+          ref={inputRef}
+          type="text"
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={listboxId}
+          aria-autocomplete="list"
+          value={open ? query : selectedLabel}
+          onFocus={() => {
+            setQuery("");
+            setOpen(true);
+          }}
+          onClick={() => {
+            if (!open) setQuery("");
+            setOpen(true);
+          }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown") {
+              e.preventDefault();
+              setOpen(true);
+            }
+            if (e.key === "Enter") {
+              if (!open) {
+                setOpen(true);
+                return;
+              }
+              const first = filteredOptions[0];
+              if (first) {
+                onChange(first.value);
+                setQuery(first.label);
+                setOpen(false);
+              }
+            }
+            if (e.key === "Escape") {
+              setOpen(false);
+              setQuery(selectedLabel);
+            }
+          }}
+          className="h-full w-full bg-transparent px-3 py-2 pr-10 text-[13px] leading-normal text-foreground outline-none placeholder:text-foreground/35"
+          placeholder={selectedLabel || "입력 또는 선택"}
+        />
+        <button
+          type="button"
+          aria-label={open ? "옵션 닫기" : "옵션 열기"}
+          onClick={() => {
+            if (!open) setQuery("");
+            setOpen((prev) => !prev);
+          }}
+          className="absolute inset-y-0 right-3 flex items-center justify-center text-foreground/70"
+        >
+          <ChevronDownIcon
+            className={[
+              "h-4 w-4 transition-transform",
+              open ? "rotate-180" : "",
+            ].join(" ")}
+          />
+        </button>
+      </div>
+
+      {open && panelStyle
+        ? createPortal(
+            <div
+              ref={panelRef}
+              id={listboxId}
+              role="listbox"
+              style={panelStyle}
+              className={[
+                "overflow-y-auto rounded-xl backdrop-blur-xl",
+                panelClassName ??
+                  "border border-accent/18 bg-[rgba(18,14,14,0.95)] shadow-[0_20px_60px_rgba(0,0,0,0.45),0_0_0_1px_rgba(232,136,138,0.08)]",
+              ].join(" ")}
+            >
+              <div className="py-1.5">
+                {filteredOptions.length ? (
+                  filteredOptions.map((option) => {
+                    const isSelected = option.value === value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                        }}
+                        onClick={() => {
+                          onChange(option.value);
+                          setQuery(option.label);
+                          setOpen(false);
+                          inputRef.current?.blur();
+                        }}
+                        className={[
+                          "w-full px-3 py-2.5 text-left text-sm transition-colors",
+                          isSelected
+                            ? "bg-accent/12 text-accent"
+                            : "text-foreground/80 hover:bg-white/5 hover:text-foreground",
+                          optionClassName ?? "",
+                        ].join(" ")}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-3 py-2.5 text-sm text-foreground/50">
+                    검색 결과가 없습니다.
+                  </div>
+                )}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+    </div>
   );
 }
 
@@ -330,6 +589,9 @@ export function ApiInputPanel({
   IconMic,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [sttLangPanelStyle, setSttLangPanelStyle] =
+    useState<React.CSSProperties | null>(null);
+  const sttLangPanelRef = useRef<HTMLDivElement | null>(null);
 
   function renderCopyButton(key: string, onClick: () => void, disabled = false) {
     const isCopied = copiedKey === key;
@@ -369,6 +631,35 @@ export function ApiInputPanel({
       setCopiedKey(null);
     }
   }
+
+  const selectShellClassName =
+    "relative mt-1.5 overflow-hidden rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25";
+
+  useEffect(() => {
+    if (!sttLangDropdownOpen) return;
+
+    function updateSttLangPanelPosition() {
+      const root = sttLangDropdownRootRef.current;
+      if (!root) return;
+      const rect = root.getBoundingClientRect();
+      setSttLangPanelStyle({
+        position: "fixed",
+        left: rect.left,
+        top: rect.bottom + 8,
+        width: rect.width,
+        maxHeight: 250,
+        zIndex: 2000,
+      });
+    }
+
+    updateSttLangPanelPosition();
+    window.addEventListener("resize", updateSttLangPanelPosition);
+    window.addEventListener("scroll", updateSttLangPanelPosition, true);
+    return () => {
+      window.removeEventListener("resize", updateSttLangPanelPosition);
+      window.removeEventListener("scroll", updateSttLangPanelPosition, true);
+    };
+  }, [sttLangDropdownOpen, sttLangDropdownRootRef]);
 
   return (
     <div
@@ -498,17 +789,14 @@ export function ApiInputPanel({
                 <p className="font-mono text-xs text-foreground/60">
                   출력 언어
                 </p>
-                <select
-                  value={adCopyLanguage}
-                  onChange={(e) => setAdCopyLanguage(e.target.value)}
-                  className="mt-1.5 h-10 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-sm text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
-                >
-                  {AD_COPY_LANGUAGE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <div className={`${selectShellClassName} h-10 overflow-visible`}>
+                  <CustomSelect
+                    value={adCopyLanguage}
+                    onChange={setAdCopyLanguage}
+                    options={AD_COPY_LANGUAGE_OPTIONS}
+                    triggerClassName="h-full text-sm text-foreground"
+                  />
+                </div>
               </div>
               <div className="grid gap-2.5 sm:grid-cols-2">
                 <div>
@@ -1361,31 +1649,26 @@ export function ApiInputPanel({
             <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end">
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-xs text-foreground/60">언어</p>
-                <select
-                  value={ttsLanguage}
-                  onChange={(e) => setTtsLanguage(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-[13px] text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
-                >
-                  {ttsLanguageOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
+                  <CustomSelect
+                    value={ttsLanguage}
+                    onChange={setTtsLanguage}
+                    options={ttsLanguageOptions}
+                    triggerClassName="h-full text-[13px] text-foreground"
+                  />
+                </div>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-xs text-foreground/60">Speaker</p>
-                <select
-                  value={ttsSpeaker}
-                  onChange={(e) => setTtsSpeaker(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-3 text-[13px] text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
-                >
-                  {ttsSpeakerOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
+                  <CustomSelect
+                    value={ttsSpeaker}
+                    onChange={setTtsSpeaker}
+                    options={ttsSpeakerOptions}
+                    triggerClassName="h-full text-[13px] text-foreground"
+                    panelClassName="border border-accent/22 bg-[rgba(18,14,14,0.97)] shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(232,136,138,0.12),0_0_30px_rgba(232,136,138,0.12)]"
+                  />
+                </div>
               </div>
             </div>
             <div>
@@ -1603,12 +1886,25 @@ export function ApiInputPanel({
                         setSttLangQuery(e.target.value);
                         setSttLangDropdownOpen(true);
                       }}
-                      onFocus={() => setSttLangDropdownOpen(true)}
+                      onFocus={() => {
+                        setSttLangQuery("");
+                        setSttLangDropdownOpen(true);
+                      }}
+                      onClick={() => {
+                        if (!sttLangDropdownOpen) setSttLangQuery("");
+                        setSttLangDropdownOpen(true);
+                      }}
                       onBlur={(e) => {
                         const next = e.relatedTarget as Node | null;
                         window.setTimeout(() => {
                           const root = sttLangDropdownRootRef.current;
-                          if (root && next && root.contains(next)) return;
+                          const panel = sttLangPanelRef.current;
+                          if (
+                            (root && next && root.contains(next)) ||
+                            (panel && next && panel.contains(next))
+                          ) {
+                            return;
+                          }
                           setSttLangDropdownOpen(false);
                         }, 120);
                       }}
@@ -1628,47 +1924,63 @@ export function ApiInputPanel({
                         }
                       }}
                       placeholder="언어 코드/이름 검색"
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-background/40 px-3 py-2 pr-3 text-sm text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] px-3 py-2 pr-10 text-sm text-foreground outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                     />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 mt-2 flex w-10 items-center justify-center text-foreground/55">
+                      <ChevronDownIcon
+                        className={[
+                          "h-4 w-4 transition-transform",
+                          sttLangDropdownOpen ? "rotate-180 text-accent" : "",
+                        ].join(" ")}
+                      />
+                    </div>
                   </div>
 
-                  {sttLangDropdownOpen ? (
-                    <div
-                      className="absolute left-0 right-0 z-50 mt-2 max-h-[250px] overflow-y-auto rounded-xl border border-white/10 bg-background/60 backdrop-blur-xl shadow-lg"
-                      role="listbox"
-                    >
-                      <div className="py-1">
-                        {sttLangOptions.length ? (
-                          sttLangOptions.map((code) => (
-                            <button
-                              key={code}
-                              type="button"
-                              role="option"
-                              aria-selected={sttLanguage === code}
-                              onClick={() => {
-                                setSttLanguage(code);
-                                setSttLangQuery(getSttLanguageLabel(code));
-                                setSttLangDropdownOpen(false);
-                              }}
-                              className={[
-                                "w-full px-3 py-2 text-left text-sm leading-tight transition-colors",
-                                "break-words whitespace-normal",
-                                sttLanguage === code
-                                  ? "text-accent"
-                                  : "text-foreground/80 hover:bg-accent/10",
-                              ].join(" ")}
-                            >
-                              {getSttLanguageLabel(code)}
-                            </button>
-                          ))
-                        ) : (
-                          <div className="px-3 py-2 text-xs text-foreground/60">
-                            검색 결과 없음
+                  {sttLangDropdownOpen && sttLangPanelStyle
+                    ? createPortal(
+                        <div
+                          ref={sttLangPanelRef}
+                          style={sttLangPanelStyle}
+                          className="overflow-y-auto rounded-xl border border-accent/18 bg-[rgba(18,14,14,0.95)] backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.45),0_0_0_1px_rgba(232,136,138,0.08)]"
+                          role="listbox"
+                        >
+                          <div className="py-1.5">
+                            {sttLangOptions.length ? (
+                              sttLangOptions.map((code) => (
+                                <button
+                                  key={code}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={sttLanguage === code}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                  }}
+                                  onClick={() => {
+                                    setSttLanguage(code);
+                                    setSttLangQuery(getSttLanguageLabel(code));
+                                    setSttLangDropdownOpen(false);
+                                  }}
+                                  className={[
+                                    "w-full px-3 py-2.5 text-left text-sm leading-tight transition-colors",
+                                    "break-words whitespace-normal",
+                                    sttLanguage === code
+                                      ? "bg-accent/12 text-accent"
+                                      : "text-foreground/80 hover:bg-white/5 hover:text-foreground",
+                                  ].join(" ")}
+                                >
+                                  {getSttLanguageLabel(code)}
+                                </button>
+                              ))
+                            ) : (
+                              <div className="px-3 py-2 text-xs text-foreground/60">
+                                검색 결과 없음
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
+                        </div>,
+                        document.body,
+                      )
+                    : null}
                 </div>
               </div>
 
