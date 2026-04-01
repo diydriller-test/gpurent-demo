@@ -229,7 +229,7 @@ const PRICE_SUMMARY = [
   {
     title: "Starter",
     subtitle: "빠른 검증 / PoC 시작",
-    price: "6,000원부터",
+    price: "10,000원부터",
     rps: "1 ~ 3.5 RPS",
     tone: "border-white/8 bg-background/25",
     points: [
@@ -240,7 +240,7 @@ const PRICE_SUMMARY = [
   {
     title: "Pro",
     subtitle: "운영 확장 / 실서비스 대응",
-    price: "18,000원부터",
+    price: "30,000원부터",
     rps: "최대 3배 확장",
     tone: "border-accent/28 bg-accent/7 shadow-[0_0_48px_rgba(232,136,138,0.08)]",
     points: [
