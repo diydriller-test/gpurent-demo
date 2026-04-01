@@ -1,6 +1,7 @@
 import { getToken } from "./token";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+// 브라우저는 동일 오리진의 Next 프록시(/api/*)만 호출합니다.
+const API_BASE_URL = "";
 
 export interface SignupRequest {
   email: string;
@@ -17,7 +18,7 @@ export interface SignupResponse {
 }
 
 export async function signup(data: SignupRequest): Promise<SignupResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+  const res = await fetch(`${API_BASE_URL}/api/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -49,7 +50,7 @@ export interface LoginResponse {
 }
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+  const res = await fetch(`${API_BASE_URL}/api/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -92,7 +93,7 @@ export interface Api {
 }
 
 export async function getApis(): Promise<Api[]> {
-  const res = await fetch(`${API_BASE_URL}/apis`, {
+  const res = await fetch(`${API_BASE_URL}/api/apis`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -126,7 +127,7 @@ export interface Plan {
 }
 
 export async function getPlans(apiId: number): Promise<Plan[]> {
-  const res = await fetch(`${API_BASE_URL}/plans?api_id=${apiId}`, {
+  const res = await fetch(`${API_BASE_URL}/api/plans?api_id=${apiId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -169,7 +170,7 @@ export async function getMe(): Promise<User> {
     ...getAuthHeaders(),
   };
 
-  const res = await fetch(`${API_BASE_URL}/auth/me`, {
+  const res = await fetch(`${API_BASE_URL}/api/me`, {
     method: "GET",
     headers,
     cache: "no-store",
@@ -194,7 +195,7 @@ export async function updatePlan(apiId: number, planId: number): Promise<void> {
     ...getAuthHeaders(),
   };
 
-  const res = await fetch(`${API_BASE_URL}/auth/me/plan`, {
+  const res = await fetch(`${API_BASE_URL}/api/me/plan`, {
     method: "PATCH",
     headers,
     body: JSON.stringify({ api_id: apiId, plan_id: planId }),
@@ -232,7 +233,7 @@ export async function getApiKeys(): Promise<ApiKey[]> {
     ...getAuthHeaders(),
   };
 
-  const res = await fetch(`${API_BASE_URL}/auth/api-keys`, {
+  const res = await fetch(`${API_BASE_URL}/api/api-keys`, {
     method: "GET",
     headers,
     cache: "no-store",
@@ -268,7 +269,7 @@ export async function createApiKey(data?: CreateApiKeyRequest): Promise<CreateAp
     ...getAuthHeaders(),
   };
 
-  const res = await fetch(`${API_BASE_URL}/auth/api-keys`, {
+  const res = await fetch(`${API_BASE_URL}/api/api-keys`, {
     method: "POST",
     headers,
     body: JSON.stringify(data ?? {}),

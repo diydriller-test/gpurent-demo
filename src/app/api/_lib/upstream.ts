@@ -1,5 +1,6 @@
 const UPSTREAM_BASE_URL = "http://gpurent.kogrobo.com:11115";
-const AUTH_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? UPSTREAM_BASE_URL;
+const AUTH_BASE_URL =
+  process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? UPSTREAM_BASE_URL;
 
 type ApiKeyLike = {
   id?: unknown;
