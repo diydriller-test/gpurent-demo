@@ -85,6 +85,8 @@ const DEFAULT_SENTIMENT_TEXT =
   "치킨은 맛있는데 배송이 1시간 넘게 걸렸어요. 포장은 괜찮았어요.";
 
 const DEFAULT_NER_TEXT = `내일 오후 2시에 세현님과 영등포 코그로보 사무실에서 3,000,000원 규모의 프로젝트 계약건으로 미팅이 있습니다.`;
+const DEFAULT_NER_INSTRUCTION =
+  "예: 인물과 장소만 우선 추출해줘 / 금액과 날짜를 빠짐없이 표시해줘";
 
 const DEFAULT_TEXT_TO_SQL_TEXT = `최근 일주일 동안 PROTOCL 앱에서 루틴을 10번 이상 완료한 유저 수 알려줘.`;
 const TTS_LANGUAGE_OPTIONS = [
@@ -805,10 +807,15 @@ function tryParseSentimentConsoleToPlayground(jsonText: string): {
   }
 }
 
-function buildNerConsoleRequestJson(text: string, temperature: number) {
+function buildNerConsoleRequestJson(
+  text: string,
+  temperature: number,
+  prompt = "",
+) {
   return JSON.stringify(
     {
       text,
+      ...(prompt.trim() ? { prompt } : {}),
       temperature,
     },
     null,
@@ -818,19 +825,23 @@ function buildNerConsoleRequestJson(text: string, temperature: number) {
 
 function tryParseNerConsoleToPlayground(jsonText: string): {
   text?: string;
+  prompt?: string;
   temperature?: number;
 } | null {
   try {
     const parsed = JSON.parse(jsonText) as {
       text?: unknown;
+      prompt?: unknown;
       temperature?: unknown;
     };
     const out: {
       text?: string;
+      prompt?: string;
       temperature?: number;
     } = {};
 
     if (typeof parsed.text === "string") out.text = parsed.text;
+    if (typeof parsed.prompt === "string") out.prompt = parsed.prompt;
     if (
       typeof parsed.temperature === "number" &&
       Number.isFinite(parsed.temperature)
@@ -1276,6 +1287,7 @@ export default function ApiTestPage() {
   const [sentimentDevCodeCopied, setSentimentDevCodeCopied] = useState(false);
 
   const [nerText, setNerText] = useState(DEFAULT_NER_TEXT);
+  const [nerPrompt, setNerPrompt] = useState("");
   const [nerTemperature, setNerTemperature] = useState(0.1);
   const [nerResult, setNerResult] = useState<NerPayload | null>(null);
   const [nerError, setNerError] = useState<string | null>(null);
@@ -2318,7 +2330,11 @@ export default function ApiTestPage() {
   }, [sentimentText, sentimentTemperature]);
 
   useEffect(() => {
-    const nextRequestJson = buildNerConsoleRequestJson(nerText, nerTemperature);
+    const nextRequestJson = buildNerConsoleRequestJson(
+      nerText,
+      nerTemperature,
+      nerPrompt,
+    );
     setConsoleByApi((prev) => {
       if (prev.ner.requestJson === nextRequestJson) return prev;
       return {
@@ -2329,7 +2345,7 @@ export default function ApiTestPage() {
         },
       };
     });
-  }, [nerText, nerTemperature]);
+  }, [nerPrompt, nerText, nerTemperature]);
 
   useEffect(() => {
     const nextRequestJson = buildTextToSqlConsoleRequestJson(
@@ -2517,6 +2533,9 @@ export default function ApiTestPage() {
       if (parsed.text !== undefined) {
         setNerText(parsed.text);
       }
+      if (parsed.prompt !== undefined) {
+        setNerPrompt(parsed.prompt);
+      }
       if (parsed.temperature !== undefined) {
         setNerTemperature(parsed.temperature);
       }
@@ -2655,6 +2674,7 @@ export default function ApiTestPage() {
     }
     if (api === "ner") {
       setNerText(DEFAULT_NER_TEXT);
+      setNerPrompt("");
       setNerTemperature(0.1);
       setNerResult(null);
       setNerError(null);
@@ -3754,7 +3774,7 @@ export default function ApiTestPage() {
     patchConsole("ner", {
       statusCode: null,
       statusLine: "Pending...",
-      requestJson: buildNerConsoleRequestJson(nerText, nerTemperature),
+      requestJson: buildNerConsoleRequestJson(nerText, nerTemperature, nerPrompt),
       responseJson: "",
       error: null,
     });
@@ -3768,6 +3788,7 @@ export default function ApiTestPage() {
         },
         body: JSON.stringify({
           text,
+          ...(nerPrompt.trim() ? { prompt: nerPrompt.trim() } : {}),
           temperature: nerTemperature,
         }),
       });
@@ -4562,6 +4583,7 @@ export default function ApiTestPage() {
       if (targetApi === "ner") {
         const body = parsed as {
           text?: unknown;
+          prompt?: unknown;
           temperature?: unknown;
         };
         const textBody = typeof body.text === "string" ? body.text.trim() : "";
@@ -4593,6 +4615,7 @@ export default function ApiTestPage() {
         setNerResult(null);
         setNerError(null);
         setNerText(textBody);
+        setNerPrompt(typeof body.prompt === "string" ? body.prompt : "");
         setNerTemperature(Math.min(1, Math.max(0, parsedTemperature)));
 
         try {
@@ -4605,6 +4628,9 @@ export default function ApiTestPage() {
             },
             body: JSON.stringify({
               text: textBody,
+              ...(typeof body.prompt === "string" && body.prompt.trim()
+                ? { prompt: body.prompt.trim() }
+                : {}),
               temperature: parsedTemperature,
             }),
           });
@@ -5633,9 +5659,10 @@ export default function ApiTestPage() {
                       selectedApi === "adCopy" ||
                       selectedApi === "summarize" ||
                       selectedApi === "sentiment" ||
-                      selectedApi === "ner" ||
                       selectedApi === "textToSql"
                         ? "min-h-0 flex-1 overflow-y-auto px-3 py-3"
+                        : selectedApi === "ner"
+                          ? "min-h-0 flex-1 overflow-hidden px-3 py-2"
                         : "flex-shrink-0"
                     }
                   >
@@ -5681,6 +5708,8 @@ export default function ApiTestPage() {
                       handleNerRun={() => void handleNerRun()}
                       nerText={nerText}
                       setNerText={setNerText}
+                      nerPrompt={nerPrompt}
+                      setNerPrompt={setNerPrompt}
                       nerTemperature={nerTemperature}
                       setNerTemperature={setNerTemperature}
                       isNerLoading={isNerLoading}

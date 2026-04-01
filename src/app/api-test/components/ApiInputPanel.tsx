@@ -69,6 +69,8 @@ type Props = {
   handleNerRun: () => void;
   nerText: string;
   setNerText: React.Dispatch<React.SetStateAction<string>>;
+  nerPrompt: string;
+  setNerPrompt: React.Dispatch<React.SetStateAction<string>>;
   nerTemperature: number;
   setNerTemperature: React.Dispatch<React.SetStateAction<number>>;
   isNerLoading: boolean;
@@ -210,6 +212,8 @@ export function ApiInputPanel({
   handleNerRun,
   nerText,
   setNerText,
+  nerPrompt,
+  setNerPrompt,
   nerTemperature,
   setNerTemperature,
   isNerLoading,
@@ -878,24 +882,40 @@ export function ApiInputPanel({
 
       {selectedApi === "ner" ? (
         <form
+          className="h-full"
           onSubmit={(e) => {
             e.preventDefault();
             handleNerRun();
           }}
         >
-          <div className="flex flex-col gap-2.5 lg:grid lg:min-h-0 lg:grid-cols-2 lg:items-stretch lg:gap-4">
-            <div className="flex min-h-0 flex-col gap-2.5 lg:order-1">
-              <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex h-full flex-col gap-2 lg:grid lg:min-h-0 lg:grid-cols-[1.02fr_0.98fr] lg:items-stretch lg:gap-3">
+            <div className="flex min-h-0 flex-col gap-2 lg:order-1 lg:h-full">
+              <div className="flex flex-col">
                 <p className="font-mono text-xs text-foreground/60">
                   분석할 문장 (필수)
                 </p>
                 <textarea
                   value={nerText}
                   onChange={(e) => setNerText(e.target.value)}
-                  rows={4}
+                  rows={3}
                   placeholder="예: 일정·인명·장소·금액이 섞인 문장을 붙여 넣으세요"
-                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
+                  className="mt-1.5 min-h-[88px] max-h-[min(24vh,180px)] w-full resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[164px] lg:max-h-[164px] lg:resize-none"
                 />
+              </div>
+              <div className="flex flex-col">
+                <p className="font-mono text-xs text-foreground/60">
+                  추가 요청사항 (선택)
+                </p>
+                <textarea
+                  value={nerPrompt}
+                  onChange={(e) => setNerPrompt(e.target.value)}
+                  rows={2}
+                  placeholder="예: 인물과 장소만 우선 추출해줘 / 금액과 날짜를 빠짐없이 표시해줘"
+                  className="mt-1.5 min-h-[64px] max-h-[min(16vh,112px)] w-full resize-y rounded-xl border border-white/10 bg-background/35 px-3 py-2 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[112px] lg:max-h-[112px] lg:resize-none"
+                />
+                <p className="mt-1 text-[11px] leading-snug text-foreground/45 lg:hidden">
+                  사용자가 원하는 추출 기준이나 우선순위를 함께 전달할 수 있어요.
+                </p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
                 <div className="min-w-0 flex-1">
@@ -920,7 +940,7 @@ export function ApiInputPanel({
                     }
                     className="mt-1.5 w-full accent-accent"
                   />
-                  <p className="mt-1 text-[11px] leading-snug text-foreground/45">
+                  <p className="mt-1 text-[11px] leading-snug text-foreground/45 lg:hidden">
                     낮을수록 태그·라벨이 안정적이고, 높을수록 변동이 커질 수
                     있어요.
                   </p>
@@ -930,7 +950,7 @@ export function ApiInputPanel({
                     type="submit"
                     disabled={isNerLoading || !nerText.trim()}
                     className={[
-                      "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
+                      "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all lg:min-w-[140px] lg:justify-center",
                       "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                     ].join(" ")}
                   >
@@ -962,8 +982,8 @@ export function ApiInputPanel({
               </div>
             </div>
 
-            <div className="flex min-h-0 flex-col lg:order-2">
-              <div className="flex min-h-0 flex-col rounded-2xl border border-accent/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(232, 136, 138,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
+            <div className="flex flex-col lg:order-2">
+              <div className="flex flex-col rounded-2xl border border-accent/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(232, 136, 138,0.08)]">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-mono text-xs font-medium text-accent">
                     추출 결과
@@ -976,7 +996,7 @@ export function ApiInputPanel({
                     <span className="text-[11px] text-foreground/50">완료</span>
                   ) : null}
                 </div>
-                <div className="mt-2.5 min-h-[120px] max-h-[min(38vh,280px)] flex-1 overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3 lg:min-h-[200px] lg:max-h-none">
+                <div className="mt-2 max-h-[min(40vh,392px)] overflow-y-auto rounded-xl border border-white/5 bg-background/40 px-2.5 pt-2.5 pb-3">
                   {isNerLoading ? (
                     <p className="text-sm leading-relaxed text-foreground/55">
                       개체를 추출하는 중입니다…
@@ -987,13 +1007,13 @@ export function ApiInputPanel({
                     </p>
                   ) : nerResult ? (
                     nerResult.entities.length > 0 ? (
-                      <div className="overflow-x-auto rounded-lg border border-white/10">
-                        <table className="w-full min-w-[320px] text-left text-[13px]">
+                      <div className="mb-0.5 overflow-x-auto rounded-lg border border-white/10">
+                        <table className="w-full min-w-[320px] text-left text-[12px] lg:text-[11px]">
                           <thead>
-                            <tr className="border-b border-white/10 font-mono text-[11px] text-foreground/50">
-                              <th className="px-2 py-2">표면</th>
-                              <th className="px-2 py-2">label</th>
-                              <th className="px-2 py-2">category</th>
+                            <tr className="border-b border-white/10 font-mono text-[10px] text-foreground/50">
+                              <th className="px-2 py-1.5">표면</th>
+                              <th className="px-2 py-1.5">label</th>
+                              <th className="px-2 py-1.5">category</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1002,13 +1022,13 @@ export function ApiInputPanel({
                                 key={`${row.text}-${row.label}-${idx}`}
                                 className="border-b border-white/5 last:border-0"
                               >
-                                <td className="px-2 py-2 text-foreground/90">
+                                <td className="truncate px-2 py-1.5 text-foreground/90">
                                   {row.text}
                                 </td>
-                                <td className="px-2 py-2 font-mono text-accent/90">
+                                <td className="px-2 py-1.5 font-mono text-accent/90">
                                   {row.label}
                                 </td>
-                                <td className="px-2 py-2 text-foreground/80">
+                                <td className="truncate px-2 py-1.5 text-foreground/80">
                                   {row.category}
                                 </td>
                               </tr>

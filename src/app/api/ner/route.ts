@@ -3,6 +3,7 @@ import { resolveUpstreamContext } from "../_lib/upstream";
 
 type NerBody = {
   text?: unknown;
+  prompt?: unknown;
   temperature?: unknown;
 };
 
@@ -18,6 +19,16 @@ export type NerEntity = {
 export type NerResult = {
   entities: NerEntity[];
 };
+
+const NER_PROMPT_TERMS: Array<{ label: string; terms: string[] }> = [
+  { label: "PER", terms: ["인물", "사람", "person", "people"] },
+  { label: "LOC", terms: ["장소", "지역", "위치", "location", "place"] },
+  { label: "ORG", terms: ["조직", "회사", "기관", "organization", "org"] },
+  { label: "DAT", terms: ["날짜", "일자", "date"] },
+  { label: "TIM", terms: ["시간", "시각", "time"] },
+  { label: "MON", terms: ["금액", "돈", "비용", "money", "amount"] },
+  { label: "EVENT", terms: ["행사", "이벤트", "event"] },
+];
 
 function parseTemperatureOptional(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -47,6 +58,49 @@ function normalizePayload(data: unknown): NerResult | null {
   return { entities };
 }
 
+function deriveRequestedLabels(prompt: string): string[] {
+  const normalizedPrompt = prompt.trim().toLowerCase();
+  if (!normalizedPrompt) return [];
+
+  return NER_PROMPT_TERMS.filter(({ terms }) =>
+    terms.some((term) => normalizedPrompt.includes(term.toLowerCase())),
+  ).map(({ label }) => label);
+}
+
+function applyPromptPreference(result: NerResult, prompt: string): NerResult {
+  const requestedLabels = deriveRequestedLabels(prompt);
+  if (requestedLabels.length === 0) return result;
+
+  const requestedSet = new Set(requestedLabels);
+  const normalizedPrompt = prompt.trim().toLowerCase();
+  const isExclusive =
+    /만\b|만\s|only|우선|위주|중심/.test(normalizedPrompt);
+
+  if (isExclusive) {
+    return {
+      entities: result.entities.filter((entity) => requestedSet.has(entity.label)),
+    };
+  }
+
+  const prioritized = result.entities.filter((entity) =>
+    requestedSet.has(entity.label),
+  );
+  const remaining = result.entities.filter(
+    (entity) => !requestedSet.has(entity.label),
+  );
+  return { entities: [...prioritized, ...remaining] };
+}
+
+function buildUpstreamNerPrompt(text: string, prompt: string): string {
+  if (!prompt.trim()) return text;
+  return [
+    "다음 문장에서 개체명을 추출해 주세요.",
+    `추가 요청사항: ${prompt.trim()}`,
+    "응답은 개체 추출 결과만 반환해 주세요.",
+    `문장: ${text}`,
+  ].join("\n");
+}
+
 export async function POST(req: Request) {
   try {
     const body = (await req.json().catch(() => null)) as NerBody | null;
@@ -60,12 +114,16 @@ export async function POST(req: Request) {
       );
     }
 
+    const prompt =
+      typeof body?.prompt === "string" ? body.prompt.trim() : "";
     const temperature = parseTemperatureOptional(body?.temperature);
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamUrl = `${upstreamBasePath}/ner/api/ner`;
 
     const authHeader = req.headers.get("authorization");
+    const upstreamText = buildUpstreamNerPrompt(text, prompt);
+
     const upstreamRes = await fetch(upstreamUrl, {
       method: "POST",
       headers: {
@@ -77,7 +135,7 @@ export async function POST(req: Request) {
             : {}),
       },
       body: JSON.stringify({
-        text,
+        text: upstreamText,
         ...(typeof temperature === "number" ? { temperature } : {}),
       }),
       cache: "no-store",
@@ -105,7 +163,7 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json(normalized);
+    return NextResponse.json(applyPromptPreference(normalized, prompt));
   } catch (error: unknown) {
     console.error("NER API Error:", error);
     if (error instanceof Error && error.name === "TimeoutError") {
