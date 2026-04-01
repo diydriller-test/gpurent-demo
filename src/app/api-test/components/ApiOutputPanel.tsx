@@ -1,8 +1,43 @@
-import type React from "react";
+import React, { useState } from "react";
 
 import type { ApiId, ChatMessage, RerankResult } from "../lib/types";
 import { ChatMarkdown } from "./ChatMarkdown";
 import { EmbeddingFingerprintHeatmap } from "./EmbeddingFingerprintHeatmap";
+
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
 
 type Props = {
   selectedApi: ApiId;
@@ -93,6 +128,47 @@ export function ApiOutputPanel({
   sttFileName,
   isRecording,
 }: Props) {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  function renderCopyButton(key: string, onClick: () => void, disabled = false) {
+    const isCopied = copiedKey === key;
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={isCopied ? "복사 완료" : "결과 복사"}
+        title={isCopied ? "복사됨" : "복사"}
+        className={[
+          "inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
+          isCopied
+            ? "border-accent/50 bg-accent/10 text-accent"
+            : "border-white/10 bg-background/25 text-foreground/65 hover:border-accent/40 hover:text-accent",
+          disabled ? "cursor-not-allowed opacity-45" : "",
+        ].join(" ")}
+      >
+        {isCopied ? (
+          <CheckIcon className="h-4 w-4" />
+        ) : (
+          <CopyIcon className="h-4 w-4" />
+        )}
+      </button>
+    );
+  }
+
+  async function copyText(key: string, text: string) {
+    if (!text.trim()) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      window.setTimeout(() => {
+        setCopiedKey((prev) => (prev === key ? null : prev));
+      }, 1200);
+    } catch {
+      setCopiedKey(null);
+    }
+  }
+
   return (
     <>
       {(() => {
@@ -174,10 +250,17 @@ export function ApiOutputPanel({
                             {m.content}
                           </pre>
                         ) : (
-                          <ChatMarkdown
-                            content={m.content}
-                            className="min-w-0 break-words text-sm"
-                          />
+                          <div>
+                            <div className="mb-2 flex justify-end">
+                              {renderCopyButton(`llm-${m.id}`, () =>
+                                void copyText(`llm-${m.id}`, m.content),
+                              )}
+                            </div>
+                            <ChatMarkdown
+                              content={m.content}
+                              className="min-w-0 break-words text-sm"
+                            />
+                          </div>
                         )}
                         <div className="mt-2 flex items-center justify-end gap-2">
                           <span className="font-mono text-[11px] text-foreground/40">
@@ -228,8 +311,15 @@ export function ApiOutputPanel({
                         카피를 생성하는 중입니다…
                       </div>
                     ) : adCopyResult ? (
-                      <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                        <ChatMarkdown content={adCopyResult} />
+                      <div>
+                        <div className="mb-3 flex justify-end">
+                          {renderCopyButton("adCopy", () =>
+                            void copyText("adCopy", adCopyResult),
+                          )}
+                        </div>
+                        <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+                          <ChatMarkdown content={adCopyResult} />
+                        </div>
                       </div>
                     ) : (
                       <div className="flex h-full min-h-[200px] items-center justify-center text-center text-sm text-foreground/60">
@@ -370,9 +460,9 @@ export function ApiOutputPanel({
                             </p>
                           ) : null}
                         </div>
-                        <span className="rounded-xl border border-accent/20 bg-background/30 px-3 py-1 text-[11px] text-accent">
-                          Live API
-                        </span>
+                          <span className="rounded-xl border border-accent/20 bg-background/30 px-3 py-1 text-[11px] text-accent">
+                            Live API
+                          </span>
                       </div>
 
                       <div className="mt-2 min-h-0 flex-1 overflow-y-auto pr-1">
@@ -609,16 +699,25 @@ export function ApiOutputPanel({
             return (
               <div className="space-y-3">
                 <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
-                  <p className="font-mono text-xs text-accent">
-                    Transcript Output
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-foreground">
-                    최첨단 Whisper 알고리즘 기반의 Qwen3 STT 엔진이 소리를
-                    텍스트로 정교하게 추출합니다.
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-mono text-xs text-accent">
+                        Transcript Output
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        최첨단 Whisper 알고리즘 기반의 Qwen3 STT 엔진이 소리를
+                        텍스트로 정교하게 추출합니다.
+                      </p>
+                    </div>
+                  </div>
 
                   {sttTranscript ? (
                     <div className="mt-3 rounded-xl border border-white/5 bg-background/30 p-3">
+                      <div className="mb-3 flex justify-end">
+                        {renderCopyButton("stt", () =>
+                          void copyText("stt", sttTranscript),
+                        )}
+                      </div>
                       <pre className="whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground/80">
                         {sttTranscript}
                       </pre>

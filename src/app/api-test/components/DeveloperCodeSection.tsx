@@ -1,6 +1,41 @@
 import type { Dispatch, SetStateAction } from "react";
 import { renderHighlightedPython } from "../lib/codeHighlight";
 
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
 type Props = {
   devCodeOpen: boolean;
   setDevCodeOpen: Dispatch<SetStateAction<boolean>>;
@@ -53,13 +88,20 @@ export function DeveloperCodeSection({
                 setDevCodeCopied(false);
               }
             }}
+            aria-label={devCodeCopied ? "코드 복사 완료" : "코드 복사"}
+            title={devCodeCopied ? "복사됨" : "복사"}
             className={[
-              "absolute right-3 top-3 rounded-lg border px-3 py-1 text-[11px] font-mono transition-colors",
-              "border-white/10 bg-background/20 text-foreground/60",
-              "hover:border-accent/50 hover:text-accent-bright",
+              "absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
+              devCodeCopied
+                ? "border-accent/50 bg-accent/10 text-accent"
+                : "border-white/10 bg-background/20 text-foreground/60 hover:border-accent/50 hover:text-accent-bright",
             ].join(" ")}
           >
-            {devCodeCopied ? "Copied!" : "Copy"}
+            {devCodeCopied ? (
+              <CheckIcon className="h-4 w-4" />
+            ) : (
+              <CopyIcon className="h-4 w-4" />
+            )}
           </button>
 
           <pre className="mt-1 max-h-[320px] overflow-auto whitespace-pre rounded-lg border border-white/5 bg-zinc-950 p-3 font-mono text-[12px] leading-relaxed text-foreground/90">

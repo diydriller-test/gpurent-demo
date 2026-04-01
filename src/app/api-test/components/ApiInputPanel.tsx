@@ -1,4 +1,4 @@
-import type React from "react";
+import React, { useState } from "react";
 
 import { AD_COPY_LANGUAGE_OPTIONS } from "@/lib/adCopyLanguages";
 import type {
@@ -13,6 +13,41 @@ import { ChatMarkdown } from "./ChatMarkdown";
 function parseTemperatureRange(value: string, fallback: number): number {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
 }
 
 type SttHelpTooltipId = "vad" | "beam";
@@ -290,6 +325,47 @@ export function ApiInputPanel({
   IconUpload,
   IconMic,
 }: Props) {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  function renderCopyButton(key: string, onClick: () => void, disabled = false) {
+    const isCopied = copiedKey === key;
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-label={isCopied ? "복사 완료" : "결과 복사"}
+        title={isCopied ? "복사됨" : "복사"}
+        className={[
+          "inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
+          isCopied
+            ? "border-accent/50 bg-accent/10 text-accent"
+            : "border-white/10 bg-background/25 text-foreground/65 hover:border-accent/40 hover:text-accent",
+          disabled ? "cursor-not-allowed opacity-45" : "",
+        ].join(" ")}
+      >
+        {isCopied ? (
+          <CheckIcon className="h-4 w-4" />
+        ) : (
+          <CopyIcon className="h-4 w-4" />
+        )}
+      </button>
+    );
+  }
+
+  async function copyText(key: string, text: string) {
+    if (!text.trim()) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      window.setTimeout(() => {
+        setCopiedKey((prev) => (prev === key ? null : prev));
+      }, 1200);
+    } catch {
+      setCopiedKey(null);
+    }
+  }
+
   return (
     <div
       className={
@@ -539,8 +615,15 @@ export function ApiInputPanel({
                       카피를 생성하는 중입니다…
                     </p>
                   ) : adCopyResult ? (
-                    <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                      <ChatMarkdown content={adCopyResult} />
+                    <div>
+                      <div className="mb-3 flex justify-end">
+                        {renderCopyButton("adCopy", () =>
+                          void copyText("adCopy", adCopyResult),
+                        )}
+                      </div>
+                      <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+                        <ChatMarkdown content={adCopyResult} />
+                      </div>
                     </div>
                   ) : (
                     <p className="text-sm leading-relaxed text-foreground/45">
@@ -672,8 +755,15 @@ export function ApiInputPanel({
                       요약을 생성하는 중입니다…
                     </p>
                   ) : summarizeResult ? (
-                    <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                      <ChatMarkdown content={summarizeResult} />
+                    <div>
+                      <div className="mb-3 flex justify-end">
+                        {renderCopyButton("summarize", () =>
+                          void copyText("summarize", summarizeResult),
+                        )}
+                      </div>
+                      <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+                        <ChatMarkdown content={summarizeResult} />
+                      </div>
                     </div>
                   ) : (
                     <p className="text-sm leading-relaxed text-foreground/45">
@@ -1165,9 +1255,16 @@ export function ApiInputPanel({
                       {textToSqlError}
                     </p>
                   ) : textToSqlResult ? (
-                    <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-foreground/90">
-                      {textToSqlResult.sql}
-                    </pre>
+                    <div>
+                      <div className="mb-3 flex justify-end">
+                        {renderCopyButton("textToSql", () =>
+                          void copyText("textToSql", textToSqlResult.sql),
+                        )}
+                      </div>
+                      <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-foreground/90">
+                        {textToSqlResult.sql}
+                      </pre>
+                    </div>
                   ) : (
                     <p className="text-sm leading-relaxed text-foreground/45">
                       <span className="text-foreground/65">SQL 생성</span>을

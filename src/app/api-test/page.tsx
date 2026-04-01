@@ -123,6 +123,41 @@ const DEFAULT_RERANK_QUERY = "사람 없고 한적한 곳에서 힐링하고 싶
 const DEFAULT_RERANK_DOCS_TEXT =
   "- 사람들이 가장 많이 찾는 서울 핫플레이스 TOP 10\n- 여름 휴가철 인파로 북적이는 해운대 해수욕장 현황\n- 숲소리만 들리는 깊은 산속 프라이빗 독채 펜션\n- 친구들과 시끌벅적하게 즐기는 강남역 맛집 탐방";
 
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
 const STT_ACCEPTED_LANGUAGE_CODES = [
   "af",
   "am",
@@ -5929,35 +5964,6 @@ export default function ApiTestPage() {
                         <p className="font-mono text-xs text-foreground/60">
                           Response
                         </p>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (!currentConsole.responseJson) return;
-                            try {
-                              await navigator.clipboard.writeText(
-                                currentConsole.responseJson,
-                              );
-                              setConsoleCopied(true);
-                              window.setTimeout(() => {
-                                setConsoleCopied(false);
-                              }, 1200);
-                            } catch {
-                              setConsoleCopied(false);
-                            }
-                          }}
-                          disabled={
-                            !currentConsole.responseJson ||
-                            selectedApi === "tts"
-                          }
-                          className={[
-                            "rounded-lg border px-3 py-1 text-[11px] font-mono transition-colors",
-                            "border-white/10 bg-background/30 text-foreground/70",
-                            "hover:border-accent/40 hover:text-accent",
-                            "disabled:cursor-not-allowed disabled:opacity-50",
-                          ].join(" ")}
-                        >
-                          {consoleCopied ? "복사됨" : "복사"}
-                        </button>
                       </div>
                       {selectedApi === "tts" ? (
                         <div className="mt-3">
@@ -5976,7 +5982,43 @@ export default function ApiTestPage() {
                           )}
                         </div>
                       ) : currentConsole.responseJson ? (
-                        <JsonCode text={currentConsole.responseJson} />
+                        <div className="mt-3">
+                          <div className="mb-2 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(
+                                    currentConsole.responseJson,
+                                  );
+                                  setConsoleCopied(true);
+                                  window.setTimeout(() => {
+                                    setConsoleCopied(false);
+                                  }, 1200);
+                                } catch {
+                                  setConsoleCopied(false);
+                                }
+                              }}
+                              aria-label={
+                                consoleCopied ? "응답 복사 완료" : "응답 복사"
+                              }
+                              title={consoleCopied ? "복사됨" : "복사"}
+                              className={[
+                                "inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
+                                consoleCopied
+                                  ? "border-accent/50 bg-accent/10 text-accent"
+                                  : "border-white/10 bg-background/30 text-foreground/70 hover:border-accent/40 hover:text-accent",
+                              ].join(" ")}
+                            >
+                              {consoleCopied ? (
+                                <CheckIcon className="h-4 w-4" />
+                              ) : (
+                                <CopyIcon className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                          <JsonCode text={currentConsole.responseJson} />
+                        </div>
                       ) : (
                         <div className="mt-3 text-xs text-foreground/60">
                           아직 응답 데이터가 없습니다.
