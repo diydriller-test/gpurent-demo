@@ -34,11 +34,11 @@ export function SiteFooter() {
                 <span className="font-medium text-foreground">상호명</span> 주식회사
                 코그로보
                 <span className="mx-2 text-foreground/28">|</span>
-                <span className="font-medium text-foreground">대표자</span> 정형덕
+                <span className="font-medium text-foreground">대표자</span> 정항덕
               </p>
               <p>
                 <span className="font-medium text-foreground">사업장 주소</span>{" "}
-                08547 서울특별시 금천구 남부순환로 1284 영신빌딩 4층 402호
+                08547 서울특별시 금천구 남부순환로 1384 영남빌딩 4층 402호
               </p>
               <p>
                 <span className="font-medium text-foreground">사업자 등록번호</span>{" "}
@@ -49,7 +49,7 @@ export function SiteFooter() {
                 2023-서울금천-1423
                 <span className="mx-2 text-foreground/28">|</span>
                 <span className="font-medium text-foreground">개인정보보호책임자</span>{" "}
-                정형덕
+                정항덕
               </p>
             </div>
           </div>
@@ -66,11 +66,6 @@ export function SiteFooter() {
                 >
                   help@kogrobo.com
                 </a>
-              </p>
-              <p>
-                <span className="font-medium text-foreground">CS 운영시간</span>
-                <br />
-                월요일 - 금요일 10:00 - 17:00 (공휴일 제외)
               </p>
             </div>
           </div>
