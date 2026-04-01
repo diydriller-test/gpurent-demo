@@ -75,6 +75,64 @@ const HERO_BADGES = [
   "텍스트·임베딩·TTS 통합 제공",
 ];
 
+const OMAKASE_LLM_STARTER_PRICE = 190000;
+const USD_TO_KRW = 1530;
+const GPT4O_INPUT_USD_PER_M = 5;
+const GPT4O_OUTPUT_USD_PER_M = 15;
+const GPT4O_BLEND_USD_PER_M = (GPT4O_INPUT_USD_PER_M + GPT4O_OUTPUT_USD_PER_M) / 2;
+const GPT4O_KRW_PER_M_TOKEN = GPT4O_BLEND_USD_PER_M * USD_TO_KRW;
+const TARGET_BREAK_EVEN_X = OMAKASE_LLM_STARTER_PRICE / GPT4O_KRW_PER_M_TOKEN;
+const TARGET_BREAK_EVEN_Y = OMAKASE_LLM_STARTER_PRICE;
+const TARGET_GRAPH_MAX_X = 70;
+const TARGET_GRAPH_MAX_Y = 1100000;
+const TARGET_GRAPH_TICKS_X = [0, 10, 20, 30, 40, 50, 60, 70];
+const TARGET_GRAPH_TICKS_Y = [0, 100000, 190000, 300000, 500000, 700000, 1000000];
+const TARGET_GRAPH_LEFT = 90;
+const TARGET_GRAPH_RIGHT = 870;
+const TARGET_GRAPH_TOP = 72;
+const TARGET_GRAPH_BOTTOM = 392;
+
+const TARGET_CUSTOMERS = [
+  {
+    title: "대량 Chunking / 전처리 개발자",
+    description:
+      "문서 분할과 전처리를 반복할수록 토큰 과금보다 월정액 구조가 더 유리해집니다.",
+  },
+  {
+    title: "PoC 대량, 반복 실험자",
+    description:
+      "프롬프트와 파이프라인을 계속 바꿔 검증해야 한다면, 실험 속도와 예측 가능한 비용이 더 중요합니다.",
+  },
+  {
+    title: "동시 End-user 다수 서비스",
+    description:
+      "동시 요청이 많은 서비스일수록 교점 이후 구간에서 비용 예측성과 운영 설명력이 확실히 좋아집니다.",
+  },
+];
+
+function formatWon(value: number) {
+  return `${Math.round(value).toLocaleString("ko-KR")}원`;
+}
+
+function formatGraphWonTick(value: number) {
+  if (value === 0) return "";
+  return `${Math.round(value / 10000)}만원`;
+}
+
+function graphX(x: number) {
+  return (
+    TARGET_GRAPH_LEFT +
+    (x / TARGET_GRAPH_MAX_X) * (TARGET_GRAPH_RIGHT - TARGET_GRAPH_LEFT)
+  );
+}
+
+function graphY(y: number) {
+  return (
+    TARGET_GRAPH_BOTTOM -
+    (y / TARGET_GRAPH_MAX_Y) * (TARGET_GRAPH_BOTTOM - TARGET_GRAPH_TOP)
+  );
+}
+
 const DIFFERENTIATORS = [
   {
     title: "비용이 예측됩니다",
@@ -97,27 +155,6 @@ const FITS_FOR = [
   "PoC를 빠르게 시작해야 하는 팀",
   "토큰 과금 대신 고정 비용이 필요한 팀",
   "여러 AI 기능을 한 번에 붙여야 하는 팀",
-];
-
-const PROOF_METRICS = [
-  { label: "지원 API", value: "9종", note: "텍스트·임베딩·TTS·STT 등" },
-  { label: "Starter 시작", value: "6,000원", note: "API별 월정액 기준" },
-  { label: "Pro 확장", value: "최대 3배", note: "Starter 대비 RPS 확장" },
-];
-
-const PLAN_PREVIEW = [
-  {
-    name: "Starter",
-    price: "6,000원부터",
-    description: "작게 시작하고 빠르게 검증하기 좋은 월정액 플랜",
-    points: ["API별 1~3.5 RPS 수준", "PoC/초기 연동에 적합", "비용 예측이 쉬운 구조"],
-  },
-  {
-    name: "Pro",
-    price: "18,000원부터",
-    description: "운영 환경에서 트래픽을 안정적으로 확장하기 위한 플랜",
-    points: ["Starter 대비 최대 3배 RPS", "확장 시에도 단순한 비용 구조", "서비스 운영 단계에 적합"],
-  },
 ];
 
 const COMPARISON_ROWS = [
@@ -146,7 +183,8 @@ const COMPARISON_ROWS = [
 const USE_CASES = [
   {
     title: "고객 응대 자동화",
-    summary: "STT + LLM + 요약 API를 조합해 상담 내용을 빠르게 정리하고 응답 품질을 높입니다.",
+    summary:
+      "STT + LLM + 요약 API를 조합해 상담 내용을 빠르게 정리하고 응답 품질을 높입니다.",
     flow: "STT -> Text -> Summary",
     outcome: "상담 기록 자동화, 응답 속도 개선, CS 운영 효율 향상",
   },
@@ -431,27 +469,6 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="mx-auto mt-8 grid max-w-4xl gap-3 md:grid-cols-3">
-            {PROOF_METRICS.map((metric, idx) => (
-              <div
-                key={metric.label}
-                className={[
-                  "rounded-2xl border px-5 py-4 text-left",
-                  idx === 1
-                    ? "border-accent/28 bg-accent/6"
-                    : "border-white/8 bg-background/18",
-                ].join(" ")}
-              >
-                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
-                  {metric.label}
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-foreground">
-                  {metric.value}
-                </p>
-                <p className="mt-1 text-sm text-foreground/58">{metric.note}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -459,105 +476,310 @@ export default function Home() {
       <section className="border-t border-white/5 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 font-mono text-[11px] tracking-[0.16em] text-accent">
+              교점 약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰 이후
+            </div>
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
               가격 근거
             </p>
             <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
-              말로만 저렴한 게 아니라, 플랜 구조가 명확합니다
+              교점 이후 고객이 오마카세의 핵심 타겟입니다
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              API별로 Starter와 Pro가 명확하게 나뉘고, RPS 확장 폭도 직관적입니다.
-              도입 단계와 운영 단계의 비용 계획을 미리 세우기 쉬운 구조입니다.
+              GPT-4o API와 자사 LLM Starter 월비용 19만원을 같은 축에서 비교하면,
+              어느 구간부터 월정액 모델을 먼저 봐야 하는지 바로 이해할 수 있습니다.
             </p>
           </div>
-          <div className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-3xl border border-accent/18 bg-accent/5 p-8">
+          <div className="mt-12 space-y-6">
+            <div className="overflow-hidden rounded-[32px] border border-accent/18 bg-[radial-gradient(circle_at_top,rgba(232,136,138,0.16),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8 shadow-[0_0_90px_rgba(232,136,138,0.08)] md:p-10">
               <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
-                플랜 비교
+                타겟 사용자 그래프
               </p>
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
-                {PLAN_PREVIEW.map((plan, idx) => (
-                  <div
-                    key={plan.name}
-                    className={[
-                      "rounded-2xl border p-6",
-                      idx === 0
-                        ? "border-white/8 bg-background/25"
-                        : "border-accent/28 bg-accent/8",
-                    ].join(" ")}
+              <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-2xl font-semibold text-foreground">
+                    많이 쓸수록 19만원 월정액이 더 유리합니다
+                  </h3>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground/65">
+                    x축은 월간 사용량(백만 토큰), y축은 비용입니다. 교점 이후부터는
+                    GPT-4o보다 AI API 오마카세의 비용 우위가 더 분명해집니다.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-accent/24 bg-background/20 px-4 py-3 text-right shadow-[0_0_35px_rgba(232,136,138,0.10)]">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
+                    자사 LLM Starter
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-foreground">
+                    190,000원
+                  </p>
+                </div>
+              </div>
+              <div className="mt-8 overflow-hidden rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-6 md:p-8">
+                <svg
+                  viewBox="0 0 960 520"
+                  className="h-auto w-full"
+                  role="img"
+                  aria-label="월간 사용량 대비 비용 비교 그래프"
+                >
+                  <defs>
+                    <linearGradient id="targetZone" x1="0" x2="1" y1="0" y2="0">
+                      <stop offset="0%" stopColor="rgba(232,136,138,0)" />
+                      <stop offset="100%" stopColor="rgba(232,136,138,0.22)" />
+                    </linearGradient>
+                    <radialGradient id="pointGlow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="rgba(232,136,138,0.95)" />
+                      <stop offset="55%" stopColor="rgba(232,136,138,0.35)" />
+                      <stop offset="100%" stopColor="rgba(232,136,138,0)" />
+                    </radialGradient>
+                    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="8" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  {TARGET_GRAPH_TICKS_Y.map((tick) => (
+                    <g key={`y-${tick}`}>
+                      <line
+                        x1="90"
+                        y1={graphY(tick)}
+                        x2="870"
+                        y2={graphY(tick)}
+                        stroke="rgba(255,255,255,0.08)"
+                        strokeDasharray={tick === 0 ? "0" : "4 6"}
+                      />
+                      <text
+                        x="78"
+                        y={graphY(tick) + 4}
+                        textAnchor="end"
+                        fill="rgba(255,255,255,0.48)"
+                        fontSize="12"
+                        fontFamily="monospace"
+                      >
+                        {formatGraphWonTick(tick)}
+                      </text>
+                    </g>
+                  ))}
+                  {TARGET_GRAPH_TICKS_X.map((tick) => (
+                    <g key={`x-${tick}`}>
+                      <line
+                        x1={graphX(tick)}
+                        y1="72"
+                        x2={graphX(tick)}
+                        y2="392"
+                        stroke="rgba(255,255,255,0.06)"
+                        strokeDasharray={tick === 0 ? "0" : "4 6"}
+                      />
+                      <text
+                        x={graphX(tick)}
+                        y="424"
+                        textAnchor="middle"
+                        fill="rgba(255,255,255,0.48)"
+                        fontSize="13"
+                        fontFamily="monospace"
+                      >
+                        {tick === 0 ? "" : tick}
+                      </text>
+                    </g>
+                  ))}
+                  <line x1="90" y1="392" x2="870" y2="392" stroke="rgba(255,255,255,0.24)" />
+                  <line x1="90" y1="72" x2="90" y2="392" stroke="rgba(255,255,255,0.24)" />
+                  <rect
+                    x={graphX(TARGET_BREAK_EVEN_X)}
+                    y="72"
+                    width={870 - graphX(TARGET_BREAK_EVEN_X)}
+                    height="320"
+                    fill="url(#targetZone)"
+                  />
+                  <line
+                    x1="90"
+                    y1={graphY(OMAKASE_LLM_STARTER_PRICE)}
+                    x2="870"
+                    y2={graphY(OMAKASE_LLM_STARTER_PRICE)}
+                    stroke="rgba(232,136,138,0.95)"
+                    strokeWidth="3.5"
+                  />
+                  <line
+                    x1="90"
+                    y1={graphY(0)}
+                    x2="870"
+                    y2={graphY(GPT4O_KRW_PER_M_TOKEN * TARGET_GRAPH_MAX_X)}
+                    stroke="rgba(255,255,255,0.88)"
+                    strokeWidth="3.5"
+                  />
+                  <circle
+                    cx={graphX(TARGET_BREAK_EVEN_X)}
+                    cy={graphY(TARGET_BREAK_EVEN_Y)}
+                    r="18"
+                    fill="rgba(255,164,173,0.16)"
+                    className="target-point-neon-halo"
+                  />
+                  <circle
+                    cx={graphX(TARGET_BREAK_EVEN_X)}
+                    cy={graphY(TARGET_BREAK_EVEN_Y)}
+                    r="8"
+                    fill="rgba(232,136,138,1)"
+                    className="target-point-core"
+                  />
+                  <line
+                    x1={graphX(TARGET_BREAK_EVEN_X)}
+                    y1="72"
+                    x2={graphX(TARGET_BREAK_EVEN_X)}
+                    y2="392"
+                    stroke="rgba(232,136,138,0.45)"
+                    strokeDasharray="6 6"
+                  />
+                  <text
+                    x={graphX(TARGET_BREAK_EVEN_X)}
+                    y="444"
+                    textAnchor="middle"
+                    fill="rgba(255,255,255,0.52)"
+                    fontSize="10"
+                    fontFamily="monospace"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">
-                          {plan.name}
-                        </p>
-                        <p className="mt-2 text-2xl font-semibold text-foreground">
-                          {plan.price}
-                        </p>
-                      </div>
-                      {idx === 1 ? (
-                        <span className="rounded-full border border-accent/35 bg-accent/12 px-3 py-1 font-mono text-[11px] text-accent">
-                          운영 확장
-                        </span>
-                      ) : (
-                        <span className="rounded-full border border-white/10 bg-background/25 px-3 py-1 font-mono text-[11px] text-foreground/65">
-                          빠른 시작
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-4 text-sm leading-relaxed text-foreground/62">
-                      {plan.description}
-                    </p>
-                    <div className="mt-5 space-y-2.5">
-                      {plan.points.map((point) => (
-                        <div key={point} className="flex items-start gap-2.5">
-                          <span className="mt-1 inline-flex h-2 w-2 shrink-0 rounded-full bg-accent" />
-                          <p className="text-sm text-foreground/82">{point}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                    손익분기점 약 {Math.round(TARGET_BREAK_EVEN_X * 100).toLocaleString("ko-KR")}만 토큰
+                  </text>
+                  <text
+                    x="90"
+                    y="44"
+                    fill="rgba(255,255,255,0.56)"
+                    fontSize="13"
+                    fontFamily="monospace"
+                  >
+                    비용
+                  </text>
+                  <text
+                    x="870"
+                    y="468"
+                    textAnchor="end"
+                    fill="rgba(255,255,255,0.56)"
+                    fontSize="13"
+                    fontFamily="monospace"
+                  >
+                    월간 사용량 (백만 토큰)
+                  </text>
+                  <text
+                    x={graphX(0) - 18}
+                    y={graphY(0) + 18}
+                    fill="rgba(255,255,255,0.58)"
+                    fontSize="13"
+                    fontFamily="monospace"
+                  >
+                    0
+                  </text>
+                </svg>
+              </div>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-accent/24 bg-accent/8 px-4 py-3">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+                    손익분기점
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-foreground">
+                    약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰
+                  </p>
+                  <p className="mt-1 text-sm text-foreground/65">
+                    이 지점을 넘으면 AI API 오마카세를 우선 봐야 합니다.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-white/8 bg-background/18 px-4 py-3">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
+                    그래프 해석
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-foreground">
+                    GPT-4o는 사용량 비례 증가, 오마카세는 월 19만원 고정
+                  </p>
+                  <p className="mt-1 text-sm text-foreground/55">
+                    입력/출력 50:50, GPT-4o 환산 기준으로 교점 이후 구간을 강조했습니다.
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="rounded-3xl border border-white/8 bg-surface/45 p-8">
+            <div className="grid gap-4 md:grid-cols-[1.15fr_1.15fr_1.15fr_0.95fr]">
+              {TARGET_CUSTOMERS.map((customer, idx) => (
+                <div
+                  key={customer.title}
+                  className={[
+                    "rounded-3xl border p-5",
+                    idx === 2
+                      ? "border-accent/24 bg-accent/7 shadow-[0_0_40px_rgba(232,136,138,0.08)]"
+                      : "border-white/8 bg-surface/45",
+                  ].join(" ")}
+                >
+                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/85">
+                    예상 타겟 고객
+                  </p>
+                  <h3 className="mt-3 text-lg font-semibold text-foreground">
+                    {customer.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-foreground/62">
+                    {customer.description}
+                  </p>
+                </div>
+              ))}
+              <div className="rounded-3xl border border-accent/22 bg-[linear-gradient(180deg,rgba(232,136,138,0.10),rgba(232,136,138,0.05))] p-5 shadow-[0_0_50px_rgba(232,136,138,0.10)]">
               <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
-                왜 중요한가
+                결론
               </p>
-              <h3 className="mt-3 text-2xl font-semibold text-foreground">
-                잠재 고객이 바로 이해하는 포인트
-              </h3>
-              <div className="mt-6 space-y-4">
-                <div className="rounded-2xl border border-white/6 bg-background/25 p-4">
-                  <p className="text-sm font-semibold text-foreground">
-                    1. 작은 비용으로 시작할 수 있습니다
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-foreground/62">
-                    STT, TTS처럼 낮은 진입 비용으로 먼저 검증하고, 성과가 확인되면
-                    더 큰 플랜으로 자연스럽게 확장할 수 있습니다.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/6 bg-background/25 p-4">
-                  <p className="text-sm font-semibold text-foreground">
-                    2. 성능과 비용의 균형을 설명하기 쉽습니다
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-foreground/62">
-                    API별 RPS 기준이 보이기 때문에 내부 의사결정자에게도 도입
-                    근거를 명확하게 제시할 수 있습니다.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/6 bg-background/25 p-4">
-                  <p className="text-sm font-semibold text-foreground">
-                    3. 성장 경로가 단순합니다
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-foreground/62">
-                    Starter에서 Pro로의 확장 폭이 단순해, 트래픽 증가 시에도 플랜
-                    변경을 쉽게 이해할 수 있습니다.
-                  </p>
-                </div>
+              <p className="mt-3 text-sm leading-relaxed text-foreground/65">
+                교점 이후 구간에서 많이 쓰고, 반복 실험하고, 동시에 많은
+                End-user 요청을 처리해야 한다면 AI API 오마카세는 우선 검토
+                대상입니다.
+              </p>
+              <div className="mt-4 rounded-2xl border border-white/10 bg-background/20 px-4 py-3">
+                <p className="text-sm font-semibold text-foreground">
+                  교점 이전 고객
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-foreground/60">
+                  다른 선택지도 충분히 가능합니다.
+                </p>
               </div>
+              <div className="mt-3 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3">
+                <p className="text-sm font-semibold text-foreground">
+                  교점 이후 고객
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-foreground/82">
+                  오마카세를 먼저 봐야 하는 구간입니다.
+                </p>
+              </div>
+            </div>
             </div>
           </div>
+          <style>{`
+            @keyframes targetPointNeonHaloBlink {
+              0%, 18%, 22%, 54%, 58%, 100% { opacity: 0.95; }
+              20%, 56% { opacity: 0.18; }
+              24% { opacity: 0.48; }
+            }
+            @keyframes targetPointNeonCoreBlink {
+              0%, 18%, 22%, 54%, 58%, 100% {
+                opacity: 1;
+                filter:
+                  drop-shadow(0 0 4px rgba(255, 214, 214, 0.95))
+                  drop-shadow(0 0 10px rgba(232, 136, 138, 0.95))
+                  drop-shadow(0 0 18px rgba(232, 136, 138, 0.72));
+              }
+              20%, 56% {
+                opacity: 0.34;
+                filter:
+                  drop-shadow(0 0 2px rgba(255, 214, 214, 0.45))
+                  drop-shadow(0 0 4px rgba(232, 136, 138, 0.28));
+              }
+              24% {
+                opacity: 0.68;
+                filter:
+                  drop-shadow(0 0 3px rgba(255, 214, 214, 0.7))
+                  drop-shadow(0 0 7px rgba(232, 136, 138, 0.55))
+                  drop-shadow(0 0 12px rgba(232, 136, 138, 0.34));
+              }
+            }
+            .target-point-neon-halo {
+              animation: targetPointNeonHaloBlink 2.2s steps(1, end) infinite;
+            }
+            .target-point-core {
+              animation: targetPointNeonCoreBlink 2.2s steps(1, end) infinite;
+            }
+          `}</style>
         </div>
       </section>
 
@@ -601,8 +823,8 @@ export default function Home() {
                 이런 팀에게 더 잘 맞습니다
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-foreground/65">
-                단순한 API 카탈로그가 아니라, 빠른 검증과 운영 가능한 비용 구조가
-                필요한 팀이라면 더 큰 가치를 체감할 수 있습니다.
+                단순한 API 카탈로그가 아니라, 빠른 검증과 운영 가능한 비용
+                구조가 필요한 팀이라면 더 큰 가치를 체감할 수 있습니다.
               </p>
               <div className="mt-6 space-y-3">
                 {FITS_FOR.map((item) => (
@@ -654,7 +876,9 @@ export default function Home() {
                 key={row.label}
                 className={[
                   "grid grid-cols-[0.8fr_1fr_1fr]",
-                  idx !== COMPARISON_ROWS.length - 1 ? "border-b border-white/6" : "",
+                  idx !== COMPARISON_ROWS.length - 1
+                    ? "border-b border-white/6"
+                    : "",
                 ].join(" ")}
               >
                 <div className="px-5 py-5 text-sm font-semibold text-foreground">
@@ -765,8 +989,8 @@ export default function Home() {
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
               좋은 랜딩은 기능을 많이 설명하는 것이 아니라, 시작하는 방법을 쉽게
-              보이게 해야 합니다. AI API 오마카세는 아래 3단계 흐름으로 이해할 수
-              있습니다.
+              보이게 해야 합니다. AI API 오마카세는 아래 3단계 흐름으로 이해할
+              수 있습니다.
             </p>
           </div>
 
@@ -923,7 +1147,9 @@ export default function Home() {
                     <h3 className="mt-3 text-3xl font-semibold text-foreground">
                       {plan.price}
                     </h3>
-                    <p className="mt-2 text-sm text-foreground/65">{plan.subtitle}</p>
+                    <p className="mt-2 text-sm text-foreground/65">
+                      {plan.subtitle}
+                    </p>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-background/20 px-4 py-3 text-left sm:text-right">
                     <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
@@ -1003,10 +1229,12 @@ export default function Home() {
             ))}
           </div>
           <div className="mt-16 rounded-2xl border border-accent/20 bg-accent/5 p-8 text-center md:p-12">
-            <p className="font-mono text-accent">복잡한 계산보다 단순한 운영 기준</p>
+            <p className="font-mono text-accent">
+              복잡한 계산보다 단순한 운영 기준
+            </p>
             <p className="mt-2 text-foreground/80">
-              여러 AI API를 따로 붙이는 대신, 한 플랫폼에서 테스트하고 운영 기준을
-              더 명확하게 관리하세요.
+              여러 AI API를 따로 붙이는 대신, 한 플랫폼에서 테스트하고 운영
+              기준을 더 명확하게 관리하세요.
             </p>
             <Link
               href="/plans"
@@ -1063,18 +1291,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-wood/15 px-6 py-12">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
-          <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-accent">AI API</span>
-            <span className="font-mono text-wood">오마카세</span>
-          </div>
-          <p className="text-sm text-foreground/50">
-            © {new Date().getFullYear()} AI API 오마카세. All rights reserved.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
