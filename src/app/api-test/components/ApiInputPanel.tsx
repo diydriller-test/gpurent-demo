@@ -116,6 +116,8 @@ type Props = {
   handleTextToSqlRun: () => void;
   textToSqlText: string;
   setTextToSqlText: React.Dispatch<React.SetStateAction<string>>;
+  textToSqlDdl: string;
+  setTextToSqlDdl: React.Dispatch<React.SetStateAction<string>>;
   textToSqlTemperature: number;
   setTextToSqlTemperature: React.Dispatch<React.SetStateAction<number>>;
   isTextToSqlLoading: boolean;
@@ -258,6 +260,8 @@ export function ApiInputPanel({
   handleTextToSqlRun,
   textToSqlText,
   setTextToSqlText,
+  textToSqlDdl,
+  setTextToSqlDdl,
   textToSqlTemperature,
   setTextToSqlTemperature,
   isTextToSqlLoading,
@@ -1152,19 +1156,35 @@ export function ApiInputPanel({
             handleTextToSqlRun();
           }}
         >
-          <div className="flex flex-col gap-2.5 lg:grid lg:min-h-0 lg:grid-cols-2 lg:items-stretch lg:gap-4">
-            <div className="flex min-h-0 flex-col gap-2.5 lg:order-1">
-              <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex flex-col gap-2 lg:grid lg:min-h-0 lg:grid-cols-[1.02fr_0.98fr] lg:items-stretch lg:gap-3">
+            <div className="flex min-h-0 flex-col gap-1.5 lg:order-1">
+              <div className="flex min-h-0 flex-col">
                 <p className="font-mono text-xs text-foreground/60">
                   자연어 질문 (필수)
                 </p>
                 <textarea
                   value={textToSqlText}
                   onChange={(e) => setTextToSqlText(e.target.value)}
-                  rows={4}
+                  rows={3}
                   placeholder="예: 지난달 서울 지역 매출 상위 상품 5개를 보여줘"
-                  className="mt-1.5 min-h-[120px] max-h-[min(38vh,280px)] w-full flex-1 resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[min(28vh,320px)] lg:max-h-[min(54vh,480px)]"
+                  className="mt-1 min-h-[96px] max-h-[124px] w-full resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2.5 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[132px] lg:max-h-[168px]"
                 />
+              </div>
+
+              <div className="flex min-h-0 flex-col">
+                <p className="font-mono text-xs text-foreground/60">
+                  DDL 스키마 (선택)
+                </p>
+                <textarea
+                  value={textToSqlDdl}
+                  onChange={(e) => setTextToSqlDdl(e.target.value)}
+                  rows={2}
+                  placeholder={"예:\nCREATE TABLE users (\n  id BIGINT PRIMARY KEY,\n  name VARCHAR(255)\n);"}
+                  className="mt-1 min-h-[74px] max-h-[98px] w-full resize-y rounded-xl border border-white/10 bg-background/40 px-3 py-2 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[90px] lg:max-h-[110px]"
+                />
+                <p className="mt-1 text-[10px] leading-snug text-foreground/40">
+                  테이블/컬럼 정의를 프롬프트에 함께 포함합니다.
+                </p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
                 <div className="min-w-0 flex-1">
@@ -1187,9 +1207,9 @@ export function ApiInputPanel({
                         parseTemperatureRange(e.target.value, 0.2),
                       )
                     }
-                    className="mt-1.5 w-full accent-accent"
+                    className="mt-1 w-full accent-accent"
                   />
-                  <p className="mt-1 text-[11px] leading-snug text-foreground/45">
+                  <p className="mt-1 text-[10px] leading-snug text-foreground/42">
                     낮을수록 SQL 문법이 안정적이고, 높을수록 표현이 달라질 수
                     있어요.
                   </p>
@@ -1232,7 +1252,7 @@ export function ApiInputPanel({
             </div>
 
             <div className="flex min-h-0 flex-col lg:order-2">
-              <div className="flex min-h-0 flex-col rounded-2xl border border-accent/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(232, 136, 138,0.08)] lg:max-h-[min(58vh,520px)] lg:flex-1 lg:overflow-hidden">
+              <div className="flex min-h-0 flex-col rounded-2xl border border-accent/25 bg-background/35 p-3 shadow-[inset_0_1px_0_0_rgba(232, 136, 138,0.08)] lg:flex-1 lg:overflow-hidden">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-mono text-xs font-medium text-accent">
                     생성된 SQL
@@ -1245,7 +1265,7 @@ export function ApiInputPanel({
                     <span className="text-[11px] text-foreground/50">완료</span>
                   ) : null}
                 </div>
-                <div className="mt-2.5 min-h-[120px] max-h-[min(38vh,280px)] flex-1 overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3 lg:min-h-[200px] lg:max-h-none">
+                <div className="mt-2 min-h-[210px] max-h-[min(38vh,320px)] flex-1 overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3 lg:min-h-[300px] lg:max-h-none">
                   {isTextToSqlLoading ? (
                     <p className="text-sm leading-relaxed text-foreground/55">
                       SQL을 생성하는 중입니다…

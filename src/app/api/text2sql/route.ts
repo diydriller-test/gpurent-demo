@@ -4,6 +4,7 @@ import { resolveUpstreamContext } from "../_lib/upstream";
 type TextToSqlBody = {
   text?: unknown;
   schema?: unknown;
+  ddl?: unknown;
   temperature?: unknown;
 };
 
@@ -46,7 +47,19 @@ export async function POST(req: Request) {
     }
 
     const schema = asOptionalString(body?.schema);
+    const ddl = asOptionalString(body?.ddl);
     const temperature = parseTemperatureOptional(body?.temperature);
+    const promptText = ddl
+      ? [
+          "다음 DDL 스키마를 참고하여 사용자의 질문에 맞는 SQL만 생성하세요.",
+          "",
+          "[DDL]",
+          ddl,
+          "",
+          "[질문]",
+          text,
+        ].join("\n")
+      : text;
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamUrl = `${upstreamBasePath}/sql/api/text2sql`;
@@ -63,7 +76,7 @@ export async function POST(req: Request) {
             : {}),
       },
       body: JSON.stringify({
-        text,
+        text: promptText,
         ...(schema ? { schema } : {}),
         ...(typeof temperature === "number" ? { temperature } : {}),
       }),

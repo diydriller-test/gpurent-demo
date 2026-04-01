@@ -896,10 +896,15 @@ function tryParseNerConsoleToPlayground(jsonText: string): {
   }
 }
 
-function buildTextToSqlConsoleRequestJson(text: string, temperature: number) {
+function buildTextToSqlConsoleRequestJson(
+  text: string,
+  ddl: string,
+  temperature: number,
+) {
   return JSON.stringify(
     {
       text,
+      ...(ddl.trim() ? { ddl: ddl.trim() } : {}),
       temperature,
     },
     null,
@@ -909,19 +914,23 @@ function buildTextToSqlConsoleRequestJson(text: string, temperature: number) {
 
 function tryParseTextToSqlConsoleToPlayground(jsonText: string): {
   text?: string;
+  ddl?: string;
   temperature?: number;
 } | null {
   try {
     const parsed = JSON.parse(jsonText) as {
       text?: unknown;
+      ddl?: unknown;
       temperature?: unknown;
     };
     const out: {
       text?: string;
+      ddl?: string;
       temperature?: number;
     } = {};
 
     if (typeof parsed.text === "string") out.text = parsed.text;
+    if (typeof parsed.ddl === "string") out.ddl = parsed.ddl;
     if (
       typeof parsed.temperature === "number" &&
       Number.isFinite(parsed.temperature)
@@ -1331,6 +1340,7 @@ export default function ApiTestPage() {
   const [nerDevCodeCopied, setNerDevCodeCopied] = useState(false);
 
   const [textToSqlText, setTextToSqlText] = useState(DEFAULT_TEXT_TO_SQL_TEXT);
+  const [textToSqlDdl, setTextToSqlDdl] = useState("");
   const [textToSqlTemperature, setTextToSqlTemperature] = useState(0.2);
   const [textToSqlResult, setTextToSqlResult] =
     useState<TextToSqlPayload | null>(null);
@@ -1370,7 +1380,7 @@ export default function ApiTestPage() {
         return buildNerConsoleRequestJson(DEFAULT_NER_TEXT, 0.1);
       }
       if (api === "textToSql") {
-        return buildTextToSqlConsoleRequestJson(DEFAULT_TEXT_TO_SQL_TEXT, 0.2);
+        return buildTextToSqlConsoleRequestJson(DEFAULT_TEXT_TO_SQL_TEXT, "", 0.2);
       }
       if (api === "reranker") {
         return buildRerankConsoleRequestJson(
@@ -1929,9 +1939,10 @@ export default function ApiTestPage() {
     () =>
       buildTextToSqlDevCodePython({
         text: textToSqlText,
+        ddl: textToSqlDdl,
         temperature: textToSqlTemperature,
       }),
-    [textToSqlText, textToSqlTemperature],
+    [textToSqlDdl, textToSqlText, textToSqlTemperature],
   );
 
   // Reranker
@@ -2385,6 +2396,7 @@ export default function ApiTestPage() {
   useEffect(() => {
     const nextRequestJson = buildTextToSqlConsoleRequestJson(
       textToSqlText,
+      textToSqlDdl,
       textToSqlTemperature,
     );
     setConsoleByApi((prev) => {
@@ -2397,7 +2409,7 @@ export default function ApiTestPage() {
         },
       };
     });
-  }, [textToSqlText, textToSqlTemperature]);
+  }, [textToSqlDdl, textToSqlText, textToSqlTemperature]);
 
   useEffect(() => {
     const nextRequestJson = buildEmbeddingConsoleRequestJson(embeddingText);
@@ -2581,6 +2593,9 @@ export default function ApiTestPage() {
       if (!parsed) return;
       if (parsed.text !== undefined) {
         setTextToSqlText(parsed.text);
+      }
+      if (parsed.ddl !== undefined) {
+        setTextToSqlDdl(parsed.ddl);
       }
       if (parsed.temperature !== undefined) {
         setTextToSqlTemperature(parsed.temperature);
@@ -3880,6 +3895,7 @@ export default function ApiTestPage() {
       statusLine: "Pending...",
       requestJson: buildTextToSqlConsoleRequestJson(
         textToSqlText,
+        textToSqlDdl,
         textToSqlTemperature,
       ),
       responseJson: "",
@@ -3895,6 +3911,7 @@ export default function ApiTestPage() {
         },
         body: JSON.stringify({
           text,
+          ...(textToSqlDdl.trim() ? { ddl: textToSqlDdl.trim() } : {}),
           temperature: textToSqlTemperature,
         }),
       });
@@ -4709,6 +4726,7 @@ export default function ApiTestPage() {
       if (targetApi === "textToSql") {
         const body = parsed as {
           text?: unknown;
+          ddl?: unknown;
           temperature?: unknown;
         };
         const textBody = typeof body.text === "string" ? body.text.trim() : "";
@@ -4740,6 +4758,7 @@ export default function ApiTestPage() {
         setTextToSqlResult(null);
         setTextToSqlError(null);
         setTextToSqlText(textBody);
+        setTextToSqlDdl(typeof body.ddl === "string" ? body.ddl : "");
         setTextToSqlTemperature(Math.min(1, Math.max(0, parsedTemperature)));
 
         try {
@@ -4752,6 +4771,9 @@ export default function ApiTestPage() {
             },
             body: JSON.stringify({
               text: textBody,
+              ...(typeof body.ddl === "string" && body.ddl.trim()
+                ? { ddl: body.ddl.trim() }
+                : {}),
               temperature: parsedTemperature,
             }),
           });
@@ -5753,6 +5775,8 @@ export default function ApiTestPage() {
                       handleTextToSqlRun={() => void handleTextToSqlRun()}
                       textToSqlText={textToSqlText}
                       setTextToSqlText={setTextToSqlText}
+                      textToSqlDdl={textToSqlDdl}
+                      setTextToSqlDdl={setTextToSqlDdl}
                       textToSqlTemperature={textToSqlTemperature}
                       setTextToSqlTemperature={setTextToSqlTemperature}
                       isTextToSqlLoading={isTextToSqlLoading}

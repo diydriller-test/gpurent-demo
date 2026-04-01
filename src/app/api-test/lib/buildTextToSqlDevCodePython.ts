@@ -5,14 +5,17 @@ import { escapeForPythonJsonString } from "./escapeForPythonJsonString";
  */
 export function buildTextToSqlDevCodePython({
   text,
+  ddl,
   temperature,
 }: {
   text: string;
+  ddl: string;
   temperature: number;
 }) {
   const t = escapeForPythonJsonString(
     text.trim() || "자연어 질문을 입력하세요.",
   );
+  const ddlText = escapeForPythonJsonString(ddl.trim());
   const temp = Number.isFinite(temperature) ? temperature : 0.2;
 
   return `import requests
@@ -25,6 +28,7 @@ headers = {
 
 data = {
     "text": "${t}",
+    ${ddl.trim() ? `"ddl": "${ddlText}",` : ""}
     "temperature": ${temp},
 }
 
