@@ -1133,6 +1133,27 @@ export default function Home() {
             </p>
           </div>
 
+          <div className="mx-auto mt-8 max-w-4xl rounded-3xl border border-white/8 bg-background/24 px-6 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
+                  RPS란?
+                </p>
+                <p className="mt-2 text-lg font-semibold text-foreground">
+                  초당 몇 개의 요청을 안정적으로 처리할 수 있는지 보는 지표입니다.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-accent/18 bg-accent/8 px-4 py-3 text-sm leading-relaxed text-foreground/78 md:max-w-sm">
+                RPS가 높을수록 동시에 들어오는 요청이 많은 서비스에서도 더
+                안정적으로 운영할 수 있습니다.
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-foreground/60">
+              간단한 PoC나 내부 검증은 낮은 RPS로도 충분하지만, 실제 사용자 요청이
+              몰리는 운영 환경에서는 더 높은 RPS 플랜이 필요합니다.
+            </p>
+          </div>
+
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {PRICE_SUMMARY.map((plan) => (
               <div
