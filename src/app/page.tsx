@@ -172,7 +172,10 @@ export default function Home() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-wood/15 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex flex-wrap items-baseline gap-x-2 gap-y-0">
+          <Link
+            href="/"
+            className="flex flex-wrap items-baseline gap-x-2 gap-y-0"
+          >
             <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
               AI API
             </span>

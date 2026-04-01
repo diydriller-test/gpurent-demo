@@ -475,8 +475,9 @@ export function ApiOutputPanel({
                       onClick={handleTtsSave}
                       disabled={!ttsAudioUrl}
                       title="합성 음성 파일 저장"
+                      aria-label="합성 음성 파일 저장"
                       className={[
-                        "inline-flex shrink-0 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-colors",
+                        "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors",
                         ttsAudioUrl
                           ? "border-accent/45 bg-background/35 text-accent hover:border-accent/70 hover:bg-accent/10"
                           : "cursor-not-allowed border-white/10 bg-background/20 text-foreground/35",
@@ -489,14 +490,13 @@ export function ApiOutputPanel({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className="h-3.5 w-3.5"
+                        className="h-5 w-5"
                         aria-hidden="true"
                       >
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                         <path d="M7 10l5 5 5-5" />
                         <path d="M12 15V3" />
                       </svg>
-                      <span className="whitespace-nowrap">녹음 결과 저장</span>
                     </button>
                   </div>
 
