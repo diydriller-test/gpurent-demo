@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prependPolicyToText } from "../_lib/endpointPolicy";
 import { resolveUpstreamContext } from "../_lib/upstream";
 
 type TextToSqlBody = {
@@ -49,17 +50,13 @@ export async function POST(req: Request) {
     const schema = asOptionalString(body?.schema);
     const ddl = asOptionalString(body?.ddl);
     const temperature = parseTemperatureOptional(body?.temperature);
-    const promptText = ddl
-      ? [
-          "다음 DDL 스키마를 참고하여 사용자의 질문에 맞는 SQL만 생성하세요.",
-          "",
-          "[DDL]",
-          ddl,
-          "",
-          "[질문]",
-          text,
-        ].join("\n")
-      : text;
+    const extraSections = [
+      "[작업] 다음 DDL 스키마를 참고하여 사용자의 질문에 맞는 SQL만 생성하세요.",
+    ];
+    if (ddl) {
+      extraSections.push("[DDL]", ddl);
+    }
+    const promptText = prependPolicyToText("text2sql", text, extraSections);
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamUrl = `${upstreamBasePath}/sql/api/text2sql`;

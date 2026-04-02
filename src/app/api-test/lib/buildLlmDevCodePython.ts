@@ -9,12 +9,15 @@ function escapeForPythonJsonString(s: string) {
 }
 
 export function buildLlmDevCodePython({
+  systemPrompt,
   userMessage,
   temperature,
 }: {
+  systemPrompt: string;
   userMessage: string;
   temperature: number;
 }) {
+  const systemContent = escapeForPythonJsonString(systemPrompt.trim());
   const content = escapeForPythonJsonString(userMessage.trim());
   const safeTemperature = Number.isFinite(temperature) ? temperature : 0.1;
 
@@ -31,7 +34,7 @@ headers = {
 data = {
     "model": "${MODEL}",
     "messages": [
-        {"role": "user", "content": "${content}"}
+${systemContent ? `        {"role": "system", "content": "${systemContent}"},\n` : ""}        {"role": "user", "content": "${content}"}
     ],
     "temperature": ${safeTemperature}
 }

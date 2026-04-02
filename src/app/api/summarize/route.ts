@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prependPolicyToText } from "../_lib/endpointPolicy";
 import { resolveUpstreamContext } from "../_lib/upstream";
 
 type SummarizeBody = {
@@ -40,6 +41,9 @@ export async function POST(req: Request) {
     const styleLine =
       styleLineInput ||
       "(지정 없음 — 문맥에 맞게 한두 문단 또는 불릿 형태로 요약하세요)";
+    const guardedText = prependPolicyToText("summarize", text, [
+      `[출력 형식 힌트] ${styleLine}`,
+    ]);
 
     const temperature = parseTemperatureOptional(body?.temperature);
 
@@ -58,7 +62,7 @@ export async function POST(req: Request) {
             : {}),
       },
       body: JSON.stringify({
-        text,
+        text: guardedText,
         styleLine,
         ...(typeof temperature === "number" ? { temperature } : {}),
       }),

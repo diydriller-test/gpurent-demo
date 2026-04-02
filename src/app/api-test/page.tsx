@@ -608,12 +608,18 @@ function formatTime(ts: number) {
 }
 
 /** Text Playground ↔ Developer Console 동기화용 LLM Request JSON */
-function buildLlmConsoleRequestJson(promptValue: string, temperature: number) {
+function buildLlmConsoleRequestJson(
+  promptValue: string,
+  systemPromptValue: string,
+  temperature: number,
+) {
   return JSON.stringify(
     {
       model: "openai/gpt-oss-120b",
       temperature,
-      messages: [{ role: "user", content: promptValue }],
+      ...(systemPromptValue.trim()
+        ? { messages: [{ role: "system", content: systemPromptValue }, { role: "user", content: promptValue }] }
+        : { messages: [{ role: "user", content: promptValue }] }),
     },
     null,
     2,
@@ -626,6 +632,7 @@ function buildLlmConsoleRequestJson(promptValue: string, temperature: number) {
  */
 function tryParseLlmConsoleToPlayground(jsonText: string): {
   prompt?: string;
+  systemPrompt?: string;
   temperature?: number;
 } | null {
   try {
@@ -633,8 +640,9 @@ function tryParseLlmConsoleToPlayground(jsonText: string): {
       temperature?: unknown;
       messages?: unknown;
       input?: unknown;
+      systemPrompt?: unknown;
     };
-    const out: { prompt?: string; temperature?: number } = {};
+    const out: { prompt?: string; systemPrompt?: string; temperature?: number } = {};
 
     if (
       typeof parsed.temperature === "number" &&
@@ -652,7 +660,17 @@ function tryParseLlmConsoleToPlayground(jsonText: string): {
     const directInput =
       typeof parsed.input === "string" ? parsed.input : undefined;
     let msgContent: string | undefined;
+    let systemContent: string | undefined;
     if (Array.isArray(parsed.messages)) {
+      const s = [...parsed.messages]
+        .reverse()
+        .find(
+          (m) =>
+            m &&
+            typeof m === "object" &&
+            (m as { role?: string }).role === "system" &&
+            typeof (m as { content?: unknown }).content === "string",
+        ) as { content?: string } | undefined;
       const u = [...parsed.messages]
         .reverse()
         .find(
@@ -662,7 +680,15 @@ function tryParseLlmConsoleToPlayground(jsonText: string): {
             (m as { role?: string }).role === "user" &&
             typeof (m as { content?: unknown }).content === "string",
         ) as { content?: string } | undefined;
+      systemContent = s?.content;
       msgContent = u?.content;
+    }
+    const directSystemPrompt =
+      typeof parsed.systemPrompt === "string" ? parsed.systemPrompt : undefined;
+    if (typeof systemContent === "string") {
+      out.systemPrompt = systemContent;
+    } else if (typeof directSystemPrompt === "string") {
+      out.systemPrompt = directSystemPrompt;
     }
     const content = msgContent ?? directInput;
     if (typeof content === "string") {
@@ -1266,6 +1292,7 @@ export default function ApiTestPage() {
   const [selectedApi, setSelectedApi] = useState<ApiId>("llm");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [prompt, setPrompt] = useState("");
+  const [llmSystemPrompt, setLlmSystemPrompt] = useState("");
   const [llmTemperature, setLlmTemperature] = useState<number>(0.1);
   const [comingSoonMessage, setComingSoonMessage] = useState<string | null>(
     null,
@@ -1359,7 +1386,7 @@ export default function ApiTestPage() {
   const getDefaultConsoleRequestJson = useCallback(
     (api: ApiId): string => {
       if (api === "llm") {
-        return buildLlmConsoleRequestJson("", llmTemperature);
+        return buildLlmConsoleRequestJson("", "", llmTemperature);
       }
       if (api === "adCopy") {
         return buildAdCopyConsoleRequestJson(
@@ -2287,7 +2314,11 @@ export default function ApiTestPage() {
   }, [audioUrl]);
 
   useEffect(() => {
-    const nextRequestJson = buildLlmConsoleRequestJson(prompt, llmTemperature);
+    const nextRequestJson = buildLlmConsoleRequestJson(
+      prompt,
+      llmSystemPrompt,
+      llmTemperature,
+    );
     setConsoleByApi((prev) => {
       if (prev.llm.requestJson === nextRequestJson) return prev;
       return {
@@ -2298,7 +2329,7 @@ export default function ApiTestPage() {
         },
       };
     });
-  }, [prompt, llmTemperature]);
+  }, [prompt, llmSystemPrompt, llmTemperature]);
 
   useEffect(() => {
     const nextRequestJson = buildAdCopyConsoleRequestJson(
@@ -2484,10 +2515,11 @@ export default function ApiTestPage() {
 
   const llmDevCodePython = useMemo(() => {
     return buildLlmDevCodePython({
+      systemPrompt: llmSystemPrompt,
       userMessage: llmDevUserMessage,
       temperature: 0.1, // Get Developer Code에는 Temperature 슬라이더를 반영하지 않음
     });
-  }, [llmDevUserMessage]);
+  }, [llmDevUserMessage, llmSystemPrompt]);
 
   const currentConsole = consoleByApi[selectedApi];
 
@@ -2509,6 +2541,9 @@ export default function ApiTestPage() {
       if (!parsed) return;
       if (parsed.temperature !== undefined) {
         setLlmTemperature(parsed.temperature);
+      }
+      if (parsed.systemPrompt !== undefined) {
+        setLlmSystemPrompt(parsed.systemPrompt);
       }
       if (parsed.prompt !== undefined) {
         setPrompt(parsed.prompt);
@@ -3970,7 +4005,14 @@ export default function ApiTestPage() {
       requestJson: JSON.stringify(
         {
           model: "openai/gpt-oss-120b",
-          input: trimmed,
+          ...(llmSystemPrompt.trim()
+            ? {
+                messages: [
+                  { role: "system", content: llmSystemPrompt.trim() },
+                  { role: "user", content: trimmed },
+                ],
+              }
+            : { input: trimmed }),
           temperature: llmTemperature,
         },
         null,
@@ -3990,7 +4032,11 @@ export default function ApiTestPage() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ input: trimmed, temperature: llmTemperature }),
+        body: JSON.stringify({
+          input: trimmed,
+          systemPrompt: llmSystemPrompt.trim() || undefined,
+          temperature: llmTemperature,
+        }),
       });
 
       if (!res.ok) {
@@ -4808,10 +4854,20 @@ export default function ApiTestPage() {
       const body = parsed as {
         input?: unknown;
         messages?: Array<{ role?: unknown; content?: unknown }>;
+        systemPrompt?: unknown;
         temperature?: unknown;
       };
       const directInput =
         typeof body.input === "string" ? body.input.trim() : "";
+      const directSystemPrompt =
+        typeof body.systemPrompt === "string" ? body.systemPrompt.trim() : "";
+      const messageSystemPrompt = Array.isArray(body.messages)
+        ? [...body.messages]
+            .reverse()
+            .find(
+              (m) => m && m.role === "system" && typeof m.content === "string",
+            )?.content
+        : "";
       const messageInput = Array.isArray(body.messages)
         ? [...body.messages]
             .reverse()
@@ -4823,6 +4879,11 @@ export default function ApiTestPage() {
         typeof messageInput === "string" && messageInput.trim()
           ? messageInput
           : directInput
+      ).trim();
+      const systemPrompt = (
+        typeof messageSystemPrompt === "string" && messageSystemPrompt.trim()
+          ? messageSystemPrompt
+          : directSystemPrompt
       ).trim();
 
       const parsedTemperature =
@@ -4858,6 +4919,7 @@ export default function ApiTestPage() {
 
       pendingAssistantIdRef.current = pendingAssistantId;
       setPrompt(input);
+      setLlmSystemPrompt(systemPrompt);
       setIsChatLoading(true);
       setMessages((prev) => [
         ...prev,
@@ -4877,7 +4939,11 @@ export default function ApiTestPage() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ input, temperature: parsedTemperature }),
+        body: JSON.stringify({
+          input,
+          systemPrompt: systemPrompt || undefined,
+          temperature: parsedTemperature,
+        }),
       });
 
       let responseJson: unknown = null;
@@ -5492,15 +5558,11 @@ export default function ApiTestPage() {
                           </span>
                           로 광고 카피(슬로건·본문 등)를 생성합니다. 글로벌
                           캠페인에 맞게 언어를 바꿀 수 있어요. Temperature로
-                          문구 다양성을 조절할 수 있어요.{" "}
+                          문구 다양성을 조절할 수 있어요. 엔드포인트는{" "}
                           <span className="font-mono text-[11px] text-foreground/45">
                             POST /api/ad-copy
                           </span>
-                          를 생성합니다. Temperature로 문구의 다양성을 조절할 수
-                          있어요.
-                        </p>
-                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
-                          엔드포인트: POST /api/copy
+                          입니다.
                         </p>
                       </div>
                     ) : null}
@@ -5704,7 +5766,9 @@ export default function ApiTestPage() {
                       selectedApi={selectedApi}
                       onSend={onSend as React.FormEventHandler<HTMLFormElement>}
                       prompt={prompt}
+                      llmSystemPrompt={llmSystemPrompt}
                       setPrompt={setPrompt}
+                      setLlmSystemPrompt={setLlmSystemPrompt}
                       placeholder={placeholder}
                       isChatLoading={isChatLoading}
                       llmTemperature={llmTemperature}
@@ -5862,7 +5926,7 @@ export default function ApiTestPage() {
                             : selectedApi === "reranker"
                               ? "/api/rerank"
                               : selectedApi === "adCopy"
-                                ? "/api/copy"
+                                ? "/api/ad-copy"
                                 : selectedApi === "summarize"
                                   ? "/api/summarize"
                                   : selectedApi === "sentiment"
@@ -6080,11 +6144,11 @@ export default function ApiTestPage() {
                             <span className="font-mono text-foreground/70">
                               Authorization
                             </span>{" "}
-                            헤더를 켜세요. 데모 앱은{" "}
+                            헤더를 켜세요. 위 요청은{" "}
                             <span className="text-foreground/80">
-                              /api/copy
+                              /api/ad-copy
                             </span>{" "}
-                            프록시를 통해 광고 카피를 생성합니다.
+                            라우트로 전송됩니다.
                           </>
                         }
                       />

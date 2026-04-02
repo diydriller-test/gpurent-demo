@@ -74,31 +74,6 @@ const SECTIONS: DocSection[] = [
     ],
   },
   {
-    id: "copy-api",
-    title: "광고 카피 (Copywrite 엔진)",
-    method: "POST",
-    path: "/api/copy",
-    description:
-      "`/api/ad-copy`와 다른 업스트림(카피라이트) 경로입니다. 헤드라인·본문을 분리한 JSON을 반환합니다. 톤·채널은 `tone`/`channel` 대신 `toneLine`/`channelLine` 필드명을 사용합니다.",
-    requestLabel: "본문 (application/json)",
-    request: `{
-  "brief": "제품·서비스 설명(필수)",
-  "toneLine": "톤 힌트 (선택)",
-  "channelLine": "채널 힌트 (선택)",
-  "temperature": 0.7
-}`,
-    responseLabel: "성공 (200)",
-    response: `{
-  "headline": "메인 헤드라인 또는 슬로건",
-  "body": "본문·설명 문구"
-}`,
-    notes: [
-      "`brief`만 필수입니다. `toneLine`·`channelLine`을 생략하면 서버가 기본 힌트 문구로 채웁니다.",
-      "출력 언어 지정 필드는 없으며, 업스트림 Copywrite 엔진 동작에 따릅니다.",
-      "한도 초과 시 429 등은 `/api/ad-copy`와 유사하게 처리될 수 있습니다.",
-    ],
-  },
-  {
     id: "summarize",
     title: "텍스트 요약",
     method: "POST",

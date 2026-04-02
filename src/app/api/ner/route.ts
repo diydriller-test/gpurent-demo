@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prependPolicyToText } from "../_lib/endpointPolicy";
 import { resolveUpstreamContext } from "../_lib/upstream";
 
 type NerBody = {
@@ -92,13 +93,12 @@ function applyPromptPreference(result: NerResult, prompt: string): NerResult {
 }
 
 function buildUpstreamNerPrompt(text: string, prompt: string): string {
-  if (!prompt.trim()) return text;
-  return [
-    "다음 문장에서 개체명을 추출해 주세요.",
-    `추가 요청사항: ${prompt.trim()}`,
-    "응답은 개체 추출 결과만 반환해 주세요.",
-    `문장: ${text}`,
-  ].join("\n");
+  const extraSections = ["[작업] 다음 문장에서 개체명을 추출해 주세요."];
+  if (prompt.trim()) {
+    extraSections.push(`[추가 요청사항] ${prompt.trim()}`);
+  }
+  extraSections.push("[출력 규칙] 응답은 개체 추출 결과만 반환해 주세요.");
+  return prependPolicyToText("ner", text, extraSections);
 }
 
 export async function POST(req: Request) {

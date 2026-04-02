@@ -317,7 +317,9 @@ type Props = {
   // LLM input
   onSend: React.FormEventHandler<HTMLFormElement>;
   prompt: string;
+  llmSystemPrompt: string;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
+  setLlmSystemPrompt: React.Dispatch<React.SetStateAction<string>>;
   placeholder: string;
   isChatLoading: boolean;
   llmTemperature: number;
@@ -466,7 +468,9 @@ export function ApiInputPanel({
 
   onSend,
   prompt,
+  llmSystemPrompt,
   setPrompt,
+  setLlmSystemPrompt,
   placeholder,
   isChatLoading,
   llmTemperature,
@@ -589,9 +593,17 @@ export function ApiInputPanel({
   IconMic,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [llmAdvancedOpen, setLlmAdvancedOpen] = useState(false);
   const [sttLangPanelStyle, setSttLangPanelStyle] =
     useState<React.CSSProperties | null>(null);
   const sttLangPanelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (selectedApi !== "llm") return;
+    if (llmSystemPrompt.trim()) {
+      setLlmAdvancedOpen(true);
+    }
+  }, [selectedApi, llmSystemPrompt]);
 
   function renderCopyButton(key: string, onClick: () => void, disabled = false) {
     const isCopied = copiedKey === key;
@@ -693,6 +705,10 @@ export function ApiInputPanel({
                   placeholder={placeholder}
                   className="h-11 w-full rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                 />
+                <p className="mt-2 pl-1 text-[11px] leading-relaxed text-foreground/45">
+                  질문을 먼저 바로 보내고, 필요할 때만 아래 고급 설정에서
+                  응답 스타일을 세밀하게 조정하세요.
+                </p>
               </div>
 
               <button
@@ -729,36 +745,93 @@ export function ApiInputPanel({
               </button>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-xs text-foreground/60">
-                  Temperature
-                </p>
-                <span className="font-mono text-xs text-foreground/70">
-                  {llmTemperature.toFixed(2)}
+            <div className="rounded-xl border border-white/8 bg-background/15">
+              <button
+                type="button"
+                onClick={() => setLlmAdvancedOpen((prev) => !prev)}
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:text-accent-bright"
+                aria-expanded={llmAdvancedOpen}
+                aria-controls="llm-advanced-settings"
+              >
+                <div>
+                  <p className="font-mono text-xs text-foreground/68">
+                    고급 설정
+                  </p>
+                  <p className="mt-1 text-[11px] text-foreground/42">
+                    System Prompt, Temperature
+                  </p>
+                </div>
+                <span
+                  className={[
+                    "text-sm text-foreground/55 transition-transform",
+                    llmAdvancedOpen ? "rotate-180" : "",
+                  ].join(" ")}
+                  aria-hidden="true"
+                >
+                  ⌄
                 </span>
+              </button>
+
+              <div
+                id="llm-advanced-settings"
+                className={[
+                  "grid transition-all duration-200 ease-out",
+                  llmAdvancedOpen
+                    ? "grid-rows-[1fr] opacity-100"
+                    : "grid-rows-[0fr] opacity-0",
+                ].join(" ")}
+              >
+                <div className="overflow-hidden">
+                  <div className="border-t border-white/6 px-4 pb-4 pt-3">
+                    <div>
+                      <label
+                        className="font-mono text-xs text-foreground/60"
+                        htmlFor="llm-system-prompt"
+                      >
+                        System Prompt (선택)
+                      </label>
+                      <textarea
+                        id="llm-system-prompt"
+                        value={llmSystemPrompt}
+                        onChange={(e) => setLlmSystemPrompt(e.target.value)}
+                        rows={3}
+                        placeholder="예: 너는 AI 제품 기획 문서만 작성하는 한국어 전문가야."
+                        className="mt-1.5 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+                      />
+                      <p className="mt-2 text-[11px] leading-relaxed text-foreground/42">
+                        답변의 역할, 문체, 형식을 지정할 때만 사용하세요.
+                      </p>
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-mono text-xs text-foreground/60">
+                          Temperature
+                        </p>
+                        <span className="font-mono text-xs text-foreground/70">
+                          {llmTemperature.toFixed(2)}
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        value={llmTemperature}
+                        onChange={(e) =>
+                          setLlmTemperature(
+                            parseTemperatureRange(e.target.value, 0.1),
+                          )
+                        }
+                        className="mt-2 w-full accent-accent"
+                      />
+                      <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
+                        낮으면 더 안정적으로, 높으면 더 다양하게 답합니다.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={llmTemperature}
-                onChange={(e) =>
-                  setLlmTemperature(parseTemperatureRange(e.target.value, 0.1))
-                }
-                className="mt-2 w-full accent-accent"
-              />
-              <p className="mt-2 text-[11px] leading-relaxed text-foreground/45">
-                <span className="text-foreground/55">Temperature</span>는 답이
-                얼마나 “정해진 느낌”으로 나올지를 조절해요.{" "}
-                <span className="text-foreground/60">낮으면</span> 같은 질문에
-                비슷하고 안정적인 문장을,{" "}
-                <span className="text-foreground/60">높으면</span> 표현이 더
-                다양해지고 때로는 예측하기 어려울 수 있어요. 요약·보고서처럼
-                톤을 맞추고 싶을 땐 낮게, 아이디어나 문장을 넓게 펼치고 싶을 땐
-                높게 써보세요.
-              </p>
             </div>
           </div>
         </form>

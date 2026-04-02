@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prependPolicyToText } from "../_lib/endpointPolicy";
 import { resolveUpstreamContext } from "../_lib/upstream";
 
 type SentimentBody = {
@@ -98,6 +99,7 @@ export async function POST(req: Request) {
     }
 
     const temperature = parseTemperatureOptional(body?.temperature);
+    const guardedText = prependPolicyToText("sentiment", text);
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamUrl = `${upstreamBasePath}/sentiment/api/sentiment`;
@@ -114,7 +116,7 @@ export async function POST(req: Request) {
             : {}),
       },
       body: JSON.stringify({
-        text,
+        text: guardedText,
         ...(typeof temperature === "number" ? { temperature } : {}),
       }),
       cache: "no-store",

@@ -5,10 +5,13 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json().catch(() => null)) as {
       input?: unknown;
+      systemPrompt?: unknown;
       temperature?: unknown;
     } | null;
 
     const input = typeof body?.input === "string" ? body.input.trim() : "";
+    const systemPrompt =
+      typeof body?.systemPrompt === "string" ? body.systemPrompt.trim() : "";
     if (!input) {
       return NextResponse.json(
         { error: "input(질문/지시문)를 문자열로 보내주세요." },
@@ -42,9 +45,12 @@ export async function POST(req: Request) {
         model: "openai/gpt-oss-120b",
         temperature: parsedTemperature,
         messages: [
+          ...(systemPrompt
+            ? [{ role: "system" as const, content: systemPrompt }]
+            : []),
           {
             role: "user",
-            content: `${input} 한국어로 답변해줘.`,
+            content: input,
           },
         ],
       }),

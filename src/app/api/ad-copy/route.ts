@@ -7,6 +7,7 @@ import {
   getAdCopyLanguageLabel,
   isAdCopyLanguageCode,
 } from "@/lib/adCopyLanguages";
+import { buildSystemPolicyMessage } from "../_lib/endpointPolicy";
 import { getVllmOpenAiConfig } from "../_lib/vllm";
 
 type AdCopyBody = {
@@ -79,7 +80,9 @@ export async function POST(req: Request) {
       timeout: 120_000,
     });
 
-    const prompt = ChatPromptTemplate.fromTemplate(`당신은 글로벌 광고 카피 전문가입니다.
+    const prompt = ChatPromptTemplate.fromTemplate(`${buildSystemPolicyMessage("ad-copy")}
+
+당신은 글로벌 광고 카피 전문가입니다.
 아래 브리프를 바탕으로 효과적인 광고 문구를 작성하세요.
 
 [출력 언어]
