@@ -223,7 +223,7 @@ function PlansPageContent() {
     }
     if (usingDemoApis) {
       setPlanActionError(
-        "데모 화면입니다. 실제 구독·플랜 변경은 백엔드(NEXT_PUBLIC_API_URL) 연결 후 가능합니다.",
+        "데모 화면입니다. 실제 구독·플랜 변경은 서버의 내부 API(INTERNAL_API_URL) 연결 후 가능합니다.",
       );
       return;
     }

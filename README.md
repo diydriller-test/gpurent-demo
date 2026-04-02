@@ -16,7 +16,7 @@ cp .env.example .env.local
 | `QWEN_API_KEY` | `/api/rerank` (Reranker, `access_token`) |
 | `RERANK_API_KEY` | (선택) `QWEN_API_KEY` 없을 때 Rerank용 폴백 |
 | `EMBEDDING_API_KEY` | `/api/embedding` (Embedding, `access_token`) |
-| `NEXT_PUBLIC_API_URL` | (선택) 클라이언트용 API 베이스 URL |
+| `INTERNAL_API_URL` | (선택) Next 서버 → 내부 백엔드 베이스 URL; 비우면 기본 53001 |
 
 배포 시에는 Vercel 등 호스팅의 **Environment Variables**에 동일한 이름으로 등록하면 됩니다.
 
