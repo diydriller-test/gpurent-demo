@@ -15,38 +15,38 @@ type ApiCard = {
 const APIS: ApiCard[] = [
   {
     name: "Text",
-    description: "대화, 요약, 생성 작업을 빠르게 처리하는 텍스트 생성 API",
+    description: "대화·요약·질문 답변 같은 텍스트 작업을 쓰는 API",
     icon: "✦",
     apiId: "llm",
   },
   {
     name: "STT",
-    description: "음성을 텍스트로 변환하는 스피치 투 텍스트 API",
+    description: "말한 걸 글로 바꿔줘요. 음성 → 텍스트",
     icon: "◉",
     apiId: "stt",
   },
   {
     name: "Embedding",
     description:
-      "텍스트를 벡터로 변환하는 임베딩 API. RAG, 시맨틱 검색에 최적화",
+      "문장을 숫자 벡터로 바꿔서 검색·RAG에 쓰기 좋은 임베딩",
     icon: "◇",
     apiId: "embedding",
   },
   {
     name: "Re-ranking",
-    description: "검색 결과의 관련도를 재정렬하여 정확도 향상",
+    description: "검색 결과 순서를 다시 매겨서, 진짜로 맞는 것부터 보여줘요",
     icon: "⇅",
     apiId: "reranker",
   },
   {
     name: "TTS",
-    description: "텍스트를 자연스러운 음성으로 변환하는 텍스트 투 스피치 API",
+    description: "글을 읽어주는 음성 합성. 글 → 말",
     icon: "♪",
     apiId: "tts",
   },
   {
     name: "더 많은 API 확인하러 가기",
-    description: "전체 API를 둘러보고 All을 선택하세요",
+    description: "목록에서 전부 보고, 필요한 쪽만 골라보면 돼요",
     icon: "+",
     comingSoon: true,
   },
@@ -56,23 +56,24 @@ const BENEFITS = [
   {
     title: "월정액제",
     description:
-      "사용량 변동이 있어도 매달 같은 기준으로 비용을 계획할 수 있는 안정적인 과금 구조",
+      "쓰는 양이 조금 들쭉날쭉해도, 매달 비용은 같은 기준으로 잡을 수 있어요.",
   },
   {
     title: "자체 GPU 인프라",
-    description: "우리 회사 GPU로 구축하여 훨씬 저렴한 가격 제공",
+    description: "우리가 GPU를 직접 돌려서, 토큰 과금만 쓸 때보다 부담이 덜해요.",
   },
   {
     title: "확장 가능한 API",
-    description: "임베딩, 리랭킹, TTS 등 다양한 API를 하나의 플랫폼에서",
+    description:
+      "임베딩·리랭킹·TTS 같은 걸 한곳에서 골라 쓰면 됩니다.",
   },
 ];
 
 const HERO_BADGES = [
-  "월정액 중심 비용 구조",
-  "자체 GPU 인프라 운영",
-  "Playground로 바로 테스트",
-  "텍스트·임베딩·TTS 통합 제공",
+  "월정액으로 비용 잡기",
+  "자체 GPU로 돌림",
+  "Playground에서 바로 써보기",
+  "텍스트·임베딩·TTS 한곳에",
 ];
 
 const OMAKASE_LLM_STARTER_PRICE = 190000;
@@ -94,19 +95,19 @@ const TARGET_GRAPH_BOTTOM = 392;
 
 const TARGET_CUSTOMERS = [
   {
-    title: "대량 Chunking / 전처리 개발자",
+    title: "문서 쪼개기·전처리 많이 하는 개발자",
     description:
-      "문서 분할과 전처리를 반복할수록 토큰 과금보다 월정액 구조가 더 유리해집니다.",
+      "같은 문서를 계속 돌리면 토큰 과금이 아깝죠. 이런 팀은 월정액이 더 편할 때가 많아요.",
   },
   {
-    title: "PoC 대량, 반복 실험자",
+    title: "PoC를 자주 돌리는 팀",
     description:
-      "프롬프트와 파이프라인을 계속 바꿔 검증해야 한다면, 실험 속도와 예측 가능한 비용이 더 중요합니다.",
+      "프롬프트랑 파이프라인을 계속 바꿔야 하는데, 매번 청구서가 흔들리면 스트레스예요. 그럴 땐 고정 비용이 낫습니다.",
   },
   {
-    title: "동시 End-user 다수 서비스",
+    title: "동시에 사용자 많이 붙는 서비스",
     description:
-      "동시 요청이 많은 서비스일수록 교점 이후 구간에서 비용 예측성과 운영 설명력이 확실히 좋아집니다.",
+      "요청이 한꺼번에 몰릴수록, 그래프에서 교점 넘어가면 ‘이번 달 얼마 나올지’ 설명하기 쉬워져요.",
   },
 ];
 
@@ -135,48 +136,48 @@ function graphY(y: number) {
 
 const DIFFERENTIATORS = [
   {
-    title: "비용이 예측됩니다",
+    title: "비용이 덜 흔들려요",
     description:
-      "토큰 사용량에 따라 청구서가 흔들리는 구조 대신, 월정액 중심으로 예산을 안정적으로 관리할 수 있습니다.",
+      "토큰 쓸 때마다 청구가 달라지는 것보다, 월정액으로 ‘대략 이 정도’만 맞추면 됩니다.",
   },
   {
-    title: "도입 속도가 빠릅니다",
+    title: "붙이기 빨라요",
     description:
-      "텍스트 생성, 임베딩, 리랭킹, TTS, STT를 한 플랫폼에서 바로 테스트하고 필요한 기능만 빠르게 붙일 수 있습니다.",
+      "텍스트·임베딩·리랭킹·TTS·STT를 한 화면에서 써보고, 필요한 것만 골라 연결하면 돼요.",
   },
   {
-    title: "운영 효율이 높습니다",
+    title: "벤더 여러 개 안 써도 돼요",
     description:
-      "자체 GPU 인프라를 기반으로 가격 경쟁력을 확보하고, 여러 벤더를 따로 관리할 필요를 줄여줍니다.",
+      "GPU를 우리 쪽에서 돌려서 가격을 맞추고, 여러 회사 계정 따로 관리하는 부담도 줄입니다.",
   },
 ];
 
 const FITS_FOR = [
-  "PoC를 빠르게 시작해야 하는 팀",
-  "토큰 과금 대신 고정 비용이 필요한 팀",
-  "여러 AI 기능을 한 번에 붙여야 하는 팀",
+  "PoC를 빨리 돌려봐야 하는 팀",
+  "토큰 말고 월에 고정으로 나가면 좋은 팀",
+  "AI 기능 여러 개를 한 번에 붙여야 하는 팀",
 ];
 
 const COMPARISON_ROWS = [
   {
     label: "비용 구조",
-    before: "토큰/사용량에 따라 월 청구가 흔들릴 수 있음",
-    after: "월정액 중심으로 예산 계획이 더 명확함",
+    before: "토큰·사용량 따라 월마다 청구가 들쭉날쭉",
+    after: "월정액 중심이라, 대략 예산은 미리 잡기 쉬움",
   },
   {
     label: "도입 방식",
-    before: "기능별로 여러 벤더를 비교하고 각각 붙여야 함",
-    after: "한 플랫폼에서 테스트 후 필요한 API만 빠르게 연결",
+    before: "기능마다 벤더 다르게 비교하고 따로 붙이기",
+    after: "한곳에서 써보고, 필요한 API만 골라 연결",
   },
   {
     label: "확장 경로",
-    before: "플랜 기준이 제각각이라 운영 확장 판단이 어려움",
-    after: "Starter에서 Pro로 RPS 기준에 따라 단순하게 확장",
+    before: "플랜마다 기준이 달라서, 나중에 늘리기 애매함",
+    after: "Starter → Pro로, RPS만 보면 됨",
   },
   {
     label: "운영 관리",
-    before: "API 공급자와 비용 구조가 분산되어 관리 피로도가 큼",
-    after: "자체 GPU 인프라 기반으로 운영/가격 구조를 한 번에 이해 가능",
+    before: "API마다 공급·과금 구조가 달라서 관리가 번거로움",
+    after: "GPU·가격을 한 번에 이해할 수 있는 구조",
   },
 ];
 
@@ -184,76 +185,85 @@ const USE_CASES = [
   {
     title: "고객 응대 자동화",
     summary:
-      "STT + LLM + 요약 API를 조합해 상담 내용을 빠르게 정리하고 응답 품질을 높입니다.",
+      "말(STT) → 글 정리(LLM) → 요약까지 이어 붙이면, 상담 내용을 빨리 정리하고 답도 맞춰 쓰기 쉬워요.",
     flow: "STT -> Text -> Summary",
-    outcome: "상담 기록 자동화, 응답 속도 개선, CS 운영 효율 향상",
+    outcome: "상담 기록 덜 손으로 쓰고, 응답도 빨라서 CS가 덜 바쁨",
   },
   {
-    title: "검색 정확도 향상",
+    title: "검색이 더 맞게 나오게",
     summary:
-      "Embedding + Reranker를 함께 사용해 문서 검색 정확도를 높이고 필요한 결과를 더 빠르게 찾을 수 있습니다.",
+      "임베딩으로 비슷한 문서 찾고, 리랭커로 순서 다시 매기면 RAG 검색이 훨씬 낫게 느껴져요.",
     flow: "Embedding -> Reranker",
-    outcome: "RAG 품질 향상, 검색 결과 정밀도 개선, 정보 탐색 시간 단축",
+    outcome: "RAG 품질 올리고, 필요한 쪽만 빨리 찾음",
   },
   {
-    title: "콘텐츠 운영 자동화",
+    title: "콘텐츠·리뷰 운영",
     summary:
-      "Copywrite, Sentiment, NER를 조합해 마케팅 문안 생성부터 리뷰 분석, 핵심 엔티티 추출까지 한 번에 처리합니다.",
+      "카피 쓰고, 감정 보고, 이름·날짜 같은 것만 뽑는 것까지 한 흐름으로 묶을 수 있어요.",
     flow: "Copywrite -> Sentiment -> NER",
-    outcome: "콘텐츠 제작 시간 절감, 리뷰 분석 자동화, 운영 인사이트 확보",
+    outcome: "글 쓰는 시간 줄고, 리뷰는 자동으로 돌려보기",
   },
 ];
 
 const ONBOARDING_STEPS = [
   {
     step: "01",
-    title: "Playground에서 바로 검증",
+    title: "Playground에서 먼저 써보기",
     description:
-      "텍스트, 임베딩, TTS, STT 등 필요한 API를 직접 테스트하며 우리 서비스에 맞는 조합을 빠르게 확인합니다.",
+      "텍스트·임베딩·TTS·STT를 직접 때려보고, 우리 서비스에 맞는 조합을 정하면 돼요.",
   },
   {
     step: "02",
     title: "Starter로 작게 시작",
     description:
-      "낮은 진입 비용의 월정액 플랜으로 부담 없이 시작하고, 운영 전 실제 사용 흐름을 안전하게 검증할 수 있습니다.",
+      "진입비 부담 적은 월정액으로 시작해서, 실제로 쓰는 흐름만 먼저 확인해요.",
   },
   {
     step: "03",
-    title: "트래픽에 맞춰 Pro로 확장",
+    title: "사람 늘면 Pro로",
     description:
-      "서비스 성장 단계에서는 더 높은 RPS의 Pro 플랜으로 단순하게 확장해 비용과 성능을 함께 관리합니다.",
+      "트래픽이 붙으면 RPS 높은 Pro로 올리면, 비용이랑 성능을 같이 맞추기 쉬워요.",
   },
 ];
 
 const PRICE_SUMMARY = [
   {
     title: "Starter",
-    subtitle: "빠른 검증 / PoC 시작",
+    subtitle: "일단 써보기·PoC",
     price: "10,000원부터",
     rps: "1 ~ 3.5 RPS",
     tone: "border-white/8 bg-background/25",
     points: [
-      "STT, TTS처럼 낮은 진입 비용으로 시작",
-      "초기 연동과 사내 검증에 적합",
+      "STT·TTS 같은 것도 부담 없이 시작",
+      "사내에서 연동만 먼저 볼 때",
     ],
   },
   {
     title: "Pro",
-    subtitle: "운영 확장 / 실서비스 대응",
+    subtitle: "운영·실서비스",
     price: "30,000원부터",
     rps: "최대 3배 확장",
     tone: "border-accent/28 bg-accent/7 shadow-[0_0_48px_rgba(232,136,138,0.08)]",
     points: [
-      "Starter 대비 더 높은 RPS 운영",
-      "성장 단계에서도 단순한 비용 구조 유지",
+      "Starter보다 RPS 여유롭게",
+      "사용자 늘어도 비용 구조는 그대로 단순하게",
     ],
   },
 ];
 
 const FINAL_CTA_POINTS = [
-  "Playground에서 바로 성능 확인",
-  "Starter로 부담 없이 시작",
-  "필요 시 Pro로 단순 확장",
+  "Playground에서 바로 써보기",
+  "Starter로 가볍게 시작",
+  "불리면 Pro로 올리기",
+];
+
+const LANDING_SECTION_LINKS: Array<{ href: string; label: string }> = [
+  { href: "#why-omakase", label: "왜 쓰나요" },
+  { href: "#pricing-proof", label: "가격 근거" },
+  { href: "#compare", label: "비교" },
+  { href: "#use-cases", label: "시나리오" },
+  { href: "#apis", label: "API" },
+  { href: "#plan-summary", label: "플랜" },
 ];
 
 const API_BELT = [...APIS, ...APIS];
@@ -394,15 +404,15 @@ export default function Home() {
             <span className="text-omakase-gradient">AI API 오마카세</span>
           </h1>
           <p className="mx-auto mb-4 max-w-3xl text-xl font-semibold text-foreground md:text-3xl">
-            기업용 AI API를 빠르고 예측 가능하게 도입하세요
+            회사에서 쓸 AI API, 부담 덜하고 붙이고 싶을 때
           </p>
           <p className="mx-auto mb-8 max-w-3xl text-base leading-relaxed text-foreground/72 md:text-lg">
-            여러 벤더를 비교하고 따로 붙일 필요 없이, 검증된 AI API를 한 곳에서
-            바로 테스트하고 운영하세요. 월정액 중심의 비용 구조와 자체 GPU
-            인프라로 도입 속도와 운영 효율을 함께 잡을 수 있습니다.
+            벤더 여러 군데 비교하느라 시간 쓰지 말고, 여기서 바로 써보고 붙이면
+            돼요. 월정액으로 비용 감 잡기 쉽고, GPU는 우리가 돌려서 가격도
+            맞춰둔 편이에요.
           </p>
           <p className="mx-auto mb-10 max-w-2xl text-sm text-foreground/52 md:text-base">
-            복잡한 비용 계산보다, 시작과 운영이 쉬운 구조를 지향합니다.
+            엑셀에 토큰 계산기 돌리기보다, 그냥 쓰고 운영하기 편한 쪽을 노렸어요.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
@@ -437,11 +447,10 @@ export default function Home() {
                 과금 구조
               </p>
               <p className="mt-2 text-lg font-semibold text-foreground">
-                월정액 중심 과금
+                월정액으로 감 잡기
               </p>
               <p className="mt-2 text-sm leading-relaxed text-foreground/62">
-                토큰량에 따라 매번 계산하지 않아도 되는 비용 구조로 예산 계획이
-                훨씬 명확해집니다.
+                매번 토큰 곱해서 계산하지 않아도, 이번 달은 대략 이 정도예요.
               </p>
             </div>
             <div className="rounded-2xl border border-white/8 bg-surface/45 p-5">
@@ -449,11 +458,10 @@ export default function Home() {
                 인프라
               </p>
               <p className="mt-2 text-lg font-semibold text-foreground">
-                자체 GPU 인프라 운영
+                GPU는 우리가 돌림
               </p>
               <p className="mt-2 text-sm leading-relaxed text-foreground/62">
-                인프라 효율을 직접 관리해 가격 경쟁력과 안정적인 운영 기반을
-                함께 제공합니다.
+                서버 비용·가격을 우리가 맞추니까, 견적만 보고 붙이기 편해요.
               </p>
             </div>
             <div className="rounded-2xl border border-white/8 bg-surface/45 p-5">
@@ -461,36 +469,71 @@ export default function Home() {
                 빠른 시작
               </p>
               <p className="mt-2 text-lg font-semibold text-foreground">
-                테스트 후 바로 도입
+                써보고 나서 붙이기
               </p>
               <p className="mt-2 text-sm leading-relaxed text-foreground/62">
-                Playground에서 성능을 먼저 확인한 뒤, 필요한 API만 빠르게
-                서비스에 연결할 수 있습니다.
+                Playground에서 먼저 때려보고, 괜찮으면 그 API만 서비스에 연결하면
+                됩니다.
               </p>
             </div>
           </div>
+
+          <nav
+            id="landing-at-a-glance"
+            className="mx-auto mt-12 max-w-4xl rounded-2xl border border-white/10 bg-background/25 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            aria-label="섹션 바로가기"
+          >
+            <p className="text-center text-[11px] text-foreground/45">
+              아래로 쭉 내리기 싫으면, 여기서 점프해요
+            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              {LANDING_SECTION_LINKS.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-full border border-white/10 bg-background/30 px-3 py-1.5 text-[12px] text-foreground/78 transition-colors hover:border-accent/35 hover:text-accent"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </nav>
         </div>
       </section>
 
       {/* Pricing Proof */}
-      <section className="border-t border-white/5 px-6 py-24">
+      <section
+        id="pricing-proof"
+        className="border-t border-white/5 px-6 py-16 md:py-24"
+      >
         <div className="mx-auto max-w-6xl">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 font-mono text-[11px] tracking-[0.16em] text-accent">
-              교점 약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰 이후
-            </div>
-            <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
-              가격 근거
-            </p>
-            <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
-              교점 이후 고객이 오마카세의 핵심 타겟입니다
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              GPT-4o API와 자사 LLM Starter 월비용 19만원을 같은 축에서 비교하면,
-              어느 구간부터 월정액 모델을 먼저 봐야 하는지 바로 이해할 수 있습니다.
-            </p>
-          </div>
-          <div className="mt-12 space-y-6">
+          <details open className="group rounded-[28px] border border-white/8 bg-surface/30 p-5 md:p-8">
+            <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                <div className="min-w-0 text-left">
+                  <div className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 font-mono text-[11px] tracking-[0.16em] text-accent">
+                    교점 약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰 이후
+                  </div>
+                  <p className="mt-3 font-mono text-xs uppercase tracking-[0.24em] text-accent">
+                    가격 근거
+                  </p>
+                  <h2 className="mt-2 text-2xl font-bold text-foreground md:text-3xl">
+                    여기 넘어가면 월정액이 더 맞는 구간이에요
+                  </h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-foreground/70 md:text-base">
+                    GPT-4o처럼 토큰 과금이랑, 우리 Starter 월 19만 원을 같은
+                    그래프에 올려놓으면, 어디부터 월정액이 나은지 한눈에 보여요.
+                  </p>
+                </div>
+                <span
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-white/10 bg-background/30 text-foreground/60 transition-transform group-open:rotate-180 sm:self-center"
+                  aria-hidden="true"
+                >
+                  ⌄
+                </span>
+              </div>
+            </summary>
+          <div className="mt-10 space-y-6">
             <div className="overflow-hidden rounded-[32px] border border-accent/18 bg-[radial-gradient(circle_at_top,rgba(232,136,138,0.16),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8 shadow-[0_0_90px_rgba(232,136,138,0.08)] md:p-10">
               <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
                 타겟 사용자 그래프
@@ -498,11 +541,12 @@ export default function Home() {
               <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <h3 className="text-2xl font-semibold text-foreground">
-                    많이 쓸수록 19만원 월정액이 더 유리합니다
+                    많이 쓰면 19만 원짜리가 이기는 구간이 나와요
                   </h3>
                   <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground/65">
-                    x축은 월간 사용량(백만 토큰), y축은 비용입니다. 교점 이후부터는
-                    GPT-4o보다 AI API 오마카세의 비용 우위가 더 분명해집니다.
+                    가로는 월에 쓴 토큰(백만 단위), 세로는 돈이에요. 선이
+                    교차한 뒤로는 GPT-4o보다 우리 쪽이 싸게 나오는 구간이
+                    생깁니다.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-accent/24 bg-background/20 px-4 py-3 text-right shadow-[0_0_35px_rgba(232,136,138,0.10)]">
@@ -679,7 +723,7 @@ export default function Home() {
                     약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰
                   </p>
                   <p className="mt-1 text-sm text-foreground/65">
-                    이 지점을 넘으면 AI API 오마카세를 우선 봐야 합니다.
+                    여기 넘기면 우리 쪽을 먼저 비교해볼 만해요.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-white/8 bg-background/18 px-4 py-3">
@@ -690,7 +734,8 @@ export default function Home() {
                     GPT-4o는 사용량 비례 증가, 오마카세는 월 19만원 고정
                   </p>
                   <p className="mt-1 text-sm text-foreground/55">
-                    입력/출력 50:50, GPT-4o 환산 기준으로 교점 이후 구간을 강조했습니다.
+                    입력·출력 반반 가정하고 GPT-4o 요금을 환산한 거예요. 교점
+                    넘은 뒤를 색으로 칠해뒀어요.
                   </p>
                 </div>
               </div>
@@ -722,16 +767,15 @@ export default function Home() {
                 결론
               </p>
               <p className="mt-3 text-sm leading-relaxed text-foreground/65">
-                교점 이후 구간에서 많이 쓰고, 반복 실험하고, 동시에 많은
-                End-user 요청을 처리해야 한다면 AI API 오마카세는 우선 검토
-                대상입니다.
+                쓰는 양 많고, 실험도 자주 하고, 사용자 요청도 동시에 몰리면—그럴
+                땐 우리 쪽을 한 번 넣어볼 만해요.
               </p>
               <div className="mt-4 rounded-2xl border border-white/10 bg-background/20 px-4 py-3">
                 <p className="text-sm font-semibold text-foreground">
                   교점 이전 고객
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-foreground/60">
-                  다른 선택지도 충분히 가능합니다.
+                  적게 쓰면 다른 게 더 싸게 나올 수도 있어요.
                 </p>
               </div>
               <div className="mt-3 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3">
@@ -739,7 +783,7 @@ export default function Home() {
                   교점 이후 고객
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-foreground/82">
-                  오마카세를 먼저 봐야 하는 구간입니다.
+                  이럴 때 우리 견적부터 보면 편해요.
                 </p>
               </div>
             </div>
@@ -780,18 +824,22 @@ export default function Home() {
               animation: targetPointNeonCoreBlink 2.2s steps(1, end) infinite;
             }
           `}</style>
+          </details>
         </div>
       </section>
 
       {/* Why Omakase */}
-      <section className="border-t border-white/5 px-6 py-24">
+      <section
+        id="why-omakase"
+        className="border-t border-white/5 px-6 py-24"
+      >
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-4 text-center text-3xl font-bold text-foreground md:text-4xl">
-            왜 AI API 오마카세여야 할까요?
+            왜 여기 써야 해요?
           </h2>
           <p className="mx-auto mb-14 max-w-3xl text-center text-foreground/70">
-            API를 많이 제공하는 것만으로는 충분하지 않습니다. 실제 도입
-            단계에서는 비용 예측, 운영 효율, 검증 속도가 더 중요합니다.
+            API 개수만 많다고 끝이 아니에요. 막상 붙일 때는 비용이 얼마 나올지,
+            운영이 귀찮지 않은지, 그리고 써보기까지 얼마나 빠른지가 더 중요하죠.
           </p>
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
             <div className="grid gap-6 md:grid-cols-3">
@@ -820,11 +868,11 @@ export default function Home() {
                 추천 대상
               </p>
               <h3 className="mt-3 text-2xl font-semibold text-foreground">
-                이런 팀에게 더 잘 맞습니다
+                이런 팀이 편해요
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-foreground/65">
-                단순한 API 카탈로그가 아니라, 빠른 검증과 운영 가능한 비용
-                구조가 필요한 팀이라면 더 큰 가치를 체감할 수 있습니다.
+                목록만 길게 뽑아준 게 아니라, 빨리 써보고 월에 고정으로 나갈
+                금액만 맞추면 되는 팀이면 체감이 큽니다.
               </p>
               <div className="mt-6 space-y-3">
                 {FITS_FOR.map((item) => (
@@ -843,23 +891,34 @@ export default function Home() {
       </section>
 
       {/* Comparison */}
-      <section className="border-t border-white/5 px-6 py-24">
+      <section id="compare" className="border-t border-white/5 px-6 py-16 md:py-24">
         <div className="mx-auto max-w-6xl">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
-              비교 포인트
-            </p>
-            <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
-              그래서 무엇이 더 나은 선택일까요?
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              많은 API 제공 업체 중에서 중요한 건 개수가 아니라, 실제 도입과
-              운영이 얼마나 단순해지는가입니다. 아래 비교처럼 AI API 오마카세는
-              비용과 운영의 복잡도를 줄이는 방향에 더 가깝습니다.
-            </p>
-          </div>
+          <details className="group rounded-[28px] border border-white/8 bg-surface/30 p-5 md:p-8">
+            <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                <div className="min-w-0 text-left">
+                  <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
+                    비교 포인트
+                  </p>
+                  <h2 className="mt-2 text-2xl font-bold text-foreground md:text-3xl">
+                    그래서 뭐가 달라져요?
+                  </h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-foreground/70 md:text-base">
+                    API 몇 개 있냐보다, 붙이고 돌리는 게 얼마나 귀찮지 않냐가
+                    중요하죠. 아래는 비용이랑 운영이 덜 복잡해지는 쪽으로만
+                    짚어본 거예요.
+                  </p>
+                </div>
+                <span
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-white/10 bg-background/30 text-foreground/60 transition-transform group-open:rotate-180 sm:self-center"
+                  aria-hidden="true"
+                >
+                  ⌄
+                </span>
+              </div>
+            </summary>
 
-          <div className="mt-12 hidden overflow-hidden rounded-3xl border border-white/8 bg-surface/45 md:block">
+          <div className="mt-10 hidden overflow-hidden rounded-3xl border border-white/8 bg-surface/45 md:block">
             <div className="grid grid-cols-[0.8fr_1fr_1fr] border-b border-white/6 bg-background/25">
               <div className="px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
                 비교 항목
@@ -893,7 +952,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div className="mt-12 grid gap-4 md:hidden">
+          <div className="mt-10 grid gap-4 md:hidden">
             {COMPARISON_ROWS.map((row) => (
               <div
                 key={row.label}
@@ -923,23 +982,24 @@ export default function Home() {
               </div>
             ))}
           </div>
+          </details>
         </div>
       </section>
 
       {/* Use Cases */}
-      <section className="border-t border-white/5 px-6 py-24">
+      <section id="use-cases" className="border-t border-white/5 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
               활용 시나리오
             </p>
             <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
-              이렇게 연결하면 바로 서비스가 됩니다
+              이렇게만 이어 붙여도 돼요
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              좋은 API는 많지만, 실제 서비스에선 조합이 더 중요합니다. AI API
-              오마카세는 필요한 기능을 묶어서 빠르게 검증하고 운영할 수 있게
-              해줍니다.
+              API 하나만 잘 쓰는 것보다, 실제로는 이거랑 저거 묶어서 쓰는
+              경우가 많아요. 여기서는 그 조합을 빨리 써보고 운영까지 가져가기
+              쉽게 해뒀어요.
             </p>
           </div>
 
@@ -985,12 +1045,11 @@ export default function Home() {
               시작 방법
             </p>
             <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
-              도입은 복잡하지 않아야 합니다
+              시작하는 건 단순하게
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              좋은 랜딩은 기능을 많이 설명하는 것이 아니라, 시작하는 방법을 쉽게
-              보이게 해야 합니다. AI API 오마카세는 아래 3단계 흐름으로 이해할
-              수 있습니다.
+              기능 설명만 길게 읽게 하기보다, 어떻게 시작하면 되는지가 먼저
+              보여야 하죠. 흐름은 대충 이 세 단계로 보면 됩니다.
             </p>
           </div>
 
@@ -1029,10 +1088,10 @@ export default function Home() {
       <section id="apis" className="border-t border-white/5 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-4 text-center text-3xl font-bold text-foreground md:text-4xl">
-            다양한 API, 한 곳에서
+            쓸 만한 API, 한곳에
           </h2>
           <p className="mx-auto mb-16 max-w-2xl text-center text-foreground/70">
-            필요한 API를 골라 사용하세요. 계속해서 새로운 API가 추가됩니다.
+            필요한 것만 골라 쓰면 되고, 앞으로도 하나씩 더 붙일 예정이에요.
           </p>
           <div
             ref={underCarouselRef}
@@ -1118,18 +1177,18 @@ export default function Home() {
       </section>
 
       {/* Price Summary */}
-      <section className="border-t border-white/5 px-6 py-24">
+      <section id="plan-summary" className="border-t border-white/5 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
               빠른 가격 안내
             </p>
             <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
-              어떤 플랜으로 시작할지 빠르게 판단하세요
+              플랜은 뭐 먼저 보면 돼요?
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              API별 세부 가격은 다를 수 있어도 선택 구조는 단순합니다. 가볍게
-              검증하려면 Starter, 운영 확장이 필요하면 Pro를 보면 됩니다.
+              API마다 금액은 다를 수 있는데, 고르는 구조는 단순해요. 일단
+              써보려면 Starter, 사람 붙으면 Pro 쪽을 보면 됩니다.
             </p>
           </div>
 
@@ -1140,17 +1199,16 @@ export default function Home() {
                   RPS란?
                 </p>
                 <p className="mt-2 text-lg font-semibold text-foreground">
-                  초당 몇 개의 요청을 안정적으로 처리할 수 있는지 보는 지표입니다.
+                  초당 몇 개 요청을 감당하느냐 보는 숫자예요.
                 </p>
               </div>
               <div className="rounded-2xl border border-accent/18 bg-accent/8 px-4 py-3 text-sm leading-relaxed text-foreground/78 md:max-w-sm">
-                RPS가 높을수록 동시에 들어오는 요청이 많은 서비스에서도 더
-                안정적으로 운영할 수 있습니다.
+                RPS 높을수록, 동시에 몰려도 덜 버벅이는 쪽이에요.
               </div>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-foreground/60">
-              간단한 PoC나 내부 검증은 낮은 RPS로도 충분하지만, 실제 사용자 요청이
-              몰리는 운영 환경에서는 더 높은 RPS 플랜이 필요합니다.
+              사내에서만 돌릴 땐 낮아도 되는데, 실제 사용자 붙으면 RPS 올린 플랜이
+              필요해질 때가 많아요.
             </p>
           </div>
 
@@ -1210,7 +1268,7 @@ export default function Home() {
             </Link>
           </div>
           <p className="mt-4 text-center text-sm text-foreground/52">
-            세부 가격은 API별로 다르지만, 선택 구조는 단순합니다.
+            금액은 API마다 다를 수 있는데, 고르는 방식은 그대로 단순해요.
           </p>
         </div>
       </section>
@@ -1219,11 +1277,10 @@ export default function Home() {
       <section id="pricing" className="border-t border-white/5 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-4 text-center text-3xl font-bold text-foreground md:text-4xl">
-            운영 관점에서 더 단순한 구조
+            운영할 때 덜 머리 아픈 쪽으로
           </h2>
           <p className="mx-auto mb-16 max-w-2xl text-center text-foreground/70">
-            비용 예측, 인프라 운영, API 확장까지 한 번에 이해할 수 있는 구조를
-            지향합니다.
+            비용·서버·API 늘리는 것까지 한 번에 이해하기 쉽게 만들어뒀어요.
           </p>
           <div className="grid gap-8 md:grid-cols-3">
             {BENEFITS.map((benefit, idx) => (
@@ -1251,11 +1308,11 @@ export default function Home() {
           </div>
           <div className="mt-16 rounded-2xl border border-accent/20 bg-accent/5 p-8 text-center md:p-12">
             <p className="font-mono text-accent">
-              복잡한 계산보다 단순한 운영 기준
+              계산기보다 운영 기준이 먼저
             </p>
             <p className="mt-2 text-foreground/80">
-              여러 AI API를 따로 붙이는 대신, 한 플랫폼에서 테스트하고 운영
-              기준을 더 명확하게 관리하세요.
+              API마다 따로 붙이지 말고, 한곳에서 써보고 기준만 맞춰 가면
+              됩니다.
             </p>
             <Link
               href="/plans"
@@ -1274,10 +1331,10 @@ export default function Home() {
             시작하기
           </p>
           <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
-            이제 직접 확인해볼 차례입니다
+            한번 써보면 감 옵니다
           </h2>
           <p className="mb-8 text-foreground/70">
-            Playground에서 바로 테스트하고, 맞는 플랜으로 가볍게 시작하세요.
+            Playground에서 먼저 때려보고, 맞으면 그때 플랜 고르면 돼요.
           </p>
           <div className="mb-8 flex flex-wrap items-center justify-center gap-2.5">
             {FINAL_CTA_POINTS.map((point) => (
@@ -1307,7 +1364,7 @@ export default function Home() {
             href="mailto:contact@gpumodu.dev"
             className="mt-5 inline-flex text-sm text-foreground/52 transition-colors hover:text-accent"
           >
-            도입 상담이 필요하면 문의하기
+            도입이 애매하면 메일로 물어보기
           </Link>
         </div>
       </section>
