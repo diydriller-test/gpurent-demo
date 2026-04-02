@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { getBackendBaseUrl, pickAuthHeader } from "../../_lib/backend";
+import { fetchBackend, pickAuthHeader } from "../../_lib/backend";
 
 export async function PATCH(req: Request) {
-  const backend = getBackendBaseUrl();
   const auth = pickAuthHeader(req);
   const body = await req.text().catch(() => "");
 
-  const upstreamRes = await fetch(`${backend}/auth/me/plan`, {
+  const upstreamRes = await fetchBackend("/auth/me/plan", {
     method: "PATCH",
     headers: {
       "Content-Type": req.headers.get("content-type") ?? "application/json",

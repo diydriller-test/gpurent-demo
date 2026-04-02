@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import { getBackendBaseUrl, pickAuthHeader } from "../_lib/backend";
+import { fetchBackend, pickAuthHeader } from "../_lib/backend";
 
 export async function GET(req: Request) {
-  const backend = getBackendBaseUrl();
   const auth = pickAuthHeader(req);
 
-  const upstreamRes = await fetch(`${backend}/auth/me`, {
+  const upstreamRes = await fetchBackend("/auth/me", {
     method: "GET",
     headers: {
       Accept: "application/json",

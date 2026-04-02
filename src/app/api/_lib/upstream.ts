@@ -1,4 +1,4 @@
-import { getBackendBaseUrl } from "./backend";
+import { fetchBackend } from "./backend";
 
 const UPSTREAM_BASE_URL = "http://gpurent.kogrobo.com:11115";
 
@@ -24,7 +24,7 @@ function parseApiKeys(data: unknown): ApiKeyLike[] {
 
 async function hasApiKey(authHeader: string): Promise<boolean> {
   try {
-    const res = await fetch(`${getBackendBaseUrl()}/auth/api-keys`, {
+    const res = await fetchBackend("/auth/api-keys", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -55,7 +55,7 @@ export async function resolveUpstreamContext(
   }
 
   try {
-    const res = await fetch(`${getBackendBaseUrl()}/auth/api-keys`, {
+    const res = await fetchBackend("/auth/api-keys", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

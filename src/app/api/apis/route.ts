@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { getBackendBaseUrl } from "../_lib/backend";
+import { fetchBackend } from "../_lib/backend";
 
 export async function GET() {
-  const backend = getBackendBaseUrl();
-  const upstreamRes = await fetch(`${backend}/apis`, {
+  const upstreamRes = await fetchBackend("/apis", {
     method: "GET",
     headers: { Accept: "application/json" },
     cache: "no-store",

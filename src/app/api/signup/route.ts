@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { getBackendBaseUrl, pickAuthHeader } from "../_lib/backend";
+import { fetchBackend, pickAuthHeader } from "../_lib/backend";
 
 export async function POST(req: Request) {
-  const backend = getBackendBaseUrl();
   const auth = pickAuthHeader(req);
   const body = await req.text().catch(() => "");
 
-  const upstreamRes = await fetch(`${backend}/auth/signup`, {
+  const upstreamRes = await fetchBackend("/auth/signup", {
     method: "POST",
     headers: {
       "Content-Type": req.headers.get("content-type") ?? "application/json",
