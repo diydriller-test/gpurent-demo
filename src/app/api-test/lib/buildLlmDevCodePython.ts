@@ -1,4 +1,4 @@
-const URL = "http://gpurent.kogrobo.com:51089/v1/chat/completions";
+const URL = "http://aiapi.kogrobo.com:11115/v1/chat/completions";
 const MODEL = "openai/gpt-oss-120b";
 
 function escapeForPythonJsonString(s: string) {
