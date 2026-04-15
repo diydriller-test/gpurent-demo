@@ -615,7 +615,7 @@ function buildLlmConsoleRequestJson(
 ) {
   return JSON.stringify(
     {
-      model: "openai/gpt-oss-120b",
+      model: "google/gemma-4-31B-it",
       temperature,
       ...(systemPromptValue.trim()
         ? { messages: [{ role: "system", content: systemPromptValue }, { role: "user", content: promptValue }] }
@@ -4004,7 +4004,7 @@ export default function ApiTestPage() {
       statusLine: "Pending...",
       requestJson: JSON.stringify(
         {
-          model: "openai/gpt-oss-120b",
+          model: "google/gemma-4-31B-it",
           ...(llmSystemPrompt.trim()
             ? {
                 messages: [
@@ -5984,7 +5984,7 @@ export default function ApiTestPage() {
                         onChange={(e) => {
                           handleConsoleRequestJsonChange(e.target.value);
                         }}
-                        placeholder={`{\n  "model": "openai/gpt-oss-120b",\n  "input": "직접 입력한 내용"\n}`}
+                        placeholder={`{\n  "model": "google/gemma-4-31B-it",\n  "input": "직접 입력한 내용"\n}`}
                         rows={9}
                         className="mt-3 min-h-[180px] w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 font-mono text-[12px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                       />

@@ -6,7 +6,7 @@ import type { Api, Plan } from "@/lib/api";
 export const DEMO_APIS_FALLBACK: Api[] = [
   {
     id: 91001,
-    name: "GPT-OSS Text LLM",
+    name: "Google Gemma 4 Text LLM",
     company_id: 1,
     company_name: "GPU Modu",
   },
@@ -208,6 +208,7 @@ export function getApiTask(api: Api): PlanTask | null {
 
 /** 카드 상단: 백엔드 `card_sublabel` 대신 TASK_META 고정 문구 사용 (베이스 모델명 비노출) */
 export const MODU_NLP_SURFACE_TASKS: readonly PlanTask[] = [
+  "Text Generation",
   "Ad Copy",
   "Text Summary",
   "Sentiment Analysis",
@@ -220,8 +221,8 @@ const TASK_META: Record<
   { sublabel: string; modelDisplay: string; tags: string[] }
 > = {
   "Text Generation": {
-    sublabel: "GPT-OSS • Text Generation",
-    modelDisplay: "gpt-oss-120B",
+    sublabel: "Google Gemma 4 • Text Generation",
+    modelDisplay: "Google Gemma 4",
     tags: ["#LLM", "#Text-Gen"],
   },
   "Ad Copy": {
