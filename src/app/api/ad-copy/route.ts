@@ -1,6 +1,3 @@
-import { ChatOpenAI } from "@langchain/openai";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
 import { NextResponse } from "next/server";
 import {
   DEFAULT_AD_COPY_LANGUAGE,
@@ -8,7 +5,7 @@ import {
   isAdCopyLanguageCode,
 } from "@/lib/adCopyLanguages";
 import { buildSystemPolicyMessage } from "../_lib/endpointPolicy";
-import { getVllmOpenAiConfig } from "../_lib/vllm";
+import { resolveUpstreamContext } from "../_lib/upstream";
 
 type AdCopyBody = {
   brief?: unknown;
@@ -70,66 +67,99 @@ export async function POST(req: Request) {
 
     const parsedTemperature = parseTemperature(body?.temperature);
 
-    const { baseURL, apiKey } = getVllmOpenAiConfig();
+    const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
+    const upstreamUrl = `${upstreamBasePath}/llm/v1/chat/completions`;
+    const authHeader = req.headers.get("authorization");
 
-    const llm = new ChatOpenAI({
-      apiKey,
-      configuration: { baseURL },
-      model: "google/gemma-4-31B-it",
-      temperature: parsedTemperature,
-      timeout: 120_000,
-    });
-
-    const prompt = ChatPromptTemplate.fromTemplate(`${buildSystemPolicyMessage("ad-copy")}
-
-당신은 글로벌 광고 카피 전문가입니다.
-아래 브리프를 바탕으로 효과적인 광고 문구를 작성하세요.
-
-[출력 언어]
-반드시 {languageLabel}로만 작성하세요. 헤드라인·본문·슬로건 모두 이 언어로만 출력합니다. 다른 언어를 섞지 마세요.
-
-[브리프]
-{brief}
-
-[톤·무드]
-{toneLine}
-
-[노출 채널] (배너, SNS, 검색광고 등)
-{channelLine}
-
-요구사항:
-- 헤드라인(또는 메인 슬로건)과 본문(또는 짧은 설명 문구)을 구분해 제시
-- 과장·허위 표현은 피하고, 브리프에 맞는 매력 포인트를 살릴 것
-- 불필요한 메타 설명(“다음은 카피입니다” 등)은 생략`);
-
-    const chain = prompt.pipe(llm).pipe(new StringOutputParser());
-
-    const copy = await chain.invoke({
+    const userPrompt = [
+      `당신은 글로벌 광고 카피 전문가입니다.`,
+      `아래 브리프를 바탕으로 효과적인 광고 문구를 작성하세요.`,
+      ``,
+      `[출력 언어]`,
+      `반드시 ${languageLabel}로만 작성하세요. 헤드라인·본문·슬로건 모두 이 언어로만 출력합니다. 다른 언어를 섞지 마세요.`,
+      ``,
+      `[브리프]`,
       brief,
+      ``,
+      `[톤·무드]`,
       toneLine,
+      ``,
+      `[노출 채널] (배너, SNS, 검색광고 등)`,
       channelLine,
-      languageLabel,
+      ``,
+      `요구사항:`,
+      `- 헤드라인(또는 메인 슬로건)과 본문(또는 짧은 설명 문구)을 구분해 제시`,
+      `- 과장·허위 표현은 피하고, 브리프에 맞는 매력 포인트를 살릴 것`,
+      `- 불필요한 메타 설명(“다음은 카피입니다” 등)은 생략`,
+    ].join("\n");
+
+    const upstreamRes = await fetch(upstreamUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(apiKey
+          ? { Authorization: `Bearer ${apiKey}` }
+          : authHeader
+            ? { Authorization: authHeader }
+            : {}),
+      },
+      body: JSON.stringify({
+        model: "google/gemma-4-31B-it",
+        temperature: parsedTemperature,
+        messages: [
+          {
+            role: "system",
+            content: buildSystemPolicyMessage("ad-copy"),
+          },
+          { role: "user", content: userPrompt },
+        ],
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(120_000),
     });
+
+    const upstreamJson = (await upstreamRes.json().catch(() => null)) as unknown;
+
+    if (!upstreamRes.ok) {
+      const status = upstreamRes.status || 500;
+      const message =
+        status === 429
+          ? "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요."
+          : (upstreamJson as { error?: string; message?: string })?.error ||
+            (upstreamJson as { error?: string; message?: string })?.message ||
+            "Ad copy API 요청 실패";
+      return NextResponse.json({ error: message }, { status });
+    }
+
+    const copy =
+      typeof (
+        upstreamJson as {
+          choices?: Array<{ message?: { content?: unknown } }>;
+        } | null
+      )?.choices?.[0]?.message?.content === "string"
+        ? String(
+            (
+              upstreamJson as {
+                choices: Array<{ message?: { content?: string } }>;
+              }
+            ).choices[0]?.message?.content ?? "",
+          ).trim()
+        : "";
+
+    if (!copy) {
+      return NextResponse.json(
+        { error: "Ad copy 응답 형식이 올바르지 않습니다." },
+        { status: 502 },
+      );
+    }
 
     return NextResponse.json({ copy });
   } catch (error: unknown) {
     console.error("Ad copy API Error:", error);
-    const err = error as {
-      response?: { status?: number };
-      status?: number;
-      message?: string;
-    };
-    const msg = String(err?.message ?? "").toLowerCase();
-    const is429 =
-      err?.response?.status === 429 ||
-      err?.status === 429 ||
-      msg.includes("429") ||
-      msg.includes("rate limit") ||
-      msg.includes("too many requests");
-    if (is429) {
+    if (error instanceof Error && error.name === "TimeoutError") {
       return NextResponse.json(
-        { error: "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요." },
-        { status: 429 },
+        { error: "Ad copy 요청이 시간 초과되었습니다." },
+        { status: 504 },
       );
     }
     return NextResponse.json(
