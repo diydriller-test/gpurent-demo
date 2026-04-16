@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 const URL = "http://aiapi.kogrobo.com:11115/v1/chat/completions";
 const MODEL = "google/gemma-4-31B-it";
+=======
+const URL = "http://gpurent.kogrobo.com:11115/v1/chat/completions";
+const MODEL = "openai/gpt-oss-120b";
+>>>>>>> e96fa2f (fix: gateway)
 
 function escapeForPythonJsonString(s: string) {
   return s
