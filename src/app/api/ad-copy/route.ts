@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     const llm = new ChatOpenAI({
       apiKey,
       configuration: { baseURL },
-      model: "openai/gpt-oss-120b",
+      model: "google/gemma-4-31B-it",
       temperature: parsedTemperature,
       timeout: 120_000,
     });

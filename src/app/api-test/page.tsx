@@ -1494,7 +1494,7 @@ export default function ApiTestPage() {
   const marketplaceItems: MarketplaceItem[] = useMemo(
     () => [
       {
-        id: "gpt-oss-120b",
+        id: "google/gemma-4-31B-it",
         task: "Text Generation",
         apiId: "llm",
         model: "LLM",

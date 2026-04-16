@@ -1,5 +1,5 @@
 const URL = "http://gpurent.kogrobo.com:11115/v1/chat/completions";
-const MODEL = "openai/gpt-oss-120b";
+const MODEL = "google/gemma-4-31B-it";
 
 function escapeForPythonJsonString(s: string) {
   return s

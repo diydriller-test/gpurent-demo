@@ -42,7 +42,7 @@ export async function POST(req: Request) {
             : {}),
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
+        model: "google/gemma-4-31B-it",
         temperature: parsedTemperature,
         messages: [
           ...(systemPrompt
