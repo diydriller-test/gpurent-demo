@@ -170,6 +170,8 @@ export function PlanTaskIcon({
       return <IconVolume2 className={className} />;
     case "STT":
       return <IconMic className={className} />;
+    case "Voice Clone":
+      return <IconVolume2 className={className} />;
     default:
       return <IconLayers className={className} />;
   }

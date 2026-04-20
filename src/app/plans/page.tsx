@@ -13,6 +13,7 @@ import {
   getApiTask,
   getPlanCardDisplay,
   getPlanTaskSublabel,
+  inferPlanTask,
   MODU_NLP_SURFACE_TASKS,
   PLAN_TASK_KEYS,
   type PlanTask,
@@ -153,7 +154,12 @@ function PlansPageContent() {
     getApis()
       .then((data) => {
         if (cancelled) return;
-        setApis(data);
+        // 백엔드에 없는 데모 API(Voice Clone 등)를 보충
+        const existingTasks = new Set(data.map((a) => inferPlanTask(a.name)));
+        const supplements = DEMO_APIS_FALLBACK.filter(
+          (a) => !existingTasks.has(inferPlanTask(a.name)),
+        );
+        setApis([...data, ...supplements]);
         setUsingDemoApis(false);
         setError(null);
       })
@@ -499,7 +505,9 @@ function PlansPageContent() {
                                   ? "감정"
                                   : t === "NER"
                                     ? "개체명"
-                                    : t;
+                                    : t === "Voice Clone"
+                                      ? "클론"
+                                      : t;
 
                         return (
                           <button

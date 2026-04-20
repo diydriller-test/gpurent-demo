@@ -252,6 +252,34 @@ const SECTIONS: DocSection[] = [
       "`file`이 없으면 400과 안내 메시지가 반환됩니다.",
     ],
   },
+  {
+    id: "voice-clone",
+    title: "Voice Clone (보이스 클론)",
+    method: "POST",
+    path: "/api/voice-clone",
+    description:
+      "참조 음성 파일을 업로드하면 해당 화자의 목소리로 텍스트를 합성합니다. `x_vector_only_mode`로 합성 방식을 선택할 수 있습니다. `multipart/form-data`로 전송합니다.",
+    requestLabel: "본문 (multipart/form-data)",
+    request: `필드:
+  ref_audio         — 참조 음성 파일 (필수, WAV/MP3 등)
+  text              — 합성할 텍스트 (필수)
+  language          — 언어 (선택, 기본 Korean)
+                      Korean | English | Chinese | Japanese 등
+  x_vector_only_mode — true | false (선택, 기본 true)
+                      true  → 음색만 복제 (ref_text 불필요, 빠름)
+                      false → 음색+억양·스타일 복제 (ref_text 권장)
+  ref_text          — 참조 음성의 스크립트 (x_vector_only_mode=false 시 권장)`,
+    responseLabel: "성공 (200)",
+    response: `Content-Type: audio/wav (또는 업스트림 오디오 타입)
+<바이너리 오디오 스트림>`,
+    notes: [
+      "`ref_audio`와 `text`만 필수입니다.",
+      "`x_vector_only_mode=true`일 때는 `ref_text` 없이도 동작하며, 더 빠르게 합성됩니다.",
+      "`x_vector_only_mode=false`일 때는 `ref_text`(참조 음성 스크립트)를 함께 보내면 억양·발화 스타일까지 복제됩니다.",
+      "인증은 `access_token` 헤더(Bearer 없이)를 사용합니다.",
+      "최대 실행 시간 제한(60초)이 있어 초과 시 504가 날 수 있습니다.",
+    ],
+  },
 ];
 
 const TOC_SECTION_IDS = ["overview", ...SECTIONS.map((s) => s.id)];

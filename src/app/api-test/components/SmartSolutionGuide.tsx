@@ -10,7 +10,8 @@ type ApiId =
   | "embedding"
   | "reranker"
   | "tts"
-  | "stt";
+  | "stt"
+  | "voiceClone";
 
 type Props = {
   selectedApi: ApiId;

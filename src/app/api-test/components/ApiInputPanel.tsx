@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef, useState } from "react";
+import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { AD_COPY_LANGUAGE_OPTIONS } from "@/lib/adCopyLanguages";
@@ -461,6 +461,23 @@ type Props = {
   // Icons
   IconUpload: React.ComponentType<{ className?: string }>;
   IconMic: React.ComponentType<{ className?: string }>;
+
+  // Voice Clone input
+  handleVcRun: () => void;
+  vcText: string;
+  setVcText: React.Dispatch<React.SetStateAction<string>>;
+  vcLanguage: string;
+  setVcLanguage: React.Dispatch<React.SetStateAction<string>>;
+  vcLanguageOptions: Array<{ value: string; label: string }>;
+  vcXVectorOnly: boolean;
+  setVcXVectorOnly: React.Dispatch<React.SetStateAction<boolean>>;
+  vcRefText: string;
+  setVcRefText: React.Dispatch<React.SetStateAction<string>>;
+  vcRefAudioFileInputRef: React.RefObject<HTMLInputElement | null>;
+  vcRefFileName: string | null;
+  onVcRefAudioChange: (file: File | null) => void;
+  onVcRefAudioClear: () => void;
+  isVcSynthesizing: boolean;
 };
 
 export function ApiInputPanel({
@@ -591,6 +608,22 @@ export function ApiInputPanel({
 
   IconUpload,
   IconMic,
+
+  handleVcRun,
+  vcText,
+  setVcText,
+  vcLanguage,
+  setVcLanguage,
+  vcLanguageOptions,
+  vcXVectorOnly,
+  setVcXVectorOnly,
+  vcRefText,
+  setVcRefText,
+  vcRefAudioFileInputRef,
+  vcRefFileName,
+  onVcRefAudioChange,
+  onVcRefAudioClear,
+  isVcSynthesizing,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [llmAdvancedOpen, setLlmAdvancedOpen] = useState(false);
@@ -2153,6 +2186,354 @@ export function ApiInputPanel({
           </div>
         </div>
       ) : null}
+
+      {selectedApi === "voiceClone" ? (
+        <VoiceCloneSection
+          vcRefFileName={vcRefFileName}
+          vcRefAudioFileInputRef={vcRefAudioFileInputRef}
+          onVcRefAudioChange={onVcRefAudioChange}
+          onVcRefAudioClear={onVcRefAudioClear}
+          vcLanguage={vcLanguage}
+          setVcLanguage={setVcLanguage}
+          vcLanguageOptions={vcLanguageOptions}
+          vcXVectorOnly={vcXVectorOnly}
+          setVcXVectorOnly={setVcXVectorOnly}
+          vcRefText={vcRefText}
+          setVcRefText={setVcRefText}
+          vcText={vcText}
+          setVcText={setVcText}
+          isVcSynthesizing={isVcSynthesizing}
+          handleVcRun={handleVcRun}
+          IconUpload={IconUpload}
+          IconMic={IconMic}
+        />
+      ) : null}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// VoiceCloneSection — 파일 업로드 + 마이크 녹음 통합 UI
+// ---------------------------------------------------------------------------
+
+type VoiceCloneSectionProps = {
+  vcRefFileName: string | null;
+  vcRefAudioFileInputRef: React.RefObject<HTMLInputElement | null>;
+  onVcRefAudioChange: (file: File | null) => void;
+  onVcRefAudioClear: () => void;
+  vcLanguage: string;
+  setVcLanguage: React.Dispatch<React.SetStateAction<string>>;
+  vcLanguageOptions: Array<{ value: string; label: string }>;
+  vcXVectorOnly: boolean;
+  setVcXVectorOnly: React.Dispatch<React.SetStateAction<boolean>>;
+  vcRefText: string;
+  setVcRefText: React.Dispatch<React.SetStateAction<string>>;
+  vcText: string;
+  setVcText: React.Dispatch<React.SetStateAction<string>>;
+  isVcSynthesizing: boolean;
+  handleVcRun: () => void;
+  IconUpload: React.ComponentType<{ className?: string }>;
+  IconMic: React.ComponentType<{ className?: string }>;
+};
+
+function VoiceCloneSection({
+  vcRefFileName,
+  vcRefAudioFileInputRef,
+  onVcRefAudioChange,
+  onVcRefAudioClear,
+  vcLanguage,
+  setVcLanguage,
+  vcLanguageOptions,
+  vcXVectorOnly,
+  setVcXVectorOnly,
+  vcRefText,
+  setVcRefText,
+  vcText,
+  setVcText,
+  isVcSynthesizing,
+  handleVcRun,
+  IconUpload,
+  IconMic,
+}: VoiceCloneSectionProps) {
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSecs, setRecordingSecs] = useState(0);
+  const [recordingError, setRecordingError] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    mediaRecorderRef.current?.stop();
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    stopTimer();
+    setIsRecording(false);
+  }, [stopTimer]);
+
+  // 최대 60초 자동 중지
+  useEffect(() => {
+    if (isRecording && recordingSecs >= 60) {
+      stopRecording();
+    }
+  }, [isRecording, recordingSecs, stopRecording]);
+
+  // 언마운트 시 정리
+  useEffect(() => {
+    return () => {
+      stopTimer();
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, [stopTimer]);
+
+  async function startRecording() {
+    setRecordingError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      chunksRef.current = [];
+
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : "";
+      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = mr;
+
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mr.onstop = () => {
+        const blob = new Blob(chunksRef.current, {
+          type: mr.mimeType || "audio/webm",
+        });
+        const ext = mr.mimeType.includes("ogg") ? "ogg" : "webm";
+        const file = new File([blob], `recording.${ext}`, {
+          type: blob.type,
+        });
+        onVcRefAudioChange(file);
+      };
+
+      mr.start(100);
+      setRecordingSecs(0);
+      setIsRecording(true);
+      timerRef.current = setInterval(() => {
+        setRecordingSecs((s) => s + 1);
+      }, 1000);
+    } catch {
+      setRecordingError("마이크 접근 권한이 필요합니다.");
+    }
+  }
+
+  const fmtSecs = (s: number) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleVcRun();
+      }}
+    >
+      <div className="flex flex-col gap-3">
+        {/* 참조 음성 */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">참조 음성</p>
+          <div className="mt-1 flex items-center gap-2">
+            {/* 파일 업로드 */}
+            <input
+              ref={vcRefAudioFileInputRef}
+              type="file"
+              accept="audio/*,.wav,.mp3,.ogg,.webm,.m4a"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                onVcRefAudioChange(file);
+                e.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              disabled={isRecording}
+              onClick={() => vcRefAudioFileInputRef.current?.click()}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] text-foreground/80 transition-colors hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <IconUpload className="h-4 w-4 shrink-0" />
+              <span className="truncate">
+                {!isRecording && vcRefFileName ? vcRefFileName : "파일 선택"}
+              </span>
+            </button>
+
+            {/* 녹음 버튼 */}
+            {isRecording ? (
+              <button
+                type="button"
+                onClick={stopRecording}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/50 bg-red-500/10 px-4 py-2 text-[13px] font-medium text-red-400 transition-colors hover:bg-red-500/20"
+              >
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                </span>
+                <span>{fmtSecs(recordingSecs)}</span>
+                <span>중지</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={startRecording}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] text-foreground/80 transition-colors hover:border-accent/50 hover:text-accent"
+              >
+                <IconMic className="h-4 w-4 shrink-0" />
+                <span>녹음</span>
+              </button>
+            )}
+
+            {/* 초기화 */}
+            {vcRefFileName && !isRecording ? (
+              <button
+                type="button"
+                onClick={onVcRefAudioClear}
+                className="shrink-0 rounded-lg border border-white/10 bg-background/30 px-2 py-1.5 text-[11px] text-foreground/60 transition-colors hover:border-accent/40 hover:text-accent"
+              >
+                ✕
+              </button>
+            ) : null}
+          </div>
+
+          {recordingError ? (
+            <p className="mt-1 text-[11px] text-red-400">{recordingError}</p>
+          ) : isRecording ? (
+            <p className="mt-1 text-[11px] text-red-400/80">
+              녹음 중… 중지를 누르면 자동으로 설정됩니다. (최대 60초)
+            </p>
+          ) : (
+            <p className="mt-1 text-[11px] text-foreground/45">
+              클론할 목소리 샘플 (WAV 권장, 5~30초) — 파일 업로드 또는 직접 녹음
+            </p>
+          )}
+        </div>
+
+        {/* 언어 + x_vector only */}
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end">
+          <div className="min-w-0 flex-1">
+            <p className="font-mono text-xs text-foreground/60">언어</p>
+            <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
+              <CustomSelect
+                value={vcLanguage}
+                onChange={setVcLanguage}
+                options={vcLanguageOptions}
+                triggerClassName="h-full text-[13px] text-foreground"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 pb-1">
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={vcXVectorOnly}
+                onChange={(e) => setVcXVectorOnly(e.target.checked)}
+                className="h-4 w-4 accent-accent"
+              />
+              <span className="text-[13px] text-foreground/80">x_vector only</span>
+            </label>
+            <div className="group relative flex items-center">
+              <button
+                type="button"
+                tabIndex={-1}
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/8 text-[10px] text-foreground/50 transition-colors hover:border-accent/50 hover:text-accent"
+                aria-label="x_vector only 설명"
+              >
+                ?
+              </button>
+              <div className="pointer-events-none absolute bottom-full right-0 z-50 mb-2 w-64 rounded-xl border border-white/10 bg-[rgba(18,14,14,0.97)] px-3 py-2.5 text-[12px] leading-relaxed text-foreground/80 opacity-0 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-opacity duration-150 group-hover:opacity-100">
+                <p className="font-semibold text-foreground">x_vector only 란?</p>
+                <p className="mt-1">
+                  <span className="font-medium text-accent">켜짐 (기본)</span>: 참조 음성에서
+                  화자 특성(음색·음질)만 추출해 적용합니다. 빠르고 간단하며 별도 텍스트 입력이
+                  필요 없습니다.
+                </p>
+                <p className="mt-1.5">
+                  <span className="font-medium text-accent">꺼짐</span>: 음색에 더해
+                  참조 음성의 운율·억양·말하기 스타일까지 클론합니다. 아래에 참조 음성에서 말하는
+                  내용(ref_text)을 함께 입력해야 합니다.
+                </p>
+                <div className="absolute right-2 top-full border-4 border-transparent border-t-white/10" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ref_text (x_vector only 꺼짐 시) */}
+        {!vcXVectorOnly ? (
+          <div>
+            <p className="font-mono text-xs text-foreground/60">참조 텍스트 (ref_text)</p>
+            <textarea
+              value={vcRefText}
+              onChange={(e) => setVcRefText(e.target.value)}
+              rows={2}
+              placeholder="참조 음성에서 말하는 내용을 입력하세요"
+              className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] leading-snug text-foreground outline-none placeholder:text-foreground/40 transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+            />
+          </div>
+        ) : null}
+
+        {/* 읽어줄 텍스트 */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">읽어줄 텍스트</p>
+          <textarea
+            value={vcText}
+            onChange={(e) => setVcText(e.target.value)}
+            rows={2}
+            placeholder="클론된 목소리로 읽어줄 내용을 입력하세요"
+            className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] leading-snug text-foreground outline-none placeholder:text-foreground/40 transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+
+        {/* 하단 */}
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] text-foreground/55">
+            참조 음성을 업로드하면 해당 목소리로 텍스트를 합성합니다.
+          </p>
+          <button
+            type="submit"
+            disabled={isVcSynthesizing || !vcText.trim() || !vcRefFileName}
+            className={[
+              "inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-medium text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity",
+              isVcSynthesizing || !vcText.trim() || !vcRefFileName
+                ? "cursor-not-allowed opacity-50"
+                : "hover:opacity-90",
+            ].join(" ")}
+          >
+            {isVcSynthesizing ? (
+              <>
+                <svg
+                  className="h-4 w-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+                <span>합성 중…</span>
+              </>
+            ) : (
+              <span>클론</span>
+            )}
+          </button>
+        </div>
+      </div>
+    </form>
   );
 }

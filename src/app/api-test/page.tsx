@@ -31,6 +31,7 @@ import { buildSummarizeDevCodePython } from "./lib/buildSummarizeDevCodePython";
 import { buildSentimentDevCodePython } from "./lib/buildSentimentDevCodePython";
 import { buildNerDevCodePython } from "./lib/buildNerDevCodePython";
 import { buildTextToSqlDevCodePython } from "./lib/buildTextToSqlDevCodePython";
+import { buildVoiceCloneDevCodePython } from "./lib/buildVoiceCloneDevCodePython";
 import type {
   NerPayload,
   SentimentAnalysisPayload,
@@ -53,7 +54,8 @@ type ApiId =
   | "embedding"
   | "reranker"
   | "tts"
-  | "stt";
+  | "stt"
+  | "voiceClone";
 
 type ApiItem = {
   id: ApiId;
@@ -118,6 +120,21 @@ const TTS_SPEAKER_OPTIONS = [
 ] as const;
 type TtsSpeaker = (typeof TTS_SPEAKER_OPTIONS)[number]["value"];
 const DEFAULT_TTS_SPEAKER: TtsSpeaker = "ryan";
+
+const VOICE_CLONE_LANGUAGE_OPTIONS = [
+  { value: "Korean", label: "한국어" },
+  { value: "English", label: "English" },
+  { value: "Chinese", label: "中文" },
+  { value: "Japanese", label: "日本語" },
+  { value: "French", label: "Français" },
+  { value: "German", label: "Deutsch" },
+  { value: "Spanish", label: "Español" },
+  { value: "Italian", label: "Italiano" },
+  { value: "Portuguese", label: "Português" },
+  { value: "Russian", label: "Русский" },
+] as const;
+const DEFAULT_VC_LANGUAGE = "Korean";
+const DEFAULT_VC_TEXT = "안녕하세요. 저는 보이스 클론 테스트 중입니다.";
 
 const DEFAULT_RERANK_QUERY = "사람 없고 한적한 곳에서 힐링하고 싶어";
 const DEFAULT_RERANK_DOCS_TEXT =
@@ -1229,6 +1246,55 @@ function tryParseSttConsoleToPlayground(jsonText: string): {
   }
 }
 
+function buildVoiceCloneConsoleRequestJson(
+  text: string,
+  language: string,
+  xVectorOnly: boolean,
+  refText: string,
+  refFileName: string | null,
+) {
+  const payload: Record<string, unknown> = {
+    text,
+    language,
+    x_vector_only_mode: xVectorOnly,
+    ref_audio: refFileName ? `(binary file: ${refFileName})` : "(binary file)",
+  };
+  if (!xVectorOnly && refText.trim()) {
+    payload.ref_text = refText.trim();
+  }
+  return JSON.stringify(payload, null, 2);
+}
+
+function tryParseVoiceCloneConsoleToPlayground(jsonText: string): {
+  text?: string;
+  language?: string;
+  xVectorOnly?: boolean;
+  refText?: string;
+} | null {
+  try {
+    const parsed = JSON.parse(jsonText) as {
+      text?: unknown;
+      language?: unknown;
+      x_vector_only_mode?: unknown;
+      ref_text?: unknown;
+    };
+    const out: {
+      text?: string;
+      language?: string;
+      xVectorOnly?: boolean;
+      refText?: string;
+    } = {};
+    if (typeof parsed.text === "string") out.text = parsed.text;
+    if (typeof parsed.language === "string") out.language = parsed.language;
+    if (typeof parsed.x_vector_only_mode === "boolean")
+      out.xVectorOnly = parsed.x_vector_only_mode;
+    if (typeof parsed.ref_text === "string") out.refText = parsed.ref_text;
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 export default function ApiTestPage() {
   const router = useRouter();
   type ViewMode = "list" | "detail";
@@ -1285,6 +1351,11 @@ export default function ApiTestPage() {
         name: "STT (Speech-to-Text)",
         description: "음성을 텍스트로 변환",
       },
+      {
+        id: "voiceClone",
+        name: "Voice Clone",
+        description: "참조 음성으로 목소리를 클론하여 TTS",
+      },
     ],
     [],
   );
@@ -1317,7 +1388,8 @@ export default function ApiTestPage() {
       api === "embedding" ||
       api === "reranker" ||
       api === "tts" ||
-      api === "stt"
+      api === "stt" ||
+      api === "voiceClone"
     ) {
       setSelectedApi(api);
       // 홈 카드에서 들어올 때는 바로 해당 챕터 상세를 보여줌
@@ -1436,6 +1508,15 @@ export default function ApiTestPage() {
           "",
         );
       }
+      if (api === "voiceClone") {
+        return buildVoiceCloneConsoleRequestJson(
+          DEFAULT_VC_TEXT,
+          DEFAULT_VC_LANGUAGE,
+          true,
+          "",
+          null,
+        );
+      }
       return "{}";
     },
     [llmTemperature],
@@ -1459,6 +1540,7 @@ export default function ApiTestPage() {
       reranker: createDefaultConsoleState("reranker"),
       tts: createDefaultConsoleState("tts"),
       stt: createDefaultConsoleState("stt"),
+      voiceClone: createDefaultConsoleState("voiceClone"),
     }),
   );
   const [consoleCopied, setConsoleCopied] = useState<boolean>(false);
@@ -1478,6 +1560,7 @@ export default function ApiTestPage() {
     | "Reranker"
     | "TTS"
     | "STT"
+    | "Voice Clone"
     | "Vision";
   type LibraryFormat = "Transformers" | "GGUF" | "vLLM" | "ONNX";
 
@@ -1584,6 +1667,15 @@ export default function ApiTestPage() {
         formats: ["ONNX"],
       },
       {
+        id: "voice-clone-modu",
+        task: "Voice Clone",
+        apiId: "voiceClone",
+        model: "Voice Clone",
+        modelSizeB: 13,
+        taskTags: ["#VoiceClone", "#Audio"],
+        formats: ["ONNX"],
+      },
+      {
         id: "vision-pro",
         task: "Vision",
         model: "vision-pro (Coming Soon)",
@@ -1608,6 +1700,7 @@ export default function ApiTestPage() {
     Reranker: true,
     TTS: true,
     STT: true,
+    "Voice Clone": true,
     Vision: false,
   });
   const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
@@ -1656,6 +1749,7 @@ export default function ApiTestPage() {
       "Reranker",
       "TTS",
       "STT",
+      "Voice Clone",
     ],
     [],
   );
@@ -1696,7 +1790,11 @@ export default function ApiTestPage() {
                         ? "TTS"
                         : taskParam === "stt" || taskParam === "sst"
                           ? "STT"
-                          : null;
+                          : taskParam === "voice-clone" ||
+                              taskParam === "voiceclone" ||
+                              taskParam === "보이스클론"
+                            ? "Voice Clone"
+                            : null;
 
     if (!targetTask) return;
 
@@ -1721,6 +1819,7 @@ export default function ApiTestPage() {
     if (targetTask === "Reranker") setSelectedApi("reranker");
     if (targetTask === "TTS") setSelectedApi("tts");
     if (targetTask === "STT") setSelectedApi("stt");
+    if (targetTask === "Voice Clone") setSelectedApi("voiceClone");
   }, [taskKeys]);
 
   function resolveMarketplacePlan(item: MarketplaceItem) {
@@ -1759,6 +1858,7 @@ export default function ApiTestPage() {
     if (active === "Embedding") return "Embedding";
     if (active === "Reranker") return "Rerank";
     if (active === "TTS" || active === "STT") return "TTS/STT";
+    if (active === "Voice Clone") return "VoiceClone";
     return "All";
   }, [filterTasks, sidebarMode, allTasksFilterOn, taskKeys]);
 
@@ -1881,6 +1981,18 @@ export default function ApiTestPage() {
             회의록 자동 작성부터 자연스러운 음성 안내까지,{" "}
             <span className="text-accent font-semibold">소리를 데이터로</span>{" "}
             바꾸는 멀티모달 기술입니다.
+          </>
+        );
+      case "VoiceClone":
+        return (
+          <>
+            🎭{" "}
+            <span className="text-accent font-semibold">보이스 클론</span>:
+            짧은 참조 음성만으로 동일한 목소리를 재현합니다.{" "}
+            <span className="text-accent font-semibold">
+              원하는 텍스트를 클론된 목소리로
+            </span>{" "}
+            합성하는 개인화 TTS 기술입니다.
           </>
         );
       default:
@@ -2044,6 +2156,26 @@ export default function ApiTestPage() {
 
   const sttFileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Voice Clone
+  const [vcText, setVcText] = useState(DEFAULT_VC_TEXT);
+  const [vcLanguage, setVcLanguage] = useState(DEFAULT_VC_LANGUAGE);
+  const [vcXVectorOnly, setVcXVectorOnly] = useState(true);
+  const [vcRefText, setVcRefText] = useState("");
+  const [vcRefAudioFile, setVcRefAudioFile] = useState<File | null>(null);
+  const [vcRefFileName, setVcRefFileName] = useState<string | null>(null);
+  const [vcAudioUrl, setVcAudioUrl] = useState<string | null>(null);
+  const [vcIsLoading, setVcIsLoading] = useState(false);
+  const [vcError, setVcError] = useState<string | null>(null);
+  const [vcPlaying, setVcPlaying] = useState(false);
+  const [vcProgress, setVcProgress] = useState(0);
+  const [vcDurationMs, setVcDurationMs] = useState(0);
+  const [vcWave, setVcWave] = useState<number[]>([]);
+  const vcAudioRef = useRef<HTMLAudioElement | null>(null);
+  const vcBlobUrlRef = useRef<string | null>(null);
+  const vcRefAudioFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [vcDevCodeOpen, setVcDevCodeOpen] = useState(false);
+  const [vcDevCodeCopied, setVcDevCodeCopied] = useState(false);
+
   const [rerankerDevCodeOpen, setRerankerDevCodeOpen] = useState(false);
   const [rerankerDevCodeCopied, setRerankerDevCodeCopied] = useState(false);
   const [ttsDevCodeOpen, setTtsDevCodeOpen] = useState(false);
@@ -2074,6 +2206,17 @@ export default function ApiTestPage() {
         vadOn: sttVadOn,
       }),
     [sttLanguage, sttBeamSize, sttVadOn],
+  );
+
+  const vcDevCodePython = useMemo(
+    () =>
+      buildVoiceCloneDevCodePython({
+        text: vcText,
+        language: vcLanguage,
+        xVectorOnly: vcXVectorOnly,
+        refText: vcRefText,
+      }),
+    [vcText, vcLanguage, vcXVectorOnly, vcRefText],
   );
 
   useEffect(() => {
@@ -2158,7 +2301,8 @@ export default function ApiTestPage() {
     (selectedApi === "embedding" && embeddingHasWorkflowResult) ||
     (selectedApi === "reranker" && rerankerHasWorkflowResult) ||
     (selectedApi === "tts" && ttsHasWorkflowResult) ||
-    (selectedApi === "stt" && sttHasWorkflowResult);
+    (selectedApi === "stt" && sttHasWorkflowResult) ||
+    (selectedApi === "voiceClone" && Boolean(vcAudioUrl));
 
   const { mounted: workflowBannerMounted, visible: workflowBannerVisible } =
     useResultTriggeredBanner(hasWorkflowBannerResult);
@@ -2239,6 +2383,8 @@ export default function ApiTestPage() {
         return <IconVolume2 className={base} />;
       case "STT":
         return <IconMic className={base} />;
+      case "Voice Clone":
+        return <IconVolume2 className={base} />;
       case "Vision":
         return <IconPlus className={base} />;
       default:
@@ -2266,6 +2412,42 @@ export default function ApiTestPage() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      if (vcBlobUrlRef.current) {
+        URL.revokeObjectURL(vcBlobUrlRef.current);
+        vcBlobUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const el = vcAudioRef.current;
+    if (!el || !vcAudioUrl) return;
+    const onLoaded = () => {
+      if (el.duration && Number.isFinite(el.duration)) {
+        setVcDurationMs(Math.round(el.duration * 1000));
+      }
+    };
+    const onTime = () => {
+      if (el.duration && Number.isFinite(el.duration)) {
+        setVcProgress(el.currentTime / el.duration);
+      }
+    };
+    const onEnded = () => {
+      setVcPlaying(false);
+      setVcProgress(0);
+    };
+    el.addEventListener("loadedmetadata", onLoaded);
+    el.addEventListener("timeupdate", onTime);
+    el.addEventListener("ended", onEnded);
+    return () => {
+      el.removeEventListener("loadedmetadata", onLoaded);
+      el.removeEventListener("timeupdate", onTime);
+      el.removeEventListener("ended", onEnded);
+    };
+  }, [vcAudioUrl]);
+
+  useEffect(() => {
     const nextRequestJson = buildTtsConsoleRequestJson(
       ttsText,
       ttsLanguage,
@@ -2284,6 +2466,23 @@ export default function ApiTestPage() {
       };
     });
   }, [ttsText, ttsLanguage, ttsSpeaker, ttsStyleInstruction]);
+
+  useEffect(() => {
+    const nextRequestJson = buildVoiceCloneConsoleRequestJson(
+      vcText,
+      vcLanguage,
+      vcXVectorOnly,
+      vcRefText,
+      vcRefFileName,
+    );
+    setConsoleByApi((prev) => {
+      if (prev.voiceClone.requestJson === nextRequestJson) return prev;
+      return {
+        ...prev,
+        voiceClone: { ...prev.voiceClone, requestJson: nextRequestJson },
+      };
+    });
+  }, [vcText, vcLanguage, vcXVectorOnly, vcRefText, vcRefFileName]);
 
   useEffect(() => {
     const el = ttsAudioRef.current;
@@ -2503,6 +2702,8 @@ export default function ApiTestPage() {
         return "예: 읽어줄 문장을 입력하세요…";
       case "stt":
         return "예: 들어온 음성 내용을 요약해줘…";
+      case "voiceClone":
+        return "예: 클론된 목소리로 읽어줄 내용을 입력하세요…";
       default:
         return "메시지를 입력하세요…";
     }
@@ -2675,6 +2876,14 @@ export default function ApiTestPage() {
         setSttRecordedFileInfo(parsed.recordedFileInfo);
       }
     }
+    if (selectedApi === "voiceClone") {
+      const parsed = tryParseVoiceCloneConsoleToPlayground(nextJson);
+      if (!parsed) return;
+      if (parsed.text !== undefined) setVcText(parsed.text);
+      if (parsed.language !== undefined) setVcLanguage(parsed.language);
+      if (parsed.xVectorOnly !== undefined) setVcXVectorOnly(parsed.xVectorOnly);
+      if (parsed.refText !== undefined) setVcRefText(parsed.refText);
+    }
   }
 
   function resetConsoleForApi(api: ApiId) {
@@ -2722,6 +2931,25 @@ export default function ApiTestPage() {
       setTtsProgress(0);
       setTtsPlaying(false);
       setIsSynthesizing(false);
+    }
+    if (api === "voiceClone") {
+      if (vcBlobUrlRef.current) {
+        URL.revokeObjectURL(vcBlobUrlRef.current);
+        vcBlobUrlRef.current = null;
+      }
+      setVcText(DEFAULT_VC_TEXT);
+      setVcLanguage(DEFAULT_VC_LANGUAGE);
+      setVcXVectorOnly(true);
+      setVcRefText("");
+      setVcRefAudioFile(null);
+      setVcRefFileName(null);
+      setVcAudioUrl(null);
+      setVcError(null);
+      setVcWave([]);
+      setVcDurationMs(0);
+      setVcProgress(0);
+      setVcPlaying(false);
+      setVcIsLoading(false);
     }
     if (api === "adCopy") {
       setAdCopyBrief(DEFAULT_AD_COPY_BRIEF);
@@ -2825,6 +3053,7 @@ export default function ApiTestPage() {
       next.Reranker = selectedApi === "reranker";
       next.TTS = selectedApi === "tts";
       next.STT = selectedApi === "stt";
+      next["Voice Clone"] = selectedApi === "voiceClone";
       next.Vision = false;
       return next;
     });
@@ -3141,6 +3370,155 @@ export default function ApiTestPage() {
 
   function handleTtsRun() {
     void runTtsSynthesis(ttsText, ttsLanguage, ttsSpeaker, ttsStyleInstruction);
+  }
+
+  async function runVcSynthesis() {
+    if (vcIsLoading || !vcRefAudioFile || !vcText.trim()) return;
+
+    if (vcBlobUrlRef.current) {
+      URL.revokeObjectURL(vcBlobUrlRef.current);
+      vcBlobUrlRef.current = null;
+    }
+
+    setVcAudioUrl(null);
+    setVcError(null);
+    setVcPlaying(false);
+    setVcProgress(0);
+    setVcIsLoading(true);
+
+    patchConsole("voiceClone", {
+      statusCode: null,
+      statusLine: "Pending...",
+      responseJson: "",
+      error: null,
+    });
+
+    try {
+      const token = getToken();
+      const form = new FormData();
+      form.append("ref_audio", vcRefAudioFile, vcRefAudioFile.name);
+      form.append("text", vcText.trim());
+      form.append("language", vcLanguage);
+      form.append("x_vector_only_mode", vcXVectorOnly ? "true" : "false");
+      if (!vcXVectorOnly && vcRefText.trim()) {
+        form.append("ref_text", vcRefText.trim());
+      }
+
+      const res = await fetch("/api/voice-clone", {
+        method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: form,
+      });
+
+      if (!res.ok) {
+        const errJson = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
+        const msg = errJson?.error ?? "Voice Clone 요청에 실패했습니다.";
+        setVcError(msg);
+        patchConsole("voiceClone", {
+          statusCode: res.status,
+          statusLine: `${res.status} ${res.statusText || "Error"}`,
+          responseJson: JSON.stringify(errJson ?? {}, null, 2),
+          error: msg,
+        });
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      vcBlobUrlRef.current = url;
+      setVcAudioUrl(url);
+      setVcPlaying(false);
+      setVcProgress(0);
+      setVcWave(mockWaveform(vcText.trim(), 32));
+
+      const responseBody: Record<string, unknown> = {
+        status: "success",
+        audio_url: url,
+        language: vcLanguage,
+        x_vector_only_mode: vcXVectorOnly,
+        content_type: blob.type || res.headers.get("content-type") || null,
+      };
+      patchConsole("voiceClone", {
+        statusCode: 200,
+        statusLine: "200 OK",
+        responseJson: JSON.stringify(responseBody, null, 2),
+        error: null,
+      });
+
+      window.setTimeout(() => {
+        const el = vcAudioRef.current;
+        if (!el) return;
+        void el.play().then(() => setVcPlaying(true)).catch(() => setVcPlaying(false));
+      }, 50);
+    } catch {
+      setVcError("Voice Clone API 호출에 실패했습니다.");
+      patchConsole("voiceClone", {
+        statusCode: 500,
+        statusLine: "500 Error",
+        responseJson: JSON.stringify({ error: "Voice Clone request failed" }, null, 2),
+        error: "Voice Clone API 호출에 실패했습니다.",
+      });
+    } finally {
+      setVcIsLoading(false);
+    }
+  }
+
+  function handleVcRun() {
+    void runVcSynthesis();
+  }
+
+  function handleVcPlayPause() {
+    if (!vcAudioUrl) return;
+    const el = vcAudioRef.current;
+    if (!el) return;
+    if (vcPlaying) {
+      el.pause();
+      setVcPlaying(false);
+      return;
+    }
+    void el.play().then(() => setVcPlaying(true)).catch(() => setVcPlaying(false));
+  }
+
+  function handleVcSave() {
+    if (!vcAudioUrl || typeof document === "undefined") return;
+    const link = document.createElement("a");
+    link.href = vcAudioUrl;
+    link.download = `voice-clone-${Date.now()}.wav`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  function handleVcRefFileChange(file: File | null) {
+    setVcRefAudioFile(file);
+    setVcRefFileName(file ? file.name : null);
+    setVcAudioUrl(null);
+    setVcError(null);
+    if (vcBlobUrlRef.current) {
+      URL.revokeObjectURL(vcBlobUrlRef.current);
+      vcBlobUrlRef.current = null;
+    }
+  }
+
+  function handleVcRefFileClear() {
+    setVcRefAudioFile(null);
+    setVcRefFileName(null);
+    setVcAudioUrl(null);
+    setVcError(null);
+    if (vcBlobUrlRef.current) {
+      URL.revokeObjectURL(vcBlobUrlRef.current);
+      vcBlobUrlRef.current = null;
+    }
+    if (vcRefAudioFileInputRef.current) {
+      vcRefAudioFileInputRef.current.value = "";
+    }
   }
 
   function handleTtsPlayPause() {
@@ -5240,7 +5618,9 @@ export default function ApiTestPage() {
                                     ? "개체명"
                                     : t === "Text-to-SQL"
                                       ? "SQL"
-                                      : t;
+                                      : t === "Voice Clone"
+                                        ? "클론"
+                                        : t;
 
                         return (
                           <button
@@ -5503,7 +5883,8 @@ export default function ApiTestPage() {
                     selectedApi === "reranker" ||
                     selectedApi === "embedding" ||
                     selectedApi === "tts" ||
-                    selectedApi === "stt" ? (
+                    selectedApi === "stt" ||
+                    selectedApi === "voiceClone" ? (
                       <div
                         className={
                           selectedApi === "adCopy" ||
@@ -5534,7 +5915,9 @@ export default function ApiTestPage() {
                                           ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
                                           : selectedApi === "tts"
                                             ? "High-Performance Infra • Qwen3-TTS • 실시간"
-                                            : "High-Performance Infra • Qwen3-STT • 실시간"}
+                                            : selectedApi === "voiceClone"
+                                              ? "High-Performance Infra • Voice Clone • 실시간"
+                                              : "High-Performance Infra • Qwen3-STT • 실시간"}
                         </span>
                       </div>
                     ) : null}
@@ -5747,6 +6130,17 @@ export default function ApiTestPage() {
                         sttError={sttError}
                         sttFileName={sttFileName}
                         isRecording={isRecording}
+                        vcAudioUrl={vcAudioUrl}
+                        vcIsSynthesizing={vcIsLoading}
+                        vcAudioRef={vcAudioRef}
+                        vcPlaying={vcPlaying}
+                        vcWave={vcWave}
+                        vcProgress={vcProgress}
+                        vcDurationMs={vcDurationMs}
+                        handleVcPlayPause={handleVcPlayPause}
+                        handleVcSave={handleVcSave}
+                        vcRefFileName={vcRefFileName}
+                        vcError={vcError}
                       />
                     </div>
                   ) : null}
@@ -5893,6 +6287,24 @@ export default function ApiTestPage() {
                       onSttRun={handleSttRunFromInput}
                       IconUpload={IconUpload}
                       IconMic={IconMic}
+                      handleVcRun={handleVcRun}
+                      vcText={vcText}
+                      setVcText={setVcText}
+                      vcLanguage={vcLanguage}
+                      setVcLanguage={setVcLanguage}
+                      vcLanguageOptions={VOICE_CLONE_LANGUAGE_OPTIONS.map((opt) => ({
+                        value: opt.value,
+                        label: opt.label,
+                      }))}
+                      vcXVectorOnly={vcXVectorOnly}
+                      setVcXVectorOnly={setVcXVectorOnly}
+                      vcRefText={vcRefText}
+                      setVcRefText={setVcRefText}
+                      vcRefAudioFileInputRef={vcRefAudioFileInputRef}
+                      vcRefFileName={vcRefFileName}
+                      onVcRefAudioChange={handleVcRefFileChange}
+                      onVcRefAudioClear={handleVcRefFileClear}
+                      isVcSynthesizing={vcIsLoading}
                     />
                   </div>
                 </div>
@@ -5939,7 +6351,9 @@ export default function ApiTestPage() {
                                           ? "/api/stt"
                                           : selectedApi === "tts"
                                             ? "Mock TTS (client)"
-                                            : "/api/chat"}
+                                            : selectedApi === "voiceClone"
+                                              ? "/api/voice-clone"
+                                              : "/api/chat"}
                         </span>
                       </p>
                     </div>
@@ -6248,6 +6662,23 @@ export default function ApiTestPage() {
                           </>
                         }
                       />
+                    ) : selectedApi === "voiceClone" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={vcDevCodeOpen}
+                        setDevCodeOpen={setVcDevCodeOpen}
+                        devCodeCopied={vcDevCodeCopied}
+                        setDevCodeCopied={setVcDevCodeCopied}
+                        codePython={vcDevCodePython}
+                        footer={
+                          <>
+                            multipart Voice Clone 예시입니다. 데모 앱은{" "}
+                            <span className="text-foreground/80">
+                              /api/voice-clone
+                            </span>{" "}
+                            프록시를 통해 동일 스펙으로 전달합니다.
+                          </>
+                        }
+                      />
                     ) : null}
 
                     {currentConsole.error ? (
@@ -6291,7 +6722,8 @@ export default function ApiTestPage() {
               selectedApi === "reranker" ||
               selectedApi === "embedding" ||
               selectedApi === "tts" ||
-              selectedApi === "stt") ? (
+              selectedApi === "stt" ||
+              selectedApi === "voiceClone") ? (
               <section className="w-full lg:basis-full">
                 <div className="rounded-xl border-t border-accent/20 bg-accent/5 px-4 py-3">
                   <div

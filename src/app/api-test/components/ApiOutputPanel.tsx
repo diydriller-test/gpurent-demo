@@ -87,6 +87,19 @@ type Props = {
   sttError: string | null;
   sttFileName: string | null;
   isRecording: boolean;
+
+  // Voice Clone
+  vcAudioUrl: string | null;
+  vcIsSynthesizing: boolean;
+  vcAudioRef: React.RefObject<HTMLAudioElement | null>;
+  vcPlaying: boolean;
+  vcWave: number[];
+  vcProgress: number;
+  vcDurationMs: number;
+  handleVcPlayPause: () => void;
+  handleVcSave: () => void;
+  vcRefFileName: string | null;
+  vcError: string | null;
 };
 
 export function ApiOutputPanel({
@@ -127,6 +140,17 @@ export function ApiOutputPanel({
   sttError,
   sttFileName,
   isRecording,
+  vcAudioUrl,
+  vcIsSynthesizing,
+  vcAudioRef,
+  vcPlaying,
+  vcWave,
+  vcProgress,
+  vcDurationMs,
+  handleVcPlayPause,
+  handleVcSave,
+  vcRefFileName,
+  vcError,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -764,6 +788,158 @@ export function ApiOutputPanel({
                         (isRecording ? "Microphone(녹음 중)" : "Upload/Mic")}
                     </span>
                   </div>
+                </div>
+              </div>
+            );
+
+          case "voiceClone":
+            return (
+              <div className="min-w-0 space-y-3">
+                <audio
+                  ref={vcAudioRef}
+                  src={vcAudioUrl ?? undefined}
+                  preload="auto"
+                  className="hidden"
+                />
+                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-xs text-accent">Voice Clone Output</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        참조 음성의 목소리로 클론된 오디오가 여기에 재생됩니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleVcSave}
+                      disabled={!vcAudioUrl}
+                      title="클론 음성 파일 저장"
+                      aria-label="클론 음성 파일 저장"
+                      className={[
+                        "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors",
+                        vcAudioUrl
+                          ? "border-accent/45 bg-background/35 text-accent hover:border-accent/70 hover:bg-accent/10"
+                          : "cursor-not-allowed border-white/10 bg-background/20 text-foreground/35",
+                      ].join(" ")}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-5 w-5"
+                        aria-hidden="true"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <path d="M7 10l5 5 5-5" />
+                        <path d="M12 15V3" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div
+                    className={[
+                      "mt-4 transition-opacity duration-300",
+                      vcAudioUrl
+                        ? "opacity-100"
+                        : "pointer-events-none opacity-50",
+                    ].join(" ")}
+                  >
+                    {!vcAudioUrl && !vcIsSynthesizing ? (
+                      <p className="mb-3 text-xs text-foreground/55">
+                        하단에서 참조 음성과 텍스트를 설정 후 &quot;클론&quot;을
+                        눌러주세요.
+                      </p>
+                    ) : null}
+
+                    <div className="flex items-center justify-between gap-4">
+                      <button
+                        type="button"
+                        disabled={!vcAudioUrl}
+                        onClick={handleVcPlayPause}
+                        className={[
+                          "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity",
+                          vcAudioUrl
+                            ? "hover:opacity-90"
+                            : "cursor-not-allowed opacity-40",
+                        ].join(" ")}
+                      >
+                        {vcPlaying ? (
+                          <IconPause className="h-5 w-5" />
+                        ) : (
+                          <IconPlay className="h-5 w-5" />
+                        )}
+                      </button>
+                      <div className="flex-1">
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-2 rounded-full bg-accent transition-[width] duration-100 ease-linear"
+                            style={{ width: `${Math.round(vcProgress * 100)}%` }}
+                          />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-foreground/50">
+                          <span>
+                            {((vcDurationMs * vcProgress) / 1000).toFixed(1)}s
+                          </span>
+                          <span>{(vcDurationMs / 1000).toFixed(1)}s</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative mt-4 overflow-hidden rounded-xl border border-accent/15 bg-zinc-950/40 px-2 py-3">
+                    <div className="flex h-14 items-end justify-center gap-[3px]">
+                      {(vcIsSynthesizing
+                        ? Array.from({ length: 32 }, (_, i) => 0.35 + (i % 5) * 0.1)
+                        : vcWave?.length
+                          ? vcWave
+                          : Array.from({ length: 32 }, () => 0.12)
+                      )
+                        .slice(0, 32)
+                        .map((v, idx) => {
+                          const h = Math.max(8, Math.round(v * 44));
+                          return (
+                            <div
+                              key={`vc-w-${idx}-${vcIsSynthesizing ? "s" : "d"}`}
+                              className={[
+                                "w-[5px] origin-bottom rounded-sm",
+                                vcPlaying ? "bg-accent" : "bg-white/15",
+                              ].join(" ")}
+                              style={{
+                                height: h,
+                                ...(vcIsSynthesizing
+                                  ? {
+                                      animation: "ttsWv 1.15s ease-in-out infinite",
+                                      animationDelay: `${idx * 32}ms`,
+                                    }
+                                  : {}),
+                              }}
+                            />
+                          );
+                        })}
+                    </div>
+                    {vcIsSynthesizing ? (
+                      <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-[11px] font-medium text-accent/90">
+                        클론 합성 중…
+                      </p>
+                    ) : null}
+                  </div>
+
+                  {vcError ? (
+                    <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-300">
+                      {vcError}
+                    </div>
+                  ) : null}
+
+                  {vcRefFileName ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="rounded-lg border border-white/10 bg-background/30 px-3 py-1 text-[11px] text-foreground/60">
+                        참조 음성: {vcRefFileName}
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );

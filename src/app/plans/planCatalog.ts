@@ -35,6 +35,12 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     company_name: "GPU Modu",
   },
   {
+    id: 91011,
+    name: "Modu Voice Clone API",
+    company_id: 1,
+    company_name: "GPU Modu",
+  },
+  {
     id: 91006,
     name: "Modu Ad Copy API",
     company_id: 1,
@@ -129,7 +135,8 @@ export type PlansChapterParam =
   | "embedding"
   | "reranker"
   | "tts"
-  | "stt";
+  | "stt"
+  | "voiceClone";
 
 export function chapterQueryToPlanTask(
   chapter: string | null,
@@ -155,6 +162,8 @@ export function chapterQueryToPlanTask(
       return "TTS";
     case "stt":
       return "STT";
+    case "voiceClone":
+      return "Voice Clone";
     default:
       return null;
   }
@@ -171,7 +180,8 @@ export type PlanTask =
   | "Embedding"
   | "Reranker"
   | "TTS"
-  | "STT";
+  | "STT"
+  | "Voice Clone";
 
 export const PLAN_TASK_KEYS: PlanTask[] = [
   "Text Generation",
@@ -184,6 +194,7 @@ export const PLAN_TASK_KEYS: PlanTask[] = [
   "Reranker",
   "TTS",
   "STT",
+  "Voice Clone",
 ];
 
 /** 플랜/마켓 API 카드와 `Api`의 task_key를 매칭 */
@@ -199,7 +210,8 @@ export function getApiTask(api: Api): PlanTask | null {
     k === "Embedding" ||
     k === "Reranker" ||
     k === "TTS" ||
-    k === "STT"
+    k === "STT" ||
+    k === "Voice Clone"
   ) {
     return k;
   }
@@ -270,6 +282,11 @@ const TASK_META: Record<
     modelDisplay: "Qwen3-STT",
     tags: ["#STT", "#Transcription"],
   },
+  "Voice Clone": {
+    sublabel: "Modu Voice Clone • TTS",
+    modelDisplay: "Voice Clone",
+    tags: ["#VoiceClone", "#Audio"],
+  },
 };
 
 /** 플랜·API 체험 카드 상단 문구 — API 문서·TASK_META와 동일 체계 */
@@ -286,6 +303,7 @@ export function inferPlanTask(name: string): PlanTask | null {
   if (/embed|embedding/i.test(n)) return "Embedding";
   if (/\bstt\b|speech-to-text|transcri/i.test(n)) return "STT";
   if (/\btts\b|text-to-speech/i.test(n)) return "TTS";
+  if (/voice[-\s]?clone|보이스[-\s]?클론/i.test(n)) return "Voice Clone";
   if (
     /\bad[-\s]?copy\b|광고\s*카피|advertising\s*copy|copywriting|copy[-\s]?write/i.test(
       name,
