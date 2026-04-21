@@ -9,7 +9,8 @@ export type ApiId =
   | "reranker"
   | "tts"
   | "stt"
-  | "voiceClone";
+  | "voiceClone"
+  | "image2text";
 
 /** POST /api/sentiment 응답과 동일 구조 */
 export type SentimentAnalysisPayload = {

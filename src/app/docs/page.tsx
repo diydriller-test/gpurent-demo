@@ -280,6 +280,32 @@ const SECTIONS: DocSection[] = [
       "최대 실행 시간 제한(60초)이 있어 초과 시 504가 날 수 있습니다.",
     ],
   },
+  {
+    id: "image2text",
+    title: "Image2Text (Vision OCR)",
+    method: "POST",
+    path: "/api/image2text",
+    description:
+      "이미지를 업로드하면 Vision 모델이 내용을 설명하고 이미지 내 텍스트를 추출합니다. `multipart/form-data`로 전송합니다.",
+    requestLabel: "본문 (multipart/form-data)",
+    request: `필드:
+  image       — 이미지 파일 (필수, JPG/PNG/WEBP/GIF 등)
+  prompt      — 분석 지시 (선택)
+                기본값: "이 이미지 내용을 한국어로 설명하고,
+                         이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘."
+  temperature — 0~1 실수 (선택, 기본 0.1)`,
+    responseLabel: "성공 (200)",
+    response: `{
+  "text": "이미지 분석 결과 및 추출된 텍스트 문자열"
+}`,
+    notes: [
+      "`image` 파일만 필수입니다. `prompt`를 생략하면 이미지 설명 + 텍스트 추출 지시가 기본으로 사용됩니다.",
+      "이미지는 서버에서 base64로 인코딩되어 Vision API로 전달됩니다.",
+      "응답이 빈 문자열이거나 형식이 올바르지 않으면 502가 반환될 수 있습니다.",
+      "최대 실행 시간 제한(115초)이 있어 초과 시 504가 날 수 있습니다.",
+      "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
+    ],
+  },
 ];
 
 const TOC_SECTION_IDS = ["overview", ...SECTIONS.map((s) => s.id)];

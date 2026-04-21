@@ -32,6 +32,7 @@ import { buildSentimentDevCodePython } from "./lib/buildSentimentDevCodePython";
 import { buildNerDevCodePython } from "./lib/buildNerDevCodePython";
 import { buildTextToSqlDevCodePython } from "./lib/buildTextToSqlDevCodePython";
 import { buildVoiceCloneDevCodePython } from "./lib/buildVoiceCloneDevCodePython";
+import { buildImage2TextDevCodePython } from "./lib/buildImage2TextDevCodePython";
 import type {
   NerPayload,
   SentimentAnalysisPayload,
@@ -55,7 +56,8 @@ type ApiId =
   | "reranker"
   | "tts"
   | "stt"
-  | "voiceClone";
+  | "voiceClone"
+  | "image2text";
 
 type ApiItem = {
   id: ApiId;
@@ -378,6 +380,16 @@ function IconPlus(props: { className?: string }) {
     <IconBase {...props}>
       <path d="M12 5v14" />
       <path d="M5 12h14" />
+    </IconBase>
+  );
+}
+
+function IconImage(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="M21 15l-5-5L5 21" />
     </IconBase>
   );
 }
@@ -1274,6 +1286,20 @@ function buildVoiceCloneConsoleRequestJson(
   return JSON.stringify(payload, null, 2);
 }
 
+function buildImage2TextConsoleRequestJson(
+  prompt: string,
+  fileName: string | null,
+) {
+  return JSON.stringify(
+    {
+      image: fileName ? `(binary file: ${fileName})` : "(binary file)",
+      prompt: prompt.trim() || "이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘.",
+    },
+    null,
+    2,
+  );
+}
+
 function tryParseVoiceCloneConsoleToPlayground(jsonText: string): {
   text?: string;
   language?: string;
@@ -1365,6 +1391,11 @@ export default function ApiTestPage() {
         name: "Voice Clone",
         description: "참조 음성으로 목소리를 클론하여 TTS",
       },
+      {
+        id: "image2text",
+        name: "Image2Text (Vision OCR)",
+        description: "이미지 분석 및 텍스트 추출 (OCR)",
+      },
     ],
     [],
   );
@@ -1398,7 +1429,8 @@ export default function ApiTestPage() {
       api === "reranker" ||
       api === "tts" ||
       api === "stt" ||
-      api === "voiceClone"
+      api === "voiceClone" ||
+      api === "image2text"
     ) {
       setSelectedApi(api);
       // 홈 카드에서 들어올 때는 바로 해당 챕터 상세를 보여줌
@@ -1530,6 +1562,12 @@ export default function ApiTestPage() {
           null,
         );
       }
+      if (api === "image2text") {
+        return buildImage2TextConsoleRequestJson(
+          "이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘.",
+          null,
+        );
+      }
       return "{}";
     },
     [llmTemperature],
@@ -1554,6 +1592,7 @@ export default function ApiTestPage() {
       tts: createDefaultConsoleState("tts"),
       stt: createDefaultConsoleState("stt"),
       voiceClone: createDefaultConsoleState("voiceClone"),
+      image2text: createDefaultConsoleState("image2text"),
     }),
   );
   const [consoleCopied, setConsoleCopied] = useState<boolean>(false);
@@ -1689,12 +1728,13 @@ export default function ApiTestPage() {
         formats: ["ONNX"],
       },
       {
-        id: "vision-pro",
+        id: "image2text",
         task: "Vision",
-        model: "vision-pro (Coming Soon)",
-        modelSizeB: 70,
-        taskTags: ["#Vision", "#Multimodal"],
-        formats: ["Transformers", "ONNX"],
+        apiId: "image2text",
+        model: "Vision OCR",
+        modelSizeB: 35,
+        taskTags: ["#Vision", "#OCR", "#Multimodal"],
+        formats: ["vLLM"],
       },
     ],
     [],
@@ -1714,7 +1754,7 @@ export default function ApiTestPage() {
     TTS: true,
     STT: true,
     "Voice Clone": true,
-    Vision: false,
+    Vision: true,
   });
   const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
   /** 목록 → 상세 진입 직전의 Tasks 필터(복귀 시 복원). 상세 내 API 전환(moveToApiDetail)에서는 갱신하지 않음 */
@@ -1763,6 +1803,7 @@ export default function ApiTestPage() {
       "TTS",
       "STT",
       "Voice Clone",
+      "Vision",
     ],
     [],
   );
@@ -1807,7 +1848,11 @@ export default function ApiTestPage() {
                               taskParam === "voiceclone" ||
                               taskParam === "보이스클론"
                             ? "Voice Clone"
-                            : null;
+                            : taskParam === "vision" ||
+                                taskParam === "image2text" ||
+                                taskParam === "ocr"
+                              ? "Vision"
+                              : null;
 
     if (!targetTask) return;
 
@@ -1818,7 +1863,6 @@ export default function ApiTestPage() {
       taskKeys.forEach((k) => {
         next[k] = k === targetTask;
       });
-      next.Vision = false;
       return next;
     });
 
@@ -1833,10 +1877,10 @@ export default function ApiTestPage() {
     if (targetTask === "TTS") setSelectedApi("tts");
     if (targetTask === "STT") setSelectedApi("stt");
     if (targetTask === "Voice Clone") setSelectedApi("voiceClone");
+    if (targetTask === "Vision") setSelectedApi("image2text");
   }, [taskKeys]);
 
   function resolveMarketplacePlan(item: MarketplaceItem) {
-    if (item.task === "Vision") return null;
     const task = item.task as PlanTask;
     const api = apisFromBackend.find((a) => getApiTask(a) === task);
     if (!api) return null;
@@ -1845,7 +1889,6 @@ export default function ApiTestPage() {
 
   const filteredMarketplace = useMemo(() => {
     return marketplaceItems.filter((item) => {
-      if (item.task === "Vision") return false;
       if (sidebarMode === "my") {
         const plan = resolveMarketplacePlan(item);
         return plan != null;
@@ -1872,6 +1915,7 @@ export default function ApiTestPage() {
     if (active === "Reranker") return "Rerank";
     if (active === "TTS" || active === "STT") return "TTS/STT";
     if (active === "Voice Clone") return "VoiceClone";
+    if (active === "Vision") return "Vision";
     return "All";
   }, [filterTasks, sidebarMode, allTasksFilterOn, taskKeys]);
 
@@ -2005,6 +2049,18 @@ export default function ApiTestPage() {
               원하는 텍스트를 클론된 목소리로
             </span>{" "}
             합성하는 개인화 TTS 기술입니다.
+          </>
+        );
+      case "Vision":
+        return (
+          <>
+            🖼️{" "}
+            <span className="text-accent font-semibold">이미지 분석 (Vision OCR)</span>:
+            이미지를 업로드하면{" "}
+            <span className="text-accent font-semibold">
+              내용 설명과 텍스트 추출
+            </span>
+            을 동시에 수행합니다.
           </>
         );
       default:
@@ -2188,6 +2244,20 @@ export default function ApiTestPage() {
   const [vcDevCodeOpen, setVcDevCodeOpen] = useState(false);
   const [vcDevCodeCopied, setVcDevCodeCopied] = useState(false);
 
+  // Image2Text
+  const DEFAULT_IMAGE2TEXT_PROMPT =
+    "이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘.";
+  const [image2textImageFile, setImage2TextImageFile] = useState<File | null>(null);
+  const [image2textFileName, setImage2TextFileName] = useState<string | null>(null);
+  const [image2textImagePreview, setImage2TextImagePreview] = useState<string | null>(null);
+  const [image2textPrompt, setImage2TextPrompt] = useState(DEFAULT_IMAGE2TEXT_PROMPT);
+  const [image2textResult, setImage2TextResult] = useState<string | null>(null);
+  const [image2textIsLoading, setImage2TextIsLoading] = useState(false);
+  const [image2textError, setImage2TextError] = useState<string | null>(null);
+  const image2textFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [image2textDevCodeOpen, setImage2TextDevCodeOpen] = useState(false);
+  const [image2textDevCodeCopied, setImage2TextDevCodeCopied] = useState(false);
+
   const [rerankerDevCodeOpen, setRerankerDevCodeOpen] = useState(false);
   const [rerankerDevCodeCopied, setRerankerDevCodeCopied] = useState(false);
   const [ttsDevCodeOpen, setTtsDevCodeOpen] = useState(false);
@@ -2229,6 +2299,16 @@ export default function ApiTestPage() {
         refText: vcRefText,
       }),
     [vcText, vcLanguage, vcXVectorOnly, vcRefText],
+  );
+
+  const image2textDevCodePython = useMemo(
+    () =>
+      buildImage2TextDevCodePython({
+        prompt: image2textPrompt || DEFAULT_IMAGE2TEXT_PROMPT,
+        temperature: 0.1,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [image2textPrompt],
   );
 
   useEffect(() => {
@@ -2314,7 +2394,8 @@ export default function ApiTestPage() {
     (selectedApi === "reranker" && rerankerHasWorkflowResult) ||
     (selectedApi === "tts" && ttsHasWorkflowResult) ||
     (selectedApi === "stt" && sttHasWorkflowResult) ||
-    (selectedApi === "voiceClone" && Boolean(vcAudioUrl));
+    (selectedApi === "voiceClone" && Boolean(vcAudioUrl)) ||
+    (selectedApi === "image2text" && Boolean(image2textResult));
 
   const { mounted: workflowBannerMounted, visible: workflowBannerVisible } =
     useResultTriggeredBanner(hasWorkflowBannerResult);
@@ -2398,7 +2479,7 @@ export default function ApiTestPage() {
       case "Voice Clone":
         return <IconVolume2 className={base} />;
       case "Vision":
-        return <IconPlus className={base} />;
+        return <IconImage className={base} />;
       default:
         return null;
     }
@@ -2716,6 +2797,8 @@ export default function ApiTestPage() {
         return "예: 들어온 음성 내용을 요약해줘…";
       case "voiceClone":
         return "예: 클론된 목소리로 읽어줄 내용을 입력하세요…";
+      case "image2text":
+        return "예: 이미지를 업로드하고 분석 지시를 입력하세요…";
       default:
         return "메시지를 입력하세요…";
     }
@@ -2964,6 +3047,13 @@ export default function ApiTestPage() {
       setVcPlaying(false);
       setVcIsLoading(false);
     }
+    if (api === "image2text") {
+      handleImage2TextFileClear();
+      setImage2TextPrompt(DEFAULT_IMAGE2TEXT_PROMPT);
+      setImage2TextResult(null);
+      setImage2TextError(null);
+      setImage2TextIsLoading(false);
+    }
     if (api === "adCopy") {
       setAdCopyBrief(DEFAULT_AD_COPY_BRIEF);
       setAdCopyTone("");
@@ -3067,7 +3157,7 @@ export default function ApiTestPage() {
       next.TTS = selectedApi === "tts";
       next.STT = selectedApi === "stt";
       next["Voice Clone"] = selectedApi === "voiceClone";
-      next.Vision = false;
+      next.Vision = selectedApi === "image2text";
       return next;
     });
   }, [selectedApi, viewMode]);
@@ -3542,6 +3632,108 @@ export default function ApiTestPage() {
     if (vcRefAudioFileInputRef.current) {
       vcRefAudioFileInputRef.current.value = "";
     }
+  }
+
+  function handleImage2TextFileChange(file: File | null) {
+    setImage2TextImageFile(file);
+    setImage2TextFileName(file ? file.name : null);
+    setImage2TextResult(null);
+    setImage2TextError(null);
+    if (image2textImagePreview) {
+      URL.revokeObjectURL(image2textImagePreview);
+    }
+    if (file) {
+      setImage2TextImagePreview(URL.createObjectURL(file));
+    } else {
+      setImage2TextImagePreview(null);
+    }
+  }
+
+  useEffect(() => {
+    patchConsole("image2text", {
+      requestJson: buildImage2TextConsoleRequestJson(
+        image2textPrompt,
+        image2textFileName,
+      ),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [image2textPrompt, image2textFileName]);
+
+  function handleImage2TextFileClear() {
+    setImage2TextImageFile(null);
+    setImage2TextFileName(null);
+    setImage2TextResult(null);
+    setImage2TextError(null);
+    if (image2textImagePreview) {
+      URL.revokeObjectURL(image2textImagePreview);
+      setImage2TextImagePreview(null);
+    }
+    if (image2textFileInputRef.current) {
+      image2textFileInputRef.current.value = "";
+    }
+  }
+
+  async function runImage2Text() {
+    if (!image2textImageFile) return;
+    setImage2TextIsLoading(true);
+    setImage2TextResult(null);
+    setImage2TextError(null);
+    patchConsole("image2text", {
+      statusCode: null,
+      statusLine: "Pending...",
+      responseJson: "",
+    });
+
+    try {
+      const token = getToken();
+      const formData = new FormData();
+      formData.append("image", image2textImageFile, image2textImageFile.name);
+      if (image2textPrompt.trim()) {
+        formData.append("prompt", image2textPrompt.trim());
+      }
+
+      const res = await fetch("/api/image2text", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      const json = (await res.json().catch(() => null)) as {
+        text?: string;
+        error?: string;
+      } | null;
+
+      patchConsole("image2text", {
+        statusCode: res.status,
+        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
+        responseJson: JSON.stringify(json ?? {}, null, 2),
+      });
+
+      if (!res.ok) {
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
+        setImage2TextError(
+          json?.error ?? "Image2Text API 호출에 실패했습니다.",
+        );
+        return;
+      }
+
+      setImage2TextResult(json?.text ?? "");
+    } catch {
+      setImage2TextError("Image2Text API 호출에 실패했습니다.");
+      patchConsole("image2text", {
+        statusCode: 500,
+        statusLine: "500 Error",
+        responseJson: JSON.stringify({ error: "fetch failed" }, null, 2),
+      });
+    } finally {
+      setImage2TextIsLoading(false);
+    }
+  }
+
+  function handleImage2TextRun() {
+    void runImage2Text();
   }
 
   function handleTtsPlayPause() {
@@ -5571,7 +5763,7 @@ export default function ApiTestPage() {
                             taskKeys.forEach((k) => {
                               next[k] = true;
                             });
-                            next.Vision = false;
+                            // Vision is now active
                             return next;
                           });
                         }}
@@ -5647,7 +5839,9 @@ export default function ApiTestPage() {
                                       ? "SQL"
                                       : t === "Voice Clone"
                                         ? "클론"
-                                        : t;
+                                        : t === "Vision"
+                                          ? "Vision"
+                                          : t;
 
                         return (
                           <button
@@ -5660,7 +5854,7 @@ export default function ApiTestPage() {
                                 taskKeys.forEach((k) => {
                                   next[k] = k === t;
                                 });
-                                next.Vision = false;
+                                // Vision is now active
                                 return next;
                               });
                             }}
@@ -5869,7 +6063,7 @@ export default function ApiTestPage() {
                               taskKeys.forEach((k) => {
                                 next[k] = true;
                               });
-                              next.Vision = false;
+                              // Vision is now active
                               return next;
                             });
                           }
@@ -5913,7 +6107,8 @@ export default function ApiTestPage() {
                     selectedApi === "embedding" ||
                     selectedApi === "tts" ||
                     selectedApi === "stt" ||
-                    selectedApi === "voiceClone" ? (
+                    selectedApi === "voiceClone" ||
+                    selectedApi === "image2text" ? (
                       <div
                         className={
                           selectedApi === "adCopy" ||
@@ -5946,7 +6141,9 @@ export default function ApiTestPage() {
                                             ? "High-Performance Infra • Qwen3-TTS • 실시간"
                                             : selectedApi === "voiceClone"
                                               ? "High-Performance Infra • Voice Clone • 실시간"
-                                              : "High-Performance Infra • Qwen3-STT • 실시간"}
+                                              : selectedApi === "image2text"
+                                                ? "High-Performance Infra • Vision OCR • 실시간"
+                                                : "High-Performance Infra • Qwen3-STT • 실시간"}
                         </span>
                       </div>
                     ) : null}
@@ -6170,6 +6367,10 @@ export default function ApiTestPage() {
                         handleVcSave={handleVcSave}
                         vcRefFileName={vcRefFileName}
                         vcError={vcError}
+                        image2textResult={image2textResult}
+                        image2textIsLoading={image2textIsLoading}
+                        image2textError={image2textError}
+                        image2textImagePreview={image2textImagePreview}
                       />
                     </div>
                   ) : null}
@@ -6336,6 +6537,14 @@ export default function ApiTestPage() {
                       onVcRefAudioChange={handleVcRefFileChange}
                       onVcRefAudioClear={handleVcRefFileClear}
                       isVcSynthesizing={vcIsLoading}
+                      handleImage2TextRun={handleImage2TextRun}
+                      image2textPrompt={image2textPrompt}
+                      setImage2TextPrompt={setImage2TextPrompt}
+                      image2textFileInputRef={image2textFileInputRef}
+                      image2textFileName={image2textFileName}
+                      onImage2TextFileChange={handleImage2TextFileChange}
+                      onImage2TextFileClear={handleImage2TextFileClear}
+                      image2textIsLoading={image2textIsLoading}
                     />
                   </div>
                 </div>
@@ -6384,7 +6593,9 @@ export default function ApiTestPage() {
                                             ? "Mock TTS (client)"
                                             : selectedApi === "voiceClone"
                                               ? "/api/voice-clone"
-                                              : "/api/chat"}
+                                              : selectedApi === "image2text"
+                                                ? "/api/image2text"
+                                                : "/api/chat"}
                         </span>
                       </p>
                     </div>
@@ -6421,7 +6632,11 @@ export default function ApiTestPage() {
                           Request
                         </p>
                         <span className="rounded-lg border border-white/10 bg-background/30 px-2 py-0.5 text-[11px] text-foreground/60">
-                          JSON Body
+                          {selectedApi === "stt" ||
+                          selectedApi === "voiceClone" ||
+                          selectedApi === "image2text"
+                            ? "multipart/form-data"
+                            : "JSON Body"}
                         </span>
                       </div>
                       <textarea
@@ -6705,6 +6920,24 @@ export default function ApiTestPage() {
                             multipart Voice Clone 예시입니다. 데모 앱은{" "}
                             <span className="text-foreground/80">
                               /api/voice-clone
+                            </span>{" "}
+                            프록시를 통해 동일 스펙으로 전달합니다.
+                          </>
+                        }
+                      />
+                    ) : selectedApi === "image2text" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={image2textDevCodeOpen}
+                        setDevCodeOpen={setImage2TextDevCodeOpen}
+                        devCodeCopied={image2textDevCodeCopied}
+                        setDevCodeCopied={setImage2TextDevCodeCopied}
+                        codePython={image2textDevCodePython}
+                        footer={
+                          <>
+                            이미지를 base64로 인코딩하여 vLLM Vision API로 전송합니다.
+                            데모 앱은{" "}
+                            <span className="text-foreground/80">
+                              /api/image2text
                             </span>{" "}
                             프록시를 통해 동일 스펙으로 전달합니다.
                           </>

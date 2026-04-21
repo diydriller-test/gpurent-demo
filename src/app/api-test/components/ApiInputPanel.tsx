@@ -478,6 +478,16 @@ type Props = {
   onVcRefAudioChange: (file: File | null) => void;
   onVcRefAudioClear: () => void;
   isVcSynthesizing: boolean;
+
+  // Image2Text input
+  handleImage2TextRun: () => void;
+  image2textPrompt: string;
+  setImage2TextPrompt: React.Dispatch<React.SetStateAction<string>>;
+  image2textFileInputRef: React.RefObject<HTMLInputElement | null>;
+  image2textFileName: string | null;
+  onImage2TextFileChange: (file: File | null) => void;
+  onImage2TextFileClear: () => void;
+  image2textIsLoading: boolean;
 };
 
 export function ApiInputPanel({
@@ -624,6 +634,15 @@ export function ApiInputPanel({
   onVcRefAudioChange,
   onVcRefAudioClear,
   isVcSynthesizing,
+
+  handleImage2TextRun,
+  image2textPrompt,
+  setImage2TextPrompt,
+  image2textFileInputRef,
+  image2textFileName,
+  onImage2TextFileChange,
+  onImage2TextFileClear,
+  image2textIsLoading,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [llmAdvancedOpen, setLlmAdvancedOpen] = useState(false);
@@ -2208,6 +2227,20 @@ export function ApiInputPanel({
           IconMic={IconMic}
         />
       ) : null}
+
+      {selectedApi === "image2text" ? (
+        <Image2TextSection
+          image2textFileInputRef={image2textFileInputRef}
+          image2textFileName={image2textFileName}
+          onImage2TextFileChange={onImage2TextFileChange}
+          onImage2TextFileClear={onImage2TextFileClear}
+          image2textPrompt={image2textPrompt}
+          setImage2TextPrompt={setImage2TextPrompt}
+          image2textIsLoading={image2textIsLoading}
+          handleImage2TextRun={handleImage2TextRun}
+          IconUpload={IconUpload}
+        />
+      ) : null}
     </div>
   );
 }
@@ -2533,6 +2566,122 @@ function VoiceCloneSection({
             )}
           </button>
         </div>
+      </div>
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Image2TextSection — 이미지 업로드 + 프롬프트 입력 UI
+// ---------------------------------------------------------------------------
+
+type Image2TextSectionProps = {
+  image2textFileInputRef: React.RefObject<HTMLInputElement | null>;
+  image2textFileName: string | null;
+  onImage2TextFileChange: (file: File | null) => void;
+  onImage2TextFileClear: () => void;
+  image2textPrompt: string;
+  setImage2TextPrompt: React.Dispatch<React.SetStateAction<string>>;
+  image2textIsLoading: boolean;
+  handleImage2TextRun: () => void;
+  IconUpload: React.ComponentType<{ className?: string }>;
+};
+
+function Image2TextSection({
+  image2textFileInputRef,
+  image2textFileName,
+  onImage2TextFileChange,
+  onImage2TextFileClear,
+  image2textPrompt,
+  setImage2TextPrompt,
+  image2textIsLoading,
+  handleImage2TextRun,
+  IconUpload,
+}: Image2TextSectionProps) {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleImage2TextRun();
+      }}
+    >
+      <div className="flex flex-col gap-3">
+        {/* 이미지 파일 */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">이미지 파일</p>
+          <div className="mt-1 flex items-center gap-2">
+            <input
+              ref={image2textFileInputRef}
+              type="file"
+              accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                onImage2TextFileChange(file);
+                e.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => image2textFileInputRef.current?.click()}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] text-foreground/80 transition-colors hover:border-accent/50 hover:text-accent"
+            >
+              <IconUpload className="h-4 w-4 shrink-0" />
+              <span className="truncate">
+                {image2textFileName ?? "이미지 선택"}
+              </span>
+            </button>
+            {image2textFileName ? (
+              <button
+                type="button"
+                onClick={onImage2TextFileClear}
+                className="shrink-0 rounded-lg border border-white/10 bg-background/30 px-2 py-1.5 text-[11px] text-foreground/60 transition-colors hover:border-accent/40 hover:text-accent"
+              >
+                ✕
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        {/* 프롬프트 */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">
+            분석 지시 (선택)
+          </p>
+          <textarea
+            value={image2textPrompt}
+            onChange={(e) => setImage2TextPrompt(e.target.value)}
+            placeholder="이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘."
+            rows={3}
+            className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+
+        {/* 실행 버튼 */}
+        <button
+          type="submit"
+          disabled={image2textIsLoading || !image2textFileName}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-[13px] font-medium text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {image2textIsLoading ? (
+            <>
+              <svg
+                className="h-4 w-4 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+              <span>분석 중...</span>
+            </>
+          ) : (
+            "분석"
+          )}
+        </button>
       </div>
     </form>
   );

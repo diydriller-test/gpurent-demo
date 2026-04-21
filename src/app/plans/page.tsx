@@ -507,7 +507,9 @@ function PlansPageContent() {
                                     ? "개체명"
                                     : t === "Voice Clone"
                                       ? "클론"
-                                      : t;
+                                      : t === "Vision"
+                                        ? "Vision"
+                                        : t;
 
                         return (
                           <button

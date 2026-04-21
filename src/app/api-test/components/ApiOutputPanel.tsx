@@ -100,6 +100,12 @@ type Props = {
   handleVcSave: () => void;
   vcRefFileName: string | null;
   vcError: string | null;
+
+  // Image2Text
+  image2textResult: string | null;
+  image2textIsLoading: boolean;
+  image2textError: string | null;
+  image2textImagePreview: string | null;
 };
 
 export function ApiOutputPanel({
@@ -151,6 +157,10 @@ export function ApiOutputPanel({
   handleVcSave,
   vcRefFileName,
   vcError,
+  image2textResult,
+  image2textIsLoading,
+  image2textError,
+  image2textImagePreview,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -938,6 +948,52 @@ export function ApiOutputPanel({
                       <span className="rounded-lg border border-white/10 bg-background/30 px-3 py-1 text-[11px] text-foreground/60">
                         참조 음성: {vcRefFileName}
                       </span>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            );
+
+          case "image2text":
+            return (
+              <div className="min-w-0 space-y-3">
+                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                  <p className="font-mono text-xs text-accent">Image2Text Output</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">
+                    이미지 분석 결과가 여기에 표시됩니다.
+                  </p>
+
+                  {image2textImagePreview ? (
+                    <div className="mt-3 overflow-hidden rounded-xl border border-white/10">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={image2textImagePreview}
+                        alt="업로드된 이미지"
+                        className="max-h-48 w-full object-contain"
+                      />
+                    </div>
+                  ) : null}
+
+                  {image2textIsLoading ? (
+                    <div className="mt-4 flex items-center gap-2 text-xs text-accent/80">
+                      <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+                      이미지 분석 중…
+                    </div>
+                  ) : null}
+
+                  {image2textResult ? (
+                    <div className="mt-4 whitespace-pre-wrap rounded-xl border border-white/10 bg-background/30 px-4 py-3 font-mono text-[13px] leading-relaxed text-foreground/90">
+                      {image2textResult}
+                    </div>
+                  ) : !image2textIsLoading ? (
+                    <p className="mt-3 text-xs text-foreground/55">
+                      하단에서 이미지를 업로드하고 &quot;분석&quot;을 눌러주세요.
+                    </p>
+                  ) : null}
+
+                  {image2textError ? (
+                    <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-300">
+                      {image2textError}
                     </div>
                   ) : null}
                 </div>

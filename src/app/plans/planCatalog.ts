@@ -70,6 +70,12 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     company_id: 1,
     company_name: "GPU Modu",
   },
+  {
+    id: 91012,
+    name: "Vision OCR",
+    company_id: 1,
+    company_name: "GPU Modu",
+  },
 ];
 
 /**
@@ -132,7 +138,8 @@ export type PlansChapterParam =
   | "reranker"
   | "tts"
   | "stt"
-  | "voiceClone";
+  | "voiceClone"
+  | "image2text";
 
 export function chapterQueryToPlanTask(
   chapter: string | null,
@@ -160,6 +167,8 @@ export function chapterQueryToPlanTask(
       return "STT";
     case "voiceClone":
       return "Voice Clone";
+    case "image2text":
+      return "Vision";
     default:
       return null;
   }
@@ -177,7 +186,8 @@ export type PlanTask =
   | "Reranker"
   | "TTS"
   | "STT"
-  | "Voice Clone";
+  | "Voice Clone"
+  | "Vision";
 
 export const PLAN_TASK_KEYS: PlanTask[] = [
   "Text Generation",
@@ -191,6 +201,7 @@ export const PLAN_TASK_KEYS: PlanTask[] = [
   "TTS",
   "STT",
   "Voice Clone",
+  "Vision",
 ];
 
 /** 플랜/마켓 API 카드와 `Api`의 task_key를 매칭 */
@@ -207,7 +218,8 @@ export function getApiTask(api: Api): PlanTask | null {
     k === "Reranker" ||
     k === "TTS" ||
     k === "STT" ||
-    k === "Voice Clone"
+    k === "Voice Clone" ||
+    k === "Vision"
   ) {
     return k;
   }
@@ -283,6 +295,11 @@ const TASK_META: Record<
     modelDisplay: "Voice Clone",
     tags: ["#VoiceClone", "#Audio"],
   },
+  Vision: {
+    sublabel: "이미지 분석 • OCR",
+    modelDisplay: "Vision OCR",
+    tags: ["#Vision", "#OCR", "#Multimodal"],
+  },
 };
 
 /** 플랜·API 체험 카드 상단 문구 — API 문서·TASK_META와 동일 체계 */
@@ -300,6 +317,7 @@ export function inferPlanTask(name: string): PlanTask | null {
   if (/\bstt\b|speech-to-text|transcri/i.test(n)) return "STT";
   if (/\btts\b|text-to-speech/i.test(n)) return "TTS";
   if (/voice[-\s]?clone|보이스[-\s]?클론/i.test(n)) return "Voice Clone";
+  if (/image2text|image[-\s]?to[-\s]?text|img2text|vision[-\s]?ocr|ocr|이미지.*텍스트|이미지.*분석/i.test(n)) return "Vision";
   if (
     /\bad[-\s]?copy\b|광고\s*카피|advertising\s*copy|copywriting|copy[-\s]?write/i.test(
       name,

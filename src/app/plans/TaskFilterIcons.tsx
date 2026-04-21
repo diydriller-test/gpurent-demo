@@ -121,6 +121,17 @@ export function IconSentiment(props: { className?: string }) {
   );
 }
 
+/** 이미지 / Vision OCR */
+export function IconImage(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="M21 15l-5-5L5 21" />
+    </IconBase>
+  );
+}
+
 /** 데이터베이스 / Text-to-SQL */
 export function IconDatabase(props: { className?: string }) {
   return (
@@ -172,6 +183,8 @@ export function PlanTaskIcon({
       return <IconMic className={className} />;
     case "Voice Clone":
       return <IconVolume2 className={className} />;
+    case "Vision":
+      return <IconImage className={className} />;
     default:
       return <IconLayers className={className} />;
   }
