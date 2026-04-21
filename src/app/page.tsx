@@ -27,8 +27,7 @@ const APIS: ApiCard[] = [
   },
   {
     name: "Embedding",
-    description:
-      "문장을 숫자 벡터로 바꿔서 검색·RAG에 쓰기 좋은 임베딩",
+    description: "문장을 숫자 벡터로 바꿔서 검색·RAG에 쓰기 좋은 임베딩",
     icon: "◇",
     apiId: "embedding",
   },
@@ -60,12 +59,12 @@ const BENEFITS = [
   },
   {
     title: "자체 GPU 인프라",
-    description: "우리가 GPU를 직접 돌려서, 토큰 과금만 쓸 때보다 부담이 덜해요.",
+    description:
+      "우리가 GPU를 직접 돌려서, 토큰 과금만 쓸 때보다 부담이 덜해요.",
   },
   {
     title: "확장 가능한 API",
-    description:
-      "임베딩·리랭킹·TTS 같은 걸 한곳에서 골라 쓰면 됩니다.",
+    description: "임베딩·리랭킹·TTS 같은 걸 한곳에서 골라 쓰면 됩니다.",
   },
 ];
 
@@ -80,14 +79,17 @@ const OMAKASE_LLM_STARTER_PRICE = 190000;
 const USD_TO_KRW = 1530;
 const GPT4O_INPUT_USD_PER_M = 5;
 const GPT4O_OUTPUT_USD_PER_M = 15;
-const GPT4O_BLEND_USD_PER_M = (GPT4O_INPUT_USD_PER_M + GPT4O_OUTPUT_USD_PER_M) / 2;
+const GPT4O_BLEND_USD_PER_M =
+  (GPT4O_INPUT_USD_PER_M + GPT4O_OUTPUT_USD_PER_M) / 2;
 const GPT4O_KRW_PER_M_TOKEN = GPT4O_BLEND_USD_PER_M * USD_TO_KRW;
 const TARGET_BREAK_EVEN_X = OMAKASE_LLM_STARTER_PRICE / GPT4O_KRW_PER_M_TOKEN;
 const TARGET_BREAK_EVEN_Y = OMAKASE_LLM_STARTER_PRICE;
 const TARGET_GRAPH_MAX_X = 70;
 const TARGET_GRAPH_MAX_Y = 1100000;
 const TARGET_GRAPH_TICKS_X = [0, 10, 20, 30, 40, 50, 60, 70];
-const TARGET_GRAPH_TICKS_Y = [0, 100000, 190000, 300000, 500000, 700000, 1000000];
+const TARGET_GRAPH_TICKS_Y = [
+  0, 100000, 190000, 300000, 500000, 700000, 1000000,
+];
 const TARGET_GRAPH_LEFT = 90;
 const TARGET_GRAPH_RIGHT = 870;
 const TARGET_GRAPH_TOP = 72;
@@ -233,10 +235,7 @@ const PRICE_SUMMARY = [
     price: "10,000원부터",
     rps: "1 ~ 3.5 RPS",
     tone: "border-white/8 bg-background/25",
-    points: [
-      "STT·TTS 같은 것도 부담 없이 시작",
-      "사내에서 연동만 먼저 볼 때",
-    ],
+    points: ["STT·TTS 같은 것도 부담 없이 시작", "사내에서 연동만 먼저 볼 때"],
   },
   {
     title: "Pro",
@@ -412,7 +411,8 @@ export default function Home() {
             맞춰둔 편이에요.
           </p>
           <p className="mx-auto mb-10 max-w-2xl text-sm text-foreground/52 md:text-base">
-            엑셀에 토큰 계산기 돌리기보다, 그냥 쓰고 운영하기 편한 쪽을 노렸어요.
+            엑셀에 토큰 계산기 돌리기보다, 그냥 쓰고 운영하기 편한 쪽을
+            노렸어요.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
@@ -472,8 +472,8 @@ export default function Home() {
                 써보고 나서 붙이기
               </p>
               <p className="mt-2 text-sm leading-relaxed text-foreground/62">
-                Playground에서 먼저 때려보고, 괜찮으면 그 API만 서비스에 연결하면
-                됩니다.
+                Playground에서 먼저 때려보고, 괜찮으면 그 API만 서비스에
+                연결하면 됩니다.
               </p>
             </div>
           </div>
@@ -507,7 +507,10 @@ export default function Home() {
         className="border-t border-white/5 px-6 py-16 md:py-24"
       >
         <div className="mx-auto max-w-6xl">
-          <details open className="group rounded-[28px] border border-white/8 bg-surface/30 p-5 md:p-8">
+          <details
+            open
+            className="group rounded-[28px] border border-white/8 bg-surface/30 p-5 md:p-8"
+          >
             <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                 <div className="min-w-0 text-left">
@@ -533,263 +536,294 @@ export default function Home() {
                 </span>
               </div>
             </summary>
-          <div className="mt-10 space-y-6">
-            <div className="overflow-hidden rounded-[32px] border border-accent/18 bg-[radial-gradient(circle_at_top,rgba(232,136,138,0.16),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8 shadow-[0_0_90px_rgba(232,136,138,0.08)] md:p-10">
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
-                타겟 사용자 그래프
-              </p>
-              <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-2xl font-semibold text-foreground">
-                    많이 쓰면 19만 원짜리가 이기는 구간이 나와요
-                  </h3>
-                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground/65">
-                    가로는 월에 쓴 토큰(백만 단위), 세로는 돈이에요. 선이
-                    교차한 뒤로는 GPT-4o보다 우리 쪽이 싸게 나오는 구간이
-                    생깁니다.
-                  </p>
+            <div className="mt-10 space-y-6">
+              <div className="overflow-hidden rounded-[32px] border border-accent/18 bg-[radial-gradient(circle_at_top,rgba(232,136,138,0.16),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8 shadow-[0_0_90px_rgba(232,136,138,0.08)] md:p-10">
+                <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
+                  타겟 사용자 그래프
+                </p>
+                <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-2xl font-semibold text-foreground">
+                      많이 쓰면 19만 원짜리가 이기는 구간이 나와요
+                    </h3>
+                    <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground/65">
+                      가로는 월에 쓴 토큰(백만 단위), 세로는 돈이에요. 선이
+                      교차한 뒤로는 GPT-4o보다 우리 쪽이 싸게 나오는 구간이
+                      생깁니다.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-accent/24 bg-background/20 px-4 py-3 text-right shadow-[0_0_35px_rgba(232,136,138,0.10)]">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
+                      자사 LLM Starter
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-foreground">
+                      190,000원
+                    </p>
+                  </div>
                 </div>
-                <div className="rounded-2xl border border-accent/24 bg-background/20 px-4 py-3 text-right shadow-[0_0_35px_rgba(232,136,138,0.10)]">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
-                    자사 LLM Starter
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold text-foreground">
-                    190,000원
-                  </p>
-                </div>
-              </div>
-              <div className="mt-8 overflow-hidden rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-6 md:p-8">
-                <svg
-                  viewBox="0 0 960 520"
-                  className="h-auto w-full"
-                  role="img"
-                  aria-label="월간 사용량 대비 비용 비교 그래프"
-                >
-                  <defs>
-                    <linearGradient id="targetZone" x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0%" stopColor="rgba(232,136,138,0)" />
-                      <stop offset="100%" stopColor="rgba(232,136,138,0.22)" />
-                    </linearGradient>
-                    <radialGradient id="pointGlow" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="rgba(232,136,138,0.95)" />
-                      <stop offset="55%" stopColor="rgba(232,136,138,0.35)" />
-                      <stop offset="100%" stopColor="rgba(232,136,138,0)" />
-                    </radialGradient>
-                    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
-                      <feGaussianBlur stdDeviation="8" result="blur" />
-                      <feMerge>
-                        <feMergeNode in="blur" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  {TARGET_GRAPH_TICKS_Y.map((tick) => (
-                    <g key={`y-${tick}`}>
-                      <line
-                        x1="90"
-                        y1={graphY(tick)}
-                        x2="870"
-                        y2={graphY(tick)}
-                        stroke="rgba(255,255,255,0.08)"
-                        strokeDasharray={tick === 0 ? "0" : "4 6"}
-                      />
-                      <text
-                        x="78"
-                        y={graphY(tick) + 4}
-                        textAnchor="end"
-                        fill="rgba(255,255,255,0.48)"
-                        fontSize="12"
-                        fontFamily="monospace"
+                <div className="mt-8 overflow-hidden rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-6 md:p-8">
+                  <svg
+                    viewBox="0 0 960 520"
+                    className="h-auto w-full"
+                    role="img"
+                    aria-label="월간 사용량 대비 비용 비교 그래프"
+                  >
+                    <defs>
+                      <linearGradient
+                        id="targetZone"
+                        x1="0"
+                        x2="1"
+                        y1="0"
+                        y2="0"
                       >
-                        {formatGraphWonTick(tick)}
-                      </text>
-                    </g>
-                  ))}
-                  {TARGET_GRAPH_TICKS_X.map((tick) => (
-                    <g key={`x-${tick}`}>
-                      <line
-                        x1={graphX(tick)}
-                        y1="72"
-                        x2={graphX(tick)}
-                        y2="392"
-                        stroke="rgba(255,255,255,0.06)"
-                        strokeDasharray={tick === 0 ? "0" : "4 6"}
-                      />
-                      <text
-                        x={graphX(tick)}
-                        y="424"
-                        textAnchor="middle"
-                        fill="rgba(255,255,255,0.48)"
-                        fontSize="13"
-                        fontFamily="monospace"
+                        <stop offset="0%" stopColor="rgba(232,136,138,0)" />
+                        <stop
+                          offset="100%"
+                          stopColor="rgba(232,136,138,0.22)"
+                        />
+                      </linearGradient>
+                      <radialGradient id="pointGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="rgba(232,136,138,0.95)" />
+                        <stop offset="55%" stopColor="rgba(232,136,138,0.35)" />
+                        <stop offset="100%" stopColor="rgba(232,136,138,0)" />
+                      </radialGradient>
+                      <filter
+                        id="softGlow"
+                        x="-20%"
+                        y="-20%"
+                        width="140%"
+                        height="140%"
                       >
-                        {tick === 0 ? "" : tick}
-                      </text>
-                    </g>
-                  ))}
-                  <line x1="90" y1="392" x2="870" y2="392" stroke="rgba(255,255,255,0.24)" />
-                  <line x1="90" y1="72" x2="90" y2="392" stroke="rgba(255,255,255,0.24)" />
-                  <rect
-                    x={graphX(TARGET_BREAK_EVEN_X)}
-                    y="72"
-                    width={870 - graphX(TARGET_BREAK_EVEN_X)}
-                    height="320"
-                    fill="url(#targetZone)"
-                  />
-                  <line
-                    x1="90"
-                    y1={graphY(OMAKASE_LLM_STARTER_PRICE)}
-                    x2="870"
-                    y2={graphY(OMAKASE_LLM_STARTER_PRICE)}
-                    stroke="rgba(232,136,138,0.95)"
-                    strokeWidth="3.5"
-                  />
-                  <line
-                    x1="90"
-                    y1={graphY(0)}
-                    x2="870"
-                    y2={graphY(GPT4O_KRW_PER_M_TOKEN * TARGET_GRAPH_MAX_X)}
-                    stroke="rgba(255,255,255,0.88)"
-                    strokeWidth="3.5"
-                  />
-                  <circle
-                    cx={graphX(TARGET_BREAK_EVEN_X)}
-                    cy={graphY(TARGET_BREAK_EVEN_Y)}
-                    r="18"
-                    fill="rgba(255,164,173,0.16)"
-                    className="target-point-neon-halo"
-                  />
-                  <circle
-                    cx={graphX(TARGET_BREAK_EVEN_X)}
-                    cy={graphY(TARGET_BREAK_EVEN_Y)}
-                    r="8"
-                    fill="rgba(232,136,138,1)"
-                    className="target-point-core"
-                  />
-                  <line
-                    x1={graphX(TARGET_BREAK_EVEN_X)}
-                    y1="72"
-                    x2={graphX(TARGET_BREAK_EVEN_X)}
-                    y2="392"
-                    stroke="rgba(232,136,138,0.45)"
-                    strokeDasharray="6 6"
-                  />
-                  <text
-                    x={graphX(TARGET_BREAK_EVEN_X)}
-                    y="444"
-                    textAnchor="middle"
-                    fill="rgba(255,255,255,0.52)"
-                    fontSize="10"
-                    fontFamily="monospace"
-                  >
-                    손익분기점 약 {Math.round(TARGET_BREAK_EVEN_X * 100).toLocaleString("ko-KR")}만 토큰
-                  </text>
-                  <text
-                    x="90"
-                    y="44"
-                    fill="rgba(255,255,255,0.56)"
-                    fontSize="13"
-                    fontFamily="monospace"
-                  >
-                    비용
-                  </text>
-                  <text
-                    x="870"
-                    y="468"
-                    textAnchor="end"
-                    fill="rgba(255,255,255,0.56)"
-                    fontSize="13"
-                    fontFamily="monospace"
-                  >
-                    월간 사용량 (백만 토큰)
-                  </text>
-                  <text
-                    x={graphX(0) - 18}
-                    y={graphY(0) + 18}
-                    fill="rgba(255,255,255,0.58)"
-                    fontSize="13"
-                    fontFamily="monospace"
-                  >
-                    0
-                  </text>
-                </svg>
-              </div>
-              <div className="mt-5 grid gap-3 md:grid-cols-2">
-                <div className="rounded-2xl border border-accent/24 bg-accent/8 px-4 py-3">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
-                    손익분기점
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-foreground">
-                    약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰
-                  </p>
-                  <p className="mt-1 text-sm text-foreground/65">
-                    여기 넘기면 우리 쪽을 먼저 비교해볼 만해요.
-                  </p>
+                        <feGaussianBlur stdDeviation="8" result="blur" />
+                        <feMerge>
+                          <feMergeNode in="blur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    {TARGET_GRAPH_TICKS_Y.map((tick) => (
+                      <g key={`y-${tick}`}>
+                        <line
+                          x1="90"
+                          y1={graphY(tick)}
+                          x2="870"
+                          y2={graphY(tick)}
+                          stroke="rgba(255,255,255,0.08)"
+                          strokeDasharray={tick === 0 ? "0" : "4 6"}
+                        />
+                        <text
+                          x="78"
+                          y={graphY(tick) + 4}
+                          textAnchor="end"
+                          fill="rgba(255,255,255,0.48)"
+                          fontSize="12"
+                          fontFamily="monospace"
+                        >
+                          {formatGraphWonTick(tick)}
+                        </text>
+                      </g>
+                    ))}
+                    {TARGET_GRAPH_TICKS_X.map((tick) => (
+                      <g key={`x-${tick}`}>
+                        <line
+                          x1={graphX(tick)}
+                          y1="72"
+                          x2={graphX(tick)}
+                          y2="392"
+                          stroke="rgba(255,255,255,0.06)"
+                          strokeDasharray={tick === 0 ? "0" : "4 6"}
+                        />
+                        <text
+                          x={graphX(tick)}
+                          y="424"
+                          textAnchor="middle"
+                          fill="rgba(255,255,255,0.48)"
+                          fontSize="13"
+                          fontFamily="monospace"
+                        >
+                          {tick === 0 ? "" : tick}
+                        </text>
+                      </g>
+                    ))}
+                    <line
+                      x1="90"
+                      y1="392"
+                      x2="870"
+                      y2="392"
+                      stroke="rgba(255,255,255,0.24)"
+                    />
+                    <line
+                      x1="90"
+                      y1="72"
+                      x2="90"
+                      y2="392"
+                      stroke="rgba(255,255,255,0.24)"
+                    />
+                    <rect
+                      x={graphX(TARGET_BREAK_EVEN_X)}
+                      y="72"
+                      width={870 - graphX(TARGET_BREAK_EVEN_X)}
+                      height="320"
+                      fill="url(#targetZone)"
+                    />
+                    <line
+                      x1="90"
+                      y1={graphY(OMAKASE_LLM_STARTER_PRICE)}
+                      x2="870"
+                      y2={graphY(OMAKASE_LLM_STARTER_PRICE)}
+                      stroke="rgba(232,136,138,0.95)"
+                      strokeWidth="3.5"
+                    />
+                    <line
+                      x1="90"
+                      y1={graphY(0)}
+                      x2="870"
+                      y2={graphY(GPT4O_KRW_PER_M_TOKEN * TARGET_GRAPH_MAX_X)}
+                      stroke="rgba(255,255,255,0.88)"
+                      strokeWidth="3.5"
+                    />
+                    <circle
+                      cx={graphX(TARGET_BREAK_EVEN_X)}
+                      cy={graphY(TARGET_BREAK_EVEN_Y)}
+                      r="18"
+                      fill="rgba(255,164,173,0.16)"
+                      className="target-point-neon-halo"
+                    />
+                    <circle
+                      cx={graphX(TARGET_BREAK_EVEN_X)}
+                      cy={graphY(TARGET_BREAK_EVEN_Y)}
+                      r="8"
+                      fill="rgba(232,136,138,1)"
+                      className="target-point-core"
+                    />
+                    <line
+                      x1={graphX(TARGET_BREAK_EVEN_X)}
+                      y1="72"
+                      x2={graphX(TARGET_BREAK_EVEN_X)}
+                      y2="392"
+                      stroke="rgba(232,136,138,0.45)"
+                      strokeDasharray="6 6"
+                    />
+                    <text
+                      x={graphX(TARGET_BREAK_EVEN_X)}
+                      y="444"
+                      textAnchor="middle"
+                      fill="rgba(255,255,255,0.52)"
+                      fontSize="10"
+                      fontFamily="monospace"
+                    >
+                      손익분기점 약{" "}
+                      {Math.round(TARGET_BREAK_EVEN_X * 100).toLocaleString(
+                        "ko-KR",
+                      )}
+                      만 토큰
+                    </text>
+                    <text
+                      x="90"
+                      y="44"
+                      fill="rgba(255,255,255,0.56)"
+                      fontSize="13"
+                      fontFamily="monospace"
+                    >
+                      비용
+                    </text>
+                    <text
+                      x="870"
+                      y="468"
+                      textAnchor="end"
+                      fill="rgba(255,255,255,0.56)"
+                      fontSize="13"
+                      fontFamily="monospace"
+                    >
+                      월간 사용량 (백만 토큰)
+                    </text>
+                    <text
+                      x={graphX(0) - 18}
+                      y={graphY(0) + 18}
+                      fill="rgba(255,255,255,0.58)"
+                      fontSize="13"
+                      fontFamily="monospace"
+                    >
+                      0
+                    </text>
+                  </svg>
                 </div>
-                <div className="rounded-2xl border border-white/8 bg-background/18 px-4 py-3">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
-                    그래프 해석
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl border border-accent/24 bg-accent/8 px-4 py-3">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+                      손익분기점
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-foreground">
+                      약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰
+                    </p>
+                    <p className="mt-1 text-sm text-foreground/65">
+                      여기 넘기면 우리 쪽을 먼저 비교해볼 만해요.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/8 bg-background/18 px-4 py-3">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
+                      그래프 해석
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-foreground">
+                      GPT-4o는 사용량 비례 증가, 오마카세는 월 19만원 고정
+                    </p>
+                    <p className="mt-1 text-sm text-foreground/55">
+                      입력·출력 반반 가정하고 GPT-4o 요금을 환산한 거예요. 교점
+                      넘은 뒤를 색으로 칠해뒀어요.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-[1.15fr_1.15fr_1.15fr_0.95fr]">
+                {TARGET_CUSTOMERS.map((customer, idx) => (
+                  <div
+                    key={customer.title}
+                    className={[
+                      "rounded-3xl border p-5",
+                      idx === 2
+                        ? "border-accent/24 bg-accent/7 shadow-[0_0_40px_rgba(232,136,138,0.08)]"
+                        : "border-white/8 bg-surface/45",
+                    ].join(" ")}
+                  >
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/85">
+                      예상 타겟 고객
+                    </p>
+                    <h3 className="mt-3 text-lg font-semibold text-foreground">
+                      {customer.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-relaxed text-foreground/62">
+                      {customer.description}
+                    </p>
+                  </div>
+                ))}
+                <div className="rounded-3xl border border-accent/22 bg-[linear-gradient(180deg,rgba(232,136,138,0.10),rgba(232,136,138,0.05))] p-5 shadow-[0_0_50px_rgba(232,136,138,0.10)]">
+                  <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
+                    결론
                   </p>
-                  <p className="mt-2 text-lg font-semibold text-foreground">
-                    GPT-4o는 사용량 비례 증가, 오마카세는 월 19만원 고정
+                  <p className="mt-3 text-sm leading-relaxed text-foreground/65">
+                    쓰는 양 많고, 실험도 자주 하고, 사용자 요청도 동시에
+                    몰리면—그럴 땐 우리 쪽을 한 번 넣어볼 만해요.
                   </p>
-                  <p className="mt-1 text-sm text-foreground/55">
-                    입력·출력 반반 가정하고 GPT-4o 요금을 환산한 거예요. 교점
-                    넘은 뒤를 색으로 칠해뒀어요.
-                  </p>
+                  <div className="mt-4 rounded-2xl border border-white/10 bg-background/20 px-4 py-3">
+                    <p className="text-sm font-semibold text-foreground">
+                      교점 이전 고객
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-foreground/60">
+                      적게 쓰면 다른 게 더 싸게 나올 수도 있어요.
+                    </p>
+                  </div>
+                  <div className="mt-3 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3">
+                    <p className="text-sm font-semibold text-foreground">
+                      교점 이후 고객
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-foreground/82">
+                      이럴 때 우리 견적부터 보면 편해요.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-[1.15fr_1.15fr_1.15fr_0.95fr]">
-              {TARGET_CUSTOMERS.map((customer, idx) => (
-                <div
-                  key={customer.title}
-                  className={[
-                    "rounded-3xl border p-5",
-                    idx === 2
-                      ? "border-accent/24 bg-accent/7 shadow-[0_0_40px_rgba(232,136,138,0.08)]"
-                      : "border-white/8 bg-surface/45",
-                  ].join(" ")}
-                >
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/85">
-                    예상 타겟 고객
-                  </p>
-                  <h3 className="mt-3 text-lg font-semibold text-foreground">
-                    {customer.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-foreground/62">
-                    {customer.description}
-                  </p>
-                </div>
-              ))}
-              <div className="rounded-3xl border border-accent/22 bg-[linear-gradient(180deg,rgba(232,136,138,0.10),rgba(232,136,138,0.05))] p-5 shadow-[0_0_50px_rgba(232,136,138,0.10)]">
-              <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
-                결론
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-foreground/65">
-                쓰는 양 많고, 실험도 자주 하고, 사용자 요청도 동시에 몰리면—그럴
-                땐 우리 쪽을 한 번 넣어볼 만해요.
-              </p>
-              <div className="mt-4 rounded-2xl border border-white/10 bg-background/20 px-4 py-3">
-                <p className="text-sm font-semibold text-foreground">
-                  교점 이전 고객
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-foreground/60">
-                  적게 쓰면 다른 게 더 싸게 나올 수도 있어요.
-                </p>
-              </div>
-              <div className="mt-3 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3">
-                <p className="text-sm font-semibold text-foreground">
-                  교점 이후 고객
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-foreground/82">
-                  이럴 때 우리 견적부터 보면 편해요.
-                </p>
-              </div>
-            </div>
-            </div>
-          </div>
-          <style>{`
+            <style>{`
             @keyframes targetPointNeonHaloBlink {
               0%, 18%, 22%, 54%, 58%, 100% { opacity: 0.95; }
               20%, 56% { opacity: 0.18; }
@@ -829,10 +863,7 @@ export default function Home() {
       </section>
 
       {/* Why Omakase */}
-      <section
-        id="why-omakase"
-        className="border-t border-white/5 px-6 py-24"
-      >
+      <section id="why-omakase" className="border-t border-white/5 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-4 text-center text-3xl font-bold text-foreground md:text-4xl">
             왜 여기 써야 해요?
@@ -891,7 +922,10 @@ export default function Home() {
       </section>
 
       {/* Comparison */}
-      <section id="compare" className="border-t border-white/5 px-6 py-16 md:py-24">
+      <section
+        id="compare"
+        className="border-t border-white/5 px-6 py-16 md:py-24"
+      >
         <div className="mx-auto max-w-6xl">
           <details className="group rounded-[28px] border border-white/8 bg-surface/30 p-5 md:p-8">
             <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
@@ -918,70 +952,70 @@ export default function Home() {
               </div>
             </summary>
 
-          <div className="mt-10 hidden overflow-hidden rounded-3xl border border-white/8 bg-surface/45 md:block">
-            <div className="grid grid-cols-[0.8fr_1fr_1fr] border-b border-white/6 bg-background/25">
-              <div className="px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
-                비교 항목
-              </div>
-              <div className="px-5 py-4 text-sm font-semibold text-foreground/70">
-                일반적인 도입 방식
-              </div>
-              <div className="px-5 py-4 text-sm font-semibold text-accent">
-                AI API 오마카세
-              </div>
-            </div>
-            {COMPARISON_ROWS.map((row, idx) => (
-              <div
-                key={row.label}
-                className={[
-                  "grid grid-cols-[0.8fr_1fr_1fr]",
-                  idx !== COMPARISON_ROWS.length - 1
-                    ? "border-b border-white/6"
-                    : "",
-                ].join(" ")}
-              >
-                <div className="px-5 py-5 text-sm font-semibold text-foreground">
-                  {row.label}
+            <div className="mt-10 hidden overflow-hidden rounded-3xl border border-white/8 bg-surface/45 md:block">
+              <div className="grid grid-cols-[0.8fr_1fr_1fr] border-b border-white/6 bg-background/25">
+                <div className="px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
+                  비교 항목
                 </div>
-                <div className="px-5 py-5 text-sm leading-relaxed text-foreground/55">
-                  {row.before}
+                <div className="px-5 py-4 text-sm font-semibold text-foreground/70">
+                  일반적인 도입 방식
                 </div>
-                <div className="bg-accent/5 px-5 py-5 text-sm leading-relaxed text-foreground/88">
-                  {row.after}
+                <div className="px-5 py-4 text-sm font-semibold text-accent">
+                  AI API 오마카세
                 </div>
               </div>
-            ))}
-          </div>
-          <div className="mt-10 grid gap-4 md:hidden">
-            {COMPARISON_ROWS.map((row) => (
-              <div
-                key={row.label}
-                className="overflow-hidden rounded-3xl border border-white/8 bg-surface/45"
-              >
-                <div className="border-b border-white/6 bg-background/25 px-5 py-4">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+              {COMPARISON_ROWS.map((row, idx) => (
+                <div
+                  key={row.label}
+                  className={[
+                    "grid grid-cols-[0.8fr_1fr_1fr]",
+                    idx !== COMPARISON_ROWS.length - 1
+                      ? "border-b border-white/6"
+                      : "",
+                  ].join(" ")}
+                >
+                  <div className="px-5 py-5 text-sm font-semibold text-foreground">
                     {row.label}
-                  </p>
-                </div>
-                <div className="px-5 py-4">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
-                    일반적인 도입 방식
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/58">
+                  </div>
+                  <div className="px-5 py-5 text-sm leading-relaxed text-foreground/55">
                     {row.before}
-                  </p>
-                </div>
-                <div className="border-t border-white/6 bg-accent/5 px-5 py-4">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
-                    AI API 오마카세
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/88">
+                  </div>
+                  <div className="bg-accent/5 px-5 py-5 text-sm leading-relaxed text-foreground/88">
                     {row.after}
-                  </p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            <div className="mt-10 grid gap-4 md:hidden">
+              {COMPARISON_ROWS.map((row) => (
+                <div
+                  key={row.label}
+                  className="overflow-hidden rounded-3xl border border-white/8 bg-surface/45"
+                >
+                  <div className="border-b border-white/6 bg-background/25 px-5 py-4">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+                      {row.label}
+                    </p>
+                  </div>
+                  <div className="px-5 py-4">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
+                      일반적인 도입 방식
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/58">
+                      {row.before}
+                    </p>
+                  </div>
+                  <div className="border-t border-white/6 bg-accent/5 px-5 py-4">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+                      AI API 오마카세
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/88">
+                      {row.after}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </details>
         </div>
       </section>
@@ -997,9 +1031,9 @@ export default function Home() {
               이렇게만 이어 붙여도 돼요
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              API 하나만 잘 쓰는 것보다, 실제로는 이거랑 저거 묶어서 쓰는
-              경우가 많아요. 여기서는 그 조합을 빨리 써보고 운영까지 가져가기
-              쉽게 해뒀어요.
+              API 하나만 잘 쓰는 것보다, 실제로는 이거랑 저거 묶어서 쓰는 경우가
+              많아요. 여기서는 그 조합을 빨리 써보고 운영까지 가져가기 쉽게
+              해뒀어요.
             </p>
           </div>
 
@@ -1207,8 +1241,8 @@ export default function Home() {
               </div>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-foreground/60">
-              사내에서만 돌릴 땐 낮아도 되는데, 실제 사용자 붙으면 RPS 올린 플랜이
-              필요해질 때가 많아요.
+              사내에서만 돌릴 땐 낮아도 되는데, 실제 사용자 붙으면 RPS 올린
+              플랜이 필요해질 때가 많아요.
             </p>
           </div>
 
@@ -1307,12 +1341,9 @@ export default function Home() {
             ))}
           </div>
           <div className="mt-16 rounded-2xl border border-accent/20 bg-accent/5 p-8 text-center md:p-12">
-            <p className="font-mono text-accent">
-              계산기보다 운영 기준이 먼저
-            </p>
+            <p className="font-mono text-accent">계산기보다 운영 기준이 먼저</p>
             <p className="mt-2 text-foreground/80">
-              API마다 따로 붙이지 말고, 한곳에서 써보고 기준만 맞춰 가면
-              됩니다.
+              API마다 따로 붙이지 말고, 한곳에서 써보고 기준만 맞춰 가면 됩니다.
             </p>
             <Link
               href="/plans"
@@ -1361,14 +1392,13 @@ export default function Home() {
             </Link>
           </div>
           <Link
-            href="mailto:contact@gpumodu.dev"
+            href="mailto:help@kogrobo.com"
             className="mt-5 inline-flex text-sm text-foreground/52 transition-colors hover:text-accent"
           >
             도입이 애매하면 메일로 물어보기
           </Link>
         </div>
       </section>
-
     </div>
   );
 }
