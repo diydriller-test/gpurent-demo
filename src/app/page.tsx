@@ -212,7 +212,7 @@ const ONBOARDING_STEPS = [
     step: "01",
     title: "Playground에서 먼저 써보기",
     description:
-      "텍스트·임베딩·TTS·STT를 직접 때려보고, 우리 서비스에 맞는 조합을 정하면 돼요.",
+      "텍스트·임베딩·TTS·STT를 직접 써보고, 우리 서비스에 맞는 조합을 정하면 돼요.",
   },
   {
     step: "02",
@@ -403,21 +403,17 @@ export default function Home() {
             <span className="text-omakase-gradient">AI API 오마카세</span>
           </h1>
           <p className="mx-auto mb-4 max-w-3xl text-xl font-semibold text-foreground md:text-3xl">
-            회사에서 쓸 AI API, 부담 덜하고 붙이고 싶을 때
+            어떤 서비스든 AI API, 부담은 줄이고 빠르게 붙이고 싶을 때
           </p>
           <p className="mx-auto mb-8 max-w-3xl text-base leading-relaxed text-foreground/72 md:text-lg">
             벤더 여러 군데 비교하느라 시간 쓰지 말고, 여기서 바로 써보고 붙이면
-            돼요. 월정액으로 비용 감 잡기 쉽고, GPU는 우리가 돌려서 가격도
-            맞춰둔 편이에요.
-          </p>
-          <p className="mx-auto mb-10 max-w-2xl text-sm text-foreground/52 md:text-base">
-            엑셀에 토큰 계산기 돌리기보다, 그냥 쓰고 운영하기 편한 쪽을
-            노렸어요.
+            돼요. 월정액으로 비용 감 잡기 쉽고, GPU는 우리가 직접 돌려 가격
+            부담을 확실히 낮췄어요.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/api-test"
-              className="group flex items-center gap-2 rounded-xl bg-accent px-8 py-4 font-medium text-background glow-accent transition-all hover:opacity-90"
+              className="group inline-flex h-14 w-[180px] items-center justify-center gap-2 rounded-xl bg-accent px-8 py-4 font-medium text-background glow-accent transition-all hover:opacity-90"
             >
               무료 체험
               <span className="transition-transform group-hover:translate-x-1">
@@ -426,7 +422,7 @@ export default function Home() {
             </Link>
             <Link
               href="/plans"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/12 px-8 py-4 font-medium text-foreground transition-colors hover:border-accent/40 hover:bg-white/5 hover:text-accent"
+              className="inline-flex h-14 w-[180px] items-center justify-center gap-2 rounded-xl border border-white/12 px-8 py-4 font-medium text-foreground transition-colors hover:border-accent/40 hover:bg-white/5 hover:text-accent"
             >
               플랜 보기
             </Link>
@@ -472,8 +468,8 @@ export default function Home() {
                 써보고 나서 붙이기
               </p>
               <p className="mt-2 text-sm leading-relaxed text-foreground/62">
-                Playground에서 먼저 때려보고, 괜찮으면 그 API만 서비스에
-                연결하면 됩니다.
+                Playground에서 먼저 써보고, 괜찮으면 그 API만 서비스에 연결하면
+                됩니다.
               </p>
             </div>
           </div>
@@ -866,7 +862,7 @@ export default function Home() {
       <section id="why-omakase" className="border-t border-white/5 px-6 py-24">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-4 text-center text-3xl font-bold text-foreground md:text-4xl">
-            왜 여기 써야 해요?
+            왜 AI API 오마카세인가요?
           </h2>
           <p className="mx-auto mb-14 max-w-3xl text-center text-foreground/70">
             API 개수만 많다고 끝이 아니에요. 막상 붙일 때는 비용이 얼마 나올지,
@@ -1365,7 +1361,7 @@ export default function Home() {
             한번 써보면 감 옵니다
           </h2>
           <p className="mb-8 text-foreground/70">
-            Playground에서 먼저 때려보고, 맞으면 그때 플랜 고르면 돼요.
+            Playground에서 먼저 써보고, 맞으면 그때 플랜 고르면 돼요.
           </p>
           <div className="mb-8 flex flex-wrap items-center justify-center gap-2.5">
             {FINAL_CTA_POINTS.map((point) => (
