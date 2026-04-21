@@ -632,10 +632,15 @@ function buildLlmConsoleRequestJson(
 ) {
   return JSON.stringify(
     {
-      model: "google/gemma-4-31B-it",
+      model: "Qwen/Qwen3.6-35B-A3B",
       temperature,
       ...(systemPromptValue.trim()
-        ? { messages: [{ role: "system", content: systemPromptValue }, { role: "user", content: promptValue }] }
+        ? {
+            messages: [
+              { role: "system", content: systemPromptValue },
+              { role: "user", content: promptValue },
+            ],
+          }
         : { messages: [{ role: "user", content: promptValue }] }),
     },
     null,
@@ -659,7 +664,11 @@ function tryParseLlmConsoleToPlayground(jsonText: string): {
       input?: unknown;
       systemPrompt?: unknown;
     };
-    const out: { prompt?: string; systemPrompt?: string; temperature?: number } = {};
+    const out: {
+      prompt?: string;
+      systemPrompt?: string;
+      temperature?: number;
+    } = {};
 
     if (
       typeof parsed.temperature === "number" &&
@@ -1479,7 +1488,11 @@ export default function ApiTestPage() {
         return buildNerConsoleRequestJson(DEFAULT_NER_TEXT, 0.1);
       }
       if (api === "textToSql") {
-        return buildTextToSqlConsoleRequestJson(DEFAULT_TEXT_TO_SQL_TEXT, "", 0.2);
+        return buildTextToSqlConsoleRequestJson(
+          DEFAULT_TEXT_TO_SQL_TEXT,
+          "",
+          0.2,
+        );
       }
       if (api === "reranker") {
         return buildRerankConsoleRequestJson(
@@ -1577,7 +1590,7 @@ export default function ApiTestPage() {
   const marketplaceItems: MarketplaceItem[] = useMemo(
     () => [
       {
-        id: "google/gemma-4-31B-it",
+        id: "Qwen/Qwen3.6-35B-A3B",
         task: "Text Generation",
         apiId: "llm",
         model: "LLM",
@@ -1986,8 +1999,7 @@ export default function ApiTestPage() {
       case "VoiceClone":
         return (
           <>
-            🎭{" "}
-            <span className="text-accent font-semibold">보이스 클론</span>:
+            🎭 <span className="text-accent font-semibold">보이스 클론</span>:
             짧은 참조 음성만으로 동일한 목소리를 재현합니다.{" "}
             <span className="text-accent font-semibold">
               원하는 텍스트를 클론된 목소리로
@@ -2881,7 +2893,8 @@ export default function ApiTestPage() {
       if (!parsed) return;
       if (parsed.text !== undefined) setVcText(parsed.text);
       if (parsed.language !== undefined) setVcLanguage(parsed.language);
-      if (parsed.xVectorOnly !== undefined) setVcXVectorOnly(parsed.xVectorOnly);
+      if (parsed.xVectorOnly !== undefined)
+        setVcXVectorOnly(parsed.xVectorOnly);
       if (parsed.refText !== undefined) setVcRefText(parsed.refText);
     }
   }
@@ -3455,14 +3468,21 @@ export default function ApiTestPage() {
       window.setTimeout(() => {
         const el = vcAudioRef.current;
         if (!el) return;
-        void el.play().then(() => setVcPlaying(true)).catch(() => setVcPlaying(false));
+        void el
+          .play()
+          .then(() => setVcPlaying(true))
+          .catch(() => setVcPlaying(false));
       }, 50);
     } catch {
       setVcError("Voice Clone API 호출에 실패했습니다.");
       patchConsole("voiceClone", {
         statusCode: 500,
         statusLine: "500 Error",
-        responseJson: JSON.stringify({ error: "Voice Clone request failed" }, null, 2),
+        responseJson: JSON.stringify(
+          { error: "Voice Clone request failed" },
+          null,
+          2,
+        ),
         error: "Voice Clone API 호출에 실패했습니다.",
       });
     } finally {
@@ -3483,7 +3503,10 @@ export default function ApiTestPage() {
       setVcPlaying(false);
       return;
     }
-    void el.play().then(() => setVcPlaying(true)).catch(() => setVcPlaying(false));
+    void el
+      .play()
+      .then(() => setVcPlaying(true))
+      .catch(() => setVcPlaying(false));
   }
 
   function handleVcSave() {
@@ -4219,7 +4242,11 @@ export default function ApiTestPage() {
     patchConsole("ner", {
       statusCode: null,
       statusLine: "Pending...",
-      requestJson: buildNerConsoleRequestJson(nerText, nerTemperature, nerPrompt),
+      requestJson: buildNerConsoleRequestJson(
+        nerText,
+        nerTemperature,
+        nerPrompt,
+      ),
       responseJson: "",
       error: null,
     });
@@ -4382,7 +4409,7 @@ export default function ApiTestPage() {
       statusLine: "Pending...",
       requestJson: JSON.stringify(
         {
-          model: "google/gemma-4-31B-it",
+          model: "Qwen/Qwen3.6-35B-A3B",
           ...(llmSystemPrompt.trim()
             ? {
                 messages: [
@@ -5823,7 +5850,9 @@ export default function ApiTestPage() {
                       onClick={() => {
                         if (typeof window === "undefined") return;
 
-                        const params = new URLSearchParams(window.location.search);
+                        const params = new URLSearchParams(
+                          window.location.search,
+                        );
                         const openedFromDeepLink =
                           params.has("api") || params.get("view") === "detail";
 
@@ -6153,7 +6182,7 @@ export default function ApiTestPage() {
                         ? "min-h-0 flex-1 overflow-y-auto px-3 py-3"
                         : selectedApi === "ner"
                           ? "min-h-0 flex-1 overflow-hidden px-3 py-2"
-                        : "flex-shrink-0"
+                          : "flex-shrink-0"
                     }
                   >
                     <ApiInputPanel
@@ -6292,10 +6321,12 @@ export default function ApiTestPage() {
                       setVcText={setVcText}
                       vcLanguage={vcLanguage}
                       setVcLanguage={setVcLanguage}
-                      vcLanguageOptions={VOICE_CLONE_LANGUAGE_OPTIONS.map((opt) => ({
-                        value: opt.value,
-                        label: opt.label,
-                      }))}
+                      vcLanguageOptions={VOICE_CLONE_LANGUAGE_OPTIONS.map(
+                        (opt) => ({
+                          value: opt.value,
+                          label: opt.label,
+                        }),
+                      )}
                       vcXVectorOnly={vcXVectorOnly}
                       setVcXVectorOnly={setVcXVectorOnly}
                       vcRefText={vcRefText}
@@ -6398,7 +6429,7 @@ export default function ApiTestPage() {
                         onChange={(e) => {
                           handleConsoleRequestJsonChange(e.target.value);
                         }}
-                        placeholder={`{\n  "model": "google/gemma-4-31B-it",\n  "input": "직접 입력한 내용"\n}`}
+                        placeholder={`{\n  "model": "Qwen/Qwen3.6-35B-A3B",\n  "input": "직접 입력한 내용"\n}`}
                         rows={9}
                         className="mt-3 min-h-[180px] w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 font-mono text-[12px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                       />

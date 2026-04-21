@@ -1,11 +1,8 @@
 const URL = "http://gpurent.kogrobo.com:11115/v1/chat/completions";
-const MODEL = "google/gemma-4-31B-it";
+const MODEL = "Qwen/Qwen3.6-35B-A3B";
 
 function escapeForPythonJsonString(s: string) {
-  return s
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, "\\n");
+  return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
 }
 
 export function buildLlmDevCodePython({
@@ -46,4 +43,3 @@ result = response.json()
 print(result["choices"][0]["message"]["content"])
 `;
 }
-

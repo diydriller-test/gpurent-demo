@@ -6,7 +6,7 @@ import type { Api, Plan } from "@/lib/api";
 export const DEMO_APIS_FALLBACK: Api[] = [
   {
     id: 91001,
-    name: "Google Gemma 4 Text LLM",
+    name: "Qwen 3.6 Text LLM",
     company_id: 1,
     company_name: "GPU Modu",
   },
@@ -114,11 +114,7 @@ export const DEMO_PLANS_THREE_TIERS: Plan[] = [
     description: "대규모·전용 용량·맞춤 계약",
     max_rps: 100,
     period: "",
-    features: [
-      "전용 RPS·용량 협의",
-      "전담 담당자",
-      "맞춤 SLA·보안 검토",
-    ],
+    features: ["전용 RPS·용량 협의", "전담 담당자", "맞춤 SLA·보안 검토"],
     is_active: true,
     sort_order: 3,
   },
@@ -233,8 +229,8 @@ const TASK_META: Record<
   { sublabel: string; modelDisplay: string; tags: string[] }
 > = {
   "Text Generation": {
-    sublabel: "Google Gemma 4 • Text Generation",
-    modelDisplay: "Google Gemma 4",
+    sublabel: "Qwen 3.6 • Text Generation",
+    modelDisplay: "Qwen 3.6",
     tags: ["#LLM", "#Text-Gen"],
   },
   "Ad Copy": {
