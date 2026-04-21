@@ -257,8 +257,8 @@ const FINAL_CTA_POINTS = [
 ];
 
 const LANDING_SECTION_LINKS: Array<{ href: string; label: string }> = [
-  { href: "#why-omakase", label: "왜 쓰나요" },
   { href: "#pricing-proof", label: "가격 근거" },
+  { href: "#why-omakase", label: "왜 쓰나요" },
   { href: "#compare", label: "비교" },
   { href: "#use-cases", label: "시나리오" },
   { href: "#apis", label: "API" },
@@ -510,18 +510,16 @@ export default function Home() {
             <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                 <div className="min-w-0 text-left">
-                  <div className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 font-mono text-[11px] tracking-[0.16em] text-accent">
-                    교점 약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰 이후
-                  </div>
                   <p className="mt-3 font-mono text-xs uppercase tracking-[0.24em] text-accent">
                     가격 근거
                   </p>
                   <h2 className="mt-2 text-2xl font-bold text-foreground md:text-3xl">
-                    여기 넘어가면 월정액이 더 맞는 구간이에요
+                    일정 사용량부터는 월정액이 더 경제적이에요
                   </h2>
                   <p className="mt-3 max-w-2xl text-sm leading-relaxed text-foreground/70 md:text-base">
-                    GPT-4o처럼 토큰 과금이랑, 우리 Starter 월 19만 원을 같은
-                    그래프에 올려놓으면, 어디부터 월정액이 나은지 한눈에 보여요.
+                    GPT-4o처럼 토큰 과금이랑, 오마카세 LLM(Qwen 3.6) API Starter
+                    월 19만 원을 같은 그래프에 올려놓으면, 어디부터 월정액이
+                    경제적인지 한눈에 보여요.
                   </p>
                 </div>
                 <span
@@ -534,23 +532,19 @@ export default function Home() {
             </summary>
             <div className="mt-10 space-y-6">
               <div className="overflow-hidden rounded-[32px] border border-accent/18 bg-[radial-gradient(circle_at_top,rgba(232,136,138,0.16),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8 shadow-[0_0_90px_rgba(232,136,138,0.08)] md:p-10">
-                <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
-                  타겟 사용자 그래프
-                </p>
                 <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h3 className="text-2xl font-semibold text-foreground">
-                      많이 쓰면 19만 원짜리가 이기는 구간이 나와요
+                      사용량이 일정 수준을 넘으면 월정액이 더 유리해요
                     </h3>
                     <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground/65">
-                      가로는 월에 쓴 토큰(백만 단위), 세로는 돈이에요. 선이
-                      교차한 뒤로는 GPT-4o보다 우리 쪽이 싸게 나오는 구간이
-                      생깁니다.
+                      X축은 월에 쓴 토큰(백만 단위), Y축은 월 비용이에요. 교차점
+                      이후부터는 사용량이 커질수록 우리 쪽 절감폭이 커져요
                     </p>
                   </div>
                   <div className="rounded-2xl border border-accent/24 bg-background/20 px-4 py-3 text-right shadow-[0_0_35px_rgba(232,136,138,0.10)]">
                     <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
-                      자사 LLM Starter
+                      오마카세 LLM(Qwen 3.6) Starter
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-foreground">
                       190,000원
@@ -753,7 +747,7 @@ export default function Home() {
                       약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰
                     </p>
                     <p className="mt-1 text-sm text-foreground/65">
-                      여기 넘기면 우리 쪽을 먼저 비교해볼 만해요.
+                      여기 넘기면 우리 쪽을 쓰는 게 더 유리해요.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-background/18 px-4 py-3">
@@ -764,8 +758,7 @@ export default function Home() {
                       GPT-4o는 사용량 비례 증가, 오마카세는 월 19만원 고정
                     </p>
                     <p className="mt-1 text-sm text-foreground/55">
-                      입력·출력 반반 가정하고 GPT-4o 요금을 환산한 거예요. 교점
-                      넘은 뒤를 색으로 칠해뒀어요.
+                      입력·출력 반반 가정하고 GPT-4o 요금을 환산한 거예요.
                     </p>
                   </div>
                 </div>
@@ -797,8 +790,8 @@ export default function Home() {
                     결론
                   </p>
                   <p className="mt-3 text-sm leading-relaxed text-foreground/65">
-                    쓰는 양 많고, 실험도 자주 하고, 사용자 요청도 동시에
-                    몰리면—그럴 땐 우리 쪽을 한 번 넣어볼 만해요.
+                    쓰는 양 많고, 실험도 자주 하고, 사용자 요청도 동시에 몰리면
+                    우리 쪽이 더 유리해요.
                   </p>
                   <div className="mt-4 rounded-2xl border border-white/10 bg-background/20 px-4 py-3">
                     <p className="text-sm font-semibold text-foreground">
@@ -813,7 +806,7 @@ export default function Home() {
                       교점 이후 고객
                     </p>
                     <p className="mt-1 text-sm leading-relaxed text-foreground/82">
-                      이럴 때 우리 견적부터 보면 편해요.
+                      이럴 때 우리 플랜이 더 유리해요.
                     </p>
                   </div>
                 </div>
@@ -1079,7 +1072,7 @@ export default function Home() {
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
               기능 설명만 길게 읽게 하기보다, 어떻게 시작하면 되는지가 먼저
-              보여야 하죠. 흐름은 대충 이 세 단계로 보면 됩니다.
+              보여야 하죠. 흐름은 이 세 단계로 보면 돼요.
             </p>
           </div>
 
@@ -1217,8 +1210,8 @@ export default function Home() {
               플랜은 뭐 먼저 보면 돼요?
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              API마다 금액은 다를 수 있는데, 고르는 구조는 단순해요. 일단
-              써보려면 Starter, 사람 붙으면 Pro 쪽을 보면 됩니다.
+              API마다 금액은 다르지만, 고르는 구조는 단순해요. 일단 써보려면
+              Starter, 사람 붙으면 Pro 쪽을 보면 돼요.
             </p>
           </div>
 
@@ -1297,9 +1290,6 @@ export default function Home() {
               먼저 테스트하기
             </Link>
           </div>
-          <p className="mt-4 text-center text-sm text-foreground/52">
-            금액은 API마다 다를 수 있는데, 고르는 방식은 그대로 단순해요.
-          </p>
         </div>
       </section>
 
