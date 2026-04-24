@@ -36,7 +36,7 @@ export const DEMO_APIS_FALLBACK: Api[] = [
   },
   {
     id: 91011,
-    name: "Modu Voice Clone API",
+    name: "Voice Clone API",
     company_id: 1,
     company_name: "GPU Modu",
   },
@@ -291,7 +291,7 @@ const TASK_META: Record<
     tags: ["#STT", "#Transcription"],
   },
   "Voice Clone": {
-    sublabel: "Modu Voice Clone • TTS",
+    sublabel: "Voice Clone • TTS",
     modelDisplay: "Voice Clone",
     tags: ["#VoiceClone", "#Audio"],
   },
@@ -317,7 +317,12 @@ export function inferPlanTask(name: string): PlanTask | null {
   if (/\bstt\b|speech-to-text|transcri/i.test(n)) return "STT";
   if (/\btts\b|text-to-speech/i.test(n)) return "TTS";
   if (/voice[-\s]?clone|보이스[-\s]?클론/i.test(n)) return "Voice Clone";
-  if (/image2text|image[-\s]?to[-\s]?text|img2text|vision[-\s]?ocr|ocr|이미지.*텍스트|이미지.*분석/i.test(n)) return "Vision";
+  if (
+    /image2text|image[-\s]?to[-\s]?text|img2text|vision[-\s]?ocr|ocr|이미지.*텍스트|이미지.*분석/i.test(
+      n,
+    )
+  )
+    return "Vision";
   if (
     /\bad[-\s]?copy\b|광고\s*카피|advertising\s*copy|copywriting|copy[-\s]?write/i.test(
       name,

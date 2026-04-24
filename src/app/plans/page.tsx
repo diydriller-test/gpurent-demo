@@ -195,14 +195,46 @@ function PlansPageContent() {
     setPlansLoading(true);
     setError(null);
     getPlans(selectedApi.id)
-      .then(setPlans)
+      .then(async (selectedPlans) => {
+        if (selectedPlans.length > 0) {
+          setPlans(selectedPlans);
+          return;
+        }
+
+        // Voice Clone / Vision(OCR)은 비어 있을 때 기존 API 플랜을 재사용
+        const selectedTask = getApiTask(selectedApi);
+        const fallbackTask: PlanTask | null =
+          selectedTask === "Voice Clone"
+            ? "TTS"
+            : selectedTask === "Vision"
+              ? "Ad Copy"
+              : null;
+
+        if (!fallbackTask) {
+          setPlans(selectedPlans);
+          return;
+        }
+
+        const fallbackApi = apis.find(
+          (api) =>
+            api.id !== selectedApi.id && getApiTask(api) === fallbackTask,
+        );
+
+        if (!fallbackApi) {
+          setPlans(selectedPlans);
+          return;
+        }
+
+        const fallbackPlans = await getPlans(fallbackApi.id);
+        setPlans(fallbackPlans.length > 0 ? fallbackPlans : selectedPlans);
+      })
       .catch((err) =>
         setError(
           err instanceof Error ? err.message : "플랜을 불러올 수 없습니다.",
         ),
       )
       .finally(() => setPlansLoading(false));
-  }, [selectedApi, usingDemoApis]);
+  }, [selectedApi, usingDemoApis, apis]);
 
   function handleSelectApi(api: Api) {
     setSelectedApi(api);
