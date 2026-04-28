@@ -1,4 +1,4 @@
-const URL = "https://aiapi.kogrobo.com/gateway/api/image2text";
+const URL = "http://aiapi.kogrobo.com:11115/api/image2text";
 
 function escapeForPythonDoubleQuoted(s: string) {
   return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");

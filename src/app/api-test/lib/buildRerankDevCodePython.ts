@@ -1,6 +1,6 @@
 import { escapeForPythonJsonString } from "./escapeForPythonJsonString";
 
-const URL = "http://aiapi.kogrobo.com/gateway/_inference/rerank/qwen3";
+const URL = "http://aiapi.kogrobo.com:11115/_inference/rerank/qwen3";
 
 function sanitizeDocLine(line: string): string {
   return line.trim().replace(/^-+\s*/, "");

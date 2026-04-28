@@ -1,5 +1,5 @@
 const URL =
-  "https://aiapi.kogrobo.com/gateway/_inference/text_embedding/qwen3";
+  "http://aiapi.kogrobo.com:11115/_inference/text_embedding/qwen3";
 
 function escapeForPythonJsonString(s: string) {
   return s

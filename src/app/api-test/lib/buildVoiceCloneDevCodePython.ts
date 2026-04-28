@@ -1,4 +1,4 @@
-const URL = "http://aiapi.kogrobo.com/gateway/voiceclone/_inference/tts/my_inference";
+const URL = "http://aiapi.kogrobo.com:11115/voiceclone/_inference/tts/my_inference";
 
 function escapeForPythonDoubleQuoted(s: string) {
   return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');

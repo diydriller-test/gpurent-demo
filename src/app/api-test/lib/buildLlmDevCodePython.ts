@@ -1,4 +1,4 @@
-const URL = "http://aiapi.kogrobo.com/gateway/v1/chat/completions";
+const URL = "http://aiapi.kogrobo.com:11115/v1/chat/completions";
 const MODEL = "Qwen/Qwen3.6-35B-A3B";
 
 function escapeForPythonJsonString(s: string) {

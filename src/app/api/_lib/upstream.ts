@@ -1,6 +1,6 @@
 import { fetchBackend } from "./backend";
 
-const UPSTREAM_BASE_URL = "https://aiapi.kogrobo.com/gateway";
+const UPSTREAM_BASE_URL = "http://aiapi.kogrobo.com:11115";
 
 type ApiKeyLike = {
   id?: unknown;

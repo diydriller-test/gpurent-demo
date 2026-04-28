@@ -4,7 +4,7 @@ import { escapeForPythonJsonString } from "./escapeForPythonJsonString";
  * Playground는 클라이언트에서 파형을 시뮬레이션합니다.
  * 아래는 Text API와 동일 호스트(51089) 기준 OpenAI 호환 음성 합성 예시입니다.
  */
-const URL = "http://aiapi.kogrobo.com/gateway/v1/audio/speech";
+const URL = "http://aiapi.kogrobo.com:11115/v1/audio/speech";
 const MODEL = "Qwen3-TTS";
 
 export function buildTtsDevCodePython({ text }: { text: string }) {
