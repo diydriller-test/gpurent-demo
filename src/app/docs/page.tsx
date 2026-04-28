@@ -256,7 +256,7 @@ const SECTIONS: DocSection[] = [
     id: "voice-clone",
     title: "Voice Clone (보이스 클론)",
     method: "POST",
-    path: "/api/voiceclone",
+    path: "/api/voice-clone",
     description:
       "참조 음성 파일을 업로드하면 해당 화자의 목소리로 텍스트를 합성합니다. `x_vector_only_mode`로 합성 방식을 선택할 수 있습니다. `multipart/form-data`로 전송합니다.",
     requestLabel: "본문 (multipart/form-data)",

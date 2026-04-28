@@ -3507,7 +3507,7 @@ export default function ApiTestPage() {
         form.append("ref_text", vcRefText.trim());
       }
 
-      const res = await fetch("/api/voiceclone", {
+      const res = await fetch("/api/voice-clone", {
         method: "POST",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -6919,7 +6919,7 @@ export default function ApiTestPage() {
                           <>
                             multipart Voice Clone 예시입니다. 데모 앱은{" "}
                             <span className="text-foreground/80">
-                              /api/voiceclone
+                              /api/voice-clone
                             </span>{" "}
                             프록시를 통해 동일 스펙으로 전달합니다.
                           </>
