@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const inferenceId = randomInferenceId();
-    const upstreamUrl = `${upstreamBasePath}/voice-clone/_inference/tts/${inferenceId}`;
+    const upstreamUrl = `${upstreamBasePath}/voiceclone/_inference/tts/${inferenceId}`;
 
     const upstreamForm = new FormData();
     const fileName =
