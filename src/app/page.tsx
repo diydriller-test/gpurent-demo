@@ -32,7 +32,7 @@ const APIS: ApiCard[] = [
     apiId: "embedding",
   },
   {
-    name: "Re-ranking",
+    name: "Reranker",
     description: "검색 결과 순서를 다시 매겨서, 진짜로 맞는 것부터 보여줘요",
     icon: "⇅",
     apiId: "reranker",
@@ -112,10 +112,6 @@ const TARGET_CUSTOMERS = [
       "요청이 한꺼번에 몰릴수록, 그래프에서 교점 넘어가면 ‘이번 달 얼마 나올지’ 설명하기 쉬워져요.",
   },
 ];
-
-function formatWon(value: number) {
-  return `${Math.round(value).toLocaleString("ko-KR")}원`;
-}
 
 function formatGraphWonTick(value: number) {
   if (value === 0) return "";
@@ -202,7 +198,7 @@ const USE_CASES = [
     title: "콘텐츠·리뷰 운영",
     summary:
       "카피 쓰고, 감정 보고, 이름·날짜 같은 것만 뽑는 것까지 한 흐름으로 묶을 수 있어요.",
-    flow: "Copywrite -> Sentiment -> NER",
+    flow: "Ad Copy -> Sentiment -> NER",
     outcome: "글 쓰는 시간 줄고, 리뷰는 자동으로 돌려보기",
   },
 ];
@@ -572,24 +568,6 @@ export default function Home() {
                           stopColor="rgba(232,136,138,0.22)"
                         />
                       </linearGradient>
-                      <radialGradient id="pointGlow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="rgba(232,136,138,0.95)" />
-                        <stop offset="55%" stopColor="rgba(232,136,138,0.35)" />
-                        <stop offset="100%" stopColor="rgba(232,136,138,0)" />
-                      </radialGradient>
-                      <filter
-                        id="softGlow"
-                        x="-20%"
-                        y="-20%"
-                        width="140%"
-                        height="140%"
-                      >
-                        <feGaussianBlur stdDeviation="8" result="blur" />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
                     </defs>
                     {TARGET_GRAPH_TICKS_Y.map((tick) => (
                       <g key={`y-${tick}`}>
@@ -916,7 +894,7 @@ export default function Home() {
         className="border-t border-white/5 px-6 py-16 md:py-24"
       >
         <div className="mx-auto max-w-6xl">
-          <details className="group rounded-[28px] border border-white/8 bg-surface/30 p-5 md:p-8">
+          <details open className="group rounded-[28px] border border-white/8 bg-surface/30 p-5 md:p-8">
             <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                 <div className="min-w-0 text-left">
@@ -1276,7 +1254,11 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <p className="mt-4 text-center text-xs text-foreground/40">
+            * 가격은 API 종류마다 다릅니다. 위 금액은 최저가 기준이에요.
+          </p>
+
+          <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/plans"
               className="inline-flex items-center gap-2 rounded-xl bg-accent px-7 py-3.5 font-medium text-background transition-opacity hover:opacity-90"

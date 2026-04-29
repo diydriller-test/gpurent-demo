@@ -1383,7 +1383,7 @@ export default function ApiTestPage() {
       },
       {
         id: "stt",
-        name: "STT (Speech-to-Text)",
+        name: "STT",
         description: "음성을 텍스트로 변환",
       },
       {
@@ -1393,7 +1393,7 @@ export default function ApiTestPage() {
       },
       {
         id: "image2text",
-        name: "Image2Text (Vision OCR)",
+        name: "Image2Text",
         description: "이미지 분석 및 텍스트 추출 (OCR)",
       },
     ],
@@ -1632,27 +1632,27 @@ export default function ApiTestPage() {
         id: "Qwen/Qwen3.6-35B-A3B",
         task: "Text Generation",
         apiId: "llm",
-        model: "LLM",
+        model: "Text",
         modelSizeB: 120,
-        taskTags: ["#LLM", "#Text-Gen"],
+        taskTags: ["LLM", "Text-Gen"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
         id: "ad-copy-modu-nlp",
         task: "Ad Copy",
         apiId: "adCopy",
-        model: "CopyWrite",
+        model: "Ad Copy",
         modelSizeB: 120,
-        taskTags: ["#Ad-Copy", "#Marketing"],
+        taskTags: ["Ad-Copy", "Marketing"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
         id: "text-summary-modu-nlp",
         task: "Text Summary",
         apiId: "summarize",
-        model: "Summarize",
+        model: "Text Summary",
         modelSizeB: 120,
-        taskTags: ["#Summary", "#NLP"],
+        taskTags: ["Summary", "NLP"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
@@ -1661,7 +1661,7 @@ export default function ApiTestPage() {
         apiId: "sentiment",
         model: "Sentiment",
         modelSizeB: 120,
-        taskTags: ["#Sentiment", "#Reviews"],
+        taskTags: ["Sentiment", "Reviews"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
@@ -1670,16 +1670,16 @@ export default function ApiTestPage() {
         apiId: "ner",
         model: "NER",
         modelSizeB: 120,
-        taskTags: ["#NER", "#NLP"],
+        taskTags: ["NER", "NLP"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
         id: "text-to-sql-modu-nlp",
         task: "Text-to-SQL",
         apiId: "textToSql",
-        model: "SQL",
+        model: "Text-to-SQL",
         modelSizeB: 120,
-        taskTags: ["#Text-to-SQL", "#SQL", "#Analytics"],
+        taskTags: ["Text-to-SQL", "SQL", "Analytics"],
         formats: ["vLLM", "Transformers", "ONNX"],
       },
       {
@@ -1688,7 +1688,7 @@ export default function ApiTestPage() {
         apiId: "embedding",
         model: "Embedding",
         modelSizeB: 8,
-        taskTags: ["#Embedding", "#Semantic-Search"],
+        taskTags: ["Embedding", "Semantic-Search"],
         formats: ["Transformers", "ONNX"],
       },
       {
@@ -1697,7 +1697,7 @@ export default function ApiTestPage() {
         apiId: "reranker",
         model: "Reranker",
         modelSizeB: 8,
-        taskTags: ["#Reranker", "#Qwen3", "#Search-Quality"],
+        taskTags: ["Reranker", "Qwen3", "Search-Quality"],
         formats: ["GGUF", "Transformers"],
       },
       {
@@ -1706,7 +1706,7 @@ export default function ApiTestPage() {
         apiId: "tts",
         model: "TTS",
         modelSizeB: 13,
-        taskTags: ["#TTS", "#Audio"],
+        taskTags: ["TTS", "Audio"],
         formats: ["vLLM", "ONNX"],
       },
       {
@@ -1715,7 +1715,7 @@ export default function ApiTestPage() {
         apiId: "stt",
         model: "STT",
         modelSizeB: 13,
-        taskTags: ["#STT", "#Transcription"],
+        taskTags: ["STT", "Transcription"],
         formats: ["ONNX"],
       },
       {
@@ -1724,16 +1724,16 @@ export default function ApiTestPage() {
         apiId: "voiceClone",
         model: "Voice Clone",
         modelSizeB: 13,
-        taskTags: ["#VoiceClone", "#Audio"],
+        taskTags: ["VoiceClone", "Audio"],
         formats: ["ONNX"],
       },
       {
         id: "image2text",
         task: "Vision",
         apiId: "image2text",
-        model: "Vision OCR",
+        model: "Image2Text",
         modelSizeB: 35,
-        taskTags: ["#Vision", "#OCR", "#Multimodal"],
+        taskTags: ["Vision", "OCR", "Multimodal"],
         formats: ["vLLM"],
       },
     ],
@@ -5957,9 +5957,7 @@ export default function ApiTestPage() {
                         ].join(" ")}
                       >
                         <p className="font-mono text-[11px] text-foreground/50">
-                          {item.task === "Vision"
-                            ? `Model Size ${item.modelSizeB}B • ${item.task}`
-                            : getPlanTaskSublabel(item.task as PlanTask)}
+                          {getPlanTaskSublabel(item.task as PlanTask)}
                         </p>
                         <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
                           {item.model}

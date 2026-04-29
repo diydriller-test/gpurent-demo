@@ -10,7 +10,9 @@ export function NavAuthButton() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const loginHref = pathname ? `/login?redirect=${encodeURIComponent(pathname)}` : "/login";
+  const loginHref = pathname
+    ? `/login?redirect=${encodeURIComponent(pathname)}`
+    : "/login";
 
   useEffect(() => {
     setMounted(true);
@@ -36,7 +38,7 @@ export function NavAuthButton() {
           href="/signup"
           className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
         >
-          시작하기
+          회원가입
         </Link>
       </div>
     );
@@ -63,7 +65,7 @@ export function NavAuthButton() {
   }
 
   return (
-      <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3">
       <Link
         href={loginHref}
         className="rounded-lg border border-white/25 bg-white/[0.03] px-4 py-2 text-sm font-medium text-foreground/95 transition-colors hover:border-accent/45 hover:bg-accent/5 hover:text-accent"
@@ -74,7 +76,7 @@ export function NavAuthButton() {
         href="/signup"
         className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
       >
-        시작하기
+        회원가입
       </Link>
     </div>
   );

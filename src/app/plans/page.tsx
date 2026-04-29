@@ -12,6 +12,7 @@ import {
   DEMO_PLANS_THREE_TIERS,
   getApiTask,
   getPlanCardDisplay,
+  getPlanTaskDisplayName,
   getPlanTaskSublabel,
   inferPlanTask,
   MODU_NLP_SURFACE_TASKS,
@@ -534,14 +535,16 @@ function PlansPageContent() {
                               : t === "Text Summary"
                                 ? "요약"
                                 : t === "Sentiment Analysis"
-                                  ? "감정"
+                                  ? "감성"
                                   : t === "NER"
                                     ? "개체명"
-                                    : t === "Voice Clone"
-                                      ? "클론"
-                                      : t === "Vision"
-                                        ? "Vision"
-                                        : t;
+                                    : t === "Text-to-SQL"
+                                      ? "SQL"
+                                      : t === "Voice Clone"
+                                        ? "클론"
+                                        : t === "Vision"
+                                          ? "Vision"
+                                          : t;
 
                         return (
                           <button
@@ -640,10 +643,10 @@ function PlansPageContent() {
                             {display.sublabel}
                           </p>
                           <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
-                            {api.name}
+                            {display.task ? getPlanTaskDisplayName(display.task) : api.name}
                           </p>
                           <p className="mt-1 text-[11px] text-foreground/40">
-                            {api.company_name}
+                            {api.company_name || "코그로보"}
                           </p>
                           <p className="mt-2 text-[11px] text-foreground/45">
                             트래픽 기반 · 등급별 과금
@@ -655,7 +658,7 @@ function PlansPageContent() {
                                 key={tag}
                                 className="rounded-lg border border-accent/25 bg-accent/5 px-2 py-1 text-[11px] font-mono text-accent"
                               >
-                                {tag}
+                                {tag.startsWith("#") ? tag.slice(1) : tag}
                               </span>
                             ))}
                           </div>

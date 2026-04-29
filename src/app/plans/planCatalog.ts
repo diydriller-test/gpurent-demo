@@ -8,73 +8,73 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     id: 91001,
     name: "Qwen 3.6 Text LLM",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91002,
     name: "Qwen Embedding API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91003,
     name: "Qwen3 Reranker API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91004,
     name: "Qwen3 TTS API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91005,
     name: "Qwen3 STT API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91011,
     name: "Voice Clone API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91006,
     name: "Modu Ad Copy API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91007,
     name: "Modu Text Summary API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91008,
     name: "Modu Review Sentiment API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91009,
     name: "Modu NER API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91010,
     name: "Modu Text-to-SQL API",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
   {
     id: 91012,
     name: "Vision OCR",
     company_id: 1,
-    company_name: "GPU Modu",
+    company_name: "코그로보",
   },
 ];
 
@@ -238,69 +238,86 @@ export const MODU_NLP_SURFACE_TASKS: readonly PlanTask[] = [
 
 const TASK_META: Record<
   PlanTask,
-  { sublabel: string; modelDisplay: string; tags: string[] }
+  { displayName: string; sublabel: string; modelDisplay: string; tags: string[] }
 > = {
   "Text Generation": {
+    displayName: "Text",
     sublabel: "Qwen 3.6 • Text Generation",
     modelDisplay: "Qwen 3.6",
-    tags: ["#LLM", "#Text-Gen"],
+    tags: ["LLM", "Text-Gen"],
   },
   "Ad Copy": {
+    displayName: "Ad Copy",
     sublabel: "광고 카피",
     modelDisplay: "CopyWrite",
-    tags: ["#Ad-Copy", "#Marketing"],
+    tags: ["Ad-Copy", "Marketing"],
   },
   "Text Summary": {
+    displayName: "Text Summary",
     sublabel: "텍스트 요약",
     modelDisplay: "Summarize",
-    tags: ["#Summary", "#NLP"],
+    tags: ["Summary", "NLP"],
   },
   "Sentiment Analysis": {
+    displayName: "Sentiment",
     sublabel: "리뷰 감정 분석",
     modelDisplay: "Sentiment",
-    tags: ["#Sentiment", "#Reviews"],
+    tags: ["Sentiment", "Reviews"],
   },
   NER: {
+    displayName: "NER",
     sublabel: "개체명 인식",
     modelDisplay: "NER",
-    tags: ["#NER", "#NLP"],
+    tags: ["NER", "NLP"],
   },
   "Text-to-SQL": {
+    displayName: "Text-to-SQL",
     sublabel: "Text-to-SQL",
     modelDisplay: "SQL",
-    tags: ["#Text-to-SQL", "#SQL"],
+    tags: ["Text-to-SQL", "SQL", "Analytics"],
   },
   Embedding: {
+    displayName: "Embedding",
     sublabel: "Qwen-Embedding • Embedding",
     modelDisplay: "Qwen-Embedding-8B",
-    tags: ["#Embedding", "#Semantic-Search"],
+    tags: ["Embedding", "Semantic-Search"],
   },
   Reranker: {
+    displayName: "Reranker",
     sublabel: "Qwen3 Reranker • Reranker",
     modelDisplay: "Qwen3 Reranker-8B",
-    tags: ["#Reranker", "#Qwen3", "#Search-Quality"],
+    tags: ["Reranker", "Qwen3", "Search-Quality"],
   },
   TTS: {
+    displayName: "TTS",
     sublabel: "Qwen3 Generation • TTS",
     modelDisplay: "Qwen3-TTS",
-    tags: ["#TTS", "#Audio"],
+    tags: ["TTS", "Audio"],
   },
   STT: {
+    displayName: "STT",
     sublabel: "Qwen3 Audio • STT",
     modelDisplay: "Qwen3-STT",
-    tags: ["#STT", "#Transcription"],
+    tags: ["STT", "Transcription"],
   },
   "Voice Clone": {
+    displayName: "Voice Clone",
     sublabel: "Voice Clone • TTS",
     modelDisplay: "Voice Clone",
-    tags: ["#VoiceClone", "#Audio"],
+    tags: ["VoiceClone", "Audio"],
   },
   Vision: {
+    displayName: "Image2Text",
     sublabel: "이미지 분석 • OCR",
     modelDisplay: "Vision OCR",
-    tags: ["#Vision", "#OCR", "#Multimodal"],
+    tags: ["Vision", "OCR", "Multimodal"],
   },
 };
+
+/** 체험 페이지와 동일한 카드 헤더 표시명 */
+export function getPlanTaskDisplayName(task: PlanTask): string {
+  return TASK_META[task].displayName;
+}
 
 /** 플랜·API 체험 카드 상단 문구 — API 문서·TASK_META와 동일 체계 */
 export function getPlanTaskSublabel(task: PlanTask): string {
