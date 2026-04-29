@@ -64,7 +64,8 @@ const SECTIONS: DocSection[] = [
 }`,
     responseLabel: "성공 (200)",
     response: `{
-  "copy": "생성된 광고 카피 (지정 언어)"
+  "headline": "메인 카피(헤드라인 또는 슬로건)",
+  "body": "본문 또는 짧은 설명 문구"
 }`,
     notes: [
       "`brief`만 필수입니다. `language`는 아래 코드 중 하나여야 합니다(생략 시 ko): " +

@@ -5,7 +5,8 @@ import { escapeForPythonJsonString } from "./escapeForPythonJsonString";
  * - 필수: `brief`
  * - 선택: `tone`, `channel` (빈 문자열 가능)
  * - `temperature`, `language` (언어 코드: ko, en, ja, zh …)
- * - 성공 시 `{ "copy": "..." }`, 오류 시 `{ "error": "..." }`
+ * - 성공 시 `{ "headline": "...", "body": "..." }` (레거시 `copy` 문자열도 지원 가능)
+ * - 오류 시 `{ "error": "..." }`
  */
 export function buildAdCopyDevCodePython({
   brief,
@@ -56,7 +57,13 @@ response = requests.post(url, headers=headers, json=data, timeout=120)
 payload = response.json()
 
 if response.status_code == 200:
-    print(payload.get("copy") or "")
+    h = payload.get("headline") or ""
+    b = payload.get("body") or ""
+    legacy = payload.get("copy") or ""
+    if legacy:
+        print(legacy)
+    elif h or b:
+        print(f"{h}\\n{b}".strip())
 else:
     # 400, 429(한도 초과) 등 — 서버가 준 { "error": "..." } 확인
     print(payload)

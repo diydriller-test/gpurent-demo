@@ -4228,6 +4228,8 @@ export default function ApiTestPage() {
       });
       const data = (await res.json().catch(() => null)) as {
         copy?: unknown;
+        headline?: unknown;
+        body?: unknown;
         error?: unknown;
       } | null;
       patchConsole("adCopy", {
@@ -4242,8 +4244,16 @@ export default function ApiTestPage() {
         );
         return;
       }
-      const copy = typeof data?.copy === "string" ? data.copy.trim() : "";
-      setAdCopyResult(copy || "응답이 비어있습니다.");
+      const copyLegacy =
+        typeof data?.copy === "string" ? data.copy.trim() : "";
+      const headline =
+        typeof data?.headline === "string" ? data.headline.trim() : "";
+      const bodyLine =
+        typeof data?.body === "string" ? data.body.trim() : "";
+      const display =
+        copyLegacy ||
+        [headline, bodyLine].filter((s) => s.length > 0).join("\n\n");
+      setAdCopyResult(display || "응답이 비어있습니다.");
     } catch {
       patchConsole("adCopy", {
         statusLine: "—",
@@ -5045,6 +5055,8 @@ export default function ApiTestPage() {
           });
           const data = (await res.json().catch(() => null)) as {
             copy?: unknown;
+            headline?: unknown;
+            body?: unknown;
             error?: unknown;
           } | null;
           patchConsole("adCopy", {
@@ -5063,8 +5075,16 @@ export default function ApiTestPage() {
             );
             return;
           }
-          const copy = typeof data?.copy === "string" ? data.copy.trim() : "";
-          setAdCopyResult(copy || "응답이 비어있습니다.");
+          const copyLegacy =
+            typeof data?.copy === "string" ? data.copy.trim() : "";
+          const headline =
+            typeof data?.headline === "string" ? data.headline.trim() : "";
+          const bodyLine =
+            typeof data?.body === "string" ? data.body.trim() : "";
+          const display =
+            copyLegacy ||
+            [headline, bodyLine].filter((s) => s.length > 0).join("\n\n");
+          setAdCopyResult(display || "응답이 비어있습니다.");
         } catch {
           patchConsole("adCopy", {
             statusLine: "—",

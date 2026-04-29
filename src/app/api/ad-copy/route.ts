@@ -124,12 +124,23 @@ export async function POST(req: Request) {
         ? (upstreamJson as Record<string, unknown>)
         : null;
 
-    let copy = "";
+    const headline =
+      typeof upstreamObj?.headline === "string"
+        ? upstreamObj.headline.trim()
+        : "";
+    const bodyText =
+      typeof upstreamObj?.body === "string" ? upstreamObj.body.trim() : "";
+
+    if (headline && bodyText) {
+      return NextResponse.json({ headline, body: bodyText });
+    }
+
+    let fallbackCopy = "";
     if (typeof upstreamObj?.copy === "string") {
-      copy = upstreamObj.copy.trim();
+      fallbackCopy = upstreamObj.copy.trim();
     } else {
       const choices = upstreamObj?.choices;
-      const content =
+      fallbackCopy =
         Array.isArray(choices) &&
         choices[0] &&
         typeof choices[0] === "object" &&
@@ -139,17 +150,16 @@ export async function POST(req: Request) {
               (choices[0] as { message: { content: string } }).message.content,
             ).trim()
           : "";
-      copy = content;
     }
 
-    if (!copy) {
+    if (!fallbackCopy) {
       return NextResponse.json(
         { error: "Ad copy 응답 형식이 올바르지 않습니다." },
         { status: 502 },
       );
     }
 
-    return NextResponse.json({ copy });
+    return NextResponse.json({ copy: fallbackCopy });
   } catch (error: unknown) {
     console.error("Ad copy API Error:", error);
     if (error instanceof Error && error.name === "TimeoutError") {
