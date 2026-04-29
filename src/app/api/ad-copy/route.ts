@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     const parsedTemperature = parseTemperature(body?.temperature);
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
-    const upstreamUrl = `${upstreamBasePath}/llm/v1/chat/completions`;
+    const upstreamUrl = `${upstreamBasePath}/copywrite/api/copy`;
     const authHeader = req.headers.get("authorization");
 
     const userPrompt = [
