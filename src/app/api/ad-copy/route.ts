@@ -4,7 +4,6 @@ import {
   getAdCopyLanguageLabel,
   isAdCopyLanguageCode,
 } from "@/lib/adCopyLanguages";
-import { buildSystemPolicyMessage } from "../_lib/endpointPolicy";
 import { resolveUpstreamContext } from "../_lib/upstream";
 
 type AdCopyBody = {
@@ -71,21 +70,15 @@ export async function POST(req: Request) {
     const upstreamUrl = `${upstreamBasePath}/copywrite/api/copy`;
     const authHeader = req.headers.get("authorization");
 
-    const userPrompt = [
-      `당신은 글로벌 광고 카피 전문가입니다.`,
-      `아래 브리프를 바탕으로 효과적인 광고 문구를 작성하세요.`,
+    /** 출력 언어·요구사항은 업스트림 `brief` 스키마 안에 포함 */
+    const upstreamBrief = [
+      `당신은 글로벌 광고 카피 전문가입니다. 아래 브리프를 바탕으로 효과적인 광고 문구를 작성하세요.`,
       ``,
       `[출력 언어]`,
       `반드시 ${languageLabel}로만 작성하세요. 헤드라인·본문·슬로건 모두 이 언어로만 출력합니다. 다른 언어를 섞지 마세요.`,
       ``,
       `[브리프]`,
       brief,
-      ``,
-      `[톤·무드]`,
-      toneLine,
-      ``,
-      `[노출 채널] (배너, SNS, 검색광고 등)`,
-      channelLine,
       ``,
       `요구사항:`,
       `- 헤드라인(또는 메인 슬로건)과 본문(또는 짧은 설명 문구)을 구분해 제시`,
@@ -104,15 +97,10 @@ export async function POST(req: Request) {
             : {}),
       },
       body: JSON.stringify({
-        model: "Qwen/Qwen3.6-35B-A3B",
+        brief: upstreamBrief,
+        toneLine,
+        channelLine,
         temperature: parsedTemperature,
-        messages: [
-          {
-            role: "system",
-            content: buildSystemPolicyMessage("ad-copy"),
-          },
-          { role: "user", content: userPrompt },
-        ],
       }),
       cache: "no-store",
       signal: AbortSignal.timeout(120_000),
@@ -131,20 +119,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: message }, { status });
     }
 
-    const copy =
-      typeof (
-        upstreamJson as {
-          choices?: Array<{ message?: { content?: unknown } }>;
-        } | null
-      )?.choices?.[0]?.message?.content === "string"
-        ? String(
-            (
-              upstreamJson as {
-                choices: Array<{ message?: { content?: string } }>;
-              }
-            ).choices[0]?.message?.content ?? "",
-          ).trim()
-        : "";
+    const upstreamObj =
+      upstreamJson && typeof upstreamJson === "object"
+        ? (upstreamJson as Record<string, unknown>)
+        : null;
+
+    let copy = "";
+    if (typeof upstreamObj?.copy === "string") {
+      copy = upstreamObj.copy.trim();
+    } else {
+      const choices = upstreamObj?.choices;
+      const content =
+        Array.isArray(choices) &&
+        choices[0] &&
+        typeof choices[0] === "object" &&
+        typeof (choices[0] as { message?: { content?: unknown } }).message
+          ?.content === "string"
+          ? String(
+              (choices[0] as { message: { content: string } }).message.content,
+            ).trim()
+          : "";
+      copy = content;
+    }
 
     if (!copy) {
       return NextResponse.json(
