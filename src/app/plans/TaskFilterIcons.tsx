@@ -88,6 +88,17 @@ export function IconMic(props: { className?: string }) {
   );
 }
 
+export function IconVoiceClone(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M9 11a4 4 0 100-8 4 4 0 000 8z" />
+      <path d="M3 20a6 6 0 0112 0" />
+      <path d="M17 9c1.5 1.5 1.5 4.5 0 6" />
+      <path d="M20 7c3 3 3 7 0 10" />
+    </IconBase>
+  );
+}
+
 /** 광고 카피 / 문구 작성 */
 export function IconPenLine(props: { className?: string }) {
   return (
@@ -182,7 +193,7 @@ export function PlanTaskIcon({
     case "STT":
       return <IconMic className={className} />;
     case "Voice Clone":
-      return <IconVolume2 className={className} />;
+      return <IconVoiceClone className={className} />;
     case "Vision":
       return <IconImage className={className} />;
     default:

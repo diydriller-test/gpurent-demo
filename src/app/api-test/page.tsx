@@ -375,6 +375,17 @@ function IconVolume2(props: { className?: string }) {
   );
 }
 
+function IconVoiceClone(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M9 11a4 4 0 100-8 4 4 0 000 8z" />
+      <path d="M3 20a6 6 0 0112 0" />
+      <path d="M17 9c1.5 1.5 1.5 4.5 0 6" />
+      <path d="M20 7c3 3 3 7 0 10" />
+    </IconBase>
+  );
+}
+
 function IconPlus(props: { className?: string }) {
   return (
     <IconBase {...props}>
@@ -1286,6 +1297,9 @@ function buildVoiceCloneConsoleRequestJson(
   return JSON.stringify(payload, null, 2);
 }
 
+const DEFAULT_IMAGE2TEXT_PROMPT =
+  "이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘.";
+
 function buildImage2TextConsoleRequestJson(
   prompt: string,
   fileName: string | null,
@@ -1293,7 +1307,7 @@ function buildImage2TextConsoleRequestJson(
   return JSON.stringify(
     {
       image: fileName ? `(binary file: ${fileName})` : "(binary file)",
-      prompt: prompt.trim() || "이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘.",
+      prompt: prompt.trim() || DEFAULT_IMAGE2TEXT_PROMPT,
     },
     null,
     2,
@@ -1563,10 +1577,7 @@ export default function ApiTestPage() {
         );
       }
       if (api === "image2text") {
-        return buildImage2TextConsoleRequestJson(
-          "이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘.",
-          null,
-        );
+        return buildImage2TextConsoleRequestJson(DEFAULT_IMAGE2TEXT_PROMPT, null);
       }
       return "{}";
     },
@@ -1622,7 +1633,7 @@ export default function ApiTestPage() {
     apiId?: ApiId;
     model: string;
     modelSizeB: number;
-    taskTags: string[]; // e.g. ["#LLM", "#Text-Gen"]
+    taskTags: string[]; // e.g. ["LLM", "Text-Gen"]
     formats: LibraryFormat[]; // filterable formats
   };
 
@@ -1913,7 +1924,8 @@ export default function ApiTestPage() {
     if (active === "Text-to-SQL") return "TextToSqlTask";
     if (active === "Embedding") return "Embedding";
     if (active === "Reranker") return "Rerank";
-    if (active === "TTS" || active === "STT") return "TTS/STT";
+    if (active === "TTS") return "TTS";
+    if (active === "STT") return "STT";
     if (active === "Voice Clone") return "VoiceClone";
     if (active === "Vision") return "Vision";
     return "All";
@@ -2030,14 +2042,24 @@ export default function ApiTestPage() {
             하여 정렬합니다.
           </>
         );
-      case "TTS/STT":
+      case "TTS":
+        return (
+          <>
+            🔊{" "}
+            <span className="text-accent font-semibold">텍스트 → 음성 합성</span>:
+            입력한 문장을 선택한{" "}
+            <span className="text-accent font-semibold">화자·언어</span>로
+            자연스럽게 읽어주는 고품질 TTS 서비스입니다.
+          </>
+        );
+      case "STT":
         return (
           <>
             🎙️{" "}
-            <span className="text-accent font-semibold">음성-텍스트 전환</span>:
-            회의록 자동 작성부터 자연스러운 음성 안내까지,{" "}
-            <span className="text-accent font-semibold">소리를 데이터로</span>{" "}
-            바꾸는 멀티모달 기술입니다.
+            <span className="text-accent font-semibold">음성 → 텍스트 변환</span>:
+            녹음 파일이나 마이크 입력을{" "}
+            <span className="text-accent font-semibold">텍스트로 변환</span>하는
+            Qwen3-STT 기반 서비스입니다.
           </>
         );
       case "VoiceClone":
@@ -2055,7 +2077,7 @@ export default function ApiTestPage() {
         return (
           <>
             🖼️{" "}
-            <span className="text-accent font-semibold">이미지 분석 (Vision OCR)</span>:
+            <span className="text-accent font-semibold">이미지 분석 (Image2Text)</span>:
             이미지를 업로드하면{" "}
             <span className="text-accent font-semibold">
               내용 설명과 텍스트 추출
@@ -2245,8 +2267,6 @@ export default function ApiTestPage() {
   const [vcDevCodeCopied, setVcDevCodeCopied] = useState(false);
 
   // Image2Text
-  const DEFAULT_IMAGE2TEXT_PROMPT =
-    "이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘.";
   const [image2textImageFile, setImage2TextImageFile] = useState<File | null>(null);
   const [image2textFileName, setImage2TextFileName] = useState<string | null>(null);
   const [image2textImagePreview, setImage2TextImagePreview] = useState<string | null>(null);
@@ -2477,7 +2497,7 @@ export default function ApiTestPage() {
       case "STT":
         return <IconMic className={base} />;
       case "Voice Clone":
-        return <IconVolume2 className={base} />;
+        return <IconVoiceClone className={base} />;
       case "Vision":
         return <IconImage className={base} />;
       default:
@@ -5989,7 +6009,7 @@ export default function ApiTestPage() {
 
                         <div className="mt-auto flex items-center justify-start gap-2 pt-4">
                           <span className="text-xs text-foreground/50">
-                            테스트 하러가기
+                            테스트하러 가기
                           </span>
                           <span className="text-accent transition-transform group-hover:translate-x-0.5">
                             →
@@ -6013,10 +6033,10 @@ export default function ApiTestPage() {
                     ].join(" ")}
                   >
                     <p className="font-mono text-xs text-foreground/60">
-                      Open Ecosystem
+                      오픈 에코시스템
                     </p>
                     <p className="mt-2 text-sm font-semibold text-foreground">
-                      Register Your API
+                      나만의 API 등록하기
                     </p>
                     <p className="mt-2 text-xs text-foreground/60">
                       나중에 나만의 API를 등록해 직접 테스트해볼 수 있어요.
@@ -6160,7 +6180,7 @@ export default function ApiTestPage() {
                                             : selectedApi === "voiceClone"
                                               ? "High-Performance Infra • Voice Clone • 실시간"
                                               : selectedApi === "image2text"
-                                                ? "High-Performance Infra • Vision OCR • 실시간"
+                                                ? "High-Performance Infra • Image2Text • 실시간"
                                                 : "High-Performance Infra • Qwen3-STT • 실시간"}
                         </span>
                       </div>
