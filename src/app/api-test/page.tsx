@@ -6121,10 +6121,7 @@ export default function ApiTestPage() {
                       <IconArrowLeft className="h-4 w-4 shrink-0" />
                       <span>API 목록으로</span>
                     </button>
-                    <p className="mt-2 font-mono text-xs text-foreground/45">
-                      Test Playground
-                    </p>
-                    <div className="mt-1 flex w-full min-w-0 items-center justify-between gap-3">
+                    <div className="mt-3 flex w-full min-w-0 items-center justify-between gap-3">
                       <h3 className="min-w-0 flex-1 truncate pr-2 text-lg font-semibold text-foreground">
                         {selectedApiItem?.name ?? "API"} Playground
                       </h3>
