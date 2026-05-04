@@ -806,10 +806,10 @@ export function ApiInputPanel({
                 aria-controls="llm-advanced-settings"
               >
                 <div>
-                  <p className="font-mono text-xs text-foreground/68">
+                  <p className="font-mono text-xs text-foreground/70">
                     고급 설정
                   </p>
-                  <p className="mt-1 text-[11px] text-foreground/42">
+                  <p className="mt-1 text-[11px] text-foreground/40">
                     System Prompt, Temperature
                   </p>
                 </div>
@@ -850,7 +850,7 @@ export function ApiInputPanel({
                         placeholder="예: 너는 AI 제품 기획 문서만 작성하는 한국어 전문가야."
                         className="mt-1.5 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                       />
-                      <p className="mt-2 text-[11px] leading-relaxed text-foreground/42">
+                      <p className="mt-2 text-[11px] leading-relaxed text-foreground/40">
                         답변의 역할, 문체, 형식을 지정할 때만 사용하세요.
                       </p>
                     </div>
@@ -981,7 +981,7 @@ export function ApiInputPanel({
                   type="submit"
                   disabled={isAdCopyLoading || !adCopyBrief.trim()}
                   className={[
-                    "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
+                    "group inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
                     "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                   ].join(" ")}
                 >
@@ -1018,13 +1018,20 @@ export function ApiInputPanel({
                   <p className="font-mono text-xs font-medium text-accent">
                     생성 결과
                   </p>
-                  {isAdCopyLoading ? (
-                    <span className="text-[11px] text-foreground/50">
-                      생성 중…
-                    </span>
-                  ) : adCopyResult ? (
-                    <span className="text-[11px] text-foreground/50">완료</span>
-                  ) : null}
+                  <div className="flex items-center gap-2">
+                    {isAdCopyLoading ? (
+                      <span className="text-[11px] text-foreground/50">
+                        생성 중…
+                      </span>
+                    ) : adCopyResult ? (
+                      <span className="text-[11px] text-foreground/50">완료</span>
+                    ) : null}
+                    {!isAdCopyLoading && adCopyResult
+                      ? renderCopyButton("adCopy", () =>
+                          void copyText("adCopy", adCopyResult),
+                        )
+                      : null}
+                  </div>
                 </div>
                 <div className="mt-2.5 min-h-[120px] max-h-[min(38vh,280px)] overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3 lg:min-h-[200px] lg:max-h-none lg:flex-1">
                   {isAdCopyLoading ? (
@@ -1032,15 +1039,8 @@ export function ApiInputPanel({
                       카피를 생성하는 중입니다…
                     </p>
                   ) : adCopyResult ? (
-                    <div>
-                      <div className="mb-3 flex justify-end">
-                        {renderCopyButton("adCopy", () =>
-                          void copyText("adCopy", adCopyResult),
-                        )}
-                      </div>
-                      <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                        <ChatMarkdown content={adCopyResult} />
-                      </div>
+                    <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+                      <ChatMarkdown content={adCopyResult} />
                     </div>
                   ) : (
                     <p className="text-sm leading-relaxed text-foreground/45">
@@ -1120,7 +1120,7 @@ export function ApiInputPanel({
                     type="submit"
                     disabled={isSummarizeLoading || !summarizeText.trim()}
                     className={[
-                      "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
+                      "group inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
                       "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                     ].join(" ")}
                   >
@@ -1158,13 +1158,20 @@ export function ApiInputPanel({
                   <p className="font-mono text-xs font-medium text-accent">
                     요약 결과
                   </p>
-                  {isSummarizeLoading ? (
-                    <span className="text-[11px] text-foreground/50">
-                      생성 중…
-                    </span>
-                  ) : summarizeResult ? (
-                    <span className="text-[11px] text-foreground/50">완료</span>
-                  ) : null}
+                  <div className="flex items-center gap-2">
+                    {isSummarizeLoading ? (
+                      <span className="text-[11px] text-foreground/50">
+                        생성 중…
+                      </span>
+                    ) : summarizeResult ? (
+                      <span className="text-[11px] text-foreground/50">완료</span>
+                    ) : null}
+                    {!isSummarizeLoading && summarizeResult
+                      ? renderCopyButton("summarize", () =>
+                          void copyText("summarize", summarizeResult),
+                        )
+                      : null}
+                  </div>
                 </div>
                 <div className="mt-2.5 min-h-[120px] max-h-[min(38vh,280px)] flex-1 overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3 lg:min-h-[200px] lg:max-h-none">
                   {isSummarizeLoading ? (
@@ -1172,15 +1179,8 @@ export function ApiInputPanel({
                       요약을 생성하는 중입니다…
                     </p>
                   ) : summarizeResult ? (
-                    <div>
-                      <div className="mb-3 flex justify-end">
-                        {renderCopyButton("summarize", () =>
-                          void copyText("summarize", summarizeResult),
-                        )}
-                      </div>
-                      <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                        <ChatMarkdown content={summarizeResult} />
-                      </div>
+                    <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+                      <ChatMarkdown content={summarizeResult} />
                     </div>
                   ) : (
                     <p className="text-sm leading-relaxed text-foreground/45">
@@ -1249,7 +1249,7 @@ export function ApiInputPanel({
                     type="submit"
                     disabled={isSentimentLoading || !sentimentText.trim()}
                     className={[
-                      "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
+                      "group inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
                       "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                     ].join(" ")}
                   >
@@ -1291,6 +1291,8 @@ export function ApiInputPanel({
                     <span className="text-[11px] text-foreground/50">
                       분석 중…
                     </span>
+                  ) : sentimentError ? (
+                    <span className="text-[11px] text-red-400">오류</span>
                   ) : sentimentAnalysis ? (
                     <span className="text-[11px] text-foreground/50">완료</span>
                   ) : null}
@@ -1420,7 +1422,7 @@ export function ApiInputPanel({
                   placeholder="예: 인물과 장소만 우선 추출해줘 / 금액과 날짜를 빠짐없이 표시해줘"
                   className="mt-1.5 min-h-[64px] max-h-[min(16vh,112px)] w-full resize-y rounded-xl border border-white/10 bg-background/35 px-3 py-2 text-sm leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 lg:min-h-[112px] lg:max-h-[112px] lg:resize-none"
                 />
-                <p className="mt-1 text-[11px] leading-snug text-foreground/45 lg:hidden">
+                <p className="mt-1 text-[11px] leading-snug text-foreground/45">
                   사용자가 원하는 추출 기준이나 우선순위를 함께 전달할 수 있어요.
                 </p>
               </div>
@@ -1447,7 +1449,7 @@ export function ApiInputPanel({
                     }
                     className="mt-1.5 w-full accent-accent"
                   />
-                  <p className="mt-1 text-[11px] leading-snug text-foreground/45 lg:hidden">
+                  <p className="mt-1 text-[11px] leading-snug text-foreground/45">
                     낮을수록 태그·라벨이 안정적이고, 높을수록 변동이 커질 수
                     있어요.
                   </p>
@@ -1457,7 +1459,7 @@ export function ApiInputPanel({
                     type="submit"
                     disabled={isNerLoading || !nerText.trim()}
                     className={[
-                      "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all lg:min-w-[140px] lg:justify-center",
+                      "group inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all lg:min-w-[140px] lg:justify-center",
                       "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                     ].join(" ")}
                   >
@@ -1499,6 +1501,8 @@ export function ApiInputPanel({
                     <span className="text-[11px] text-foreground/50">
                       추출 중…
                     </span>
+                  ) : nerError ? (
+                    <span className="text-[11px] text-red-400">오류</span>
                   ) : nerResult ? (
                     <span className="text-[11px] text-foreground/50">완료</span>
                   ) : null}
@@ -1622,7 +1626,7 @@ export function ApiInputPanel({
                     }
                     className="mt-1 w-full accent-accent"
                   />
-                  <p className="mt-1 text-[10px] leading-snug text-foreground/42">
+                  <p className="mt-1 text-[10px] leading-snug text-foreground/40">
                     낮을수록 SQL 문법이 안정적이고, 높을수록 표현이 달라질 수
                     있어요.
                   </p>
@@ -1632,7 +1636,7 @@ export function ApiInputPanel({
                     type="submit"
                     disabled={isTextToSqlLoading || !textToSqlText.trim()}
                     className={[
-                      "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
+                      "group inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-background transition-all",
                       "bg-accent hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-[0_0_40px_rgba(232, 136, 138,0.22)]",
                     ].join(" ")}
                   >
@@ -1670,13 +1674,22 @@ export function ApiInputPanel({
                   <p className="font-mono text-xs font-medium text-accent">
                     생성된 SQL
                   </p>
-                  {isTextToSqlLoading ? (
-                    <span className="text-[11px] text-foreground/50">
-                      생성 중…
-                    </span>
-                  ) : textToSqlResult ? (
-                    <span className="text-[11px] text-foreground/50">완료</span>
-                  ) : null}
+                  <div className="flex items-center gap-2">
+                    {isTextToSqlLoading ? (
+                      <span className="text-[11px] text-foreground/50">
+                        생성 중…
+                      </span>
+                    ) : textToSqlError ? (
+                      <span className="text-[11px] text-red-400">오류</span>
+                    ) : textToSqlResult ? (
+                      <span className="text-[11px] text-foreground/50">완료</span>
+                    ) : null}
+                    {!isTextToSqlLoading && textToSqlResult
+                      ? renderCopyButton("textToSql", () =>
+                          void copyText("textToSql", textToSqlResult.sql),
+                        )
+                      : null}
+                  </div>
                 </div>
                 <div className="mt-2 min-h-[210px] max-h-[min(38vh,320px)] flex-1 overflow-y-auto rounded-xl border border-white/5 bg-background/40 p-3 lg:min-h-[300px] lg:max-h-none">
                   {isTextToSqlLoading ? (
@@ -1688,16 +1701,9 @@ export function ApiInputPanel({
                       {textToSqlError}
                     </p>
                   ) : textToSqlResult ? (
-                    <div>
-                      <div className="mb-3 flex justify-end">
-                        {renderCopyButton("textToSql", () =>
-                          void copyText("textToSql", textToSqlResult.sql),
-                        )}
-                      </div>
-                      <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-foreground/90">
-                        {textToSqlResult.sql}
-                      </pre>
-                    </div>
+                    <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-foreground/90">
+                      {textToSqlResult.sql}
+                    </pre>
                   ) : (
                     <p className="text-sm leading-relaxed text-foreground/45">
                       <span className="text-foreground/65">SQL 생성</span>을
@@ -1727,6 +1733,7 @@ export function ApiInputPanel({
                 value={embeddingText}
                 onChange={(e) => setEmbeddingText(e.target.value)}
                 rows={2}
+                placeholder="예: 오늘 날씨가 참 맑고 화창하네요."
                 className="mt-1.5 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
               />
             </div>
@@ -1737,7 +1744,7 @@ export function ApiInputPanel({
               <button
                 type="submit"
                 disabled={isEmbeddingLoading || !embeddingText.trim()}
-                className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-background font-medium shadow-[0_0_40px_rgba(232, 136, 138,0.22)] hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                className="group inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-medium text-background shadow-[0_0_40px_rgba(232, 136, 138,0.22)] hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isEmbeddingLoading ? (
                   <>
@@ -1755,7 +1762,10 @@ export function ApiInputPanel({
                     <span>생성 중...</span>
                   </>
                 ) : (
-                  <span>임베딩 생성</span>
+                  <>
+                    <span>임베딩 생성</span>
+                    <span className="transition-transform group-hover:translate-x-1">→</span>
+                  </>
                 )}
               </button>
             </div>
@@ -1798,12 +1808,12 @@ export function ApiInputPanel({
             </div>
             <div>
               <p className="font-mono text-xs text-foreground/60">
-                Style Instruction (Optional)
+                스타일 지시 (선택)
               </p>
               <input
                 value={ttsStyleInstruction}
                 onChange={(e) => setTtsStyleInstruction(e.target.value)}
-                placeholder="e.g., Speak in a cheerful and energetic tone"
+                placeholder="예: 밝고 활기찬 톤으로 말해줘"
                 className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-[13px] text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
               />
             </div>
@@ -1815,7 +1825,8 @@ export function ApiInputPanel({
                 value={ttsText}
                 onChange={(e) => setTtsText(e.target.value)}
                 rows={2}
-                className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] leading-snug text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+                placeholder="예: 안녕하세요, 오늘도 좋은 하루 되세요."
+                className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] leading-snug text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
               />
             </div>
             <div className="flex items-center justify-between gap-3">
@@ -1848,7 +1859,7 @@ export function ApiInputPanel({
                     <span>합성 중…</span>
                   </>
                 ) : (
-                  <span>합성</span>
+                  <span>음성 합성</span>
                 )}
               </button>
             </div>
@@ -2562,7 +2573,7 @@ function VoiceCloneSection({
                 <span>합성 중…</span>
               </>
             ) : (
-              <span>클론</span>
+              <span>클론 합성</span>
             )}
           </button>
         </div>
@@ -2679,7 +2690,7 @@ function Image2TextSection({
               <span>분석 중...</span>
             </>
           ) : (
-            "분석"
+            "이미지 분석"
           )}
         </button>
       </div>

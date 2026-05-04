@@ -3103,6 +3103,7 @@ export default function ApiTestPage() {
     }
     if (api === "textToSql") {
       setTextToSqlText(DEFAULT_TEXT_TO_SQL_TEXT);
+      setTextToSqlDdl("");
       setTextToSqlTemperature(0.2);
       setTextToSqlResult(null);
       setTextToSqlError(null);
@@ -6116,7 +6117,7 @@ export default function ApiTestPage() {
                         }
                       }}
                       aria-label="이전 화면으로 돌아가기"
-                      className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-background/45 px-3 py-2 text-sm font-medium text-foreground/82 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-accent/35 hover:bg-accent/8 hover:text-accent"
+                      className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-background/40 px-3 py-2 text-sm font-medium text-foreground/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-accent/35 hover:bg-accent/10 hover:text-accent"
                     >
                       <IconArrowLeft className="h-4 w-4 shrink-0" />
                       <span>API 목록으로</span>
@@ -6180,128 +6181,6 @@ export default function ApiTestPage() {
                                                 ? "High-Performance Infra • Image2Text • 실시간"
                                                 : "High-Performance Infra • Qwen3-STT • 실시간"}
                         </span>
-                      </div>
-                    ) : null}
-                    {selectedApi === "adCopy" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
-                        <p className="font-semibold text-foreground/95">
-                          Ad Copy API 안내
-                        </p>
-                        <p className="mt-1.5">
-                          제품·서비스{" "}
-                          <span className="text-foreground/90">브리프</span>와
-                          원하는{" "}
-                          <span className="text-foreground/90">톤·채널</span>
-                          (예: SNS 배너)을 넣으면{" "}
-                          <span className="text-accent font-medium">
-                            자사 NLP 엔진
-                          </span>
-                          이{" "}
-                          <span className="text-foreground/90">
-                            지정한 출력 언어
-                          </span>
-                          로 광고 카피(슬로건·본문 등)를 생성합니다. 글로벌
-                          캠페인에 맞게 언어를 바꿀 수 있어요. Temperature로
-                          문구 다양성을 조절할 수 있어요. 엔드포인트는{" "}
-                          <span className="font-mono text-[11px] text-foreground/45">
-                            POST /api/ad-copy
-                          </span>
-                          입니다.
-                        </p>
-                      </div>
-                    ) : null}
-                    {selectedApi === "summarize" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
-                        <p className="font-semibold text-foreground/95">
-                          Text Summary API 안내
-                        </p>
-                        <p className="mt-1.5">
-                          긴{" "}
-                          <span className="text-foreground/90">본문(text)</span>
-                          을 넣으면{" "}
-                          <span className="text-accent font-medium">
-                            자사 NLP 엔진
-                          </span>
-                          이 핵심만 압축합니다.{" "}
-                          <span className="text-foreground/90">style</span>로
-                          형식 힌트, Temperature로 다양성 조절.{" "}
-                          <span className="font-mono text-[11px] text-foreground/45">
-                            POST /api/summarize
-                          </span>
-                        </p>
-                      </div>
-                    ) : null}
-                    {selectedApi === "sentiment" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
-                        <p className="font-semibold text-foreground/95">
-                          Review Sentiment API 안내
-                        </p>
-                        <p className="mt-1.5">
-                          <span className="text-foreground/90">리뷰(text)</span>
-                          에 대해{" "}
-                          <span className="text-accent font-medium">
-                            자사 NLP 엔진
-                          </span>
-                          이 전체·측면(aspect)별 긍·부정·중립과 0~1 점수를
-                          반환합니다. Temperature는 분류 변동폭에 영향을 줍니다.{" "}
-                          <span className="font-mono text-[11px] text-foreground/45">
-                            POST /api/sentiment
-                          </span>
-                        </p>
-                      </div>
-                    ) : null}
-                    {selectedApi === "ner" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
-                        <p className="font-semibold text-foreground/95">
-                          NER (개체명 인식) API 안내
-                        </p>
-                        <p className="mt-1.5">
-                          한국어{" "}
-                          <span className="text-foreground/90">문장(text)</span>
-                          에서 인물·장소·시간 등을{" "}
-                          <span className="text-foreground/90">
-                            표면·라벨·범주
-                          </span>
-                          로 추출합니다.{" "}
-                          <span className="text-accent font-medium">
-                            자사 NLP 엔진
-                          </span>
-                          이 처리하며, Temperature는 분류 변동폭에 영향을
-                          줍니다.{" "}
-                          <span className="font-mono text-[11px] text-foreground/45">
-                            POST /api/ner
-                          </span>
-                        </p>
-                      </div>
-                    ) : null}
-                    {selectedApi === "textToSql" ? (
-                      <div className="mt-2 max-w-2xl rounded-xl border border-accent/20 bg-accent/5 px-3 py-2.5 text-[13px] leading-snug text-foreground/80">
-                        <p className="font-semibold text-foreground/95">
-                          Text-to-SQL API 안내
-                        </p>
-                        <p className="mt-1.5">
-                          <span className="text-foreground/90">질문(text)</span>
-                          을 MySQL 호환{" "}
-                          <span className="text-foreground/90">SELECT</span>{" "}
-                          <span className="text-foreground/90">sql</span>로
-                          바꿉니다. 스키마 없으면 맥락에서 표·컬럼 추정.{" "}
-                          <span className="text-accent font-medium">
-                            자사 NLP 엔진
-                          </span>
-                          이 처리하며, Temperature는 문법 변동에 영향을 줍니다.{" "}
-                          <span className="font-mono text-[11px] text-foreground/45">
-                            POST /api/text-to-sql
-                          </span>
-                          가 MySQL 호환{" "}
-                          <span className="text-foreground/90">SELECT</span>{" "}
-                          형태의 <span className="text-foreground/90">sql</span>{" "}
-                          문자열로 바꿉니다. 스키마가 없으면 질문 맥락에서
-                          표·컬럼을 추정합니다. Temperature는 문법·표현 변동에
-                          영향을 줍니다.
-                        </p>
-                        <p className="mt-2 font-mono text-[11px] text-foreground/50">
-                          엔드포인트: POST /api/text2sql
-                        </p>
                       </div>
                     ) : null}
                   </div>

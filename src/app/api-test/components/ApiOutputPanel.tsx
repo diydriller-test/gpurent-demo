@@ -322,51 +322,6 @@ export function ApiOutputPanel({
           case "textToSql":
             return null;
 
-          case "adCopy":
-            return (
-              <div className="flex h-full min-h-[min(45vh,380px)] flex-col">
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-accent/20 bg-background/40">
-                  <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="font-mono text-xs text-accent/90">
-                        생성 결과
-                      </p>
-                      <p className="truncate text-sm font-semibold text-foreground">
-                        {isAdCopyLoading ? "생성 중..." : "미리보기"}
-                      </p>
-                      <p className="mt-1 text-[11px] leading-relaxed text-foreground/45">
-                        카피 생성 후 이 영역에 문구가 표시됩니다.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="min-h-0 flex-1 overflow-y-auto p-4">
-                    {isAdCopyLoading ? (
-                      <div className="flex h-full min-h-[200px] items-center justify-center text-sm text-foreground/60">
-                        카피를 생성하는 중입니다…
-                      </div>
-                    ) : adCopyResult ? (
-                      <div>
-                        <div className="mb-3 flex justify-end">
-                          {renderCopyButton("adCopy", () =>
-                            void copyText("adCopy", adCopyResult),
-                          )}
-                        </div>
-                        <div className="prose prose-invert max-w-none text-sm leading-relaxed">
-                          <ChatMarkdown content={adCopyResult} />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex h-full min-h-[200px] items-center justify-center text-center text-sm text-foreground/60">
-                        위에서 브리프를 입력한 뒤{" "}
-                        <span className="text-foreground/80">카피 생성</span>을
-                        누르면 여기에 결과가 나옵니다.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-
           case "embedding":
             return (
               <div className="space-y-2">
@@ -410,7 +365,7 @@ export function ApiOutputPanel({
                         아직 생성 결과가 없습니다.
                       </p>
                       <p className="mt-1 text-xs text-foreground/60">
-                        하단 입력 후 “임베딩 생성”을 눌러보세요.
+                        하단 입력 후 "임베딩 생성"을 눌러보세요.
                       </p>
                     </div>
                   )}
@@ -564,7 +519,7 @@ export function ApiOutputPanel({
                               아직 재정렬 결과가 없습니다.
                             </p>
                             <p className="mt-1 text-xs text-foreground/60">
-                              Query와 Documents를 입력한 뒤 “재정렬 실행”을
+                              Query와 Documents를 입력한 뒤 "재정렬 실행"을
                               눌러보세요.
                             </p>
                           </div>
@@ -634,7 +589,7 @@ export function ApiOutputPanel({
                   >
                     {!ttsAudioUrl ? (
                       <p className="mb-3 text-xs text-foreground/55">
-                        합성 후 이용 가능합니다. 하단에서 &quot;합성&quot;을
+                        합성 후 이용 가능합니다. 하단에서 &quot;음성 합성&quot;을
                         눌러 음성을 생성해 주세요.
                       </p>
                     ) : null}
@@ -773,23 +728,21 @@ export function ApiOutputPanel({
                         <span>변환 중...</span>
                       </div>
                     </div>
+                  ) : sttError ? (
+                    <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-300">
+                      {sttError}
+                    </div>
                   ) : (
                     <div className="mt-3 rounded-xl border border-white/5 bg-background/20 p-3">
                       <p className="text-sm font-semibold text-foreground">
                         아직 변환 결과가 없습니다.
                       </p>
                       <p className="mt-1 text-xs text-foreground/60">
-                        하단에서 파일 업로드 또는 마이크 UI 후 “변환하기”를
+                        하단에서 파일 업로드 또는 마이크 UI 후 "변환하기"를
                         눌러보세요.
                       </p>
                     </div>
                   )}
-
-                  {sttError ? (
-                    <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-300">
-                      {sttError}
-                    </div>
-                  ) : null}
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     <span className="rounded-lg border border-white/10 bg-background/30 px-3 py-1 text-[11px] text-foreground/60">
@@ -859,7 +812,7 @@ export function ApiOutputPanel({
                   >
                     {!vcAudioUrl && !vcIsSynthesizing ? (
                       <p className="mb-3 text-xs text-foreground/55">
-                        하단에서 참조 음성과 텍스트를 설정 후 &quot;클론&quot;을
+                        하단에서 참조 음성과 텍스트를 설정 후 &quot;클론 합성&quot;을
                         눌러주세요.
                       </p>
                     ) : null}
@@ -985,16 +938,14 @@ export function ApiOutputPanel({
                     <div className="mt-4 whitespace-pre-wrap rounded-xl border border-white/10 bg-background/30 px-4 py-3 font-mono text-[13px] leading-relaxed text-foreground/90">
                       {image2textResult}
                     </div>
-                  ) : !image2textIsLoading ? (
-                    <p className="mt-3 text-xs text-foreground/55">
-                      하단에서 이미지를 업로드하고 &quot;분석&quot;을 눌러주세요.
-                    </p>
-                  ) : null}
-
-                  {image2textError ? (
+                  ) : image2textError ? (
                     <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-300">
                       {image2textError}
                     </div>
+                  ) : !image2textIsLoading ? (
+                    <p className="mt-3 text-xs text-foreground/55">
+                      하단에서 이미지를 업로드하고 &quot;이미지 분석&quot;을 눌러주세요.
+                    </p>
                   ) : null}
                 </div>
               </div>

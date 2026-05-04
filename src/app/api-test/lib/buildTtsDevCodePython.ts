@@ -21,7 +21,7 @@ headers = {
 data = {
     "model": "${MODEL}",
     "input": "${content}",
-    "voice": "alloy",
+    "voice": "ryan",
     "response_format": "mp3",
 }
 
