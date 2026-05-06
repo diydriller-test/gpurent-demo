@@ -1874,6 +1874,7 @@ export function ApiInputPanel({
               <p className="font-mono text-xs text-foreground/60">
                 음성 파일 업로드 (선택)
               </p>
+              <p className="mt-0.5 text-[11px] text-foreground/40">WAV · MP3 · OGG · WebM · M4A</p>
               <label
                 className={[
                   "mt-2 block cursor-pointer rounded-xl border border-dashed px-3 py-3 transition-colors relative",
@@ -1884,7 +1885,7 @@ export function ApiInputPanel({
               >
                 <input
                   type="file"
-                  accept="audio/*"
+                  accept="audio/*,.wav,.mp3,.ogg,.webm,.m4a"
                   ref={sttFileInputRef}
                   className="hidden"
                   onChange={(e) => {
