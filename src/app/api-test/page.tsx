@@ -5822,6 +5822,10 @@ export default function ApiTestPage() {
                       <button
                         type="button"
                         onClick={() => {
+                          if (!userMe && !getToken()) {
+                            window.location.href = "/login?redirect=%2Fapi-test";
+                            return;
+                          }
                           setSidebarMode("my");
                         }}
                         className={[

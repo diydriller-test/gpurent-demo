@@ -526,6 +526,10 @@ function PlansPageContent() {
                       <button
                         type="button"
                         onClick={() => {
+                          if (!isLoggedIn && !isAuthChecking) {
+                            window.location.href = "/login?redirect=%2Fplans";
+                            return;
+                          }
                           setSidebarMode("my");
                         }}
                         className={[
