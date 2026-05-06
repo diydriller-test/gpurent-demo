@@ -464,12 +464,6 @@ function PlansPageContent() {
                   <h2 className="mt-1 text-lg font-semibold text-foreground">
                     API 유형 필터
                   </h2>
-                  <p className="mt-1 text-[11px] leading-relaxed text-foreground/45">
-                    API 체험과 같은 분류입니다. 여기서는{" "}
-                    <span className="text-foreground/60">요금·구매</span>만
-                    다릅니다.
-                  </p>
-
                   <div className="mt-4 rounded-xl border border-white/5 bg-background/20 p-3">
                     <div className="flex flex-wrap gap-2">
                       <button

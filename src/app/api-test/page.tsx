@@ -5806,14 +5806,8 @@ export default function ApiTestPage() {
                   </h2>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Tasks */}
-                  <div className="rounded-xl border border-white/5 bg-background/20 p-3">
-                    <p className="font-mono text-xs text-foreground/60">
-                      Tasks
-                    </p>
-
-                    <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-4 rounded-xl border border-white/5 bg-background/20 p-3">
+                    <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => {
@@ -5944,7 +5938,6 @@ export default function ApiTestPage() {
                       })}
                     </div>
                   </div>
-                </div>
               </div>
             </aside>
 
