@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AD_COPY_LANGUAGE_OPTIONS } from "@/lib/adCopyLanguages";
-import { NavAuthButton } from "@/components/NavAuthButton";
+import { SiteNav } from "@/components/SiteNav";
 
 type DocSection = {
   id: string;
@@ -375,45 +375,7 @@ export default function DocsPage() {
   }, []);
   return (
     <div className="min-h-screen bg-grid-pattern">
-      <nav className="border-b border-wood/15 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex flex-wrap items-baseline gap-x-2">
-            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
-              AI API
-            </span>
-            <span className="font-mono text-lg font-medium text-wood">오마카세</span>
-          </Link>
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-5">
-              <Link
-                href="/"
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
-              >
-                홈
-              </Link>
-              <Link
-                href="/api-test"
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
-              >
-                API 체험
-              </Link>
-              <Link
-                href="/plans"
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
-              >
-                플랜
-              </Link>
-              <span
-                aria-current="page"
-                className="rounded-lg border border-accent/35 bg-accent/10 px-2.5 py-1.5 text-sm font-medium text-accent"
-              >
-                API 문서
-              </span>
-            </div>
-            <NavAuthButton />
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12 lg:flex-row lg:gap-12 lg:py-16">
         <aside className="shrink-0 lg:w-56">

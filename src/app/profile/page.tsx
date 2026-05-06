@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { getMe, getApiKeys, createApiKey, type User, type ApiKey } from "@/lib/api";
 import { getToken } from "@/lib/token";
+import { SiteNav } from "@/components/SiteNav";
 
 function maskKey(key: string): string {
   if (!key) return "";
@@ -214,57 +215,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-grid-pattern">
       {/* Navigation */}
-      <nav className="border-b border-wood/15 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
-              AI API
-            </span>
-            <span className="font-mono text-lg font-medium text-wood">오마카세</span>
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              홈
-            </Link>
-            <Link
-              href="/api-test"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              API 체험
-            </Link>
-            <Link
-              href="/plans"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              플랜
-            </Link>
-            <Link
-              href="/docs"
-              className="text-sm text-foreground/70 transition-colors hover:text-accent"
-            >
-              API 문서
-            </Link>
-            {getToken() ? (
-              <span
-                aria-disabled="true"
-                className="cursor-not-allowed text-sm text-foreground/35"
-              >
-                프로필
-              </span>
-            ) : (
-              <Link
-                href="/signup"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
-              >
-                시작하기
-              </Link>
-            )}
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* Main */}
       <main className="mx-auto max-w-2xl px-6 py-16">

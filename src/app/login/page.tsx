@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { login } from "@/lib/api";
 import { setToken } from "@/lib/token";
+import { SiteNav } from "@/components/SiteNav";
 
 function LoginPageInner() {
   const router = useRouter();
@@ -50,22 +51,7 @@ function LoginPageInner() {
   return (
     <div className="min-h-screen bg-grid-pattern flex flex-col">
       {/* Navigation */}
-      <nav className="border-b border-wood/15 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
-              AI API
-            </span>
-            <span className="font-mono text-lg font-medium text-wood">오마카세</span>
-          </Link>
-          <Link
-            href="/"
-            className="text-sm text-foreground/70 transition-colors hover:text-accent"
-          >
-            홈으로
-          </Link>
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* Main */}
       <main className="flex flex-1 items-center justify-center px-6 py-16">

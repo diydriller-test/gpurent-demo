@@ -12,7 +12,7 @@ import React, {
 import { useRouter } from "next/navigation";
 import { DEFAULT_AD_COPY_LANGUAGE } from "@/lib/adCopyLanguages";
 import { getApis, getMe, type Api, type User } from "@/lib/api";
-import { NavAuthButton } from "@/components/NavAuthButton";
+import { SiteNav } from "@/components/SiteNav";
 import { getToken } from "@/lib/token";
 import { SmartSolutionGuide } from "./components/SmartSolutionGuide";
 import { JsonCode } from "./components/JsonCode";
@@ -5722,52 +5722,7 @@ export default function ApiTestPage() {
         </div>
       ) : null}
       {/* Header */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-wood/15 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link
-            href="/"
-            aria-label="Go to home"
-            className="flex items-center gap-2 transition-all hover:opacity-90 hover:drop-shadow-[0_0_18px_rgba(232, 136, 138,0.35)]"
-          >
-            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
-              AI API
-            </span>
-            <span className="font-mono text-lg font-medium text-wood">
-              오마카세
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-5">
-              <Link
-                href="/"
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
-              >
-                홈
-              </Link>
-              <span
-                aria-current="page"
-                className="rounded-lg border border-accent/35 bg-accent/10 px-2.5 py-1.5 text-sm font-medium text-accent"
-              >
-                API 체험
-              </span>
-              <Link
-                href="/plans"
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
-              >
-                플랜
-              </Link>
-              <Link
-                href="/docs"
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
-              >
-                API 문서
-              </Link>
-            </div>
-            <NavAuthButton />
-          </div>
-        </div>
-      </nav>
+      <SiteNav fixed />
 
       {/* Content */}
       <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-12">

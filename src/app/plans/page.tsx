@@ -15,7 +15,7 @@ import {
   type User,
 } from "@/lib/api";
 import { getToken } from "@/lib/token";
-import { NavAuthButton } from "@/components/NavAuthButton";
+import { SiteNav } from "@/components/SiteNav";
 import {
   chapterQueryToPlanTask,
   DEMO_APIS_FALLBACK,
@@ -361,45 +361,7 @@ function PlansPageContent() {
       )}
 
       {/* Navigation */}
-      <nav className="border-b border-wood/15 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex flex-wrap items-baseline gap-x-2">
-            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
-              AI API
-            </span>
-            <span className="font-mono text-lg font-medium text-wood">오마카세</span>
-          </Link>
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-5">
-              <Link
-                href="/"
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
-              >
-                홈
-              </Link>
-              <Link
-                href="/api-test"
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
-              >
-                API 체험
-              </Link>
-              <span
-                aria-current="page"
-                className="rounded-lg border border-accent/35 bg-accent/10 px-2.5 py-1.5 text-sm font-medium text-accent"
-              >
-                플랜
-              </span>
-              <Link
-                href="/docs"
-                className="text-sm text-foreground/70 transition-colors hover:text-accent"
-              >
-                API 문서
-              </Link>
-            </div>
-            <NavAuthButton />
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* Main */}
       <main className="mx-auto max-w-7xl px-6 py-16 md:py-24">

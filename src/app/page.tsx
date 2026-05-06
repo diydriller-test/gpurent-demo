@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { NavAuthButton } from "@/components/NavAuthButton";
+import { SiteNav } from "@/components/SiteNav";
 
 type ApiCard = {
   name: string;
@@ -364,30 +364,7 @@ export default function Home() {
       ) : null}
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-wood/15 bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link
-            href="/"
-            className="flex flex-wrap items-baseline gap-x-2 gap-y-0"
-          >
-            <span className="font-mono text-lg font-bold tracking-tight text-accent text-omakase-neon">
-              AI API
-            </span>
-            <span className="font-mono text-lg font-medium text-wood">
-              오마카세
-            </span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/plans"
-              className="rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-foreground/85 transition-colors hover:border-accent/40 hover:bg-accent/5 hover:text-accent"
-            >
-              플랜
-            </Link>
-            <NavAuthButton />
-          </div>
-        </div>
-      </nav>
+      <SiteNav fixed />
 
       {/* Hero */}
       <section className="relative px-6 pt-32 pb-24 md:pt-40 md:pb-32">
