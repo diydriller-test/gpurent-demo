@@ -5798,17 +5798,11 @@ export default function ApiTestPage() {
             <aside className="w-full lg:w-[240px] lg:flex-shrink-0">
               <div className="rounded-2xl border border-white/5 bg-surface/40 p-3 backdrop-blur-xl">
                 <div className="mb-4 space-y-3">
-                  <Link
-                    href="/"
-                    className="inline-flex w-full items-center justify-center rounded-xl border border-accent/45 bg-transparent px-2.5 py-2 text-center text-[11px] font-medium tracking-[0.01em] text-accent transition-colors hover:bg-accent/10"
-                  >
-                    <span>홈으로 가기</span>
-                  </Link>
                   <p className="font-mono text-xs text-foreground/60">
-                    API Sandbox
+                    Tasks
                   </p>
                   <h2 className="mt-1 text-lg font-semibold text-foreground">
-                    기술 스펙 필터
+                    API 유형 필터
                   </h2>
                 </div>
 
