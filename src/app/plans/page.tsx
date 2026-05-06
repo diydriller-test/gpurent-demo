@@ -240,6 +240,7 @@ function PlansPageContent() {
   function handleSelectApi(api: Api) {
     setSelectedApi(api);
     setPendingPlanId(null);
+    window.history.pushState({ plansDetail: true }, "", window.location.href);
   }
 
   function handleBack() {
@@ -248,6 +249,18 @@ function PlansPageContent() {
     setError(null);
     setPendingPlanId(null);
   }
+
+  useEffect(() => {
+    function handlePopState() {
+      if (!selectedApi) return;
+      setSelectedApi(null);
+      setPlans([]);
+      setError(null);
+      setPendingPlanId(null);
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectedApi]);
 
   function handlePickPlan(planId: number) {
     setPlanActionError(null);
