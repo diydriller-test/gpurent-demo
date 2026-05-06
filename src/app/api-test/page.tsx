@@ -1891,6 +1891,30 @@ export default function ApiTestPage() {
     if (targetTask === "Vision") setSelectedApi("image2text");
   }, [taskKeys]);
 
+  useEffect(() => {
+    function handlePopState() {
+      if (viewMode !== "detail") return;
+      const snap = listViewFilterSnapshotRef.current;
+      if (snap) {
+        setSidebarMode(snap.sidebarMode);
+        setFilterTasks(snap.filterTasks);
+        listViewFilterSnapshotRef.current = null;
+      } else {
+        setSidebarMode("all");
+        setFilterTasks((prev) => {
+          const next = { ...prev };
+          taskKeys.forEach((k) => {
+            next[k] = true;
+          });
+          return next;
+        });
+      }
+      setViewMode("list");
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [viewMode, taskKeys]);
+
   function resolveMarketplacePlan(item: MarketplaceItem) {
     const task = item.task as PlanTask;
     const api = apisFromBackend.find((a) => getApiTask(a) === task);
@@ -2103,6 +2127,7 @@ export default function ApiTestPage() {
       };
       setSelectedApi(item.apiId);
       setViewMode("detail");
+      window.history.pushState({ apiTestDetail: true }, "", window.location.href);
       return;
     }
     showComingSoon("준비 중입니다 (Coming Soon)");
