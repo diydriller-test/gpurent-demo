@@ -395,6 +395,15 @@ function IconPlus(props: { className?: string }) {
   );
 }
 
+function IconX(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M18 6L6 18" />
+      <path d="M6 6l12 12" />
+    </IconBase>
+  );
+}
+
 function IconImage(props: { className?: string }) {
   return (
     <IconBase {...props}>
@@ -5734,10 +5743,10 @@ export default function ApiTestPage() {
               <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
                 <div className="w-[min(520px,90%)] rounded-2xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
+                    <div className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
                       <IconPlus className="h-5 w-5" />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-foreground">
                         Coming Soon
                       </p>
@@ -5745,6 +5754,17 @@ export default function ApiTestPage() {
                         {comingSoonMessage}
                       </p>
                     </div>
+                    <button
+                      type="button"
+                      aria-label="닫기"
+                      onClick={() => {
+                        if (comingSoonTimerRef.current) window.clearTimeout(comingSoonTimerRef.current);
+                        setComingSoonMessage(null);
+                      }}
+                      className="mt-0.5 shrink-0 rounded-lg p-1 text-foreground/40 transition-colors hover:bg-white/10 hover:text-foreground/70"
+                    >
+                      <IconX className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -6157,10 +6177,10 @@ export default function ApiTestPage() {
                   <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
                     <div className="w-[min(520px,90%)] rounded-2xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
                       <div className="flex items-start gap-3">
-                        <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
+                        <div className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
                           <IconPlus className="h-5 w-5" />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-foreground">
                             Coming Soon
                           </p>
@@ -6168,6 +6188,17 @@ export default function ApiTestPage() {
                             {comingSoonMessage}
                           </p>
                         </div>
+                        <button
+                          type="button"
+                          aria-label="닫기"
+                          onClick={() => {
+                            if (comingSoonTimerRef.current) window.clearTimeout(comingSoonTimerRef.current);
+                            setComingSoonMessage(null);
+                          }}
+                          className="mt-0.5 shrink-0 rounded-lg p-1 text-foreground/40 transition-colors hover:bg-white/10 hover:text-foreground/70"
+                        >
+                          <IconX className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
