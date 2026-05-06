@@ -2621,6 +2621,7 @@ function Image2TextSection({
         {/* 이미지 파일 */}
         <div>
           <p className="font-mono text-xs text-foreground/60">이미지 파일</p>
+          <p className="mt-0.5 text-[11px] text-foreground/40">JPG · PNG · GIF · WebP · BMP</p>
           <div className="mt-1 flex items-center gap-2">
             <input
               ref={image2textFileInputRef}
