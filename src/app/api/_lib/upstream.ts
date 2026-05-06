@@ -4,7 +4,7 @@ const UPSTREAM_BASE_URL = "http://aiapi.kogrobo.com:11115";
 
 type ApiKeyLike = {
   id?: unknown;
-  is_active?: unknown;
+  is_approved?: unknown;
   api_key?: unknown;
 };
 
@@ -16,7 +16,7 @@ function parseApiKeys(data: unknown): ApiKeyLike[] {
     if (Array.isArray(obj.items)) return obj.items as ApiKeyLike[];
 
     // 일부 API는 단일 API key 객체를 그대로 반환합니다.
-    // 예: { id, api_key, is_active, created_at, ... }
+    // 예: { id, api_key, is_approved, created_at, ... }
     if (obj.id !== undefined) return [obj as ApiKeyLike];
   }
   return [];
@@ -40,7 +40,7 @@ async function hasApiKey(authHeader: string): Promise<boolean> {
     const keys = parseApiKeys(data);
     if (keys.length === 0) return false;
 
-    return keys.some((k) => k.is_active !== false);
+    return keys.some((k) => k.is_approved !== false);
   } catch {
     return false;
   }
@@ -71,7 +71,7 @@ export async function resolveUpstreamContext(
 
     const data = (await res.json().catch(() => null)) as unknown;
     const keys = parseApiKeys(data);
-    const active = keys.find((k) => k.is_active !== false);
+    const active = keys.find((k) => k.is_approved !== false);
     const apiKey =
       active && typeof active.api_key === "string" ? active.api_key : undefined;
 

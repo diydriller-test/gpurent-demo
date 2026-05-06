@@ -221,7 +221,7 @@ export async function updatePlan(apiId: number, planId: number): Promise<void> {
 export interface ApiKey {
   id: number;
   api_key: string;
-  is_active: boolean;
+  is_approved: boolean;
   created_at: string;
   last_used_at?: string;
 }
@@ -251,6 +251,11 @@ export async function getApiKeys(): Promise<ApiKey[]> {
   const data = await res.json();
   const keys = Array.isArray(data) ? data : data.keys ?? data.items ?? (data.id !== undefined ? [data] : []);
   return keys;
+}
+
+/** 플랜 등록 등: 최소 한 개의 API 키가 운영 승인된 경우에만 통과 */
+export function hasApprovedApiKey(keys: ApiKey[]): boolean {
+  return keys.some((k) => k.is_approved === true);
 }
 
 export interface CreateApiKeyRequest {

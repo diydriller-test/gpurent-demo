@@ -112,8 +112,8 @@ function ApiKeyItem({ apiKey }: { apiKey: ApiKey }) {
           {apiKey.last_used_at && (
             <span>마지막 사용: {new Date(apiKey.last_used_at).toLocaleDateString("ko-KR")}</span>
           )}
-          {!apiKey.is_active && (
-            <span className="text-red-400">비활성</span>
+          {!apiKey.is_approved && (
+            <span className="text-red-400">미승인</span>
           )}
         </div>
       </div>
