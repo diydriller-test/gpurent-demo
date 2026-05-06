@@ -120,6 +120,7 @@ export interface Plan {
   price_monthly: string;
   description: string;
   max_rps: number;
+  max_ip_count?: number;
   period: string;
   features: string[];
   is_active: boolean;

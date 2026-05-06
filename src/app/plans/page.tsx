@@ -796,13 +796,23 @@ function PlansPageContent() {
                       <span className="text-foreground/60">{plan.period}</span>
                     </div>
 
-                    <div className="mb-6 rounded-xl bg-background/30 px-4 py-3">
-                      <p className="font-mono text-sm text-accent">
-                        초당 최대 {plan.max_rps}회 요청
-                      </p>
-                      <p className="mt-1 text-xs text-foreground/50">
-                        RPS(Requests Per Second) {plan.max_rps}
-                      </p>
+                    <div className="mb-6 grid gap-3 rounded-xl bg-background/30 px-4 py-3 sm:grid-cols-2">
+                      <div>
+                        <p className="font-mono text-sm text-accent">
+                          초당 최대 {plan.max_rps}회 요청
+                        </p>
+                        <p className="mt-1 text-xs text-foreground/50">
+                          RPS(Requests Per Second) {plan.max_rps}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="font-mono text-sm text-accent">
+                          최대 IP {plan.max_ip_count ?? "—"}개
+                        </p>
+                        <p className="mt-1 text-xs text-foreground/50">
+                          동시에 사용할 수 있는 IP 개수
+                        </p>
+                      </div>
                     </div>
 
                     <ul className="mb-8 flex-1 space-y-3">
