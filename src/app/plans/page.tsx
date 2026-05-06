@@ -298,7 +298,7 @@ function PlansPageContent() {
         setApprovalModalOpen(true);
         return;
       }
-      await updatePlan(selectedApi.id, pendingPlanId);
+      await updatePlan(selectedApi.id, pendingPlanId, selectedApi.slug);
       await fetchUser();
       setPendingPlanId(null);
     } catch (err) {

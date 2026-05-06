@@ -80,6 +80,7 @@ export function getAuthHeaders(): Record<string, string> {
 export interface Api {
   id: number;
   name: string;
+  slug?: string;
   company_id: number;
   company_name: string;
   task_key?: string;
@@ -188,7 +189,11 @@ export async function getMe(): Promise<User> {
   return res.json();
 }
 
-export async function updatePlan(apiId: number, planId: number): Promise<void> {
+export async function updatePlan(
+  apiId: number,
+  planId: number,
+  apiSlugName?: string,
+): Promise<void> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...getAuthHeaders(),
@@ -197,7 +202,11 @@ export async function updatePlan(apiId: number, planId: number): Promise<void> {
   const res = await fetch("/api/me/plan", {
     method: "PATCH",
     headers,
-    body: JSON.stringify({ api_id: apiId, plan_id: planId }),
+    body: JSON.stringify({
+      api_id: apiId,
+      plan_id: planId,
+      ...(apiSlugName ? { api_slug_name: apiSlugName } : {}),
+    }),
   });
 
   if (res.status === 401) {
