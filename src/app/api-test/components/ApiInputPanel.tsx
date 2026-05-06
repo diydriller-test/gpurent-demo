@@ -2391,6 +2391,7 @@ function VoiceCloneSection({
         {/* 참조 음성 */}
         <div>
           <p className="font-mono text-xs text-foreground/60">참조 음성</p>
+          <p className="mt-0.5 text-[11px] text-foreground/40">WAV · MP3 · OGG · WebM · M4A</p>
           <div className="mt-1 flex items-center gap-2">
             {/* 파일 업로드 */}
             <input
