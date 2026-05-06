@@ -403,7 +403,7 @@ function PlansPageContent() {
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
               토큰이 아닌 <span className="text-accent">트래픽 기준</span>으로
-              등급을 선택합니다. API를 누르면 월 요금·RPS 한도를 확인할 수
+              등급을 선택합니다. API를 누르면 월 요금·초당 요청 수(RPS) 한도를 확인할 수
               있어요.
             </p>
             <p className="mx-auto mt-3 max-w-2xl text-sm text-foreground/50">
@@ -428,7 +428,7 @@ function PlansPageContent() {
                   ? "확인 중..."
                   : (() => {
                       const ap = user?.api_plans?.find((p) => p.api_id === selectedApi.id);
-                      return ap ? `${ap.plan_name} (최대 ${ap.max_rps} RPS)` : "없음";
+                      return ap ? `${ap.plan_name} (초당 최대 ${ap.max_rps}회 요청)` : "없음";
                     })()}
               </span>
             </p>
@@ -633,7 +633,7 @@ function PlansPageContent() {
                         등급·트래픽 한도 선택
                       </h3>
                       <p className="mt-2 max-w-xl text-sm leading-relaxed text-foreground/55">
-                        카드를 눌러 해당 API의 월 요금·RPS 플랜을 확인하세요.
+                        카드를 눌러 해당 API의 월 요금·초당 요청 수(RPS) 플랜을 확인하세요.
                       </p>
                     </div>
                     <span className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-1 font-mono text-xs text-accent">
@@ -698,8 +698,7 @@ function PlansPageContent() {
 
                           {currentPlan ? (
                             <p className="mt-3 rounded-lg bg-accent/10 px-2.5 py-1.5 text-[11px] font-medium text-accent">
-                              현재: {currentPlan.plan_name} (
-                              {currentPlan.max_rps} RPS)
+                              현재: {currentPlan.plan_name} (초당 최대 {currentPlan.max_rps}회)
                             </p>
                           ) : null}
 
@@ -799,10 +798,10 @@ function PlansPageContent() {
 
                     <div className="mb-6 rounded-xl bg-background/30 px-4 py-3">
                       <p className="font-mono text-sm text-accent">
-                        최대 {plan.max_rps} RPS
+                        초당 최대 {plan.max_rps}회 요청
                       </p>
                       <p className="mt-1 text-xs text-foreground/50">
-                        초당 {plan.max_rps}회 요청 가능
+                        RPS(Requests Per Second) {plan.max_rps}
                       </p>
                     </div>
 
