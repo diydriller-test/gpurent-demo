@@ -181,7 +181,7 @@ const SECTIONS: DocSection[] = [
 }`,
     responseLabel: "성공 (200)",
     response: `{
-  "embeddingVector": [0.012, -0.034, "..."]
+  "embeddingVector": [0.012, -0.034, ...]
 }`,
     notes: [
       "`text` 필드로 보내도 동작합니다(내부에서 `input`과 동일하게 처리).",
@@ -200,9 +200,7 @@ const SECTIONS: DocSection[] = [
   "input": ["후보 문장 1", "후보 문장 2"]
 }`,
     responseLabel: "성공 (200)",
-    response: `{
-  "...": "업스트림 Re-rank 응답 구조가 그대로 전달됩니다."
-}`,
+    response: `// 업스트림 Re-rank API 응답 구조가 그대로 전달됩니다.`,
     notes: [
       "`query`는 비어 있으면 안 되고, `input`은 문자열 배열이어야 합니다.",
     ],
@@ -246,7 +244,7 @@ const SECTIONS: DocSection[] = [
   task        — 선택
   beam_size   — 선택
   vad_filter  — 선택`,
-    responseLabel: "성공",
+    responseLabel: "성공 (200)",
     response: `업스트림 STT 서비스의 JSON 응답이 그대로 반환됩니다.`,
     notes: [
       "최대 실행 시간 제한이 있어 장시간 처리 시 504(시간 초과)가 날 수 있습니다.",
@@ -277,7 +275,6 @@ const SECTIONS: DocSection[] = [
       "`ref_audio`와 `text`만 필수입니다.",
       "`x_vector_only_mode=true`일 때는 `ref_text` 없이도 동작하며, 더 빠르게 합성됩니다.",
       "`x_vector_only_mode=false`일 때는 `ref_text`(참조 음성 스크립트)를 함께 보내면 억양·발화 스타일까지 복제됩니다.",
-      "인증은 `access_token` 헤더(Bearer 없이)를 사용합니다.",
       "최대 실행 시간 제한(60초)이 있어 초과 시 504가 날 수 있습니다.",
     ],
   },
