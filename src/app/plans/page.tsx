@@ -796,7 +796,7 @@ function PlansPageContent() {
                       <span className="text-foreground/60">{plan.period}</span>
                     </div>
 
-                    <div className="mb-6 grid gap-3 rounded-xl bg-background/30 px-4 py-3 sm:grid-cols-2">
+                    <div className="mb-6 grid gap-3 rounded-xl bg-background/30 px-4 py-3">
                       <div>
                         <p className="font-mono text-sm text-accent">
                           초당 최대 {plan.max_rps}회 요청
