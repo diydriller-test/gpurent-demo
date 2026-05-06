@@ -390,9 +390,9 @@ function PlansPageContent() {
                 href="/api-test"
                 className="text-accent underline decoration-accent/40 underline-offset-2 hover:opacity-90"
               >
-                API Sandbox
+                API 체험
               </Link>
-              에서 무료 체험 후, 여기서 API별로 플랜을 선택하세요.
+              에서 먼저 써보신 후, 여기서 API별로 플랜을 선택하세요.
             </p>
           </div>
         )}
@@ -465,7 +465,7 @@ function PlansPageContent() {
                     API 유형 필터
                   </h2>
                   <p className="mt-1 text-[11px] leading-relaxed text-foreground/45">
-                    Sandbox와 같은 분류입니다. 여기서는{" "}
+                    API 체험과 같은 분류입니다. 여기서는{" "}
                     <span className="text-foreground/60">요금·구매</span>만
                     다릅니다.
                   </p>
