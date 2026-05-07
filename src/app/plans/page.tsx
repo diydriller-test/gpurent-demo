@@ -7,8 +7,6 @@ import {
   getApis,
   getPlans,
   getMe,
-  getApiKeys,
-  hasApprovedApiKey,
   updatePlan,
   type Api,
   type Plan,
@@ -69,7 +67,6 @@ function PlansPageContent() {
   const [planActionError, setPlanActionError] = useState<string | null>(null);
   const [updatingPlanId, setUpdatingPlanId] = useState<number | null>(null);
   const [pendingPlanId, setPendingPlanId] = useState<number | null>(null);
-  const [approvalModalOpen, setApprovalModalOpen] = useState(false);
   /** 백엔드 /apis 실패 시 데모 목록을 쓰는 중 */
   const [usingDemoApis, setUsingDemoApis] = useState(false);
 
@@ -293,11 +290,6 @@ function PlansPageContent() {
     setPlanActionError(null);
     setUpdatingPlanId(pendingPlanId);
     try {
-      const keys = await getApiKeys();
-      if (!hasApprovedApiKey(keys)) {
-        setApprovalModalOpen(true);
-        return;
-      }
       await updatePlan(selectedApi.id, pendingPlanId, selectedApi.slug);
       await fetchUser();
       setPendingPlanId(null);
@@ -316,50 +308,6 @@ function PlansPageContent() {
 
   return (
     <div className="min-h-screen bg-grid-pattern">
-      {approvalModalOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-6"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="plan-approval-modal-title"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            aria-label="닫기"
-            onClick={() => setApprovalModalOpen(false)}
-          />
-          <div className="relative z-[1] w-full max-w-md rounded-2xl border border-white/10 bg-surface/95 p-6 shadow-xl backdrop-blur-xl">
-            <h2
-              id="plan-approval-modal-title"
-              className="text-lg font-semibold text-foreground"
-            >
-              API 키 승인이 필요합니다
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-foreground/70">
-              플랜을 등록하려면 API 키가 운영에서 <span className="text-foreground/90">승인된</span>
-              상태여야 합니다. 프로필에서 키 상태를 확인하거나, 승인 완료 후 다시 시도해 주세요.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setApprovalModalOpen(false)}
-                className="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-white/5"
-              >
-                닫기
-              </button>
-              <Link
-                href="/profile"
-                onClick={() => setApprovalModalOpen(false)}
-                className="rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
-              >
-                프로필에서 API 키 보기
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Navigation */}
       <SiteNav />
 
