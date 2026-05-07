@@ -31,7 +31,7 @@ import { IconLayers, IconUser, PlanTaskIcon } from "./TaskFilterIcons";
 
 function formatPrice(priceMonthly: string): string {
   const num = parseFloat(priceMonthly);
-  if (isNaN(num) || num === 0) return "문의";
+  if (isNaN(num) || num === 0) return "준비중";
   return new Intl.NumberFormat("ko-KR", {
     style: "currency",
     currency: "KRW",
