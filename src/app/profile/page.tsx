@@ -141,6 +141,7 @@ export default function ProfilePage() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<{ api_key: string; message: string } | null>(null);
+  const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!getToken()) {
@@ -172,6 +173,15 @@ export default function ProfilePage() {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    if (!regenerateConfirmOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setRegenerateConfirmOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [regenerateConfirmOpen]);
+
   async function handleCreateApiKey() {
     setCreateError(null);
     setNewlyCreatedKey(null);
@@ -187,13 +197,8 @@ export default function ProfilePage() {
     }
   }
 
-  async function handleRegenerateApiKey() {
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm("기존 API 키는 즉시 무효화됩니다. 계속할까요?")
-    ) {
-      return;
-    }
+  async function executeRegenerateApiKey() {
+    setRegenerateConfirmOpen(false);
     setCreateError(null);
     setNewlyCreatedKey(null);
     setIsRegenerating(true);
@@ -236,6 +241,50 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-grid-pattern">
+      {regenerateConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="regenerate-api-key-modal-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            aria-label="닫기"
+            onClick={() => setRegenerateConfirmOpen(false)}
+          />
+          <div className="relative z-[1] w-full max-w-md rounded-2xl border border-white/10 bg-surface/95 p-6 shadow-xl backdrop-blur-xl">
+            <h2
+              id="regenerate-api-key-modal-title"
+              className="text-lg font-semibold text-foreground"
+            >
+              API 키를 재생성할까요?
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-foreground/70">
+              재생성하면 <span className="text-foreground/90">기존 키는 즉시 사용할 수 없게</span> 됩니다. 연결된 클라이언트는 새 키로
+              교체해야 합니다.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setRegenerateConfirmOpen(false)}
+                className="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-white/5"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={() => void executeRegenerateApiKey()}
+                className="rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              >
+                재생성
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
       <SiteNav />
 
@@ -283,7 +332,7 @@ export default function ProfilePage() {
               <div className="flex justify-end pt-2">
                 <button
                   type="button"
-                  onClick={handleRegenerateApiKey}
+                  onClick={() => setRegenerateConfirmOpen(true)}
                   disabled={isRegenerating}
                   className="rounded-xl border border-white/15 bg-transparent px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
                 >
