@@ -29,13 +29,6 @@ import {
 } from "./planCatalog";
 import { IconLayers, IconUser, PlanTaskIcon } from "./TaskFilterIcons";
 
-/** API 문서(`docs` SECTIONS)와 `PLAN_TASK_KEYS` 순서에 맞춤 */
-function planTaskDocOrderIndex(task: PlanTask | null): number {
-  if (!task) return PLAN_TASK_KEYS.length + 1;
-  const i = PLAN_TASK_KEYS.indexOf(task);
-  return i === -1 ? PLAN_TASK_KEYS.length : i;
-}
-
 function formatPrice(priceMonthly: string): string {
   const num = parseFloat(priceMonthly);
   if (isNaN(num) || num === 0) return "문의";
@@ -100,8 +93,8 @@ function PlansPageContent() {
     });
     return [...filtered].sort((a, b) => {
       const d =
-        planTaskDocOrderIndex(getApiTask(a)) -
-        planTaskDocOrderIndex(getApiTask(b));
+        (a.sort_order ?? Number.MAX_SAFE_INTEGER) -
+        (b.sort_order ?? Number.MAX_SAFE_INTEGER);
       if (d !== 0) return d;
       return a.name.localeCompare(b.name, "ko");
     });
