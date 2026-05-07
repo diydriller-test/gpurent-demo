@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { getMe, getApiKeys, createApiKey, type User, type ApiKey } from "@/lib/api";
+import { getMe, getApiKeys, createApiKey, regenerateApiKey, type User, type ApiKey } from "@/lib/api";
 import { getToken } from "@/lib/token";
 import { SiteNav } from "@/components/SiteNav";
 
@@ -138,6 +138,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<{ api_key: string; message: string } | null>(null);
 
@@ -183,6 +184,27 @@ export default function ProfilePage() {
       setCreateError(err instanceof Error ? err.message : "API 키 생성에 실패했습니다.");
     } finally {
       setIsCreating(false);
+    }
+  }
+
+  async function handleRegenerateApiKey() {
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm("기존 API 키는 즉시 무효화됩니다. 계속할까요?")
+    ) {
+      return;
+    }
+    setCreateError(null);
+    setNewlyCreatedKey(null);
+    setIsRegenerating(true);
+    try {
+      const result = await regenerateApiKey();
+      setNewlyCreatedKey({ api_key: result.api_key, message: result.message });
+      await fetchData();
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "API 키 재생성에 실패했습니다.");
+    } finally {
+      setIsRegenerating(false);
     }
   }
 
@@ -258,6 +280,16 @@ export default function ProfilePage() {
               {apiKeys.map((apiKey) => (
                 <ApiKeyItem key={apiKey.id} apiKey={apiKey} />
               ))}
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={handleRegenerateApiKey}
+                  disabled={isRegenerating}
+                  className="rounded-xl border border-white/15 bg-transparent px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isRegenerating ? "재생성 중..." : "키 재생성"}
+                </button>
+              </div>
             </div>
           ) : (
             <div>

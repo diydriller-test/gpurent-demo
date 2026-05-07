@@ -308,3 +308,8 @@ export async function createApiKey(data?: CreateApiKeyRequest): Promise<CreateAp
 
   return res.json();
 }
+
+/** 기존 키 교체 후 한 번만 표시되는 새 키 발급 (백엔드 `POST /auth/api-keys`와 동일 경로). */
+export async function regenerateApiKey(): Promise<CreateApiKeyResponse> {
+  return createApiKey({});
+}
