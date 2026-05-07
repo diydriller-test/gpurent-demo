@@ -1940,9 +1940,6 @@ export function ApiInputPanel({
                         변환 준비 완료
                       </p>
                     ) : null}
-                    <p className="text-xs text-foreground/60">
-                      audio/* 지원 (UI 데모)
-                    </p>
                   </div>
                 </div>
               </label>
