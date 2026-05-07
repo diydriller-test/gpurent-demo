@@ -1949,6 +1949,7 @@ export function ApiInputPanel({
               <p className="font-mono text-xs text-foreground/60">
                 마이크 녹음 (선택)
               </p>
+              <p className="mt-0.5 text-[11px] invisible" aria-hidden="true">placeholder</p>
               <button
                 type="button"
                 onClick={onSttMicToggle}
