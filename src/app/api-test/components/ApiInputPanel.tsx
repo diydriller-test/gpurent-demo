@@ -745,7 +745,7 @@ export function ApiInputPanel({
       {selectedApi === "llm" ? (
         <form onSubmit={onSend}>
           <div className="flex flex-col gap-3">
-            <div className="flex items-end gap-3">
+            <div className="flex items-start gap-3">
               <div className="flex-1">
                 <label className="sr-only" htmlFor="prompt">
                   메시지 입력
