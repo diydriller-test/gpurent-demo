@@ -6904,9 +6904,9 @@ export default function ApiTestPage() {
                       </p>
                       <Link
                         href={`/plans?chapter=${selectedApi}&auto=1`}
-                        className="inline-flex shrink-0 items-center justify-center rounded-lg border border-accent/35 bg-transparent px-3 py-1.5 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10 hover:border-accent/55"
+                        className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-accent/85"
                       >
-                        플랜 보기
+                        플랜 보기 →
                       </Link>
                     </div>
                     {selectedApi === "stt" ? (
