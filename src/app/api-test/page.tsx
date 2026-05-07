@@ -6098,16 +6098,10 @@ export default function ApiTestPage() {
                       <IconArrowLeft className="h-4 w-4 shrink-0" />
                       <span>API 목록으로</span>
                     </button>
-                    <div className="mt-3 flex w-full min-w-0 items-center justify-between gap-3">
-                      <h3 className="min-w-0 flex-1 truncate pr-2 text-lg font-semibold text-foreground">
+                    <div className="mt-3 flex w-full min-w-0 items-center gap-3">
+                      <h3 className="min-w-0 flex-1 truncate text-lg font-semibold text-foreground">
                         {selectedApiItem?.name ?? "API"} Playground
                       </h3>
-                      <Link
-                        href={`/plans?chapter=${selectedApi}&auto=1`}
-                        className="shrink-0 self-center rounded-lg border border-accent/45 bg-transparent px-2.5 py-1 text-[11px] font-medium text-accent transition-colors hover:bg-accent/10 hover:border-accent/60"
-                      >
-                        플랜 보기
-                      </Link>
                     </div>
                     {selectedApi === "llm" ||
                     selectedApi === "adCopy" ||
