@@ -3665,6 +3665,10 @@ export default function ApiTestPage() {
   }
 
   function handleVcRefFileChange(file: File | null) {
+    if (file && file.size > 20 * 1024 * 1024) {
+      setVcError("파일 크기가 20MB를 초과합니다.");
+      return;
+    }
     setVcRefAudioFile(file);
     setVcRefFileName(file ? file.name : null);
     setVcAudioUrl(null);
@@ -3690,6 +3694,10 @@ export default function ApiTestPage() {
   }
 
   function handleImage2TextFileChange(file: File | null) {
+    if (file && file.size > 20 * 1024 * 1024) {
+      setImage2TextError("파일 크기가 20MB를 초과합니다.");
+      return;
+    }
     setImage2TextImageFile(file);
     setImage2TextFileName(file ? file.name : null);
     setImage2TextResult(null);
@@ -4202,6 +4210,10 @@ export default function ApiTestPage() {
   }
 
   function handleSttFileChange(file: File | null) {
+    if (file && file.size > 20 * 1024 * 1024) {
+      setSttError("파일 크기가 20MB를 초과합니다.");
+      return;
+    }
     setSttFileName(file ? file.name : null);
     setSttSelectedAudioFile(file);
     setSttTranscript(null);

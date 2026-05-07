@@ -1874,7 +1874,7 @@ export function ApiInputPanel({
               <p className="font-mono text-xs text-foreground/60">
                 음성 파일 업로드 (선택)
               </p>
-              <p className="mt-0.5 text-[11px] text-foreground/40">WAV · MP3 · OGG · WebM · M4A</p>
+              <p className="mt-0.5 text-[11px] text-foreground/40">WAV · MP3 · OGG · WebM · M4A · 최대 20MB</p>
               <label
                 className={[
                   "mt-2 block cursor-pointer rounded-xl border border-dashed px-3 py-3 transition-colors relative",
@@ -2392,7 +2392,7 @@ function VoiceCloneSection({
         {/* 참조 음성 */}
         <div>
           <p className="font-mono text-xs text-foreground/60">참조 음성</p>
-          <p className="mt-0.5 text-[11px] text-foreground/40">WAV · MP3 · OGG · WebM · M4A</p>
+          <p className="mt-0.5 text-[11px] text-foreground/40">WAV · MP3 · OGG · WebM · M4A · 최대 20MB</p>
           <div className="mt-1 flex items-center gap-2">
             {/* 파일 업로드 */}
             <input
@@ -2622,7 +2622,7 @@ function Image2TextSection({
         {/* 이미지 파일 */}
         <div>
           <p className="font-mono text-xs text-foreground/60">이미지 파일</p>
-          <p className="mt-0.5 text-[11px] text-foreground/40">JPG · PNG · GIF · WebP · BMP</p>
+          <p className="mt-0.5 text-[11px] text-foreground/40">JPG · PNG · GIF · WebP · BMP · 최대 20MB</p>
           <div className="mt-1 flex items-center gap-2">
             <input
               ref={image2textFileInputRef}
