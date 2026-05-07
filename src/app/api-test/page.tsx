@@ -6011,33 +6011,6 @@ export default function ApiTestPage() {
                     );
                   })}
 
-                  {/* Register Your API */}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      showComingSoon(
-                        "조만간 API 등록 기능이 추가될 예정입니다. 나만의 API를 마켓플레이스에 공유해보세요!",
-                      )
-                    }
-                    className={[
-                      "group rounded-2xl border border-dashed border-white/10 bg-transparent p-4 text-left transition-colors",
-                      "hover:border-accent/40 hover:bg-accent/5",
-                    ].join(" ")}
-                  >
-                    <p className="font-mono text-xs text-foreground/60">
-                      오픈 에코시스템
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-foreground">
-                      나만의 API 등록하기
-                    </p>
-                    <p className="mt-2 text-xs text-foreground/60">
-                      나중에 나만의 API를 등록해 직접 테스트해볼 수 있어요.
-                    </p>
-                    <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-background/20 px-3 py-2 text-xs text-foreground/70 transition-colors group-hover:border-accent/30 group-hover:text-accent">
-                      <span>입점 등록</span>
-                      <span>+</span>
-                    </div>
-                  </button>
                 </div>
               </div>
             </section>
