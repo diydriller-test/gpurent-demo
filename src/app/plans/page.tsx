@@ -16,13 +16,11 @@ import { getToken } from "@/lib/token";
 import { SiteNav } from "@/components/SiteNav";
 import {
   chapterQueryToPlanTask,
-  DEMO_APIS_FALLBACK,
   DEMO_PLANS_THREE_TIERS,
   getApiTask,
   getPlanCardDisplay,
   getPlanTaskDisplayName,
   getPlanTaskSublabel,
-  inferPlanTask,
   MODU_NLP_SURFACE_TASKS,
   PLAN_TASK_KEYS,
   type PlanTask,
@@ -81,21 +79,6 @@ function PlansPageContent() {
 
   const isAllTasksActive = sidebarMode === "all" && allTasksFilterOn;
 
-  function isApiActive(api: unknown): boolean {
-    const v = (api as { is_active?: unknown }).is_active;
-    if (v === undefined || v === null) return true;
-    if (typeof v === "string") {
-      const s = v.trim().toLowerCase();
-      if (s === "" || s === "null" || s === "undefined") return true;
-      if (s === "true" || s === "1" || s === "y" || s === "yes") return true;
-      if (s === "false" || s === "0" || s === "n" || s === "no") return false;
-      return Boolean(s);
-    }
-    if (v === true || v === 1) return true;
-    if (v === false || v === 0) return false;
-    return Boolean(v);
-  }
-
   const comingSoonPlanIds = useMemo(() => {
     if (usingDemoApis) return new Set<number>();
     const ids = new Set<number>();
@@ -111,7 +94,7 @@ function PlansPageContent() {
 
   const filteredApis = useMemo(() => {
     const filtered = apis
-      .filter(isApiActive)
+      .filter((api) => api.is_active !== false)
       .filter((api) => {
       if (sidebarMode === "my") {
         return !!user?.api_plans?.some((p) => p.api_id === api.id);
@@ -186,24 +169,15 @@ function PlansPageContent() {
     getApis()
       .then((data) => {
         if (cancelled) return;
-        // 백엔드에 없는 데모 API(Voice Clone 등)를 보충
-        const existingTasks = new Set(data.map((a) => inferPlanTask(a.name)));
-        const supplements = DEMO_APIS_FALLBACK.filter(
-          (a) => !existingTasks.has(inferPlanTask(a.name)),
-        );
-        setApis(
-          [...data, ...supplements].filter(isApiActive),
-        );
+        setApis(data);
         setUsingDemoApis(false);
         setError(null);
       })
       .catch(() => {
         if (cancelled) return;
-        setApis(
-          DEMO_APIS_FALLBACK.filter(isApiActive),
-        );
-        setUsingDemoApis(true);
-        setError(null);
+        setApis([]);
+        setUsingDemoApis(false);
+        setError("API 목록을 불러올 수 없습니다.");
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
