@@ -1939,6 +1939,12 @@ export default function ApiTestPage() {
 
   const filteredMarketplace = useMemo(() => {
     return marketplaceItems.filter((item) => {
+      // 서버에서 비활성(is_active:false)로 내려온 API는 목록에서 숨김
+      if (apisFromBackend.length > 0) {
+        const task = item.task as PlanTask;
+        const api = apisFromBackend.find((a) => getApiTask(a) === task);
+        if (api && api.is_active === false) return false;
+      }
       if (sidebarMode === "my") {
         const plan = resolveMarketplacePlan(item);
         return plan != null;

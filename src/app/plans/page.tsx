@@ -95,7 +95,9 @@ function PlansPageContent() {
     !usingDemoApis && !!pendingPlanId && comingSoonPlanIds.has(pendingPlanId);
 
   const filteredApis = useMemo(() => {
-    const filtered = apis.filter((api) => {
+    const filtered = apis
+      .filter((api) => api.is_active !== false)
+      .filter((api) => {
       if (sidebarMode === "my") {
         return !!user?.api_plans?.some((p) => p.api_id === api.id);
       }
