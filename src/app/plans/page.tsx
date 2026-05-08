@@ -72,9 +72,24 @@ function PlansPageContent() {
   );
   const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
 
+  const visibleTaskKeys = useMemo(
+    () =>
+      PLAN_TASK_KEYS.filter(
+        (t) =>
+          !(
+            t === "Ad Copy" ||
+            t === "Text Summary" ||
+            t === "Sentiment Analysis" ||
+            t === "NER" ||
+            t === "Text-to-SQL"
+          ),
+      ),
+    [],
+  );
+
   const allTasksFilterOn = useMemo(
-    () => PLAN_TASK_KEYS.every((k) => filterTasks[k]),
-    [filterTasks],
+    () => visibleTaskKeys.every((k) => filterTasks[k]),
+    [filterTasks, visibleTaskKeys],
   );
 
   const isAllTasksActive = sidebarMode === "all" && allTasksFilterOn;
@@ -509,7 +524,7 @@ function PlansPageContent() {
                         </span>
                       </button>
 
-                      {PLAN_TASK_KEYS.map((t) => {
+                      {visibleTaskKeys.map((t) => {
                         const isActive =
                           sidebarMode === "all" &&
                           filterTasks[t] &&
@@ -517,17 +532,7 @@ function PlansPageContent() {
                         const label =
                           t === "Text Generation"
                             ? "Text"
-                            : t === "Ad Copy"
-                              ? "카피"
-                              : t === "Text Summary"
-                                ? "요약"
-                                : t === "Sentiment Analysis"
-                                  ? "감성"
-                                  : t === "NER"
-                                    ? "개체명"
-                                    : t === "Text-to-SQL"
-                                      ? "SQL"
-                                      : t === "Voice Clone"
+                            : t === "Voice Clone"
                                         ? "클론"
                                         : t === "Vision"
                                           ? "Vision"

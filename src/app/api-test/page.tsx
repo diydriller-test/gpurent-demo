@@ -1764,11 +1764,11 @@ export default function ApiTestPage() {
     Record<MarketplaceTask, boolean>
   >({
     "Text Generation": true,
-    "Ad Copy": true,
-    "Text Summary": true,
-    "Sentiment Analysis": true,
-    NER: true,
-    "Text-to-SQL": true,
+    "Ad Copy": false,
+    "Text Summary": false,
+    "Sentiment Analysis": false,
+    NER: false,
+    "Text-to-SQL": false,
     Embedding: true,
     Reranker: true,
     TTS: true,
@@ -1819,11 +1819,6 @@ export default function ApiTestPage() {
   const taskKeys = useMemo<MarketplaceTask[]>(
     () => [
       "Text Generation",
-      "Ad Copy",
-      "Text Summary",
-      "Sentiment Analysis",
-      "NER",
-      "Text-to-SQL",
       "Embedding",
       "Reranker",
       "TTS",
