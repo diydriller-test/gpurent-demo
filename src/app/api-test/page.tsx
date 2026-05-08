@@ -1939,11 +1939,14 @@ export default function ApiTestPage() {
 
   const filteredMarketplace = useMemo(() => {
     return marketplaceItems.filter((item) => {
-      // 서버에서 비활성(is_active:false)로 내려온 API는 목록에서 숨김
+      // 서버에서 API 목록을 받은 경우:
+      // - 서버에 존재하지 않는(매칭 불가) 정적 카드는 숨김
+      // - 서버에서 비활성(is_active:false)로 내려온 API도 숨김
       if (apisFromBackend.length > 0) {
         const task = item.task as PlanTask;
         const api = apisFromBackend.find((a) => getApiTask(a) === task);
-        if (api && api.is_active === false) return false;
+        if (!api) return false;
+        if (api.is_active === false) return false;
       }
       if (sidebarMode === "my") {
         const plan = resolveMarketplacePlan(item);
