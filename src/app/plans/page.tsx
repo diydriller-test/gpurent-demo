@@ -84,8 +84,15 @@ function PlansPageContent() {
   function isApiActive(api: unknown): boolean {
     const v = (api as { is_active?: unknown }).is_active;
     if (v === undefined || v === null) return true;
-    if (v === true || v === 1 || v === "1" || v === "true") return true;
-    if (v === false || v === 0 || v === "0" || v === "false") return false;
+    if (typeof v === "string") {
+      const s = v.trim().toLowerCase();
+      if (s === "" || s === "null" || s === "undefined") return true;
+      if (s === "true" || s === "1" || s === "y" || s === "yes") return true;
+      if (s === "false" || s === "0" || s === "n" || s === "no") return false;
+      return Boolean(s);
+    }
+    if (v === true || v === 1) return true;
+    if (v === false || v === 0) return false;
     return Boolean(v);
   }
 
