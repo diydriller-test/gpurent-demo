@@ -1938,6 +1938,10 @@ export default function ApiTestPage() {
   }
 
   const filteredMarketplace = useMemo(() => {
+    // 정적 카드(마켓플레이스 목록)를 서버 데이터로만 구동:
+    // 서버에서 API 목록을 못 받아오면 리스트는 비워둔다.
+    if (apisFromBackend.length === 0) return [];
+
     const filtered = marketplaceItems.filter((item) => {
       // 서버에서 API 목록을 받은 경우:
       // - 서버에 존재하지 않는(매칭 불가) 정적 카드는 숨김
@@ -1957,8 +1961,6 @@ export default function ApiTestPage() {
 
     // 목록 순서를 서버 `sort_order` 기준으로 맞춤
     // (같은 `sort_order`면 기존 정적 배열 순서를 유지)
-    if (apisFromBackend.length === 0) return filtered;
-
     const orderByTask = new Map<PlanTask, number>();
     apisFromBackend.forEach((api) => {
       const task = getApiTask(api);

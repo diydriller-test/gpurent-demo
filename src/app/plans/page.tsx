@@ -96,7 +96,10 @@ function PlansPageContent() {
 
   const filteredApis = useMemo(() => {
     const filtered = apis
-      .filter((api) => api.is_active !== false)
+      .filter((api) => {
+        const active = (api as unknown as { is_active?: unknown }).is_active;
+        return active !== false && active !== 0;
+      })
       .filter((api) => {
       if (sidebarMode === "my") {
         return !!user?.api_plans?.some((p) => p.api_id === api.id);
@@ -177,14 +180,22 @@ function PlansPageContent() {
           (a) => !existingTasks.has(inferPlanTask(a.name)),
         );
         setApis(
-          [...data, ...supplements].filter((api) => api.is_active !== false),
+          [...data, ...supplements].filter((api) => {
+            const active = (api as unknown as { is_active?: unknown }).is_active;
+            return active !== false && active !== 0;
+          }),
         );
         setUsingDemoApis(false);
         setError(null);
       })
       .catch(() => {
         if (cancelled) return;
-        setApis(DEMO_APIS_FALLBACK.filter((api) => api.is_active !== false));
+        setApis(
+          DEMO_APIS_FALLBACK.filter((api) => {
+            const active = (api as unknown as { is_active?: unknown }).is_active;
+            return active !== false && active !== 0;
+          }),
+        );
         setUsingDemoApis(true);
         setError(null);
       })
