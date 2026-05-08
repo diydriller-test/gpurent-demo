@@ -1938,7 +1938,7 @@ export default function ApiTestPage() {
   }
 
   const filteredMarketplace = useMemo(() => {
-    return marketplaceItems.filter((item) => {
+    const filtered = marketplaceItems.filter((item) => {
       // 서버에서 API 목록을 받은 경우:
       // - 서버에 존재하지 않는(매칭 불가) 정적 카드는 숨김
       // - 서버에서 비활성(is_active:false)로 내려온 API도 숨김
@@ -1953,6 +1953,29 @@ export default function ApiTestPage() {
         return plan != null;
       }
       return filterTasks[item.task];
+    });
+
+    // 목록 순서를 서버 `sort_order` 기준으로 맞춤
+    // (같은 `sort_order`면 기존 정적 배열 순서를 유지)
+    if (apisFromBackend.length === 0) return filtered;
+
+    const orderByTask = new Map<PlanTask, number>();
+    apisFromBackend.forEach((api) => {
+      const task = getApiTask(api);
+      if (!task) return;
+      if (api.is_active === false) return;
+      orderByTask.set(
+        task,
+        api.sort_order ?? Number.MAX_SAFE_INTEGER,
+      );
+    });
+
+    return [...filtered].sort((a, b) => {
+      const ao =
+        orderByTask.get(a.task as PlanTask) ?? Number.MAX_SAFE_INTEGER;
+      const bo =
+        orderByTask.get(b.task as PlanTask) ?? Number.MAX_SAFE_INTEGER;
+      return ao - bo;
     });
   }, [filterTasks, marketplaceItems, sidebarMode, apisFromBackend, userMe]);
 
