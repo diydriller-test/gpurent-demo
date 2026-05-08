@@ -81,6 +81,19 @@ function PlansPageContent() {
 
   const isAllTasksActive = sidebarMode === "all" && allTasksFilterOn;
 
+  const comingSoonPlanIds = useMemo(() => {
+    if (usingDemoApis) return new Set<number>();
+    const ids = new Set<number>();
+    plans.forEach((p) => {
+      const price = parseFloat(p.price_monthly);
+      if (!Number.isNaN(price) && price === 0) ids.add(p.id);
+    });
+    return ids;
+  }, [plans, usingDemoApis]);
+
+  const isPendingPlanComingSoon =
+    !usingDemoApis && !!pendingPlanId && comingSoonPlanIds.has(pendingPlanId);
+
   const filteredApis = useMemo(() => {
     const filtered = apis.filter((api) => {
       if (sidebarMode === "my") {
@@ -265,6 +278,7 @@ function PlansPageContent() {
 
   function handlePickPlan(planId: number) {
     setPlanActionError(null);
+    if (!usingDemoApis && comingSoonPlanIds.has(planId)) return;
     setPendingPlanId(planId);
   }
 
@@ -272,6 +286,10 @@ function PlansPageContent() {
     if (!selectedApi) return;
     if (!pendingPlanId) {
       setPlanActionError("먼저 플랜을 선택해주세요.");
+      return;
+    }
+    if (!usingDemoApis && comingSoonPlanIds.has(pendingPlanId)) {
+      setPlanActionError("준비중인 플랜입니다. 다른 플랜을 선택해주세요.");
       return;
     }
     if (usingDemoApis) {
@@ -836,7 +854,7 @@ function PlansPageContent() {
                     <button
                       type="button"
                       onClick={handleRegisterPlan}
-                      disabled={!pendingPlanId || !!updatingPlanId}
+                      disabled={!pendingPlanId || !!updatingPlanId || isPendingPlanComingSoon}
                       className="rounded-xl bg-accent px-8 py-3 font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {updatingPlanId ? "등록 중..." : "등록하기"}
@@ -848,7 +866,8 @@ function PlansPageContent() {
                           "결제하기 기능은 준비 중입니다. 곧 제공될 예정입니다.",
                         )
                       }
-                      className="rounded-xl border border-dashed border-accent/50 bg-accent/10 px-8 py-3 font-medium text-accent transition-colors hover:bg-accent/15"
+                      disabled={isPendingPlanComingSoon}
+                      className="rounded-xl border border-dashed border-accent/50 bg-accent/10 px-8 py-3 font-medium text-accent transition-colors hover:bg-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       결제하기<br /> 
                       (Coming Soon)
