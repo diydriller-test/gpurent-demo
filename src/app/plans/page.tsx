@@ -81,6 +81,14 @@ function PlansPageContent() {
 
   const isAllTasksActive = sidebarMode === "all" && allTasksFilterOn;
 
+  function isApiActive(api: unknown): boolean {
+    const v = (api as { is_active?: unknown }).is_active;
+    if (v === undefined || v === null) return true;
+    if (v === true || v === 1 || v === "1" || v === "true") return true;
+    if (v === false || v === 0 || v === "0" || v === "false") return false;
+    return Boolean(v);
+  }
+
   const comingSoonPlanIds = useMemo(() => {
     if (usingDemoApis) return new Set<number>();
     const ids = new Set<number>();
@@ -96,10 +104,7 @@ function PlansPageContent() {
 
   const filteredApis = useMemo(() => {
     const filtered = apis
-      .filter((api) => {
-        const active = (api as unknown as { is_active?: unknown }).is_active;
-        return active !== false && active !== 0;
-      })
+      .filter(isApiActive)
       .filter((api) => {
       if (sidebarMode === "my") {
         return !!user?.api_plans?.some((p) => p.api_id === api.id);
@@ -180,10 +185,7 @@ function PlansPageContent() {
           (a) => !existingTasks.has(inferPlanTask(a.name)),
         );
         setApis(
-          [...data, ...supplements].filter((api) => {
-            const active = (api as unknown as { is_active?: unknown }).is_active;
-            return active !== false && active !== 0;
-          }),
+          [...data, ...supplements].filter(isApiActive),
         );
         setUsingDemoApis(false);
         setError(null);
@@ -191,10 +193,7 @@ function PlansPageContent() {
       .catch(() => {
         if (cancelled) return;
         setApis(
-          DEMO_APIS_FALLBACK.filter((api) => {
-            const active = (api as unknown as { is_active?: unknown }).is_active;
-            return active !== false && active !== 0;
-          }),
+          DEMO_APIS_FALLBACK.filter(isApiActive),
         );
         setUsingDemoApis(true);
         setError(null);
