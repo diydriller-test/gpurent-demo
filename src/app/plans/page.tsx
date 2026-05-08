@@ -704,6 +704,8 @@ function PlansPageContent() {
                 const isCurrentPlan = currentApiPlan?.plan_id === plan.id;
                 const isPendingPlan = pendingPlanId === plan.id;
                 const isUpdating = updatingPlanId === plan.id;
+                const isComingSoon =
+                  !usingDemoApis && (parseFloat(plan.price_monthly) === 0);
 
                 return (
                   <div
@@ -772,7 +774,7 @@ function PlansPageContent() {
                         disabled={
                           usingDemoApis
                             ? false
-                            : isCurrentPlan || isUpdating || isAuthChecking
+                            : isComingSoon || isCurrentPlan || isUpdating || isAuthChecking
                         }
                         className={`block w-full rounded-xl py-3 text-center font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
                           usingDemoApis
@@ -784,6 +786,8 @@ function PlansPageContent() {
                       >
                         {usingDemoApis
                           ? "데모 — 실제 선택은 연결 후"
+                          : isComingSoon
+                            ? "준비중"
                           : isCurrentPlan
                             ? "선택됨"
                             : isPendingPlan
@@ -805,6 +809,14 @@ function PlansPageContent() {
                         className="block w-full rounded-xl border border-dashed border-white/20 py-3 text-center font-medium text-foreground/80 transition-all hover:border-accent/40 hover:bg-accent/10"
                       >
                         데모 — 실제 신청은 연결 후
+                      </button>
+                    ) : isComingSoon ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="block w-full rounded-xl border border-white/10 py-3 text-center font-medium text-foreground/50 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        준비중
                       </button>
                     ) : (
                       <Link
