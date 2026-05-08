@@ -174,13 +174,15 @@ function PlansPageContent() {
         const supplements = DEMO_APIS_FALLBACK.filter(
           (a) => !existingTasks.has(inferPlanTask(a.name)),
         );
-        setApis([...data, ...supplements]);
+        setApis(
+          [...data, ...supplements].filter((api) => api.is_active !== false),
+        );
         setUsingDemoApis(false);
         setError(null);
       })
       .catch(() => {
         if (cancelled) return;
-        setApis(DEMO_APIS_FALLBACK);
+        setApis(DEMO_APIS_FALLBACK.filter((api) => api.is_active !== false));
         setUsingDemoApis(true);
         setError(null);
       })

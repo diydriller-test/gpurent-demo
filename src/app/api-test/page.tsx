@@ -1790,7 +1790,13 @@ export default function ApiTestPage() {
     (async () => {
       try {
         const apis = await getApis();
-        if (!cancelled) setApisFromBackend(apis);
+        const active = apis.filter((a) => a.is_active !== false);
+        const sorted = [...active].sort(
+          (a, b) =>
+            (a.sort_order ?? Number.MAX_SAFE_INTEGER) -
+            (b.sort_order ?? Number.MAX_SAFE_INTEGER),
+        );
+        if (!cancelled) setApisFromBackend(sorted);
       } catch {
         if (!cancelled) setApisFromBackend([]);
       }
