@@ -27,18 +27,18 @@ export function NavAuthButton() {
 
   if (!mounted) {
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-5">
         <Link
           href={loginHref}
-          className="rounded-lg border border-white/25 bg-white/[0.03] px-4 py-2 text-sm font-medium text-foreground/95 transition-colors hover:border-accent/45 hover:bg-accent/5 hover:text-accent"
+          className="text-[15px] font-normal text-white/55 transition-colors hover:text-white/85"
         >
           로그인
         </Link>
         <Link
           href="/signup"
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+          className="rounded-xl bg-[#C8A96E] px-5 py-2 text-[15px] font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
         >
-          회원가입
+          지금 시작하기
         </Link>
       </div>
     );
@@ -46,17 +46,17 @@ export function NavAuthButton() {
 
   if (isLoggedIn) {
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-5">
         <Link
           href="/profile"
-          className="rounded-lg border border-white/20 bg-white/[0.02] px-4 py-2 text-sm font-medium text-foreground/90 transition-colors hover:border-accent/45 hover:bg-accent/5 hover:text-accent"
+          className="text-[15px] font-normal text-white/55 transition-colors hover:text-white/85"
         >
           프로필
         </Link>
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-lg border border-white/20 bg-transparent px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:border-red-300/40 hover:bg-red-400/10 hover:text-red-200"
+          className="rounded-lg border border-white/12 bg-transparent px-4 py-1.5 text-sm font-medium text-white/45 transition-colors hover:border-red-400/30 hover:text-red-300/80"
         >
           로그아웃
         </button>
@@ -65,18 +65,18 @@ export function NavAuthButton() {
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-5">
       <Link
         href={loginHref}
-        className="rounded-lg border border-white/25 bg-white/[0.03] px-4 py-2 text-sm font-medium text-foreground/95 transition-colors hover:border-accent/45 hover:bg-accent/5 hover:text-accent"
+        className="text-[15px] font-normal text-white/55 transition-colors hover:text-white/85"
       >
         로그인
       </Link>
       <Link
         href="/signup"
-        className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+        className="rounded-xl bg-[#C8A96E] px-5 py-2 text-[15px] font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
       >
-        회원가입
+        지금 시작하기
       </Link>
     </div>
   );

@@ -75,6 +75,60 @@ const HERO_BADGES = [
   "텍스트·임베딩·TTS 한곳에",
 ];
 
+const FEATURES_04 = [
+  {
+    num: "01",
+    title: "추천 구성",
+    description: "필요한 API 조합을 바로 제안. 처음부터 직접 고를 필요 없어요.",
+    icon: (
+      <>
+        <circle cx="20" cy="20" r="17" stroke="currentColor" strokeWidth="1.2" />
+        <circle cx="20" cy="20" r="7" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="20" y1="10" x2="20" y2="30" stroke="currentColor" strokeWidth="0.9" strokeDasharray="2 2.5" />
+        <line x1="10" y1="20" x2="30" y2="20" stroke="currentColor" strokeWidth="0.9" strokeDasharray="2 2.5" />
+      </>
+    ),
+  },
+  {
+    num: "02",
+    title: "빠른 연결",
+    description: "Playground에서 확인 후, API 키 하나로 바로 연결할 수 있어요.",
+    icon: (
+      <>
+        <circle cx="20" cy="20" r="17" stroke="currentColor" strokeWidth="1.2" />
+        <polyline points="22,12 17,21 22,21 18,29" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </>
+    ),
+  },
+  {
+    num: "03",
+    title: "비용 관리",
+    description: "월정액 기반. 토큰 계산 없이 매달 고정 비용으로 운영해요.",
+    icon: (
+      <>
+        <circle cx="20" cy="20" r="17" stroke="currentColor" strokeWidth="1.2" />
+        <rect x="12" y="23" width="4" height="6" rx="0.5" stroke="currentColor" strokeWidth="1.2" />
+        <rect x="18" y="19" width="4" height="10" rx="0.5" stroke="currentColor" strokeWidth="1.2" />
+        <rect x="24" y="15" width="4" height="14" rx="0.5" stroke="currentColor" strokeWidth="1.2" />
+      </>
+    ),
+  },
+  {
+    num: "04",
+    title: "확장 가능한 운영",
+    description: "사용자 늘어도 RPS만 올리면 끝. 구조 바꿀 필요 없어요.",
+    icon: (
+      <>
+        <circle cx="20" cy="20" r="17" stroke="currentColor" strokeWidth="1.2" />
+        <path d="M24 13h4v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M28 13l-6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M16 27h-4v-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 27l6-6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      </>
+    ),
+  },
+];
+
 const OMAKASE_LLM_STARTER_PRICE = 190000;
 const USD_TO_KRW = 1530;
 const GPT4O_INPUT_USD_PER_M = 5;
@@ -109,7 +163,7 @@ const TARGET_CUSTOMERS = [
   {
     title: "동시에 사용자 많이 붙는 서비스",
     description:
-      "요청이 한꺼번에 몰릴수록, 그래프에서 교점 넘어가면 ‘이번 달 얼마 나올지’ 설명하기 쉬워져요.",
+      "요청이 한꺼번에 몰릴수록, 그래프에서 교점 넘어가면 '이번 달 얼마 나올지' 설명하기 쉬워져요.",
   },
 ];
 
@@ -136,7 +190,7 @@ const DIFFERENTIATORS = [
   {
     title: "비용이 덜 흔들려요",
     description:
-      "토큰 쓸 때마다 청구가 달라지는 것보다, 월정액으로 ‘대략 이 정도’만 맞추면 됩니다.",
+      "토큰 쓸 때마다 청구가 달라지는 것보다, 월정액으로 '대략 이 정도'만 맞추면 됩니다.",
   },
   {
     title: "붙이기 빨라요",
@@ -230,7 +284,7 @@ const PRICE_SUMMARY = [
     subtitle: "일단 써보기·PoC",
     price: "10,000원부터",
     rps: "1 ~ 3.5 RPS",
-    tone: "border-white/8 bg-background/25",
+    tone: "border-wood/16 bg-background",
     points: ["STT·TTS 같은 것도 부담 없이 시작", "사내에서 연동만 먼저 볼 때"],
   },
   {
@@ -238,7 +292,7 @@ const PRICE_SUMMARY = [
     subtitle: "운영·실서비스",
     price: "30,000원부터",
     rps: "최대 3배 확장",
-    tone: "border-accent/28 bg-accent/7 shadow-[0_0_48px_rgba(232,136,138,0.08)]",
+    tone: "border-accent/25 bg-accent/6 shadow-[0_8px_48px_rgba(122,27,22,0.09)]",
     points: [
       "Starter보다 RPS 여유롭게",
       "사용자 늘어도 비용 구조는 그대로 단순하게",
@@ -262,6 +316,12 @@ const LANDING_SECTION_LINKS: Array<{ href: string; label: string }> = [
 ];
 
 const API_BELT = [...APIS, ...APIS];
+
+const DASHBOARD_API_ROWS = [
+  { name: "Text (Qwen)", ms: "182ms" },
+  { name: "Embedding", ms: "43ms" },
+  { name: "TTS", ms: "320ms" },
+];
 
 export default function Home() {
   const [comingSoonMessage, setComingSoonMessage] = useState<string | null>(
@@ -303,7 +363,6 @@ export default function Home() {
     }, ms);
   }
 
-  // 가로로 자동 이동(우->좌 느낌) + 사용자가 조작하면 잠시 멈춤
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -332,7 +391,6 @@ export default function Home() {
 
       el.scrollLeft += (speedPxPerSec * dt) / 1000;
       if (el.scrollLeft >= maxScrollLeft - 1) {
-        // 처음으로 되돌려 자연스러운 루프
         el.scrollLeft = 0;
       }
     };
@@ -342,19 +400,19 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-grid-pattern">
+    <div className="min-h-screen">
       {comingSoonMessage ? (
-        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[2px] px-4">
-          <div className="w-[min(520px,90%)] rounded-2xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-foreground/10 backdrop-blur-[2px] px-4">
+          <div className="w-[min(520px,90%)] rounded-2xl border border-wood/22 bg-background p-4 shadow-[0_8px_48px_rgba(0,0,0,0.12)]">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
+              <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-wood/22 bg-wood/8 text-wood">
                 +
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-foreground">
                   Coming Soon
                 </p>
-                <p className="mt-1 text-sm leading-relaxed text-foreground/80">
+                <p className="mt-1 text-sm leading-relaxed text-foreground/70">
                   {comingSoonMessage}
                 </p>
               </div>
@@ -366,119 +424,173 @@ export default function Home() {
       {/* Navigation */}
       <SiteNav fixed />
 
-      {/* Hero */}
-      <section className="relative px-6 pt-32 pb-24 md:pt-40 md:pb-32">
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="mb-4 font-mono text-sm uppercase tracking-[0.2em] text-accent text-omakase-neon">
-            오늘의 API 코스
-          </p>
-          <h1 className="mb-4 text-4xl font-bold leading-[1.15] tracking-tight md:text-6xl">
-            <span className="text-omakase-gradient">AI API 오마카세</span>
-          </h1>
-          <p className="mx-auto mb-4 max-w-3xl text-xl font-semibold text-foreground md:text-3xl">
-            어떤 서비스든 AI API, 부담은 줄이고 빠르게 붙이고 싶을 때
-          </p>
-          <p className="mx-auto mb-8 max-w-3xl text-base leading-relaxed text-foreground/72 md:text-lg">
-            벤더 여러 군데 비교하느라 시간 쓰지 말고, 여기서 바로 써보고 붙이면
-            돼요. 월정액으로 비용 감 잡기 쉽고, GPU는 우리가 직접 돌려 가격
-            부담을 확실히 낮췄어요.
-          </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/api-test"
-              className="group inline-flex h-14 w-[180px] items-center justify-center gap-2 rounded-xl bg-accent px-8 py-4 font-medium text-background glow-accent transition-all hover:opacity-90"
-            >
-              무료 체험
-              <span className="transition-transform group-hover:translate-x-1">
-                →
-              </span>
-            </Link>
-            <Link
-              href="/plans"
-              className="inline-flex h-14 w-[180px] items-center justify-center gap-2 rounded-xl border border-white/12 px-8 py-4 font-medium text-foreground transition-colors hover:border-accent/40 hover:bg-white/5 hover:text-accent"
-            >
-              플랜 보기
-            </Link>
-          </div>
-          <div className="mx-auto mt-8 flex max-w-3xl flex-wrap items-center justify-center gap-2.5">
-            {HERO_BADGES.map((badge) => (
-              <span
-                key={badge}
-                className="inline-flex items-center rounded-full border border-accent/20 bg-accent/6 px-3 py-1.5 text-[11px] font-mono text-accent/95"
-              >
-                {badge}
-              </span>
-            ))}
-          </div>
-          <div className="mx-auto mt-10 grid max-w-4xl gap-3 text-left md:grid-cols-3">
-            <div className="rounded-2xl border border-accent/20 bg-accent/6 p-5">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
-                과금 구조
-              </p>
-              <p className="mt-2 text-lg font-semibold text-foreground">
-                월정액으로 감 잡기
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/62">
-                매번 토큰 곱해서 계산하지 않아도, 이번 달은 대략 이 정도예요.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-surface/45 p-5">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
-                인프라
-              </p>
-              <p className="mt-2 text-lg font-semibold text-foreground">
-                GPU는 우리가 돌림
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/62">
-                서버 비용·가격을 우리가 맞추니까, 견적만 보고 붙이기 편해요.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-surface/45 p-5">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
-                빠른 시작
-              </p>
-              <p className="mt-2 text-lg font-semibold text-foreground">
-                써보고 나서 붙이기
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/62">
-                Playground에서 먼저 써보고, 괜찮으면 그 API만 서비스에 연결하면
-                됩니다.
-              </p>
-            </div>
-          </div>
+      {/* ── Hero ── */}
+      <section className="relative flex flex-col overflow-hidden px-10 xl:px-16 pt-[70px]" style={{ height: "calc(100vh - 250px)" }}>
+        {/* 일월오봉 — 달 (좌상단) */}
+        <svg aria-hidden="true" style={{ position: "absolute", top: "-6%", left: "-40px", width: "320px", height: "320px", zIndex: 0 }} viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="160" cy="160" r="154" fill="#F0EBE0" opacity="0.72" />
+          <circle cx="160" cy="160" r="130" fill="none" stroke="rgba(220,210,190,0.40)" strokeWidth="1.2" />
+          <circle cx="160" cy="160" r="104" fill="none" stroke="rgba(220,210,190,0.18)" strokeWidth="0.8" />
+        </svg>
+        {/* 일월오봉 — 해 (우상단) */}
+        <svg aria-hidden="true" style={{ position: "absolute", top: "-5%", right: "-55px", width: "380px", height: "380px", zIndex: 0 }} viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="210" cy="210" r="202" fill="#7A1B16" opacity="0.88" />
+          <circle cx="210" cy="210" r="170" fill="none" stroke="rgba(255,200,180,0.16)" strokeWidth="1.4" />
+          <circle cx="210" cy="210" r="136" fill="none" stroke="rgba(255,200,180,0.08)" strokeWidth="1" />
+        </svg>
+        {/* 일월오봉 — 오봉 산맥 */}
+        <svg aria-hidden="true" style={{ position: "absolute", bottom: 0, left: 0, right: 0, width: "100%", height: "68%", zIndex: 0 }} viewBox="0 0 1440 480" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          {/* 원경 산 — 가장 연하게 */}
+          <path d="M0,480 L0,320 Q180,200 360,260 Q540,180 720,200 Q900,180 1080,260 Q1260,200 1440,300 L1440,480 Z" fill="rgba(80,60,30,0.045)" />
+          {/* 5봉 메인 봉우리 */}
+          <path d="M0,480 L0,380 Q120,300 240,340 Q360,260 480,290 Q570,220 660,240 Q720,200 780,220 Q870,200 960,240 Q1050,260 1140,300 Q1260,260 1380,320 L1440,340 L1440,480 Z" fill="rgba(70,52,22,0.068)" />
+          {/* 중경 능선 */}
+          <path d="M0,480 L0,420 Q200,370 400,390 Q600,350 720,360 Q840,350 1040,385 Q1240,365 1440,400 L1440,480 Z" fill="rgba(60,44,18,0.085)" />
+          {/* 전경 물결 */}
+          <path d="M0,480 L0,455 Q180,438 360,448 Q540,434 720,444 Q900,432 1080,446 Q1260,434 1440,450 L1440,480 Z" fill="rgba(50,36,14,0.055)" />
+        </svg>
+        <div className="mx-auto flex w-full max-w-full flex-1 flex-col">
+          <div className="relative z-10 flex flex-1 items-center gap-12">
 
-          <nav
-            id="landing-at-a-glance"
-            className="mx-auto mt-12 max-w-4xl rounded-2xl border border-white/10 bg-background/25 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-            aria-label="섹션 바로가기"
-          >
-            <p className="text-center text-[11px] text-foreground/45">
-              아래로 쭉 내리기 싫으면, 여기서 점프해요
-            </p>
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-              {LANDING_SECTION_LINKS.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-full border border-white/10 bg-background/30 px-3 py-1.5 text-[12px] text-foreground/78 transition-colors hover:border-accent/35 hover:text-accent"
+            {/* Left: Text Content */}
+            <div className="text-left">
+              <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.30em] text-accent">
+                구독 하나로 완성하는 AI 인프라
+              </p>
+              <h1 className="mb-4 font-serif text-[2.2rem] leading-[1.35] tracking-[0.025em] text-foreground md:text-[3.2rem]" style={{ fontWeight: 900 }}>
+                당신의 AI 스택,
+                <br />
+                <span className="text-accent">오마카세처럼</span> 큐레이션
+              </h1>
+              <p className="mb-6 max-w-2xl text-sm leading-[1.8] tracking-[0.012em] text-foreground/72 md:text-[0.95rem]">
+                최신 AI 모델 API의 MCP 통합을 한 곳에서 구독하고,
+                연결부터 비용 관리까지 전 과정을 자동화하세요.
+              </p>
+
+              {/* Buttons */}
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/api-test"
+                  className="group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-accent px-7 text-sm font-semibold text-white transition-all hover:bg-accent-bright"
                 >
-                  {link.label}
-                </a>
-              ))}
+                  지금 시작하기
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </Link>
+                <Link
+                  href="/plans"
+                  className="inline-flex h-11 items-center justify-center rounded-full border border-wood/35 px-7 text-sm font-medium text-foreground/60 transition-colors hover:border-wood/60 hover:text-foreground"
+                >
+                  서비스 둘러보기
+                </Link>
+              </div>
+
+              {/* Badge strip */}
+              <div className="mt-5 flex flex-wrap gap-2">
+                {HERO_BADGES.map((badge) => (
+                  <span
+                    key={badge}
+                    className="inline-flex items-center rounded-full border border-wood/16 bg-wood/5 px-3 py-1 font-mono text-[10px] text-foreground/50"
+                  >
+                    {badge}
+                  </span>
+                ))}
+              </div>
             </div>
-          </nav>
+
+            {/* Right: 오마카세 코스 메뉴판 (wide) */}
+            <div className="hidden shrink-0 lg:block">
+              <div className="relative w-[640px] rounded-2xl border border-wood/20 bg-[#FAF7F2] px-7 py-5 shadow-[0_8px_40px_rgba(0,0,0,0.07)]">
+                {/* 상단 헤더 */}
+                <div className="mb-5 flex items-center justify-between">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-wood/50">오늘의 코스</p>
+                  <div className="h-px flex-1 mx-4 bg-wood/15" />
+                  <p className="font-serif text-[11px] text-wood/40">API OMAKASE</p>
+                </div>
+
+                {/* API 그리드 — 2열 × 6행 */}
+                <div className="grid grid-cols-2 gap-0 divide-y divide-wood/10 [&>*:nth-child(odd)]:border-r [&>*:nth-child(odd)]:border-wood/10">
+                  {[
+                    { num: "一", icon: "✦", name: "Text",        sub: "대화 · 요약 · 질문 답변",   task: "text",        span: false },
+                    { num: "二", icon: "◇", name: "Embedding",   sub: "문장 벡터화 · RAG 검색",    task: "embedding",   span: false },
+                    { num: "三", icon: "⇅", name: "Reranker",    sub: "검색 결과 순위 재정렬",      task: "reranker",    span: false },
+                    { num: "四", icon: "♪", name: "TTS",         sub: "텍스트 → 음성 합성",        task: "tts",         span: false },
+                    { num: "五", icon: "◉", name: "STT",         sub: "음성 → 텍스트 변환",        task: "stt",         span: false },
+                    { num: "六", icon: "⊕", name: "Voice Clone", sub: "음성 복제 · 커스텀 보이스", task: "voice-clone", span: false },
+                    { num: "七", icon: "⊞", name: "Image2Text",  sub: "이미지 → 텍스트 변환",      task: "image2text",  span: true },
+                  ].map((course) => (
+                    <Link key={course.name} href={`/api-test?task=${course.task}`} className={`flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-wood/5${course.span ? " col-span-2" : ""}`}>
+                      <span className="mt-0.5 w-6 shrink-0 font-serif text-[11px] text-wood/35">{course.num}</span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] text-wood/50">{course.icon}</span>
+                          <p className="font-mono text-[12px] font-semibold tracking-wider text-foreground/80">{course.name}</p>
+                        </div>
+                        <p className="mt-0.5 text-[11px] leading-snug text-foreground/40">{course.sub}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* 하단 */}
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-wood/15" />
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <circle cx="9" cy="9" r="8" stroke="rgba(160,120,48,0.25)" strokeWidth="1"/>
+                    <circle cx="9" cy="9" r="4" fill="rgba(160,120,48,0.12)"/>
+                  </svg>
+                  <div className="h-px flex-1 bg-wood/15" />
+                </div>
+                <p className="mt-2 text-center font-mono text-[9px] tracking-[0.25em] text-wood/35">RPS 기반 월정액</p>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
-      {/* Pricing Proof */}
+      {/* 히어로 아래 전체 흰색 배경 */}
+      <div className="bg-white">
+
+      {/* ── 01–04 Feature Cards ── */}
+      <div className="grid grid-cols-2 border-t border-wood/10 px-16 md:grid-cols-4 md:divide-x md:divide-wood/20">
+        {FEATURES_04.map((feature) => (
+          <div
+            key={feature.num}
+            className="group flex flex-col items-center px-5 py-10 text-center"
+          >
+            <span className="mb-3 self-start font-mono text-xs tracking-[0.22em] text-wood/60">
+              {feature.num}
+            </span>
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-wood/30">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 40 40"
+                className="text-wood transition-colors group-hover:text-accent"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {feature.icon}
+              </svg>
+            </div>
+            <h3 className="mb-1.5 text-[13px] font-semibold text-foreground">
+              {feature.title}
+            </h3>
+            <p className="text-[12px] leading-relaxed text-foreground/52">
+              {feature.description}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Pricing Proof ── */}
       <section
         id="pricing-proof"
-        className="border-t border-white/5 px-6 py-16 md:py-24"
+        className="border-t border-wood/8 px-16 py-16 md:py-12"
       >
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-full">
           <details
-            open
-            className="group rounded-[28px] border border-white/8 bg-surface/30 p-5 md:p-8"
+            className="group rounded-[28px] border border-wood/12 bg-surface/50 p-5 md:p-8"
           >
             <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -489,14 +601,14 @@ export default function Home() {
                   <h2 className="mt-2 text-2xl font-bold text-foreground md:text-3xl">
                     일정 사용량부터는 월정액이 더 경제적이에요
                   </h2>
-                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-foreground/70 md:text-base">
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-foreground/60 md:text-base">
                     GPT-4o처럼 토큰 과금이랑, 오마카세 LLM(Qwen 3.6) API Starter
                     월 19만 원을 같은 그래프에 올려놓으면, 어디부터 월정액이
                     경제적인지 한눈에 보여요.
                   </p>
                 </div>
                 <span
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-white/10 bg-background/30 text-foreground/60 transition-transform group-open:rotate-180 sm:self-center"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-wood/14 bg-background/60 text-foreground/45 transition-transform group-open:rotate-180 sm:self-center"
                   aria-hidden="true"
                 >
                   ⌄
@@ -504,19 +616,19 @@ export default function Home() {
               </div>
             </summary>
             <div className="mt-10 space-y-6">
-              <div className="overflow-hidden rounded-[32px] border border-accent/18 bg-[radial-gradient(circle_at_top,rgba(232,136,138,0.16),transparent_36%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-8 shadow-[0_0_90px_rgba(232,136,138,0.08)] md:p-10">
+              <div className="overflow-hidden rounded-[32px] border border-wood/16 bg-background p-8 shadow-[0_4px_40px_rgba(0,0,0,0.04)] md:p-10">
                 <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h3 className="text-2xl font-semibold text-foreground">
                       사용량이 일정 수준을 넘으면 월정액이 더 유리해요
                     </h3>
-                    <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground/65">
+                    <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground/58">
                       X축은 월에 쓴 토큰(백만 단위), Y축은 월 비용이에요. 교차점
                       이후부터는 사용량이 커질수록 우리 쪽 절감폭이 커져요
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-accent/24 bg-background/20 px-4 py-3 text-right shadow-[0_0_35px_rgba(232,136,138,0.10)]">
-                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
+                  <div className="rounded-2xl border border-accent/20 bg-accent/5 px-4 py-3 text-right shadow-[0_4px_24px_rgba(122,27,22,0.06)]">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/80">
                       오마카세 LLM(Qwen 3.6) Starter
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -524,7 +636,7 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-                <div className="mt-8 overflow-hidden rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.015))] p-6 md:p-8">
+                <div className="mt-8 overflow-hidden rounded-[30px] border border-wood/12 bg-surface/40 p-6 md:p-8">
                   <svg
                     viewBox="0 0 960 520"
                     className="h-auto w-full"
@@ -539,11 +651,8 @@ export default function Home() {
                         y1="0"
                         y2="0"
                       >
-                        <stop offset="0%" stopColor="rgba(232,136,138,0)" />
-                        <stop
-                          offset="100%"
-                          stopColor="rgba(232,136,138,0.22)"
-                        />
+                        <stop offset="0%" stopColor="rgba(122,27,22,0)" />
+                        <stop offset="100%" stopColor="rgba(122,27,22,0.14)" />
                       </linearGradient>
                     </defs>
                     {TARGET_GRAPH_TICKS_Y.map((tick) => (
@@ -553,14 +662,14 @@ export default function Home() {
                           y1={graphY(tick)}
                           x2="870"
                           y2={graphY(tick)}
-                          stroke="rgba(255,255,255,0.08)"
+                          stroke="rgba(28,16,8,0.07)"
                           strokeDasharray={tick === 0 ? "0" : "4 6"}
                         />
                         <text
                           x="78"
                           y={graphY(tick) + 4}
                           textAnchor="end"
-                          fill="rgba(255,255,255,0.48)"
+                          fill="rgba(28,16,8,0.38)"
                           fontSize="12"
                           fontFamily="monospace"
                         >
@@ -575,14 +684,14 @@ export default function Home() {
                           y1="72"
                           x2={graphX(tick)}
                           y2="392"
-                          stroke="rgba(255,255,255,0.06)"
+                          stroke="rgba(28,16,8,0.05)"
                           strokeDasharray={tick === 0 ? "0" : "4 6"}
                         />
                         <text
                           x={graphX(tick)}
                           y="424"
                           textAnchor="middle"
-                          fill="rgba(255,255,255,0.48)"
+                          fill="rgba(28,16,8,0.38)"
                           fontSize="13"
                           fontFamily="monospace"
                         >
@@ -595,14 +704,14 @@ export default function Home() {
                       y1="392"
                       x2="870"
                       y2="392"
-                      stroke="rgba(255,255,255,0.24)"
+                      stroke="rgba(28,16,8,0.18)"
                     />
                     <line
                       x1="90"
                       y1="72"
                       x2="90"
                       y2="392"
-                      stroke="rgba(255,255,255,0.24)"
+                      stroke="rgba(28,16,8,0.18)"
                     />
                     <rect
                       x={graphX(TARGET_BREAK_EVEN_X)}
@@ -616,7 +725,7 @@ export default function Home() {
                       y1={graphY(OMAKASE_LLM_STARTER_PRICE)}
                       x2="870"
                       y2={graphY(OMAKASE_LLM_STARTER_PRICE)}
-                      stroke="rgba(232,136,138,0.95)"
+                      stroke="rgba(122,27,22,0.92)"
                       strokeWidth="3.5"
                     />
                     <line
@@ -624,36 +733,34 @@ export default function Home() {
                       y1={graphY(0)}
                       x2="870"
                       y2={graphY(GPT4O_KRW_PER_M_TOKEN * TARGET_GRAPH_MAX_X)}
-                      stroke="rgba(255,255,255,0.88)"
+                      stroke="rgba(28,16,8,0.65)"
                       strokeWidth="3.5"
                     />
                     <circle
                       cx={graphX(TARGET_BREAK_EVEN_X)}
                       cy={graphY(TARGET_BREAK_EVEN_Y)}
                       r="18"
-                      fill="rgba(255,164,173,0.16)"
-                      className="target-point-neon-halo"
+                      fill="rgba(122,27,22,0.12)"
                     />
                     <circle
                       cx={graphX(TARGET_BREAK_EVEN_X)}
                       cy={graphY(TARGET_BREAK_EVEN_Y)}
                       r="8"
-                      fill="rgba(232,136,138,1)"
-                      className="target-point-core"
+                      fill="rgba(122,27,22,0.92)"
                     />
                     <line
                       x1={graphX(TARGET_BREAK_EVEN_X)}
                       y1="72"
                       x2={graphX(TARGET_BREAK_EVEN_X)}
                       y2="392"
-                      stroke="rgba(232,136,138,0.45)"
+                      stroke="rgba(122,27,22,0.38)"
                       strokeDasharray="6 6"
                     />
                     <text
                       x={graphX(TARGET_BREAK_EVEN_X)}
                       y="444"
                       textAnchor="middle"
-                      fill="rgba(255,255,255,0.52)"
+                      fill="rgba(28,16,8,0.40)"
                       fontSize="10"
                       fontFamily="monospace"
                     >
@@ -666,7 +773,7 @@ export default function Home() {
                     <text
                       x="90"
                       y="44"
-                      fill="rgba(255,255,255,0.56)"
+                      fill="rgba(28,16,8,0.42)"
                       fontSize="13"
                       fontFamily="monospace"
                     >
@@ -676,7 +783,7 @@ export default function Home() {
                       x="870"
                       y="468"
                       textAnchor="end"
-                      fill="rgba(255,255,255,0.56)"
+                      fill="rgba(28,16,8,0.42)"
                       fontSize="13"
                       fontFamily="monospace"
                     >
@@ -685,7 +792,7 @@ export default function Home() {
                     <text
                       x={graphX(0) - 18}
                       y={graphY(0) + 18}
-                      fill="rgba(255,255,255,0.58)"
+                      fill="rgba(28,16,8,0.42)"
                       fontSize="13"
                       fontFamily="monospace"
                     >
@@ -694,25 +801,25 @@ export default function Home() {
                   </svg>
                 </div>
                 <div className="mt-5 grid gap-3 md:grid-cols-2">
-                  <div className="rounded-2xl border border-accent/24 bg-accent/8 px-4 py-3">
+                  <div className="rounded-2xl border border-accent/20 bg-accent/5 px-4 py-3">
                     <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
                       손익분기점
                     </p>
                     <p className="mt-2 text-lg font-semibold text-foreground">
                       약 {TARGET_BREAK_EVEN_X.toFixed(1)}M 토큰
                     </p>
-                    <p className="mt-1 text-sm text-foreground/65">
+                    <p className="mt-1 text-sm text-foreground/55">
                       여기 넘기면 우리 쪽을 쓰는 게 더 유리해요.
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-white/8 bg-background/18 px-4 py-3">
-                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
+                  <div className="rounded-2xl border border-wood/14 bg-surface px-4 py-3">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
                       그래프 해석
                     </p>
                     <p className="mt-2 text-lg font-semibold text-foreground">
                       GPT-4o는 사용량 비례 증가, 오마카세는 월 19만원 고정
                     </p>
-                    <p className="mt-1 text-sm text-foreground/55">
+                    <p className="mt-1 text-sm text-foreground/50">
                       입력·출력 반반 가정하고 GPT-4o 요금을 환산한 거예요.
                     </p>
                   </div>
@@ -725,94 +832,59 @@ export default function Home() {
                     className={[
                       "rounded-3xl border p-5",
                       idx === 2
-                        ? "border-accent/24 bg-accent/7 shadow-[0_0_40px_rgba(232,136,138,0.08)]"
-                        : "border-white/8 bg-surface/45",
+                        ? "border-accent/20 bg-accent/5 shadow-[0_4px_32px_rgba(122,27,22,0.06)]"
+                        : "border-wood/12 bg-background",
                     ].join(" ")}
                   >
-                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/85">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/75">
                       예상 타겟 고객
                     </p>
                     <h3 className="mt-3 text-lg font-semibold text-foreground">
                       {customer.title}
                     </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-foreground/62">
+                    <p className="mt-3 text-sm leading-relaxed text-foreground/55">
                       {customer.description}
                     </p>
                   </div>
                 ))}
-                <div className="rounded-3xl border border-accent/22 bg-[linear-gradient(180deg,rgba(232,136,138,0.10),rgba(232,136,138,0.05))] p-5 shadow-[0_0_50px_rgba(232,136,138,0.10)]">
+                <div className="rounded-3xl border border-accent/18 bg-accent/5 p-5 shadow-[0_4px_36px_rgba(122,27,22,0.07)]">
                   <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
                     결론
                   </p>
-                  <p className="mt-3 text-sm leading-relaxed text-foreground/65">
+                  <p className="mt-3 text-sm leading-relaxed text-foreground/60">
                     쓰는 양 많고, 실험도 자주 하고, 사용자 요청도 동시에 몰리면
                     우리 쪽이 더 유리해요.
                   </p>
-                  <div className="mt-4 rounded-2xl border border-white/10 bg-background/20 px-4 py-3">
+                  <div className="mt-4 rounded-2xl border border-wood/12 bg-background px-4 py-3">
                     <p className="text-sm font-semibold text-foreground">
                       교점 이전 고객
                     </p>
-                    <p className="mt-1 text-sm leading-relaxed text-foreground/60">
+                    <p className="mt-1 text-sm leading-relaxed text-foreground/52">
                       적게 쓰면 다른 게 더 싸게 나올 수도 있어요.
                     </p>
                   </div>
-                  <div className="mt-3 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3">
+                  <div className="mt-3 rounded-2xl border border-accent/22 bg-accent/8 px-4 py-3">
                     <p className="text-sm font-semibold text-foreground">
                       교점 이후 고객
                     </p>
-                    <p className="mt-1 text-sm leading-relaxed text-foreground/82">
+                    <p className="mt-1 text-sm leading-relaxed text-foreground/75">
                       이럴 때 우리 플랜이 더 유리해요.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-            <style>{`
-            @keyframes targetPointNeonHaloBlink {
-              0%, 18%, 22%, 54%, 58%, 100% { opacity: 0.95; }
-              20%, 56% { opacity: 0.18; }
-              24% { opacity: 0.48; }
-            }
-            @keyframes targetPointNeonCoreBlink {
-              0%, 18%, 22%, 54%, 58%, 100% {
-                opacity: 1;
-                filter:
-                  drop-shadow(0 0 4px rgba(255, 214, 214, 0.95))
-                  drop-shadow(0 0 10px rgba(232, 136, 138, 0.95))
-                  drop-shadow(0 0 18px rgba(232, 136, 138, 0.72));
-              }
-              20%, 56% {
-                opacity: 0.34;
-                filter:
-                  drop-shadow(0 0 2px rgba(255, 214, 214, 0.45))
-                  drop-shadow(0 0 4px rgba(232, 136, 138, 0.28));
-              }
-              24% {
-                opacity: 0.68;
-                filter:
-                  drop-shadow(0 0 3px rgba(255, 214, 214, 0.7))
-                  drop-shadow(0 0 7px rgba(232, 136, 138, 0.55))
-                  drop-shadow(0 0 12px rgba(232, 136, 138, 0.34));
-              }
-            }
-            .target-point-neon-halo {
-              animation: targetPointNeonHaloBlink 2.2s steps(1, end) infinite;
-            }
-            .target-point-core {
-              animation: targetPointNeonCoreBlink 2.2s steps(1, end) infinite;
-            }
-          `}</style>
           </details>
         </div>
       </section>
 
-      {/* Why Omakase */}
-      <section id="why-omakase" className="border-t border-white/5 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
+      {/* ── Why Omakase ── */}
+      <section id="why-omakase" className="border-t border-wood/8 px-16 py-12">
+        <div className="mx-auto max-w-full">
           <h2 className="mb-4 text-center text-3xl font-bold text-foreground md:text-4xl">
             왜 AI API 오마카세인가요?
           </h2>
-          <p className="mx-auto mb-14 max-w-3xl text-center text-foreground/70">
+          <p className="mx-auto mb-14 max-w-3xl text-center text-foreground/58">
             API 개수만 많다고 끝이 아니에요. 막상 붙일 때는 비용이 얼마 나올지,
             운영이 귀찮지 않은지, 그리고 써보기까지 얼마나 빠른지가 더 중요하죠.
           </p>
@@ -824,28 +896,28 @@ export default function Home() {
                   className={[
                     "rounded-2xl border p-7",
                     idx === 0
-                      ? "border-accent/30 bg-accent/7 shadow-[0_0_48px_rgba(232,136,138,0.08)]"
-                      : "border-white/5 bg-surface/50",
+                      ? "border-accent/20 bg-accent/5 shadow-[0_4px_32px_rgba(122,27,22,0.06)]"
+                      : "border-wood/10 bg-background",
                   ].join(" ")}
                 >
                   <div className="mb-4 h-1 w-12 rounded-full bg-accent" />
                   <h3 className="mb-3 text-xl font-semibold text-foreground">
                     {item.title}
                   </h3>
-                  <p className="text-sm leading-relaxed text-foreground/62">
+                  <p className="text-sm leading-relaxed text-foreground/55">
                     {item.description}
                   </p>
                 </div>
               ))}
             </div>
-            <div className="rounded-3xl border border-white/8 bg-surface/45 p-8">
+            <div className="rounded-3xl border border-wood/12 bg-background p-8">
               <p className="font-mono text-xs uppercase tracking-[0.22em] text-accent">
                 추천 대상
               </p>
               <h3 className="mt-3 text-2xl font-semibold text-foreground">
                 이런 팀이 편해요
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-foreground/65">
+              <p className="mt-3 text-sm leading-relaxed text-foreground/58">
                 목록만 길게 뽑아준 게 아니라, 빨리 써보고 월에 고정으로 나갈
                 금액만 맞추면 되는 팀이면 체감이 큽니다.
               </p>
@@ -853,10 +925,10 @@ export default function Home() {
                 {FITS_FOR.map((item) => (
                   <div
                     key={item}
-                    className="flex items-start gap-3 rounded-2xl border border-white/6 bg-background/25 px-4 py-3"
+                    className="flex items-start gap-3 rounded-2xl border border-wood/10 bg-surface px-4 py-3"
                   >
                     <span className="mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-accent" />
-                    <p className="text-sm text-foreground/82">{item}</p>
+                    <p className="text-sm text-foreground/72">{item}</p>
                   </div>
                 ))}
               </div>
@@ -865,13 +937,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Comparison */}
+      {/* ── Comparison ── */}
       <section
         id="compare"
-        className="border-t border-white/5 px-6 py-16 md:py-24"
+        className="border-t border-wood/8 px-16 py-16 md:py-12"
       >
-        <div className="mx-auto max-w-6xl">
-          <details open className="group rounded-[28px] border border-white/8 bg-surface/30 p-5 md:p-8">
+        <div className="mx-auto max-w-full">
+          <details
+            className="group rounded-[28px] border border-wood/12 bg-surface/50 p-5 md:p-8"
+          >
             <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                 <div className="min-w-0 text-left">
@@ -881,14 +955,14 @@ export default function Home() {
                   <h2 className="mt-2 text-2xl font-bold text-foreground md:text-3xl">
                     그래서 뭐가 달라져요?
                   </h2>
-                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-foreground/70 md:text-base">
+                  <p className="mt-3 max-w-2xl text-sm leading-relaxed text-foreground/60 md:text-base">
                     API 몇 개 있냐보다, 붙이고 돌리는 게 얼마나 귀찮지 않냐가
                     중요하죠. 아래는 비용이랑 운영이 덜 복잡해지는 쪽으로만
                     짚어본 거예요.
                   </p>
                 </div>
                 <span
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-white/10 bg-background/30 text-foreground/60 transition-transform group-open:rotate-180 sm:self-center"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-xl border border-wood/14 bg-background/60 text-foreground/45 transition-transform group-open:rotate-180 sm:self-center"
                   aria-hidden="true"
                 >
                   ⌄
@@ -896,12 +970,12 @@ export default function Home() {
               </div>
             </summary>
 
-            <div className="mt-10 hidden overflow-hidden rounded-3xl border border-white/8 bg-surface/45 md:block">
-              <div className="grid grid-cols-[0.8fr_1fr_1fr] border-b border-white/6 bg-background/25">
-                <div className="px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
+            <div className="mt-10 hidden overflow-hidden rounded-3xl border border-wood/12 bg-background md:block">
+              <div className="grid grid-cols-[0.8fr_1fr_1fr] border-b border-wood/8 bg-surface">
+                <div className="px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/38">
                   비교 항목
                 </div>
-                <div className="px-5 py-4 text-sm font-semibold text-foreground/70">
+                <div className="px-5 py-4 text-sm font-semibold text-foreground/58">
                   일반적인 도입 방식
                 </div>
                 <div className="px-5 py-4 text-sm font-semibold text-accent">
@@ -914,17 +988,17 @@ export default function Home() {
                   className={[
                     "grid grid-cols-[0.8fr_1fr_1fr]",
                     idx !== COMPARISON_ROWS.length - 1
-                      ? "border-b border-white/6"
+                      ? "border-b border-wood/8"
                       : "",
                   ].join(" ")}
                 >
                   <div className="px-5 py-5 text-sm font-semibold text-foreground">
                     {row.label}
                   </div>
-                  <div className="px-5 py-5 text-sm leading-relaxed text-foreground/55">
+                  <div className="px-5 py-5 text-sm leading-relaxed text-foreground/48">
                     {row.before}
                   </div>
-                  <div className="bg-accent/5 px-5 py-5 text-sm leading-relaxed text-foreground/88">
+                  <div className="bg-accent/5 px-5 py-5 text-sm leading-relaxed text-foreground/80">
                     {row.after}
                   </div>
                 </div>
@@ -934,26 +1008,26 @@ export default function Home() {
               {COMPARISON_ROWS.map((row) => (
                 <div
                   key={row.label}
-                  className="overflow-hidden rounded-3xl border border-white/8 bg-surface/45"
+                  className="overflow-hidden rounded-3xl border border-wood/12 bg-background"
                 >
-                  <div className="border-b border-white/6 bg-background/25 px-5 py-4">
+                  <div className="border-b border-wood/8 bg-surface px-5 py-4">
                     <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
                       {row.label}
                     </p>
                   </div>
                   <div className="px-5 py-4">
-                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/38">
                       일반적인 도입 방식
                     </p>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/58">
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/50">
                       {row.before}
                     </p>
                   </div>
-                  <div className="border-t border-white/6 bg-accent/5 px-5 py-4">
+                  <div className="border-t border-wood/8 bg-accent/5 px-5 py-4">
                     <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
                       AI API 오마카세
                     </p>
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/88">
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/80">
                       {row.after}
                     </p>
                   </div>
@@ -964,9 +1038,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Use Cases */}
-      <section id="use-cases" className="border-t border-white/5 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
+      {/* ── Use Cases ── */}
+      <section id="use-cases" className="border-t border-wood/8 px-16 py-12">
+        <div className="mx-auto max-w-full">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
               활용 시나리오
@@ -974,7 +1048,7 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
               이렇게만 이어 붙여도 돼요
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
+            <p className="mx-auto mt-4 max-w-2xl text-foreground/58">
               API 하나만 잘 쓰는 것보다, 실제로는 이거랑 저거 묶어서 쓰는 경우가
               많아요. 여기서는 그 조합을 빨리 써보고 운영까지 가져가기 쉽게
               해뒀어요.
@@ -988,8 +1062,8 @@ export default function Home() {
                 className={[
                   "rounded-3xl border p-7",
                   idx === 0
-                    ? "border-accent/28 bg-accent/7 shadow-[0_0_48px_rgba(232,136,138,0.08)]"
-                    : "border-white/6 bg-surface/45",
+                    ? "border-accent/20 bg-accent/5 shadow-[0_4px_32px_rgba(122,27,22,0.06)]"
+                    : "border-wood/10 bg-background",
                 ].join(" ")}
               >
                 <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
@@ -998,14 +1072,14 @@ export default function Home() {
                 <h3 className="mt-3 text-2xl font-semibold text-foreground">
                   {useCase.title}
                 </h3>
-                <p className="mt-4 text-sm leading-relaxed text-foreground/65">
+                <p className="mt-4 text-sm leading-relaxed text-foreground/58">
                   {useCase.summary}
                 </p>
-                <div className="mt-6 rounded-2xl border border-white/6 bg-background/25 p-4">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
+                <div className="mt-6 rounded-2xl border border-wood/10 bg-surface p-4">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/38">
                     기대 효과
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/82">
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/75">
                     {useCase.outcome}
                   </p>
                 </div>
@@ -1015,9 +1089,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Onboarding Flow */}
-      <section className="border-t border-white/5 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
+      {/* ── Onboarding Flow ── */}
+      <section className="border-t border-wood/8 px-16 py-12">
+        <div className="mx-auto max-w-full">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
               시작 방법
@@ -1025,7 +1099,7 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
               시작하는 건 단순하게
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
+            <p className="mx-auto mt-4 max-w-2xl text-foreground/58">
               기능 설명만 길게 읽게 하기보다, 어떻게 시작하면 되는지가 먼저
               보여야 하죠. 흐름은 이 세 단계로 보면 돼요.
             </p>
@@ -1038,22 +1112,22 @@ export default function Home() {
                 className={[
                   "rounded-3xl border p-7",
                   idx === 1
-                    ? "border-accent/28 bg-accent/7 shadow-[0_0_48px_rgba(232,136,138,0.08)]"
-                    : "border-white/6 bg-surface/45",
+                    ? "border-accent/20 bg-accent/5 shadow-[0_4px_32px_rgba(122,27,22,0.06)]"
+                    : "border-wood/10 bg-background",
                 ].join(" ")}
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-mono text-xs tracking-[0.24em] text-accent">
                     STEP {item.step}
                   </span>
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-accent/25 bg-accent/10 font-mono text-sm text-accent">
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-accent/22 bg-accent/8 font-mono text-sm text-accent">
                     {idx + 1}
                   </span>
                 </div>
                 <h3 className="mt-5 text-2xl font-semibold text-foreground">
                   {item.title}
                 </h3>
-                <p className="mt-4 text-sm leading-relaxed text-foreground/65">
+                <p className="mt-4 text-sm leading-relaxed text-foreground/58">
                   {item.description}
                 </p>
               </div>
@@ -1062,13 +1136,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* APIs Section */}
-      <section id="apis" className="border-t border-white/5 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
+      {/* ── APIs Section ── */}
+      <section id="apis" className="border-t border-wood/8 px-16 py-12">
+        <div className="mx-auto max-w-full">
           <h2 className="mb-4 text-center text-3xl font-bold text-foreground md:text-4xl">
             쓸 만한 API, 한곳에
           </h2>
-          <p className="mx-auto mb-16 max-w-2xl text-center text-foreground/70">
+          <p className="mx-auto mb-10 max-w-2xl text-center text-foreground/58">
             필요한 것만 골라 쓰면 되고, 앞으로도 하나씩 더 붙일 예정이에요.
           </p>
           <div
@@ -1078,7 +1152,7 @@ export default function Home() {
             onWheel={() => pauseUnderCarousel()}
             onPointerDown={() => pauseUnderCarousel(2000)}
           >
-            <div className="api-belt-track flex w-max gap-6 pr-6">
+            <div className="api-belt-track flex w-max gap-5 pr-6">
               {API_BELT.map((api, i) =>
                 api.comingSoon ? (
                   api.apiId ? (
@@ -1090,18 +1164,18 @@ export default function Home() {
                           "추가 API가 곧 공개됩니다. 조금만 기다려 주세요!",
                         )
                       }
-                      className="api-belt-card group w-[250px] shrink-0 rounded-2xl border border-white/5 bg-surface/50 p-6 text-left transition-all hover:border-accent/20 hover:bg-surface"
+                      className="api-belt-card group w-[250px] shrink-0 rounded-2xl border border-wood/12 bg-background p-6 text-left transition-all"
                     >
-                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 font-mono text-xl text-accent transition-colors group-hover:bg-accent/20">
+                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-wood/16 bg-wood/6 font-mono text-xl text-wood transition-colors group-hover:border-accent/22 group-hover:bg-accent/6 group-hover:text-accent">
                         {api.icon}
                       </div>
                       <h3 className="mb-2 font-semibold text-foreground">
                         {api.name}
                       </h3>
-                      <p className="text-sm leading-relaxed text-foreground/60">
+                      <p className="text-sm leading-relaxed text-foreground/52">
                         {api.description}
                       </p>
-                      <div className="mt-4 flex items-center gap-2 text-xs text-foreground/45 opacity-0 transition-all duration-200 group-hover:opacity-100">
+                      <div className="mt-4 flex items-center gap-2 text-xs text-foreground/38 opacity-0 transition-all duration-200 group-hover:opacity-100">
                         <span>곧 공개됩니다</span>
                         <span className="text-accent/70">→</span>
                       </div>
@@ -1110,18 +1184,18 @@ export default function Home() {
                     <Link
                       key={`${api.name}-${i}`}
                       href="/api-test"
-                      className="api-belt-card group block w-[250px] shrink-0 rounded-2xl border border-white/5 bg-surface/50 p-6 text-left transition-all hover:border-accent/20 hover:bg-surface"
+                      className="api-belt-card group block w-[250px] shrink-0 rounded-2xl border border-wood/12 bg-background p-6 text-left transition-all"
                     >
-                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 font-mono text-xl text-accent transition-colors group-hover:bg-accent/20">
+                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-wood/16 bg-wood/6 font-mono text-xl text-wood transition-colors group-hover:border-accent/22 group-hover:bg-accent/6 group-hover:text-accent">
                         {api.icon}
                       </div>
                       <h3 className="mb-2 font-semibold text-foreground">
                         {api.name}
                       </h3>
-                      <p className="text-sm leading-relaxed text-foreground/60">
+                      <p className="text-sm leading-relaxed text-foreground/52">
                         {api.description}
                       </p>
-                      <div className="mt-4 flex items-center gap-2 text-xs text-foreground/45 opacity-0 transition-all duration-200 group-hover:opacity-100">
+                      <div className="mt-4 flex items-center gap-2 text-xs text-foreground/38 opacity-0 transition-all duration-200 group-hover:opacity-100">
                         <span>All 보기</span>
                         <span className="text-accent/70">→</span>
                       </div>
@@ -1131,18 +1205,18 @@ export default function Home() {
                   <Link
                     key={`${api.name}-${i}`}
                     href={`/api-test?task=${api.apiId}`}
-                    className="api-belt-card group block w-[250px] shrink-0 rounded-2xl border border-white/5 bg-surface/50 p-6 transition-all hover:border-accent/20 hover:bg-surface"
+                    className="api-belt-card group block w-[250px] shrink-0 rounded-2xl border border-wood/12 bg-background p-6 transition-all"
                   >
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 font-mono text-xl text-accent transition-colors group-hover:bg-accent/20">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-wood/16 bg-wood/6 font-mono text-xl text-wood transition-colors group-hover:border-accent/22 group-hover:bg-accent/6 group-hover:text-accent">
                       {api.icon}
                     </div>
                     <h3 className="mb-2 font-semibold text-foreground">
                       {api.name}
                     </h3>
-                    <p className="text-sm leading-relaxed text-foreground/60">
+                    <p className="text-sm leading-relaxed text-foreground/52">
                       {api.description}
                     </p>
-                    <div className="mt-4 flex items-center gap-2 text-xs text-foreground/45 opacity-0 transition-all duration-200 group-hover:opacity-100">
+                    <div className="mt-4 flex items-center gap-2 text-xs text-foreground/38 opacity-0 transition-all duration-200 group-hover:opacity-100">
                       <span>테스트하러 가기</span>
                       <span className="text-accent">→</span>
                     </div>
@@ -1154,9 +1228,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Price Summary */}
-      <section id="plan-summary" className="border-t border-white/5 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
+      {/* ── Price Summary ── */}
+      <section id="plan-summary" className="border-t border-wood/8 px-16 py-12">
+        <div className="mx-auto max-w-full">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
               빠른 가격 안내
@@ -1164,27 +1238,27 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
               플랜은 뭐 먼저 보면 돼요?
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
+            <p className="mx-auto mt-4 max-w-2xl text-foreground/58">
               API마다 금액은 다르지만, 고르는 구조는 단순해요. 일단 써보려면
               Starter, 사람 붙으면 Pro 쪽을 보면 돼요.
             </p>
           </div>
 
-          <div className="mx-auto mt-8 max-w-4xl rounded-3xl border border-white/8 bg-background/24 px-6 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <div className="mx-auto mt-8 max-w-4xl rounded-3xl border border-wood/12 bg-background px-6 py-5 shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/90">
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/80">
                   RPS란?
                 </p>
                 <p className="mt-2 text-lg font-semibold text-foreground">
                   초당 몇 개 요청을 감당하느냐 보는 숫자예요.
                 </p>
               </div>
-              <div className="rounded-2xl border border-accent/18 bg-accent/8 px-4 py-3 text-sm leading-relaxed text-foreground/78 md:max-w-sm">
+              <div className="rounded-2xl border border-wood/14 bg-surface px-4 py-3 text-sm leading-relaxed text-foreground/65 md:max-w-sm">
                 RPS 높을수록, 동시에 몰려도 덜 버벅이는 쪽이에요.
               </div>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-foreground/60">
+            <p className="mt-4 text-sm leading-relaxed text-foreground/52">
               사내에서만 돌릴 땐 낮아도 되는데, 실제 사용자 붙으면 RPS 올린
               플랜이 필요해질 때가 많아요.
             </p>
@@ -1204,12 +1278,12 @@ export default function Home() {
                     <h3 className="mt-3 text-3xl font-semibold text-foreground">
                       {plan.price}
                     </h3>
-                    <p className="mt-2 text-sm text-foreground/65">
+                    <p className="mt-2 text-sm text-foreground/58">
                       {plan.subtitle}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-white/8 bg-background/20 px-4 py-3 text-left sm:text-right">
-                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/45">
+                  <div className="rounded-2xl border border-wood/12 bg-background px-4 py-3 text-left sm:text-right">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/38">
                       RPS
                     </p>
                     <p className="mt-1 text-lg font-semibold text-foreground">
@@ -1221,7 +1295,7 @@ export default function Home() {
                   {plan.points.map((point) => (
                     <div key={point} className="flex items-start gap-2.5">
                       <span className="mt-1 inline-flex h-2 w-2 shrink-0 rounded-full bg-accent" />
-                      <p className="text-sm leading-relaxed text-foreground/82">
+                      <p className="text-sm leading-relaxed text-foreground/72">
                         {point}
                       </p>
                     </div>
@@ -1231,20 +1305,20 @@ export default function Home() {
             ))}
           </div>
 
-          <p className="mt-4 text-center text-xs text-foreground/40">
+          <p className="mt-4 text-center text-xs text-foreground/35">
             * 가격은 API 종류마다 다릅니다. 위 금액은 최저가 기준이에요.
           </p>
 
           <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/plans"
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-7 py-3.5 font-medium text-background transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-semibold text-white transition-opacity hover:bg-accent-bright"
             >
               전체 플랜 보기
             </Link>
             <Link
               href="/api-test"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-7 py-3.5 font-medium text-foreground transition-colors hover:border-accent/40 hover:bg-white/5 hover:text-accent"
+              className="inline-flex items-center gap-2 rounded-full border border-wood/30 px-7 py-3.5 text-sm font-medium text-foreground/60 transition-colors hover:border-wood/55 hover:text-foreground"
             >
               먼저 테스트하기
             </Link>
@@ -1252,13 +1326,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Benefits / Pricing Model */}
-      <section id="pricing" className="border-t border-white/5 px-6 py-24">
-        <div className="mx-auto max-w-6xl">
+      {/* ── Benefits ── */}
+      <section id="pricing" className="border-t border-wood/8 px-16 py-12">
+        <div className="mx-auto max-w-full">
           <h2 className="mb-4 text-center text-3xl font-bold text-foreground md:text-4xl">
             운영할 때 덜 머리 아픈 쪽으로
           </h2>
-          <p className="mx-auto mb-16 max-w-2xl text-center text-foreground/70">
+          <p className="mx-auto mb-10 max-w-2xl text-center text-foreground/58">
             비용·서버·API 늘리는 것까지 한 번에 이해하기 쉽게 만들어뒀어요.
           </p>
           <div className="grid gap-8 md:grid-cols-3">
@@ -1266,14 +1340,14 @@ export default function Home() {
               <div
                 key={benefit.title}
                 className={[
-                  "rounded-2xl border bg-surface/50 p-8",
+                  "rounded-2xl border p-8",
                   idx === 0
-                    ? "border-accent/35 bg-accent/8 shadow-[0_0_48px_rgba(232,136,138,0.10)]"
-                    : "border-white/5",
+                    ? "border-accent/20 bg-accent/5 shadow-[0_4px_32px_rgba(122,27,22,0.06)]"
+                    : "border-wood/10 bg-background",
                 ].join(" ")}
               >
                 {idx === 0 ? (
-                  <span className="mb-3 inline-flex items-center rounded-full border border-accent/35 bg-accent/12 px-3 py-1 font-mono text-[11px] text-accent">
+                  <span className="mb-3 inline-flex items-center rounded-full border border-accent/22 bg-accent/8 px-3 py-1 font-mono text-[11px] text-accent">
                     핵심 장점
                   </span>
                 ) : null}
@@ -1281,18 +1355,20 @@ export default function Home() {
                 <h3 className="mb-2 text-xl font-semibold text-foreground">
                   {benefit.title}
                 </h3>
-                <p className="text-foreground/60">{benefit.description}</p>
+                <p className="text-foreground/55">{benefit.description}</p>
               </div>
             ))}
           </div>
-          <div className="mt-16 rounded-2xl border border-accent/20 bg-accent/5 p-8 text-center md:p-12">
-            <p className="font-mono text-accent">계산기보다 운영 기준이 먼저</p>
-            <p className="mt-2 text-foreground/80">
+          <div className="mt-10 rounded-2xl border border-wood/14 bg-surface p-8 text-center md:p-12">
+            <p className="font-mono text-sm text-foreground/55">
+              계산기보다 운영 기준이 먼저
+            </p>
+            <p className="mt-2 text-foreground/70">
               API마다 따로 붙이지 말고, 한곳에서 써보고 기준만 맞춰 가면 됩니다.
             </p>
             <Link
               href="/plans"
-              className="mt-6 inline-block rounded-xl bg-accent px-6 py-3 font-medium text-background transition-opacity hover:opacity-90"
+              className="mt-6 inline-block rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition-opacity hover:bg-accent-bright"
             >
               플랜 보기
             </Link>
@@ -1300,23 +1376,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section id="contact" className="border-t border-white/5 px-6 py-24">
-        <div className="mx-auto max-w-3xl rounded-3xl border border-white/5 bg-surface/50 p-12 text-center md:p-16">
+      {/* ── CTA ── */}
+      <section id="contact" className="border-t border-wood/8 px-16 py-12">
+        <div className="mx-auto max-w-3xl rounded-3xl border border-wood/14 bg-surface p-12 text-center md:p-16">
           <p className="font-mono text-xs uppercase tracking-[0.24em] text-accent">
             시작하기
           </p>
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+          <h2 className="mb-4 mt-3 text-3xl font-bold text-foreground md:text-4xl">
             한번 써보면 감 옵니다
           </h2>
-          <p className="mb-8 text-foreground/70">
+          <p className="mb-8 text-foreground/58">
             Playground에서 먼저 써보고, 맞으면 그때 플랜 고르면 돼요.
           </p>
           <div className="mb-8 flex flex-wrap items-center justify-center gap-2.5">
             {FINAL_CTA_POINTS.map((point) => (
               <span
                 key={point}
-                className="inline-flex items-center rounded-full border border-white/8 bg-background/25 px-3 py-1.5 text-[11px] font-mono text-foreground/72"
+                className="inline-flex items-center rounded-full border border-wood/14 bg-background px-3 py-1.5 font-mono text-[11px] text-foreground/55"
               >
                 {point}
               </span>
@@ -1325,25 +1401,27 @@ export default function Home() {
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/api-test"
-              className="inline-flex items-center gap-2 rounded-xl bg-accent px-8 py-4 font-medium text-background transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 text-sm font-semibold text-white transition-opacity hover:bg-accent-bright"
             >
               무료 체험 시작
             </Link>
             <Link
               href="/plans"
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-8 py-4 font-medium text-foreground transition-colors hover:border-accent/50 hover:bg-white/5"
+              className="inline-flex items-center gap-2 rounded-full border border-wood/30 px-8 py-4 text-sm font-medium text-foreground/60 transition-colors hover:border-wood/55 hover:text-foreground"
             >
               플랜 확인하기
             </Link>
           </div>
           <Link
             href="mailto:help@kogrobo.com"
-            className="mt-5 inline-flex text-sm text-foreground/52 transition-colors hover:text-accent"
+            className="mt-5 inline-flex text-sm text-foreground/40 transition-colors hover:text-accent"
           >
             도입이 애매하면 메일로 물어보기
           </Link>
         </div>
       </section>
+
+      </div>{/* /bg-white */}
     </div>
   );
 }

@@ -24,40 +24,45 @@ export function InfoPageLayout({
   sections,
 }: InfoPageLayoutProps) {
   return (
-    <main className="min-h-[calc(100vh-220px)] bg-white text-[#1f1f1f]">
+    <main className="min-h-[calc(100vh-220px)] bg-background text-foreground">
       <div className="mx-auto max-w-6xl px-6 py-10 md:px-8 md:py-14">
-        <div className="flex justify-end text-sm text-[#7a7a7a]">
+        {/* 브레드크럼 */}
+        <div className="flex justify-end text-sm text-foreground/40">
           <div className="flex items-center gap-2">
-            <Link href="/" className="transition-colors hover:text-[#222]">
+            <Link href="/" className="transition-colors hover:text-foreground/70">
               홈
             </Link>
-            <span>/</span>
-            <span className="font-medium text-[#222]">{currentLabel}</span>
+            <span className="text-foreground/25">/</span>
+            <span className="font-medium text-foreground/65">{currentLabel}</span>
           </div>
         </div>
 
+        {/* 제목 */}
         <div className="pt-10 md:pt-14">
-          <h1 className="text-center text-4xl font-semibold tracking-tight text-[#151515] md:text-5xl">
+          <h1 className="text-center text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
             {title}
           </h1>
         </div>
 
+        {/* 섹션 */}
         <div className="mt-16 space-y-12">
           {sections.map((section) => (
             <section key={section.title}>
-              <div className="border-b border-[#2d2d2d] pb-4">
-                <h2 className="text-xl font-semibold text-[#222]">{section.title}</h2>
+              <div className="border-b border-wood/20 pb-4">
+                <h2 className="text-xl font-semibold text-foreground/90">
+                  {section.title}
+                </h2>
               </div>
 
               {section.rows?.length ? (
-                <div className="mt-6 overflow-hidden border-t-2 border-[#2d2d2d]">
-                  <div className="divide-y divide-[#ececec] border-x border-b border-[#ececec]">
+                <div className="mt-6 overflow-hidden border-t-2 border-wood/22">
+                  <div className="divide-y divide-wood/8 border-x border-b border-wood/10">
                     {section.rows.map((row) => (
                       <div key={row.label} className="grid md:grid-cols-[180px_1fr]">
-                        <div className="bg-[#f7f7f7] px-5 py-5 text-sm font-medium text-[#444]">
+                        <div className="bg-surface px-5 py-5 text-sm font-medium text-foreground/60">
                           {row.label}
                         </div>
-                        <div className="px-5 py-5 text-sm leading-7 text-[#3a3a3a]">
+                        <div className="px-5 py-5 text-sm leading-7 text-foreground/75">
                           {row.value}
                         </div>
                       </div>
@@ -67,7 +72,7 @@ export function InfoPageLayout({
               ) : null}
 
               {section.content ? (
-                <div className="mt-6 rounded-none border border-[#ececec] bg-white px-5 py-6 text-sm leading-7 text-[#3a3a3a] md:px-7">
+                <div className="mt-6 rounded-xl border border-wood/12 bg-surface px-5 py-6 text-sm leading-7 text-foreground/70 md:px-7">
                   {section.content}
                 </div>
               ) : null}

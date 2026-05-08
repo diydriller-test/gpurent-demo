@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
-/* AI API 오마카세 — 검정 · 연갈색(우드) · 선분홍(연어·참치) + 네온 */
+/* AI API 오마카세 — 프리미엄 동양 미니멀리즘 · 한지 미색 · 다크 레드 · 골드 */
 :root {
-  --background: #0a0808;
-  --foreground: #f5ebe8;
-  --accent: #e8888a;
-  --accent-bright: #ffb4b6;
-  --accent-dim: #a85557;
-  --wood: #c4a574;
-  --wood-dim: #8b7355;
-  --surface: #141210;
-  --surface-hover: #1e1a18;
-  --accent-glow: rgba(232, 136, 138, 0.35);
-  --wood-glow: rgba(196, 165, 116, 0.2);
+  --background: #F5F2ED;
+  --foreground: #1C1008;
+  --accent: #7A1B16;
+  --accent-bright: #9B2318;
+  --accent-dim: #5C1210;
+  --wood: #A07830;
+  --wood-dim: #7A5A22;
+  --surface: #EDE9E2;
+  --surface-hover: #E5DFD5;
+  --accent-glow: rgba(122, 27, 22, 0.15);
+  --wood-glow: rgba(160, 120, 48, 0.12);
 }
 
 @theme inline {
@@ -26,111 +26,86 @@
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
   --font-sans: var(--font-outfit), system-ui, sans-serif;
+  /* 나눔명조 — Google Fonts 직접 로드로 한국어 완전 지원 */
+  --font-serif: 'Nanum Myeongjo', 'Apple Myungjo', 'AppleMyungjo', 'Batang', 'Gungsuh', Georgia, serif;
   --font-mono: var(--font-jetbrains-mono), monospace;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  background-image:
-    radial-gradient(ellipse 100% 70% at 50% -15%, rgba(232, 136, 138, 0.09), transparent 52%),
-    radial-gradient(ellipse 60% 45% at 100% 0%, rgba(196, 165, 116, 0.06), transparent 45%),
-    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(196, 165, 116, 0.05), transparent 50%);
 }
 
-/* Subtle grid — 살구·우드 톤 */
-.bg-grid-pattern {
-  background-image:
-    linear-gradient(rgba(232, 136, 138, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(196, 165, 116, 0.028) 1px, transparent 1px);
-  background-size: 48px 48px;
+/* 수묵화 배경 컨테이너 */
+.ink-mountains {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-/* 네온 글로우 (버튼·카드) */
-.glow-accent {
-  box-shadow:
-    0 0 40px rgba(232, 136, 138, 0.2),
-    0 0 80px rgba(196, 165, 116, 0.08);
-}
 
-/* 히어로 타이틀 — OpenClaw 스타일 그라데이션 */
+/* 히어로 타이틀 */
 .text-omakase-gradient {
-  background: linear-gradient(
-    115deg,
-    var(--accent-bright) 0%,
-    var(--accent) 38%,
-    var(--wood) 72%,
-    var(--accent-dim) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 0 24px rgba(232, 136, 138, 0.45))
-    drop-shadow(0 0 48px rgba(196, 165, 116, 0.2));
+  color: var(--accent);
 }
 
 .text-omakase-neon {
-  text-shadow:
-    0 0 8px rgba(232, 136, 138, 0.6),
-    0 0 20px rgba(232, 136, 138, 0.35),
-    0 0 36px rgba(196, 165, 116, 0.2);
+  color: var(--accent);
 }
 
-/* Docs TOC — 네온 사인 */
+/* 다크 대시보드 카드 (히어로 우측 프리뷰) */
+.dashboard-card {
+  background: linear-gradient(145deg, #1E1814, #150E0A);
+  box-shadow:
+    0 40px 110px rgba(0, 0, 0, 0.32),
+    0 16px 40px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: perspective(1200px) rotateY(-3deg) rotateX(1deg);
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.dashboard-card:hover {
+  transform: perspective(1200px) rotateY(-1deg) rotateX(0.5deg) translateY(-4px);
+  box-shadow:
+    0 48px 130px rgba(0, 0, 0, 0.38),
+    0 20px 48px rgba(0, 0, 0, 0.26),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* 골드 라인 카드 */
+.card-gold {
+  border: 1px solid rgba(160, 120, 48, 0.22);
+  background: var(--background);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.card-gold:hover {
+  border-color: rgba(160, 120, 48, 0.48);
+  box-shadow: 0 6px 28px rgba(160, 120, 48, 0.09);
+  transform: translateY(-2px);
+}
+
+/* 섹션 페이드인 */
+@keyframes sectionFade {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Docs TOC 활성 */
 .docs-toc-link-active {
   color: var(--accent);
   font-weight: 500;
-  background: rgba(232, 136, 138, 0.08);
+  background: rgba(122, 27, 22, 0.06);
   box-shadow:
-    inset 0 0 18px rgba(232, 136, 138, 0.12),
-    0 0 0 1px rgba(232, 136, 138, 0.28),
-    0 0 22px rgba(232, 136, 138, 0.22),
-    0 0 44px rgba(196, 165, 116, 0.12);
-  text-shadow:
-    0 0 8px rgba(232, 136, 138, 0.55),
-    0 0 20px rgba(232, 136, 138, 0.35),
-    0 0 32px rgba(196, 165, 116, 0.2);
-  animation: docs-toc-neon-pulse 3.5s ease-in-out infinite;
+    inset 0 0 12px rgba(122, 27, 22, 0.04),
+    0 0 0 1px rgba(122, 27, 22, 0.20);
 }
 
-@keyframes docs-toc-neon-pulse {
-  0%,
-  100% {
-    filter: brightness(1);
-    text-shadow:
-      0 0 8px rgba(232, 136, 138, 0.55),
-      0 0 20px rgba(232, 136, 138, 0.35),
-      0 0 32px rgba(196, 165, 116, 0.2);
-  }
-  50% {
-    filter: brightness(1.08);
-    text-shadow:
-      0 0 12px rgba(232, 136, 138, 0.65),
-      0 0 26px rgba(232, 136, 138, 0.45),
-      0 0 40px rgba(196, 165, 116, 0.28);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .docs-toc-link-active {
-    animation: none;
-  }
-}
-
-@keyframes apiBeltScroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.api-belt-track {
-  animation: none;
-  will-change: auto;
-}
-
+/* API 벨트 카드 */
 .api-belt-card {
   position: relative;
   transition:
@@ -141,52 +116,50 @@ body {
 }
 
 .api-belt-card:hover {
-  border-color: rgba(232, 136, 138, 0.45);
-  background: rgba(20, 18, 16, 0.92);
+  border-color: rgba(160, 120, 48, 0.48);
+  background: var(--surface);
   box-shadow:
-    inset 0 0 18px rgba(232, 136, 138, 0.1),
-    0 0 0 1px rgba(232, 136, 138, 0.2),
-    0 0 26px rgba(232, 136, 138, 0.18),
-    0 0 52px rgba(196, 165, 116, 0.1);
-  transform: translateY(-2px);
+    0 6px 28px rgba(122, 27, 22, 0.07),
+    0 0 0 1px rgba(160, 120, 48, 0.28);
+  transform: translateY(-3px);
 }
 
-.under-api-carousel {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(232, 136, 138, 0.45) rgba(255, 255, 255, 0.06);
-}
-
-.under-api-carousel::-webkit-scrollbar {
-  height: 10px;
-}
-
-.under-api-carousel::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 9999px;
-}
-
-.under-api-carousel::-webkit-scrollbar-thumb {
-  background: rgba(232, 136, 138, 0.45);
-  border-radius: 9999px;
-  border: 2px solid rgba(10, 8, 8, 1);
-}
-
+.under-api-carousel,
 .api-belt-wrap {
   scrollbar-width: thin;
-  scrollbar-color: rgba(232, 136, 138, 0.45) rgba(255, 255, 255, 0.06);
+  scrollbar-color: rgba(160, 120, 48, 0.42) rgba(0, 0, 0, 0.05);
 }
 
+.under-api-carousel::-webkit-scrollbar,
 .api-belt-wrap::-webkit-scrollbar {
-  height: 10px;
+  height: 8px;
 }
 
+.under-api-carousel::-webkit-scrollbar-track,
 .api-belt-wrap::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.035);
   border-radius: 9999px;
 }
 
+.under-api-carousel::-webkit-scrollbar-thumb,
 .api-belt-wrap::-webkit-scrollbar-thumb {
-  background: rgba(232, 136, 138, 0.45);
+  background: rgba(160, 120, 48, 0.42);
   border-radius: 9999px;
-  border: 2px solid rgba(10, 8, 8, 1);
+  border: 2px solid var(--background);
+}
+
+@keyframes apiBeltScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.api-belt-track {
+  animation: none;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-toc-link-active { animation: none; }
+  .dashboard-card { transform: none !important; }
+  .dashboard-card:hover { transform: none !important; }
 }
