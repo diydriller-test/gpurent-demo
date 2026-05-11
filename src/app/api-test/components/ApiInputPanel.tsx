@@ -261,7 +261,7 @@ function CustomSelect({
               className={[
                 "overflow-y-auto rounded-xl backdrop-blur-xl",
                 panelClassName ??
-                  "border border-accent/18 bg-[rgba(18,14,14,0.95)] shadow-[0_20px_60px_rgba(0,0,0,0.45),0_0_0_1px_rgba(232,136,138,0.08)]",
+                  "border border-foreground/10 bg-surface shadow-[0_8px_24px_rgba(0,0,0,0.10)]",
               ].join(" ")}
             >
               <div className="py-1.5">
@@ -287,7 +287,7 @@ function CustomSelect({
                           "w-full px-3 py-2.5 text-left text-sm transition-colors",
                           isSelected
                             ? "bg-accent/12 text-accent"
-                            : "text-foreground/80 hover:bg-white/5 hover:text-foreground",
+                            : "text-foreground/80 hover:bg-foreground/6 hover:text-foreground",
                           optionClassName ?? "",
                         ].join(" ")}
                       >
@@ -697,7 +697,7 @@ export function ApiInputPanel({
   }
 
   const selectShellClassName =
-    "relative mt-1.5 overflow-hidden rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25";
+    "relative mt-1.5 overflow-hidden rounded-xl border border-foreground/12 bg-background/60 transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25";
 
   useEffect(() => {
     if (!sttLangDropdownOpen) return;
@@ -1784,7 +1784,7 @@ export function ApiInputPanel({
             <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end">
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-xs text-foreground/60">언어</p>
-                <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
+                <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-foreground/12 bg-background/60 transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
                   <CustomSelect
                     value={ttsLanguage}
                     onChange={setTtsLanguage}
@@ -1795,13 +1795,13 @@ export function ApiInputPanel({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-xs text-foreground/60">Speaker</p>
-                <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
+                <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-foreground/12 bg-background/60 transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
                   <CustomSelect
                     value={ttsSpeaker}
                     onChange={setTtsSpeaker}
                     options={ttsSpeakerOptions}
                     triggerClassName="h-full text-[13px] text-foreground"
-                    panelClassName="border border-accent/22 bg-[rgba(18,14,14,0.97)] shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(232,136,138,0.12),0_0_30px_rgba(232,136,138,0.12)]"
+                    panelClassName="border border-foreground/10 bg-surface shadow-[0_8px_24px_rgba(0,0,0,0.10)]"
                   />
                 </div>
               </div>
@@ -2059,7 +2059,7 @@ export function ApiInputPanel({
                         }
                       }}
                       placeholder="언어 코드/이름 검색"
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] px-3 py-2 pr-10 text-sm text-foreground outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+                      className="mt-2 w-full rounded-xl border border-foreground/12 bg-background/60 px-3 py-2 pr-10 text-sm text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                     />
                     <div className="pointer-events-none absolute inset-y-0 right-0 mt-2 flex w-10 items-center justify-center text-foreground/55">
                       <ChevronDownIcon
@@ -2076,7 +2076,7 @@ export function ApiInputPanel({
                         <div
                           ref={sttLangPanelRef}
                           style={sttLangPanelStyle}
-                          className="overflow-y-auto rounded-xl border border-accent/18 bg-[rgba(18,14,14,0.95)] backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.45),0_0_0_1px_rgba(232,136,138,0.08)]"
+                          className="overflow-y-auto rounded-xl border border-foreground/10 bg-surface shadow-[0_8px_24px_rgba(0,0,0,0.10)]"
                           role="listbox"
                         >
                           <div className="py-1.5">
@@ -2100,7 +2100,7 @@ export function ApiInputPanel({
                                     "break-words whitespace-normal",
                                     sttLanguage === code
                                       ? "bg-accent/12 text-accent"
-                                      : "text-foreground/80 hover:bg-white/5 hover:text-foreground",
+                                      : "text-foreground/80 hover:bg-foreground/6 hover:text-foreground",
                                   ].join(" ")}
                                 >
                                   {getSttLanguageLabel(code)}
@@ -2470,7 +2470,7 @@ function VoiceCloneSection({
         <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end">
           <div className="min-w-0 flex-1">
             <p className="font-mono text-xs text-foreground/60">언어</p>
-            <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_0_0_1px_rgba(232,136,138,0.04)] transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
+            <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-foreground/12 bg-background/60 transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
               <CustomSelect
                 value={vcLanguage}
                 onChange={setVcLanguage}
@@ -2498,7 +2498,7 @@ function VoiceCloneSection({
               >
                 ?
               </button>
-              <div className="pointer-events-none absolute bottom-full right-0 z-50 mb-2 w-64 rounded-xl border border-white/10 bg-[rgba(18,14,14,0.97)] px-3 py-2.5 text-[12px] leading-relaxed text-foreground/80 opacity-0 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-opacity duration-150 group-hover:opacity-100">
+              <div className="pointer-events-none absolute bottom-full right-0 z-50 mb-2 w-64 rounded-xl border border-foreground/10 bg-surface px-3 py-2.5 text-[12px] leading-relaxed text-foreground/80 opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.10)] transition-opacity duration-150 group-hover:opacity-100">
                 <p className="font-semibold text-foreground">x_vector only 란?</p>
                 <p className="mt-1">
                   <span className="font-medium text-accent">켜짐 (기본)</span>: 참조 음성에서
@@ -2510,7 +2510,7 @@ function VoiceCloneSection({
                   참조 음성의 운율·억양·말하기 스타일까지 클론합니다. 아래에 참조 음성에서 말하는
                   내용(ref_text)을 함께 입력해야 합니다.
                 </p>
-                <div className="absolute right-2 top-full border-4 border-transparent border-t-white/10" />
+                <div className="absolute right-2 top-full border-4 border-transparent border-t-foreground/10" />
               </div>
             </div>
           </div>
