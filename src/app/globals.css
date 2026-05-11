@@ -26,10 +26,10 @@
   --color-wood-dim: var(--wood-dim);
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
-  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-sans: 'Outfit', system-ui, sans-serif;
   /* 나눔명조 — Google Fonts 직접 로드로 한국어 완전 지원 */
   --font-serif: 'Nanum Myeongjo', 'Apple Myungjo', 'AppleMyungjo', 'Batang', 'Gungsuh', Georgia, serif;
-  --font-mono: var(--font-jetbrains-mono), monospace;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 body {
