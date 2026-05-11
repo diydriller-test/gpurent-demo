@@ -1902,6 +1902,37 @@ export default function ApiTestPage() {
     if (targetTask === "Vision") setSelectedApi("image2text");
   }, [taskKeys]);
 
+  const SESSION_SNAPSHOT_KEY = "apiTestResultSnapshot";
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem(SESSION_SNAPSHOT_KEY);
+    if (!raw) return;
+    sessionStorage.removeItem(SESSION_SNAPSHOT_KEY);
+    try {
+      const snap = JSON.parse(raw) as {
+        messages?: ChatMessage[];
+        prompt?: string;
+        llmSystemPrompt?: string;
+        embeddingText?: string;
+        embeddingVector?: number[] | null;
+        sttTranscript?: string | null;
+        image2textResult?: string | null;
+        image2textPrompt?: string;
+        consoleByApi?: Record<ApiId, ConsoleState>;
+      };
+      if (snap.messages) setMessages(snap.messages);
+      if (snap.prompt !== undefined) setPrompt(snap.prompt);
+      if (snap.llmSystemPrompt !== undefined) setLlmSystemPrompt(snap.llmSystemPrompt);
+      if (snap.embeddingText !== undefined) setEmbeddingText(snap.embeddingText);
+      if (snap.embeddingVector !== undefined) setEmbeddingVector(snap.embeddingVector);
+      if (snap.sttTranscript !== undefined) setSttTranscript(snap.sttTranscript);
+      if (snap.image2textResult !== undefined) setImage2TextResult(snap.image2textResult);
+      if (snap.image2textPrompt !== undefined) setImage2TextPrompt(snap.image2textPrompt);
+      if (snap.consoleByApi) setConsoleByApi(snap.consoleByApi);
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     function handlePopState() {
       if (viewMode !== "detail") return;
@@ -6970,6 +7001,21 @@ export default function ApiTestPage() {
                       <Link
                         href={`/plans?chapter=${selectedApi}&auto=1`}
                         className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-accent/85"
+                        onClick={() => {
+                          try {
+                            sessionStorage.setItem(SESSION_SNAPSHOT_KEY, JSON.stringify({
+                              messages,
+                              prompt,
+                              llmSystemPrompt,
+                              embeddingText,
+                              embeddingVector,
+                              sttTranscript,
+                              image2textResult,
+                              image2textPrompt,
+                              consoleByApi,
+                            }));
+                          } catch {}
+                        }}
                       >
                         플랜 보기 →
                       </Link>
