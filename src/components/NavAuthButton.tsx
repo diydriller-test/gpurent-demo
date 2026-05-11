@@ -31,7 +31,16 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
   }
 
   if (mobile) {
-    if (!mounted || !isLoggedIn) {
+    if (!mounted) {
+      return (
+        <div className="invisible flex gap-2" aria-hidden="true">
+          <div className="flex-1 rounded-xl py-3" />
+          <div className="flex-1 rounded-xl py-3" />
+        </div>
+      );
+    }
+
+    if (!isLoggedIn) {
       return (
         <div className="flex gap-2">
           <button
@@ -73,11 +82,9 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
 
   if (!mounted) {
     return (
-      <div className="flex items-center gap-5">
-        <span className="text-[15px] font-normal text-white/55">로그인</span>
-        <span className="rounded-xl bg-[#C8A96E] px-5 py-2 text-[15px] font-semibold text-[#1A0A00]">
-          회원가입
-        </span>
+      <div className="invisible flex items-center gap-5" aria-hidden="true">
+        <span className="text-[15px] font-normal">로그인</span>
+        <span className="rounded-xl px-5 py-2 text-[15px] font-semibold">회원가입</span>
       </div>
     );
   }
