@@ -1833,6 +1833,7 @@ export default function ApiTestPage() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const taskParam = params.get("task")?.toLowerCase() ?? null;
+    const viewParam = params.get("view")?.toLowerCase() ?? null;
     if (!taskParam) return;
 
     const targetTask: MarketplaceTask | null =
@@ -1877,7 +1878,7 @@ export default function ApiTestPage() {
 
     if (!targetTask) return;
 
-    setViewMode("list");
+    setViewMode(viewParam === "detail" ? "detail" : "list");
     setSidebarMode("all");
     setFilterTasks((prev) => {
       const next = { ...prev };
@@ -2163,6 +2164,16 @@ export default function ApiTestPage() {
     }
   }
 
+  const TASK_TO_PARAM: Partial<Record<MarketplaceTask, string>> = {
+    "Text Generation": "llm",
+    "Embedding": "embedding",
+    "Reranker": "reranker",
+    "TTS": "tts",
+    "STT": "stt",
+    "Voice Clone": "voice-clone",
+    "Vision": "vision",
+  };
+
   function enterDetailFor(item: MarketplaceItem) {
     if (item.apiId) {
       listViewFilterSnapshotRef.current = {
@@ -2172,7 +2183,11 @@ export default function ApiTestPage() {
       setSelectedApi(item.apiId);
       setViewMode("detail");
       window.scrollTo(0, 0);
-      window.history.pushState({ apiTestDetail: true }, "", window.location.href);
+      const taskParam = TASK_TO_PARAM[item.task as MarketplaceTask];
+      const url = taskParam
+        ? `/api-test?task=${taskParam}&view=detail`
+        : window.location.href;
+      window.history.pushState({ apiTestDetail: true }, "", url);
       return;
     }
     showComingSoon("준비 중입니다 (Coming Soon)");
