@@ -5782,7 +5782,6 @@ export default function ApiTestPage() {
 
       {/* Content */}
       <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-12">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(232,136,138,0.06),transparent_62%)]" />
 
         {/* Page header */}
         <div className="mb-10 text-center">
