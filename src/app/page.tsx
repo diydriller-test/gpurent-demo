@@ -68,7 +68,17 @@ const BENEFITS = [
   },
 ];
 
-const ACTIVE_API_COUNT = APIS.filter((api) => !api.comingSoon).length;
+const HERO_COURSE_MENU = [
+  { num: "一", icon: "✦", name: "Text",        sub: "대화 · 요약 · 질문 답변",   task: "text",        span: false },
+  { num: "二", icon: "◇", name: "Embedding",   sub: "문장 벡터화 · RAG 검색",    task: "embedding",   span: false },
+  { num: "三", icon: "⇅", name: "Reranker",    sub: "검색 결과 순위 재정렬",      task: "reranker",    span: false },
+  { num: "四", icon: "♪", name: "TTS",         sub: "텍스트 → 음성 합성",        task: "tts",         span: false },
+  { num: "五", icon: "◉", name: "STT",         sub: "음성 → 텍스트 변환",        task: "stt",         span: false },
+  { num: "六", icon: "⊕", name: "Voice Clone", sub: "음성 복제 · 커스텀 보이스", task: "voice-clone", span: false },
+  { num: "七", icon: "⊞", name: "Image2Text",  sub: "이미지 → 텍스트 변환",      task: "image2text",  span: true },
+];
+
+const ACTIVE_API_COUNT = HERO_COURSE_MENU.length;
 
 const HERO_BADGES = [
   "월정액으로 비용 잡기",
@@ -511,15 +521,7 @@ export default function Home() {
 
                 {/* API 그리드 — 2열 × 6행 */}
                 <div className="grid grid-cols-2 gap-0 divide-y divide-wood/10 [&>*:nth-child(odd)]:border-r [&>*:nth-child(odd)]:border-wood/10">
-                  {[
-                    { num: "一", icon: "✦", name: "Text",        sub: "대화 · 요약 · 질문 답변",   task: "text",        span: false },
-                    { num: "二", icon: "◇", name: "Embedding",   sub: "문장 벡터화 · RAG 검색",    task: "embedding",   span: false },
-                    { num: "三", icon: "⇅", name: "Reranker",    sub: "검색 결과 순위 재정렬",      task: "reranker",    span: false },
-                    { num: "四", icon: "♪", name: "TTS",         sub: "텍스트 → 음성 합성",        task: "tts",         span: false },
-                    { num: "五", icon: "◉", name: "STT",         sub: "음성 → 텍스트 변환",        task: "stt",         span: false },
-                    { num: "六", icon: "⊕", name: "Voice Clone", sub: "음성 복제 · 커스텀 보이스", task: "voice-clone", span: false },
-                    { num: "七", icon: "⊞", name: "Image2Text",  sub: "이미지 → 텍스트 변환",      task: "image2text",  span: true },
-                  ].map((course) => (
+                  {HERO_COURSE_MENU.map((course) => (
                     <Link key={course.name} href={`/api-test?task=${course.task}`} className={`flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-wood/5${course.span ? " col-span-2" : ""}`}>
                       <span className="mt-0.5 w-6 shrink-0 font-serif text-[11px] text-wood/35">{course.num}</span>
                       <div>
