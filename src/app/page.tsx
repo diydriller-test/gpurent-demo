@@ -15,10 +15,16 @@ type ApiCard = {
 
 const APIS: ApiCard[] = [
   {
-    name: "Text",
-    description: "대화·요약·질문 답변 같은 텍스트 작업을 쓰는 API",
-    icon: "✦",
-    apiId: "llm",
+    name: "STT",
+    description: "말한 걸 글로 바꿔줘요. 음성 → 텍스트",
+    icon: "◉",
+    apiId: "stt",
+  },
+  {
+    name: "TTS",
+    description: "글을 읽어주는 음성 합성. 글 → 말",
+    icon: "♪",
+    apiId: "tts",
   },
   {
     name: "Embedding",
@@ -33,18 +39,6 @@ const APIS: ApiCard[] = [
     apiId: "reranker",
   },
   {
-    name: "TTS",
-    description: "글을 읽어주는 음성 합성. 글 → 말",
-    icon: "♪",
-    apiId: "tts",
-  },
-  {
-    name: "STT",
-    description: "말한 걸 글로 바꿔줘요. 음성 → 텍스트",
-    icon: "◉",
-    apiId: "stt",
-  },
-  {
     name: "Voice Clone",
     description: "목소리를 복제해서, 원하는 텍스트를 그 목소리로 읽어줘요",
     icon: "⊕",
@@ -55,6 +49,12 @@ const APIS: ApiCard[] = [
     description: "이미지나 스캔 문서에서 텍스트를 뽑아주는 Vision API",
     icon: "⊞",
     apiId: "image2text",
+  },
+  {
+    name: "Text",
+    description: "대화·요약·질문 답변 같은 텍스트 작업을 쓰는 API",
+    icon: "✦",
+    apiId: "llm",
   },
   {
     name: "더 많은 API 확인하러 가기",
