@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { SiteNav } from "@/components/SiteNav";
+import { getApis } from "@/lib/api";
 
 type ApiCard = {
   name: string;
@@ -68,7 +69,21 @@ const BENEFITS = [
   },
 ];
 
-const HERO_COURSE_MENU = [
+const HANZI = ["一","二","三","四","五","六","七","八","九","十"];
+
+const HIDDEN_TASKS = new Set(["Ad Copy","Text Summary","Sentiment Analysis","NER","Text-to-SQL"]);
+
+const TASK_DISPLAY: Record<string, { icon: string; name: string; sub: string; task: string }> = {
+  "Text Generation": { icon: "✦", name: "Text",        sub: "대화 · 요약 · 질문 답변",   task: "text" },
+  "Embedding":       { icon: "◇", name: "Embedding",   sub: "문장 벡터화 · RAG 검색",    task: "embedding" },
+  "Reranker":        { icon: "⇅", name: "Reranker",    sub: "검색 결과 순위 재정렬",      task: "reranker" },
+  "TTS":             { icon: "♪", name: "TTS",         sub: "텍스트 → 음성 합성",        task: "tts" },
+  "STT":             { icon: "◉", name: "STT",         sub: "음성 → 텍스트 변환",        task: "stt" },
+  "Voice Clone":     { icon: "⊕", name: "Voice Clone", sub: "음성 복제 · 커스텀 보이스", task: "voice-clone" },
+  "Vision":          { icon: "⊞", name: "Image2Text",  sub: "이미지 → 텍스트 변환",      task: "image2text" },
+};
+
+const DEFAULT_COURSE_MENU = [
   { num: "一", icon: "✦", name: "Text",        sub: "대화 · 요약 · 질문 답변",   task: "text",        span: false },
   { num: "二", icon: "◇", name: "Embedding",   sub: "문장 벡터화 · RAG 검색",    task: "embedding",   span: false },
   { num: "三", icon: "⇅", name: "Reranker",    sub: "검색 결과 순위 재정렬",      task: "reranker",    span: false },
@@ -76,15 +91,6 @@ const HERO_COURSE_MENU = [
   { num: "五", icon: "◉", name: "STT",         sub: "음성 → 텍스트 변환",        task: "stt",         span: false },
   { num: "六", icon: "⊕", name: "Voice Clone", sub: "음성 복제 · 커스텀 보이스", task: "voice-clone", span: false },
   { num: "七", icon: "⊞", name: "Image2Text",  sub: "이미지 → 텍스트 변환",      task: "image2text",  span: true },
-];
-
-const ACTIVE_API_COUNT = HERO_COURSE_MENU.length;
-
-const HERO_BADGES = [
-  "월정액으로 비용 잡기",
-  "자체 GPU로 돌림",
-  "가입 없이 바로 테스트",
-  `${ACTIVE_API_COUNT}종 AI API 한곳에`,
 ];
 
 const FEATURES_04 = [
@@ -335,7 +341,10 @@ const DASHBOARD_API_ROWS = [
   { name: "TTS", ms: "320ms" },
 ];
 
+type CourseItem = { num: string; icon: string; name: string; sub: string; task: string; span: boolean };
+
 export default function Home() {
+  const [courseMenu, setCourseMenu] = useState<CourseItem[]>(DEFAULT_COURSE_MENU);
   const [comingSoonMessage, setComingSoonMessage] = useState<string | null>(
     null,
   );
@@ -363,6 +372,35 @@ export default function Home() {
         window.clearTimeout(underResumeTimerRef.current);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    getApis().then((apis) => {
+      const items: CourseItem[] = apis
+        .filter((api) => {
+          const tk = api.task_key ?? "";
+          return !HIDDEN_TASKS.has(tk);
+        })
+        .map((api, idx) => {
+          const tk = api.task_key ?? "";
+          const display = TASK_DISPLAY[tk];
+          if (!display) return null;
+          const isLast = idx === apis.filter((a) => {
+            const t = a.task_key ?? "";
+            return !HIDDEN_TASKS.has(t) && TASK_DISPLAY[t];
+          }).length - 1;
+          return {
+            num: HANZI[idx] ?? String(idx + 1),
+            icon: display.icon,
+            name: display.name,
+            sub: display.sub,
+            task: display.task,
+            span: isLast,
+          };
+        })
+        .filter((x): x is CourseItem => x !== null);
+      if (items.length > 0) setCourseMenu(items);
+    }).catch(() => {});
   }, []);
 
   function pauseUnderCarousel(ms = 1200) {
@@ -498,7 +536,12 @@ export default function Home() {
 
               {/* Badge strip */}
               <div className="mt-5 flex flex-wrap gap-2">
-                {HERO_BADGES.map((badge) => (
+                {[
+                  "월정액으로 비용 잡기",
+                  "자체 GPU로 돌림",
+                  "가입 없이 바로 테스트",
+                  `${courseMenu.length}종 AI API 한곳에`,
+                ].map((badge) => (
                   <span
                     key={badge}
                     className="inline-flex items-center rounded-full border border-wood/16 bg-wood/5 px-3 py-1 font-mono text-[10px] text-foreground/50"
@@ -521,7 +564,7 @@ export default function Home() {
 
                 {/* API 그리드 — 2열 × 6행 */}
                 <div className="grid grid-cols-2 gap-0 divide-y divide-wood/10 [&>*:nth-child(odd)]:border-r [&>*:nth-child(odd)]:border-wood/10">
-                  {HERO_COURSE_MENU.map((course) => (
+                  {courseMenu.map((course) => (
                     <Link key={course.name} href={`/api-test?task=${course.task}`} className={`flex items-start gap-3 px-4 py-2.5 transition-colors hover:bg-wood/5${course.span ? " col-span-2" : ""}`}>
                       <span className="mt-0.5 w-6 shrink-0 font-serif text-[11px] text-wood/35">{course.num}</span>
                       <div>

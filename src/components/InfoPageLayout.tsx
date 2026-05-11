@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { SiteNav } from "@/components/SiteNav";
 
 type InfoRow = {
   label: string;
@@ -14,29 +15,18 @@ type InfoSection = {
 
 type InfoPageLayoutProps = {
   title: string;
-  currentLabel: string;
   sections: InfoSection[];
 };
 
 export function InfoPageLayout({
   title,
-  currentLabel,
   sections,
 }: InfoPageLayoutProps) {
   return (
-    <main className="min-h-[calc(100vh-220px)] bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
+      <SiteNav />
+    <main className="min-h-[calc(100vh-220px)]">
       <div className="mx-auto max-w-6xl px-6 py-10 md:px-8 md:py-14">
-        {/* 브레드크럼 */}
-        <div className="flex justify-end text-sm text-foreground/40">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="transition-colors hover:text-foreground/70">
-              홈
-            </Link>
-            <span className="text-foreground/25">/</span>
-            <span className="font-medium text-foreground/65">{currentLabel}</span>
-          </div>
-        </div>
-
         {/* 제목 */}
         <div className="pt-10 md:pt-14">
           <h1 className="text-center text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
@@ -81,5 +71,6 @@ export function InfoPageLayout({
         </div>
       </div>
     </main>
+    </div>
   );
 }

@@ -268,7 +268,6 @@ export default function TermsPage() {
   return (
     <InfoPageLayout
       title="이용약관"
-      currentLabel="이용약관"
       sections={sections}
     />
   );

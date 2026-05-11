@@ -160,7 +160,6 @@ export default function PrivacyPage() {
   return (
     <InfoPageLayout
       title="개인정보처리방침"
-      currentLabel="개인정보처리방침"
       sections={sections}
     />
   );

@@ -106,7 +106,6 @@ export default function GuidePage() {
   return (
     <InfoPageLayout
       title="이용안내"
-      currentLabel="이용안내"
       sections={sections}
     />
   );

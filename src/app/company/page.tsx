@@ -20,7 +20,6 @@ export default function CompanyPage() {
   return (
     <InfoPageLayout
       title="회사소개"
-      currentLabel="회사소개"
       sections={sections}
     />
   );
