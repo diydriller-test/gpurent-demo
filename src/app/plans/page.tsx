@@ -331,10 +331,10 @@ function PlansPageContent() {
   return (
     <div className="min-h-screen bg-grid-pattern">
       {/* Navigation */}
-      <SiteNav />
+      <SiteNav fixed />
 
       {/* Main */}
-      <main className="mx-auto max-w-7xl px-6 py-16 md:py-24">
+      <main className="mx-auto max-w-7xl px-6 pt-24 pb-16 md:pb-24">
         {selectedApi ? (
           <>
             <div className="mb-16 text-center">

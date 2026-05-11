@@ -249,9 +249,9 @@ export default function DocsPage() {
   }, []);
   return (
     <div className="min-h-screen bg-grid-pattern">
-      <SiteNav />
+      <SiteNav fixed />
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-12 lg:flex-row lg:gap-12 lg:py-16">
+      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 pt-24 pb-12 lg:flex-row lg:gap-12 lg:pb-16">
         <aside className="shrink-0 lg:w-56">
           <nav
             aria-label="문서 목차"
