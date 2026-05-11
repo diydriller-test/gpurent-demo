@@ -5784,6 +5784,26 @@ export default function ApiTestPage() {
       <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(232,136,138,0.06),transparent_62%)]" />
 
+        {/* Page header */}
+        <div className="mb-10 text-center">
+          <h1 className="text-3xl font-bold text-foreground md:text-4xl">
+            API 체험
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
+            다양한 API 모델의 성능을 실시간으로 테스트해 볼 수 있는 체험존입니다.
+          </p>
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-foreground/50">
+            마음에 드는 API를 찾으셨다면{" "}
+            <Link
+              href="/plans"
+              className="text-accent underline decoration-accent/40 underline-offset-2 hover:opacity-90"
+            >
+              플랜
+            </Link>
+            에서 요금제를 확인하세요.
+          </p>
+        </div>
+
         {viewMode === "list" ? (
           <div className="relative flex flex-col gap-6 lg:flex-row lg:gap-6">
             {comingSoonMessage ? (

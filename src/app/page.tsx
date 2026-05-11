@@ -97,7 +97,7 @@ const FEATURES_04 = [
   {
     num: "01",
     title: "API 조합 예시",
-    description: "시나리오별로 어떤 API를 묶어 쓰면 좋은지 아래에서 바로 볼 수 있어요.",
+    description: "API 하나보다 두세 개를 이어 붙였을 때 더 실용적인 결과를 만들 수 있어요.",
     icon: (
       <>
         <circle cx="20" cy="20" r="17" stroke="currentColor" strokeWidth="1.2" />
