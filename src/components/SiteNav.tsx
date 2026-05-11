@@ -48,7 +48,13 @@ export function SiteNav({
     >
       <div className="flex h-[60px] w-full items-center px-4 md:px-10">
         {/* 로고 */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 shrink-0"
+          onClick={() => {
+            if (pathname === "/") window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        >
           <div className="flex items-baseline gap-x-1.5">
             <span className="font-serif text-[22px] tracking-wide text-white" style={{fontWeight: 900}}>
               AI API
