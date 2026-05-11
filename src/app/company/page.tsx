@@ -11,7 +11,7 @@ const sections = [
       { label: "사업자등록번호", value: "3998801800" },
       { label: "통신판매업신고", value: "2023-서울금천-1423" },
       { label: "개인정보 관리책임", value: "정항덕" },
-      { label: "호스팅제공", value: "카페24(주)" },
+      { label: "호스팅제공", value: "자체호스팅" },
     ],
   },
 ];
