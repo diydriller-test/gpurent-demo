@@ -266,6 +266,13 @@ const USE_CASES = [
     flow: "Embedding -> Reranker",
     outcome: "RAG 품질 올리고, 필요한 쪽만 빨리 찾음",
   },
+  {
+    title: "문서·이미지 자동 처리",
+    summary:
+      "스캔 문서나 이미지에서 글을 뽑아(Vision OCR), LLM으로 분류·정리하면 사람이 직접 읽던 걸 자동화할 수 있어요.",
+    flow: "Vision -> Text",
+    outcome: "수동으로 처리하던 문서를 자동으로 분류하고 정리",
+  },
 ];
 
 const ONBOARDING_STEPS = [
@@ -1095,7 +1102,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
             {USE_CASES.map((useCase, idx) => (
               <div
                 key={useCase.title}
