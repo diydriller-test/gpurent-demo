@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { login } from "@/lib/api";
-import { setToken } from "@/lib/token";
+import { signup } from "@/lib/api";
 
-interface LoginFormProps {
+interface SignupFormProps {
   onSuccess?: () => void;
   onBack?: () => void;
 }
 
-export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
+export function SignupForm({ onSuccess, onBack }: SignupFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +20,7 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
     const raw = searchParams.get("redirect");
     if (!raw) return null;
     if (!raw.startsWith("/") || raw.startsWith("//")) return null;
-    if (raw === "/login") return null;
+    if (raw === "/signup") return null;
     return raw;
   }, [searchParams]);
 
@@ -32,25 +31,33 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
     const form = e.currentTarget;
     const formData = new FormData(form);
     const email = formData.get("email") as string;
+    const username = formData.get("username") as string;
     const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
 
-    if (!email || !password) {
-      setError("이메일과 비밀번호를 입력해주세요.");
+    if (password !== confirmPassword) {
+      setError("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+    if (!email || !username || !password) {
+      setError("모든 필드를 입력해주세요.");
       return;
     }
 
     setIsLoading(true);
-
     try {
-      const { access_token } = await login({ email, password });
-      setToken(access_token);
+      await signup({ email, username, password });
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push(redirectPath ?? "/api-test");
+        router.push(
+          redirectPath
+            ? `/login?redirect=${encodeURIComponent(redirectPath)}`
+            : "/login",
+        );
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");
+      setError(err instanceof Error ? err.message : "회원가입에 실패했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -68,9 +75,9 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
       </button>
 
       <div className="mb-8 mt-4 text-center">
-        <h1 className="text-2xl font-bold text-foreground">로그인</h1>
+        <h1 className="text-2xl font-bold text-foreground">회원가입</h1>
         <p className="mt-2 text-sm text-foreground/60">
-          AI API 오마카세를 사용하려면 로그인하세요
+          무료로 시작하고 API 키를 발급받으세요
         </p>
       </div>
 
@@ -83,13 +90,31 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
 
         <div>
           <label
-            htmlFor="login-email"
+            htmlFor="signup-username"
+            className="mb-2 block text-sm font-medium text-foreground/80"
+          >
+            사용자명
+          </label>
+          <input
+            id="signup-username"
+            type="text"
+            name="username"
+            placeholder="username"
+            required
+            disabled={isLoading}
+            className="w-full rounded-xl border border-white/10 bg-background/50 px-4 py-3 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="signup-email"
             className="mb-2 block text-sm font-medium text-foreground/80"
           >
             이메일
           </label>
           <input
-            id="login-email"
+            id="signup-email"
             type="email"
             name="email"
             placeholder="you@example.com"
@@ -101,16 +126,35 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
 
         <div>
           <label
-            htmlFor="login-password"
+            htmlFor="signup-password"
             className="mb-2 block text-sm font-medium text-foreground/80"
           >
             비밀번호
           </label>
           <input
-            id="login-password"
+            id="signup-password"
             type="password"
             name="password"
-            placeholder="••••••••"
+            placeholder="8자 이상"
+            required
+            minLength={8}
+            disabled={isLoading}
+            className="w-full rounded-xl border border-white/10 bg-background/50 px-4 py-3 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="signup-confirmPassword"
+            className="mb-2 block text-sm font-medium text-foreground/80"
+          >
+            비밀번호 확인
+          </label>
+          <input
+            id="signup-confirmPassword"
+            type="password"
+            name="confirmPassword"
+            placeholder="비밀번호를 다시 입력하세요"
             required
             disabled={isLoading}
             className="w-full rounded-xl border border-white/10 bg-background/50 px-4 py-3 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
@@ -122,19 +166,19 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
           disabled={isLoading}
           className="w-full rounded-xl bg-accent py-3 font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? "처리 중..." : "로그인"}
+          {isLoading ? "처리 중..." : "회원가입"}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-foreground/60">
-        계정이 없으신가요?{" "}
+        이미 계정이 있으신가요?{" "}
         <Link
-          href={redirectPath ? `/signup?redirect=${encodeURIComponent(redirectPath)}` : "/signup"}
+          href={redirectPath ? `/login?redirect=${encodeURIComponent(redirectPath)}` : "/login"}
           scroll={false}
           onClick={() => sessionStorage.setItem("modalScrollY", String(window.scrollY))}
           className="font-medium text-accent hover:underline"
         >
-          회원가입
+          로그인
         </Link>
       </p>
     </div>

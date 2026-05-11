@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm run *)",
       "Bash(node *)",
-      "Bash(grep -v \"^.*//.*$\")"
+      "Bash(grep -v \"^.*//.*$\")",
+      "Bash(npm install *)",
+      "Bash(git *)"
     ]
   }
 }

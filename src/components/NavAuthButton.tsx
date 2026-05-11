@@ -25,22 +25,29 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
     router.refresh();
   }
 
+  function handleAuthNav(href: string) {
+    sessionStorage.setItem("modalScrollY", String(window.scrollY));
+    router.push(href, { scroll: false });
+  }
+
   if (mobile) {
     if (!mounted || !isLoggedIn) {
       return (
         <div className="flex gap-2">
-          <Link
-            href={loginHref}
+          <button
+            type="button"
+            onClick={() => handleAuthNav(loginHref)}
             className="flex-1 rounded-xl border border-white/12 py-3 text-center text-sm font-medium text-white/65 transition-colors hover:border-white/25 hover:text-white/85"
           >
             로그인
-          </Link>
-          <Link
-            href="/signup"
+          </button>
+          <button
+            type="button"
+            onClick={() => handleAuthNav("/signup")}
             className="flex-1 rounded-xl bg-[#C8A96E] py-3 text-center text-sm font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
           >
             회원가입
-          </Link>
+          </button>
         </div>
       );
     }
@@ -67,18 +74,10 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
   if (!mounted) {
     return (
       <div className="flex items-center gap-5">
-        <Link
-          href={loginHref}
-          className="text-[15px] font-normal text-white/55 transition-colors hover:text-white/85"
-        >
-          로그인
-        </Link>
-        <Link
-          href="/signup"
-          className="rounded-xl bg-[#C8A96E] px-5 py-2 text-[15px] font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
-        >
+        <span className="text-[15px] font-normal text-white/55">로그인</span>
+        <span className="rounded-xl bg-[#C8A96E] px-5 py-2 text-[15px] font-semibold text-[#1A0A00]">
           회원가입
-        </Link>
+        </span>
       </div>
     );
   }
@@ -105,18 +104,20 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
 
   return (
     <div className="flex items-center gap-5">
-      <Link
-        href={loginHref}
+      <button
+        type="button"
+        onClick={() => handleAuthNav(loginHref)}
         className="text-[15px] font-normal text-white/55 transition-colors hover:text-white/85"
       >
         로그인
-      </Link>
-      <Link
-        href="/signup"
+      </button>
+      <button
+        type="button"
+        onClick={() => handleAuthNav("/signup")}
         className="rounded-xl bg-[#C8A96E] px-5 py-2 text-[15px] font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
       >
         회원가입
-      </Link>
+      </button>
     </div>
   );
 }

@@ -2,9 +2,9 @@
 
 import { Suspense, useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
-import { LoginForm } from "@/components/LoginForm";
+import { SignupForm } from "@/components/SignupForm";
 
-function LoginModal() {
+function SignupModal() {
   const router = useRouter();
 
   useLayoutEffect(() => {
@@ -36,19 +36,19 @@ function LoginModal() {
       />
 
       {/* Modal card */}
-      <div className="relative z-10 w-full max-w-md mx-4">
+      <div className="relative z-10 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="rounded-2xl border border-white/10 bg-surface/90 p-8 shadow-2xl backdrop-blur-sm">
-          <LoginForm onSuccess={handleSuccess} onBack={handleClose} />
+          <SignupForm onSuccess={handleSuccess} onBack={handleClose} />
         </div>
       </div>
     </div>
   );
 }
 
-export default function LoginModalPage() {
+export default function SignupModalPage() {
   return (
     <Suspense fallback={null}>
-      <LoginModal />
+      <SignupModal />
     </Suspense>
   );
 }
