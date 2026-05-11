@@ -255,8 +255,8 @@ const USE_CASES = [
   {
     title: "고객 응대 자동화",
     summary:
-      "말(STT) → 글 정리(LLM) → 요약까지 이어 붙이면, 상담 내용을 빨리 정리하고 답도 맞춰 쓰기 쉬워요.",
-    flow: "STT -> Text -> Summary",
+      "말(STT) → 글 정리(LLM)로 이어 붙이면, 상담 내용을 빨리 정리하고 답도 맞춰 쓰기 쉬워요.",
+    flow: "STT -> Text",
     outcome: "상담 기록 덜 손으로 쓰고, 응답도 빨라서 CS가 덜 바쁨",
   },
   {
