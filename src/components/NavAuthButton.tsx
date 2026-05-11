@@ -17,7 +17,7 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
   useEffect(() => {
     setMounted(true);
     setIsLoggedIn(!!getToken());
-  }, []);
+  }, [pathname]);
 
   function handleLogout() {
     removeToken();
