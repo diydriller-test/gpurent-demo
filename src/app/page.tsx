@@ -65,7 +65,7 @@ const BENEFITS = [
   },
   {
     title: "확장 가능한 API",
-    description: "임베딩·리랭킹·TTS 같은 걸 한곳에서 골라 쓰면 됩니다.",
+    description: "임베딩·리랭킹·TTS 같은 걸 한곳에서 골라 쓰면 돼요.",
   },
 ];
 
@@ -176,7 +176,7 @@ const TARGET_CUSTOMERS = [
   {
     title: "PoC를 자주 돌리는 팀",
     description:
-      "프롬프트랑 파이프라인을 계속 바꿔야 하는데, 매번 청구서가 흔들리면 스트레스예요. 그럴 땐 고정 비용이 낫습니다.",
+      "프롬프트랑 파이프라인을 계속 바꿔야 하는데, 매번 청구서가 흔들리면 스트레스예요. 그럴 땐 고정 비용이 나아요.",
   },
   {
     title: "동시에 사용자 많이 붙는 서비스",
@@ -208,7 +208,7 @@ const DIFFERENTIATORS = [
   {
     title: "비용이 덜 흔들려요",
     description:
-      "토큰 쓸 때마다 청구가 달라지는 것보다, 월정액으로 '대략 이 정도'만 맞추면 됩니다.",
+      "토큰 쓸 때마다 청구가 달라지는 것보다, 월정액으로 '대략 이 정도'만 맞추면 돼요.",
   },
   {
     title: "붙이기 빨라요",
@@ -218,7 +218,7 @@ const DIFFERENTIATORS = [
   {
     title: "벤더 여러 개 안 써도 돼요",
     description:
-      "GPU를 우리 쪽에서 돌려서 가격을 맞추고, 여러 회사 계정 따로 관리하는 부담도 줄입니다.",
+      "GPU를 우리 쪽에서 돌려서 가격을 맞추고, 여러 회사 계정 따로 관리하는 부담도 줄어요.",
   },
 ];
 
@@ -966,7 +966,7 @@ export default function Home() {
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-foreground/58">
                 목록만 길게 뽑아준 게 아니라, 빨리 써보고 월에 고정으로 나갈
-                금액만 맞추면 되는 팀이면 체감이 큽니다.
+                금액만 맞추면 되는 팀이면 체감이 커요.
               </p>
               <div className="mt-6 space-y-3">
                 {FITS_FOR.map((item) => (
@@ -1208,7 +1208,7 @@ export default function Home() {
                       type="button"
                       onClick={() =>
                         showComingSoon(
-                          "추가 API가 곧 공개됩니다. 조금만 기다려 주세요!",
+                          "추가 API가 곧 공개돼요. 조금만 기다려 주세요!",
                         )
                       }
                       className="api-belt-card group w-[250px] shrink-0 rounded-2xl border border-wood/12 bg-background p-6 text-left transition-all"
@@ -1353,7 +1353,7 @@ export default function Home() {
           </div>
 
           <p className="mt-4 text-center text-xs text-foreground/35">
-            * 가격은 API 종류마다 다릅니다. 위 금액은 최저가 기준이에요.
+            * 가격은 API 종류마다 달라요. 위 금액은 최저가 기준이에요.
           </p>
 
           <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -1411,7 +1411,7 @@ export default function Home() {
               계산기보다 운영 기준이 먼저
             </p>
             <p className="mt-2 text-foreground/70">
-              API마다 따로 붙이지 말고, 한곳에서 써보고 기준만 맞춰 가면 됩니다.
+              API마다 따로 붙이지 말고, 한곳에서 써보고 기준만 맞춰 가면 돼요.
             </p>
             <Link
               href="/plans"
@@ -1430,7 +1430,7 @@ export default function Home() {
             시작하기
           </p>
           <h2 className="mb-4 mt-3 text-3xl font-bold text-foreground md:text-4xl">
-            한번 써보면 감 옵니다
+            한번 써보면 감 와요
           </h2>
           <p className="mb-8 text-foreground/58">
             먼저 직접 써보고, 맞으면 그때 플랜 고르면 돼요.
