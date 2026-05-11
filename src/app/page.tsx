@@ -480,7 +480,7 @@ export default function Home() {
                   href="/plans"
                   className="inline-flex h-11 items-center justify-center rounded-full border border-wood/35 px-7 text-sm font-medium text-foreground/60 transition-colors hover:border-wood/60 hover:text-foreground"
                 >
-                  서비스 둘러보기
+                  요금제 보기
                 </Link>
               </div>
 
