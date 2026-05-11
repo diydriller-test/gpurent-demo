@@ -68,11 +68,13 @@ const BENEFITS = [
   },
 ];
 
+const ACTIVE_API_COUNT = APIS.filter((api) => !api.comingSoon).length;
+
 const HERO_BADGES = [
   "월정액으로 비용 잡기",
   "자체 GPU로 돌림",
-  "Playground에서 바로 써보기",
-  "텍스트·임베딩·TTS 한곳에",
+  "가입 없이 바로 테스트",
+  `${ACTIVE_API_COUNT}종 AI API 한곳에`,
 ];
 
 const FEATURES_04 = [
