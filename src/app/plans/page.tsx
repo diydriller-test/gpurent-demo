@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getApis,
@@ -38,6 +38,7 @@ function formatPrice(priceMonthly: string): string {
 }
 
 function PlansPageContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const chapterParam = searchParams.get("chapter");
   const autoParam = searchParams.get("auto") === "1";
@@ -496,7 +497,8 @@ function PlansPageContent() {
                         type="button"
                         onClick={() => {
                           if (!isLoggedIn && !isAuthChecking) {
-                            window.location.href = "/login?redirect=%2Fplans";
+                            sessionStorage.setItem("modalScrollY", String(window.scrollY));
+                            router.push("/login?redirect=%2Fplans", { scroll: false });
                             return;
                           }
                           setSidebarMode("my");

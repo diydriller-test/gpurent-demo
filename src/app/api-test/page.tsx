@@ -5890,7 +5890,8 @@ export default function ApiTestPage() {
                         type="button"
                         onClick={() => {
                           if (!userMe && !getToken()) {
-                            window.location.href = "/login?redirect=%2Fapi-test";
+                            sessionStorage.setItem("modalScrollY", String(window.scrollY));
+                            router.push("/login?redirect=%2Fapi-test", { scroll: false });
                             return;
                           }
                           setSidebarMode("my");
