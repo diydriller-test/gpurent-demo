@@ -88,7 +88,7 @@ export function SiteNav({
         </div>
 
         {/* 모바일 햄버거 */}
-        <div className="flex items-center md:hidden">
+        <div className="ml-auto flex items-center md:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
@@ -151,7 +151,7 @@ export function SiteNav({
                 )}
               </div>
               <div className="mt-4 border-t border-white/6 pt-4">
-                <NavAuthButton />
+                <NavAuthButton mobile />
               </div>
             </div>
           </div>

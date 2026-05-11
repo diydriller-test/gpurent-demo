@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getToken, removeToken } from "@/lib/token";
 
-export function NavAuthButton() {
+export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
@@ -23,6 +23,45 @@ export function NavAuthButton() {
     removeToken();
     setIsLoggedIn(false);
     router.refresh();
+  }
+
+  if (mobile) {
+    if (!mounted || !isLoggedIn) {
+      return (
+        <div className="flex gap-2">
+          <Link
+            href={loginHref}
+            className="flex-1 rounded-xl border border-white/12 py-3 text-center text-sm font-medium text-white/65 transition-colors hover:border-white/25 hover:text-white/85"
+          >
+            로그인
+          </Link>
+          <Link
+            href="/signup"
+            className="flex-1 rounded-xl bg-[#C8A96E] py-3 text-center text-sm font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
+          >
+            회원가입
+          </Link>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex gap-2">
+        <Link
+          href="/profile"
+          className="flex-1 rounded-xl border border-white/12 py-3 text-center text-sm font-medium text-white/65 transition-colors hover:border-white/25 hover:text-white/85"
+        >
+          프로필
+        </Link>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex-1 rounded-xl border border-white/12 py-3 text-center text-sm font-medium text-white/45 transition-colors hover:border-red-400/30 hover:text-red-300/80"
+        >
+          로그아웃
+        </button>
+      </div>
+    );
   }
 
   if (!mounted) {
