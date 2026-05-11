@@ -96,8 +96,8 @@ const DEFAULT_COURSE_MENU = [
 const FEATURES_04 = [
   {
     num: "01",
-    title: "추천 구성",
-    description: "필요한 API 조합을 바로 제안. 처음부터 직접 고를 필요 없어요.",
+    title: "API 조합 예시",
+    description: "시나리오별로 어떤 API를 묶어 쓰면 좋은지 아래에서 바로 볼 수 있어요.",
     icon: (
       <>
         <circle cx="20" cy="20" r="17" stroke="currentColor" strokeWidth="1.2" />
@@ -110,7 +110,7 @@ const FEATURES_04 = [
   {
     num: "02",
     title: "빠른 연결",
-    description: "Playground에서 확인 후, API 키 하나로 바로 연결할 수 있어요.",
+    description: "직접 써본 후, API 키 하나로 바로 연결할 수 있어요.",
     icon: (
       <>
         <circle cx="20" cy="20" r="17" stroke="currentColor" strokeWidth="1.2" />
@@ -134,7 +134,7 @@ const FEATURES_04 = [
   {
     num: "04",
     title: "확장 가능한 운영",
-    description: "사용자 늘어도 RPS만 올리면 끝. 구조 바꿀 필요 없어요.",
+    description: "사용자 늘어도 플랜만 올리면 끝. 구조 바꿀 필요 없어요.",
     icon: (
       <>
         <circle cx="20" cy="20" r="17" stroke="currentColor" strokeWidth="1.2" />
@@ -242,7 +242,7 @@ const COMPARISON_ROWS = [
   {
     label: "확장 경로",
     before: "플랜마다 기준이 달라서, 나중에 늘리기 애매함",
-    after: "Starter → Pro로, RPS만 보면 됨",
+    after: "Starter → Pro로, 플랜만 보면 됨",
   },
   {
     label: "운영 관리",
@@ -278,7 +278,7 @@ const USE_CASES = [
 const ONBOARDING_STEPS = [
   {
     step: "01",
-    title: "Playground에서 먼저 써보기",
+    title: "직접 써보고 조합 정하기",
     description:
       "텍스트·임베딩·TTS·STT를 직접 써보고, 우리 서비스에 맞는 조합을 정하면 돼요.",
   },
@@ -292,7 +292,7 @@ const ONBOARDING_STEPS = [
     step: "03",
     title: "사람 늘면 Pro로",
     description:
-      "트래픽이 붙으면 RPS 높은 Pro로 올리면, 비용이랑 성능을 같이 맞추기 쉬워요.",
+      "트래픽이 붙으면 Pro로 올리면, 비용이랑 성능을 같이 맞추기 쉬워요.",
   },
 ];
 
@@ -301,7 +301,7 @@ const PRICE_SUMMARY = [
     title: "Starter",
     subtitle: "일단 써보기·PoC",
     price: "10,000원부터",
-    rps: "1 ~ 3.5 RPS",
+    rps: "초당 1 ~ 3.5건",
     tone: "border-wood/16 bg-background",
     points: ["STT·TTS 같은 것도 부담 없이 시작", "사내에서 연동만 먼저 볼 때"],
   },
@@ -319,7 +319,7 @@ const PRICE_SUMMARY = [
 ];
 
 const FINAL_CTA_POINTS = [
-  "Playground에서 바로 써보기",
+  "가입 없이 바로 체험",
   "Starter로 가볍게 시작",
   "불리면 Pro로 올리기",
 ];
@@ -587,7 +587,7 @@ export default function Home() {
                   </svg>
                   <div className="h-px flex-1 bg-wood/15" />
                 </div>
-                <p className="mt-2 text-center font-mono text-[9px] tracking-[0.25em] text-wood/35">RPS 기반 월정액</p>
+                <p className="mt-2 text-center font-mono text-[9px] tracking-[0.25em] text-wood/35">처리량 기반 월정액</p>
               </div>
             </div>
 
@@ -1295,18 +1295,18 @@ export default function Home() {
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent/80">
-                  RPS란?
+                  초당 처리량이란?
                 </p>
                 <p className="mt-2 text-lg font-semibold text-foreground">
-                  초당 몇 개 요청을 감당하느냐 보는 숫자예요.
+                  1초 동안 몇 개의 요청을 처리할 수 있는지 나타내요.
                 </p>
               </div>
               <div className="rounded-2xl border border-wood/14 bg-surface px-4 py-3 text-sm leading-relaxed text-foreground/65 md:max-w-sm">
-                RPS 높을수록, 동시에 몰려도 덜 버벅이는 쪽이에요.
+                처리량이 높을수록, 요청이 한꺼번에 몰려도 덜 버벅이는 쪽이에요.
               </div>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-foreground/52">
-              사내에서만 돌릴 땐 낮아도 되는데, 실제 사용자 붙으면 RPS 올린
+              사내에서만 돌릴 땐 낮아도 되는데, 실제 사용자 붙으면 처리량 높은
               플랜이 필요해질 때가 많아요.
             </p>
           </div>
@@ -1331,7 +1331,7 @@ export default function Home() {
                   </div>
                   <div className="rounded-2xl border border-wood/12 bg-background px-4 py-3 text-left sm:text-right">
                     <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/38">
-                      RPS
+                      초당 처리량
                     </p>
                     <p className="mt-1 text-lg font-semibold text-foreground">
                       {plan.rps}
@@ -1433,7 +1433,7 @@ export default function Home() {
             한번 써보면 감 옵니다
           </h2>
           <p className="mb-8 text-foreground/58">
-            Playground에서 먼저 써보고, 맞으면 그때 플랜 고르면 돼요.
+            먼저 직접 써보고, 맞으면 그때 플랜 고르면 돼요.
           </p>
           <div className="mb-8 flex flex-wrap items-center justify-center gap-2.5">
             {FINAL_CTA_POINTS.map((point) => (
