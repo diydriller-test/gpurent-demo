@@ -217,23 +217,29 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-grid-pattern flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+      <div className="min-h-screen bg-grid-pattern">
+        <SiteNav fixed />
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+        </div>
       </div>
     );
   }
 
   if (error || !user) {
     return (
-      <div className="min-h-screen bg-grid-pattern flex items-center justify-center">
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-8 text-center">
-          <p className="text-red-400">{error ?? "프로필을 불러올 수 없습니다."}</p>
-          <Link
-            href="/"
-            className="mt-4 inline-block rounded-xl bg-accent px-6 py-2 font-medium text-background hover:opacity-90"
-          >
-            홈으로
-          </Link>
+      <div className="min-h-screen bg-grid-pattern">
+        <SiteNav fixed />
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-8 text-center">
+            <p className="text-red-400">{error ?? "프로필을 불러올 수 없습니다."}</p>
+            <Link
+              href="/"
+              className="mt-4 inline-block rounded-xl bg-accent px-6 py-2 font-medium text-background hover:opacity-90"
+            >
+              홈으로
+            </Link>
+          </div>
         </div>
       </div>
     );
