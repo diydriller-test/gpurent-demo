@@ -190,18 +190,18 @@ export type PlanTask =
   | "Vision";
 
 export const PLAN_TASK_KEYS: PlanTask[] = [
+  "STT",
+  "TTS",
+  "Embedding",
+  "Reranker",
+  "Voice Clone",
+  "Vision",
   "Text Generation",
   "Ad Copy",
   "Text Summary",
   "Sentiment Analysis",
   "NER",
   "Text-to-SQL",
-  "Embedding",
-  "Reranker",
-  "TTS",
-  "STT",
-  "Voice Clone",
-  "Vision",
 ];
 
 /** 플랜/마켓 API 카드와 `Api`의 task_key를 매칭 */

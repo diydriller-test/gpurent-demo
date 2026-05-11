@@ -1818,13 +1818,13 @@ export default function ApiTestPage() {
 
   const taskKeys = useMemo<MarketplaceTask[]>(
     () => [
-      "Text Generation",
+      "STT",
+      "TTS",
       "Embedding",
       "Reranker",
-      "TTS",
-      "STT",
       "Voice Clone",
       "Vision",
+      "Text Generation",
     ],
     [],
   );
