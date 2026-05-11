@@ -530,7 +530,7 @@ export default function Home() {
                   href="/plans"
                   className="inline-flex h-11 items-center justify-center rounded-full border border-wood/35 px-7 text-sm font-medium text-foreground/60 transition-colors hover:border-wood/60 hover:text-foreground"
                 >
-                  요금제 보기
+                  플랜 보기
                 </Link>
               </div>
 
@@ -1450,13 +1450,13 @@ export default function Home() {
               href="/api-test"
               className="inline-flex items-center gap-2 rounded-full bg-accent px-8 py-4 text-sm font-semibold text-white transition-opacity hover:bg-accent-bright"
             >
-              무료 체험 시작
+              무료 체험하기
             </Link>
             <Link
               href="/plans"
               className="inline-flex items-center gap-2 rounded-full border border-wood/30 px-8 py-4 text-sm font-medium text-foreground/60 transition-colors hover:border-wood/55 hover:text-foreground"
             >
-              플랜 확인하기
+              플랜 보기
             </Link>
           </div>
           <Link
