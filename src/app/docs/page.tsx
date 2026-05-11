@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AD_COPY_LANGUAGE_OPTIONS } from "@/lib/adCopyLanguages";
 import { SiteNav } from "@/components/SiteNav";
 
 type DocSection = {
@@ -20,10 +19,6 @@ type DocSection = {
 
 const BASE_URL_NOTE =
   "브라우저에서 호출 시 동일 오리진 기준 상대 경로(예: /api/chat)를 사용합니다.";
-
-const AD_COPY_SUPPORTED_LANGUAGE_CODES = AD_COPY_LANGUAGE_OPTIONS.map(
-  (o) => o.value,
-).join(", ");
 
 const SECTIONS: DocSection[] = [
   {
@@ -45,127 +40,6 @@ const SECTIONS: DocSection[] = [
     notes: [
       "`temperature`는 생략 시 0.1에 가깝게 처리됩니다.",
       "한도 초과 시 429와 `{ \"error\": \"일일 체험 한도를 초과했습니다. ...\" }` 형태로 응답할 수 있습니다.",
-    ],
-  },
-  {
-    id: "ad-copy",
-    title: "광고 카피라이팅",
-    method: "POST",
-    path: "/api/ad-copy",
-    description:
-      "자사 광고 카피 생성 엔진으로 브리프·톤·채널에 맞는 문구를 생성합니다. `language`로 출력 언어를 지정할 수 있습니다.",
-    requestLabel: "본문 (application/json)",
-    request: `{
-  "brief": "제품·서비스 설명(필수)",
-  "tone": "친근 / 전문 등 (선택)",
-  "channel": "배너, SNS 등 (선택)",
-  "temperature": 0.7,
-  "language": "ko"
-}`,
-    responseLabel: "성공 (200)",
-    response: `{
-  "headline": "메인 카피(헤드라인 또는 슬로건)",
-  "body": "본문 또는 짧은 설명 문구"
-}`,
-    notes: [
-      "`brief`만 필수입니다. `language`는 아래 코드 중 하나여야 합니다(생략 시 ko): " +
-        AD_COPY_SUPPORTED_LANGUAGE_CODES +
-        ".",
-      "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
-    ],
-  },
-  {
-    id: "summarize",
-    title: "텍스트 요약",
-    method: "POST",
-    path: "/api/summarize",
-    description:
-      "긴 본문을 받아 핵심만 추린 요약 문자열을 반환합니다. 리뷰·뉴스·회의록 등 비정형 텍스트 정리에 활용할 수 있습니다.",
-    requestLabel: "본문 (application/json)",
-    request: `{
-  "text": "요약할 원문(필수)",
-  "style": "불릿 3줄, 한 문단 등 (선택)",
-  "temperature": 0.3
-}`,
-    responseLabel: "성공 (200)",
-    response: `{
-  "summary": "압축된 요약 문자열"
-}`,
-    notes: [
-      "`text`만 필수입니다. 요약 형식·톤 힌트는 `style` 또는 `styleLine`(동일 의미)으로 선택할 수 있습니다.",
-      "`temperature`는 선택이며, 숫자로 보내면 업스트림 요약 API에 함께 전달됩니다.",
-      "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
-    ],
-  },
-  {
-    id: "sentiment",
-    title: "리뷰 감정 분석",
-    method: "POST",
-    path: "/api/sentiment",
-    description:
-      "고객 리뷰 등 짧은 텍스트의 문맥을 읽어 전체 및 측면(aspect)별로 긍정·부정·중립을 분류하고, 0~1 점수로 극성을 수치화합니다.",
-    requestLabel: "본문 (application/json)",
-    request: `{
-  "text": "분석할 리뷰·문장(필수)",
-  "temperature": 0.2
-}`,
-    responseLabel: "성공 (200)",
-    response: `{
-  "overall": { "label": "positive", "score": 0.82 },
-  "aspects": [
-    { "aspect": "음식", "label": "positive", "score": 0.9 },
-    { "aspect": "배송", "label": "negative", "score": 0.15 }
-  ]
-}`,
-    notes: [
-      "`label`은 positive | negative | neutral, `score`는 0(부정)~1(긍정) 근거 점수입니다.",
-      "모델이 JSON 외 텍스트를 섞으면 502가 날 수 있습니다. 한도 초과 시 429가 올 수 있습니다.",
-    ],
-  },
-  {
-    id: "ner",
-    title: "NER (개체명 인식)",
-    method: "POST",
-    path: "/api/ner",
-    description:
-      "문장에서 인물·장소·조직·시간·금액 등 개체를 찾아 label·category와 함께 배열로 반환합니다.",
-    requestLabel: "본문 (application/json)",
-    request: `{
-  "text": "분석할 문장(필수)",
-  "temperature": 0.1
-}`,
-    responseLabel: "성공 (200)",
-    response: `{
-  "entities": [
-    { "text": "세현", "label": "PER", "category": "Person / 인물" },
-    { "text": "3,000,000원", "label": "MON", "category": "Money / 금액" }
-  ]
-}`,
-    notes: [
-      "`entities`는 원문에 실제로 등장한 표면 형태 `text`와 태그 `label`, 설명 `category`를 포함합니다.",
-      "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
-    ],
-  },
-  {
-    id: "text-to-sql",
-    title: "Text-to-SQL (쿼리 자동 생성)",
-    method: "POST",
-    path: "/api/text2sql",
-    description:
-      "자연어 질문을 MySQL 호환 SELECT 문으로 변환합니다. 스키마가 없으면 질문 맥락에서 테이블·컬럼을 추정합니다.",
-    requestLabel: "본문 (application/json)",
-    request: `{
-  "text": "데이터베이스에 묻고 싶은 질문(필수)",
-  "schema": "스키마(선택)",
-  "temperature": 0.2
-}`,
-    responseLabel: "성공 (200)",
-    response: `{
-  "sql": "SELECT ..."
-}`,
-    notes: [
-      "`sql`은 단일 쿼리 문자열입니다. 데모는 읽기 전용 분석을 가정해 SELECT 위주로 유도합니다.",
-      "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
     ],
   },
   {
