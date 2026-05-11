@@ -266,13 +266,6 @@ const USE_CASES = [
     flow: "Embedding -> Reranker",
     outcome: "RAG 품질 올리고, 필요한 쪽만 빨리 찾음",
   },
-  {
-    title: "콘텐츠·리뷰 운영",
-    summary:
-      "카피 쓰고, 감정 보고, 이름·날짜 같은 것만 뽑는 것까지 한 흐름으로 묶을 수 있어요.",
-    flow: "Ad Copy -> Sentiment -> NER",
-    outcome: "글 쓰는 시간 줄고, 리뷰는 자동으로 돌려보기",
-  },
 ];
 
 const ONBOARDING_STEPS = [
@@ -1102,7 +1095,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
             {USE_CASES.map((useCase, idx) => (
               <div
                 key={useCase.title}
