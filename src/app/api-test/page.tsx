@@ -2171,6 +2171,7 @@ export default function ApiTestPage() {
       };
       setSelectedApi(item.apiId);
       setViewMode("detail");
+      window.scrollTo(0, 0);
       window.history.pushState({ apiTestDetail: true }, "", window.location.href);
       return;
     }

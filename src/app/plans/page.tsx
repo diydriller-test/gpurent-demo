@@ -265,6 +265,7 @@ function PlansPageContent() {
   function handleSelectApi(api: Api) {
     setSelectedApi(api);
     setPendingPlanId(null);
+    window.scrollTo(0, 0);
     window.history.pushState({ plansDetail: true }, "", window.location.href);
   }
 
