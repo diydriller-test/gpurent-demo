@@ -425,7 +425,7 @@ export default function Home() {
       <SiteNav fixed />
 
       {/* ── Hero ── */}
-      <section className="relative flex flex-col overflow-hidden px-10 xl:px-16 pt-[70px]" style={{ height: "calc(100vh - 250px)" }}>
+      <section className="relative flex flex-col overflow-hidden px-10 xl:px-16 pt-[60px]" style={{ height: "calc(100vh - 250px)" }}>
         {/* 일월오봉 — 달 (좌상단) */}
         <svg aria-hidden="true" style={{ position: "absolute", top: "-6%", left: "-40px", width: "320px", height: "320px", zIndex: 0 }} viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
           <circle cx="160" cy="160" r="154" fill="#F0EBE0" opacity="0.72" />

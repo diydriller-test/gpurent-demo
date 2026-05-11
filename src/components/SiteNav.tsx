@@ -46,7 +46,7 @@ export function SiteNav({
         "border-b border-white/[0.06] bg-black backdrop-blur-xl",
       ].join(" ")}
     >
-      <div className="flex h-[70px] w-full items-center px-4 md:px-10">
+      <div className="flex h-[60px] w-full items-center px-4 md:px-10">
         {/* 로고 */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <div className="flex items-baseline gap-x-1.5">
