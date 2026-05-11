@@ -38,7 +38,7 @@ export function NavAuthButton() {
           href="/signup"
           className="rounded-xl bg-[#C8A96E] px-5 py-2 text-[15px] font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
         >
-          지금 시작하기
+          회원가입
         </Link>
       </div>
     );
@@ -76,7 +76,7 @@ export function NavAuthButton() {
         href="/signup"
         className="rounded-xl bg-[#C8A96E] px-5 py-2 text-[15px] font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
       >
-        지금 시작하기
+        회원가입
       </Link>
     </div>
   );

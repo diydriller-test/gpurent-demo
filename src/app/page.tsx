@@ -473,7 +473,7 @@ export default function Home() {
                   href="/api-test"
                   className="group inline-flex h-11 items-center justify-center gap-2 rounded-full bg-accent px-7 text-sm font-semibold text-white transition-all hover:bg-accent-bright"
                 >
-                  지금 시작하기
+                  무료 체험하기
                   <span className="transition-transform group-hover:translate-x-1">→</span>
                 </Link>
                 <Link
