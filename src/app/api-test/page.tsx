@@ -1915,6 +1915,10 @@ export default function ApiTestPage() {
         llmSystemPrompt?: string;
         embeddingText?: string;
         embeddingVector?: number[] | null;
+        rerankQuestion?: string;
+        rerankDocsText?: string;
+        rerankResults?: Array<{ rank: number; doc: string; score: number }> | null;
+        displayedQuery?: string;
         sttTranscript?: string | null;
         image2textResult?: string | null;
         image2textPrompt?: string;
@@ -1925,6 +1929,10 @@ export default function ApiTestPage() {
       if (snap.llmSystemPrompt !== undefined) setLlmSystemPrompt(snap.llmSystemPrompt);
       if (snap.embeddingText !== undefined) setEmbeddingText(snap.embeddingText);
       if (snap.embeddingVector !== undefined) setEmbeddingVector(snap.embeddingVector);
+      if (snap.rerankQuestion !== undefined) setRerankQuestion(snap.rerankQuestion);
+      if (snap.rerankDocsText !== undefined) setRerankDocsText(snap.rerankDocsText);
+      if (snap.rerankResults !== undefined) setRerankResults(snap.rerankResults);
+      if (snap.displayedQuery !== undefined) setDisplayedQuery(snap.displayedQuery);
       if (snap.sttTranscript !== undefined) setSttTranscript(snap.sttTranscript);
       if (snap.image2textResult !== undefined) setImage2TextResult(snap.image2textResult);
       if (snap.image2textPrompt !== undefined) setImage2TextPrompt(snap.image2textPrompt);
@@ -7013,6 +7021,10 @@ export default function ApiTestPage() {
                               image2textResult,
                               image2textPrompt,
                               consoleByApi,
+                              rerankQuestion,
+                              rerankDocsText,
+                              rerankResults,
+                              displayedQuery,
                             }));
                           } catch {}
                         }}
