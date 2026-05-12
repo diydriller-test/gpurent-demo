@@ -41,6 +41,7 @@ import type {
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 import {
   getApiTask,
+  getPlanCardDisplay,
   getPlanTaskSublabel,
   type PlanTask,
 } from "@/app/plans/planCatalog";
@@ -59,6 +60,23 @@ type ApiId =
   | "voiceClone"
   | "image2text"
   | "t2m";
+
+/** API `task` → 체험 Playground `selectedApi` (정적 카드 없이 API만으로 연결) */
+const PLAN_TASK_TO_PLAYGROUND_API: Partial<Record<PlanTask, ApiId>> = {
+  "Text Generation": "llm",
+  "Ad Copy": "adCopy",
+  "Text Summary": "summarize",
+  "Sentiment Analysis": "sentiment",
+  NER: "ner",
+  "Text-to-SQL": "textToSql",
+  Embedding: "embedding",
+  Reranker: "reranker",
+  TTS: "tts",
+  STT: "stt",
+  "Voice Clone": "voiceClone",
+  Vision: "image2text",
+  "Text-to-Music": "t2m",
+};
 
 type ApiItem = {
   id: ApiId;
@@ -1693,12 +1711,15 @@ export default function ApiTestPage() {
     | "STT"
     | "Voice Clone"
     | "Vision"
-  | "Text-to-Music";
+    | "Text-to-Music"
+    | "Other";
   type LibraryFormat = "Transformers" | "GGUF" | "vLLM" | "ONNX";
 
   type MarketplaceItem = {
     id: string;
     task: MarketplaceTask;
+    /** `/apis` 응답의 항목과 1:1 매칭할 때 사용 (플랜·정렬·표시) */
+    backendApiId?: number;
     apiId?: ApiId;
     model: string;
     modelSizeB: number;
@@ -1706,128 +1727,33 @@ export default function ApiTestPage() {
     formats: LibraryFormat[]; // filterable formats
   };
 
-  const marketplaceItems: MarketplaceItem[] = useMemo(
-    () => [
-      {
-        id: "Qwen/Qwen3.6-35B-A3B",
-        task: "Text Generation",
-        apiId: "llm",
-        model: "Text",
-        modelSizeB: 120,
-        taskTags: ["LLM", "Text-Gen"],
-        formats: ["vLLM", "Transformers", "ONNX"],
-      },
-      {
-        id: "ad-copy-modu-nlp",
-        task: "Ad Copy",
-        apiId: "adCopy",
-        model: "Ad Copy",
-        modelSizeB: 120,
-        taskTags: ["Ad-Copy", "Marketing"],
-        formats: ["vLLM", "Transformers", "ONNX"],
-      },
-      {
-        id: "text-summary-modu-nlp",
-        task: "Text Summary",
-        apiId: "summarize",
-        model: "Text Summary",
-        modelSizeB: 120,
-        taskTags: ["Summary", "NLP"],
-        formats: ["vLLM", "Transformers", "ONNX"],
-      },
-      {
-        id: "review-sentiment-modu-nlp",
-        task: "Sentiment Analysis",
-        apiId: "sentiment",
-        model: "Sentiment",
-        modelSizeB: 120,
-        taskTags: ["Sentiment", "Reviews"],
-        formats: ["vLLM", "Transformers", "ONNX"],
-      },
-      {
-        id: "ner-modu-nlp",
-        task: "NER",
-        apiId: "ner",
-        model: "NER",
-        modelSizeB: 120,
-        taskTags: ["NER", "NLP"],
-        formats: ["vLLM", "Transformers", "ONNX"],
-      },
-      {
-        id: "text-to-sql-modu-nlp",
-        task: "Text-to-SQL",
-        apiId: "textToSql",
-        model: "Text-to-SQL",
-        modelSizeB: 120,
-        taskTags: ["Text-to-SQL", "SQL", "Analytics"],
-        formats: ["vLLM", "Transformers", "ONNX"],
-      },
-      {
-        id: "embedding-70b",
-        task: "Embedding",
-        apiId: "embedding",
-        model: "Embedding",
-        modelSizeB: 8,
-        taskTags: ["Embedding", "Semantic-Search"],
-        formats: ["Transformers", "ONNX"],
-      },
-      {
-        id: "reranker-8b",
-        task: "Reranker",
-        apiId: "reranker",
-        model: "Reranker",
-        modelSizeB: 8,
-        taskTags: ["Reranker", "Qwen3", "Search-Quality"],
-        formats: ["GGUF", "Transformers"],
-      },
-      {
-        id: "tts-13b",
-        task: "TTS",
-        apiId: "tts",
-        model: "TTS",
-        modelSizeB: 13,
-        taskTags: ["TTS", "Audio"],
-        formats: ["vLLM", "ONNX"],
-      },
-      {
-        id: "stt-13b",
-        task: "STT",
-        apiId: "stt",
-        model: "STT",
-        modelSizeB: 13,
-        taskTags: ["STT", "Transcription"],
-        formats: ["ONNX"],
-      },
-      {
-        id: "voice-clone-modu",
-        task: "Voice Clone",
-        apiId: "voiceClone",
-        model: "Voice Clone",
-        modelSizeB: 13,
-        taskTags: ["VoiceClone", "Audio"],
-        formats: ["ONNX"],
-      },
-      {
-        id: "image2text",
-        task: "Vision",
-        apiId: "image2text",
-        model: "Image2Text",
-        modelSizeB: 35,
-        taskTags: ["Vision", "OCR", "Multimodal"],
-        formats: ["vLLM"],
-      },
-      {
-        id: "t2m-modu",
-        task: "Text-to-Music",
-        apiId: "t2m",
-        model: "T2M",
-        modelSizeB: 0,
-        taskTags: ["T2M", "Music", "Audio"],
-        formats: ["Transformers"],
-      },
-    ],
-    [],
-  );
+  function backendApiToMarketplaceItem(api: Api): MarketplaceItem {
+    const task = getApiTask(api);
+    const card = getPlanCardDisplay(api);
+    const resolvedTask: MarketplaceTask = task
+      ? (task as MarketplaceTask)
+      : "Other";
+
+    const playgroundApiId =
+      resolvedTask === "Other"
+        ? undefined
+        : PLAN_TASK_TO_PLAYGROUND_API[task as PlanTask];
+
+    return {
+      id: `backend-api-${api.id}`,
+      backendApiId: api.id,
+      task: resolvedTask,
+      apiId: playgroundApiId,
+      model:
+        (api.model_display && api.model_display.trim()) ||
+        api.name ||
+        card.modelDisplay,
+      modelSizeB: 0,
+      taskTags:
+        api.tags && api.tags.length > 0 ? api.tags : card.tags,
+      formats: ["Transformers"] as LibraryFormat[],
+    };
+  }
 
   const [filterTasks, setFilterTasks] = useState<
     Record<MarketplaceTask, boolean>
@@ -1845,6 +1771,7 @@ export default function ApiTestPage() {
     "Voice Clone": true,
     Vision: true,
     "Text-to-Music": true,
+    Other: true,
   });
   const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
   /** 목록 → 상세 진입 직전의 Tasks 필터(복귀 시 복원). 상세 내 API 전환(moveToApiDetail)에서는 갱신하지 않음 */
@@ -1859,9 +1786,8 @@ export default function ApiTestPage() {
     let cancelled = false;
     (async () => {
       try {
-        const apis = await getApis();
-        const active = apis.filter((a) => a.is_active !== false);
-        const sorted = [...active].sort(
+        const apis = await getApis({ includeInactive: true });
+        const sorted = [...apis].sort(
           (a, b) =>
             (a.sort_order ?? Number.MAX_SAFE_INTEGER) -
             (b.sort_order ?? Number.MAX_SAFE_INTEGER),
@@ -1980,6 +1906,7 @@ export default function ApiTestPage() {
       taskKeys.forEach((k) => {
         next[k] = k === targetTask;
       });
+      next.Other = false;
       return next;
     });
 
@@ -2052,6 +1979,7 @@ export default function ApiTestPage() {
           taskKeys.forEach((k) => {
             next[k] = true;
           });
+          next.Other = true;
           return next;
         });
       }
@@ -2062,57 +1990,45 @@ export default function ApiTestPage() {
   }, [viewMode, taskKeys]);
 
   function resolveMarketplacePlan(item: MarketplaceItem) {
-    const task = item.task as PlanTask;
-    const api = apisFromBackend.find((a) => getApiTask(a) === task);
+    const api =
+      item.backendApiId != null
+        ? apisFromBackend.find((a) => a.id === item.backendApiId)
+        : apisFromBackend.find((a) => getApiTask(a) === (item.task as PlanTask));
     if (!api) return null;
     return userMe?.api_plans?.find((p) => p.api_id === api.id) ?? null;
   }
 
+  const allTasksFilterOn = taskKeys.every((t) => filterTasks[t]);
+
   const filteredMarketplace = useMemo(() => {
-    // 정적 카드(마켓플레이스 목록)를 서버 데이터로만 구동:
-    // 서버에서 API 목록을 못 받아오면 리스트는 비워둔다.
     if (apisFromBackend.length === 0) return [];
 
-    const filtered = marketplaceItems.filter((item) => {
-      // 서버에서 API 목록을 받은 경우:
-      // - 서버에 존재하지 않는(매칭 불가) 정적 카드는 숨김
-      // - 서버에서 비활성(is_active:false)로 내려온 API도 숨김
-      if (apisFromBackend.length > 0) {
-        const task = item.task as PlanTask;
-        const api = apisFromBackend.find((a) => getApiTask(a) === task);
-        if (!api) return false;
-        if (api.is_active === false) return false;
-      }
+    const rows = apisFromBackend.map((api) =>
+      backendApiToMarketplaceItem(api),
+    );
+
+    const filtered = rows.filter((item) => {
       if (sidebarMode === "my") {
-        const plan = resolveMarketplacePlan(item);
-        return plan != null;
+        return resolveMarketplacePlan(item) != null;
       }
-      return filterTasks[item.task];
+      if (item.task === "Other") {
+        if (!allTasksFilterOn) return false;
+      } else if (!filterTasks[item.task]) {
+        return false;
+      }
+      return true;
     });
 
-    // 목록 순서를 서버 `sort_order` 기준으로 맞춤
-    // (같은 `sort_order`면 기존 정적 배열 순서를 유지)
-    const orderByTask = new Map<PlanTask, number>();
-    apisFromBackend.forEach((api) => {
-      const task = getApiTask(api);
-      if (!task) return;
-      if (api.is_active === false) return;
-      orderByTask.set(
-        task,
-        api.sort_order ?? Number.MAX_SAFE_INTEGER,
-      );
-    });
+    const orderFor = (backendId: number | undefined) => {
+      const api = apisFromBackend.find((a) => a.id === backendId);
+      return api?.sort_order ?? Number.MAX_SAFE_INTEGER;
+    };
 
-    return [...filtered].sort((a, b) => {
-      const ao =
-        orderByTask.get(a.task as PlanTask) ?? Number.MAX_SAFE_INTEGER;
-      const bo =
-        orderByTask.get(b.task as PlanTask) ?? Number.MAX_SAFE_INTEGER;
-      return ao - bo;
-    });
-  }, [filterTasks, marketplaceItems, sidebarMode, apisFromBackend, userMe]);
+    return [...filtered].sort(
+      (a, b) => orderFor(a.backendApiId) - orderFor(b.backendApiId),
+    );
+  }, [filterTasks, sidebarMode, apisFromBackend, userMe, allTasksFilterOn]);
 
-  const allTasksFilterOn = taskKeys.every((t) => filterTasks[t]);
   const isAllTasksActive = sidebarMode === "all" && allTasksFilterOn;
 
   const activeTaskKey = useMemo(() => {
@@ -2737,6 +2653,8 @@ export default function ApiTestPage() {
         return <IconImage className={base} />;
       case "Text-to-Music":
         return <IconMusicNote className={base} />;
+      case "Other":
+        return <IconLayers className={base} />;
       default:
         return null;
     }
@@ -3434,6 +3352,7 @@ export default function ApiTestPage() {
       next["Voice Clone"] = selectedApi === "voiceClone";
       next.Vision = selectedApi === "image2text";
       next["Text-to-Music"] = selectedApi === "t2m";
+      next.Other = false;
       return next;
     });
   }, [selectedApi, viewMode]);
@@ -6175,7 +6094,7 @@ export default function ApiTestPage() {
                             taskKeys.forEach((k) => {
                               next[k] = true;
                             });
-                            // Vision is now active
+                            next.Other = true;
                             return next;
                           });
                         }}
@@ -6271,7 +6190,7 @@ export default function ApiTestPage() {
                                 taskKeys.forEach((k) => {
                                   next[k] = k === t;
                                 });
-                                // Vision is now active
+                                next.Other = false;
                                 return next;
                               });
                             }}
@@ -6341,6 +6260,17 @@ export default function ApiTestPage() {
                 <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredMarketplace.map((item) => {
                     const currentPlan = resolveMarketplacePlan(item);
+                    const rowApi =
+                      item.backendApiId != null
+                        ? apisFromBackend.find((a) => a.id === item.backendApiId)
+                        : undefined;
+                    const cardSublabel =
+                      item.task === "Other"
+                        ? rowApi?.card_sublabel?.trim() ||
+                          rowApi?.task_label?.trim() ||
+                          rowApi?.name ||
+                          item.model
+                        : getPlanTaskSublabel(item.task as PlanTask);
                     return (
                       <button
                         key={item.id}
@@ -6353,14 +6283,19 @@ export default function ApiTestPage() {
                         ].join(" ")}
                       >
                         <p className="font-mono text-[11px] text-foreground/50">
-                          {getPlanTaskSublabel(item.task as PlanTask)}
+                          {cardSublabel}
                         </p>
                         <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
                           {item.model}
                         </p>
                         <p className="mt-1 text-[11px] text-foreground/40">
-                          코그로보
+                          {rowApi?.company_name?.trim() || "코그로보"}
                         </p>
+                        {rowApi?.is_active === false ? (
+                          <p className="mt-1 text-[11px] font-medium text-foreground/45">
+                            비활성
+                          </p>
+                        ) : null}
                         <p className="mt-2 text-[11px] text-foreground/45">
                           트래픽 기반 · 등급별 과금
                         </p>
@@ -6450,7 +6385,7 @@ export default function ApiTestPage() {
                               taskKeys.forEach((k) => {
                                 next[k] = true;
                               });
-                              // Vision is now active
+                              next.Other = true;
                               return next;
                             });
                           }

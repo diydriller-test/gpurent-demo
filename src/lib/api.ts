@@ -92,7 +92,10 @@ export interface Api {
   sort_order?: number;
 }
 
-export async function getApis(): Promise<Api[]> {
+export async function getApis(options?: {
+  /** 기본 false: `is_active === false` 항목은 제외 (체험존 전체 목록 등에서 true로 사용) */
+  includeInactive?: boolean;
+}): Promise<Api[]> {
   const res = await fetch("/api/apis", {
     method: "GET",
     headers: {
@@ -106,10 +109,15 @@ export async function getApis(): Promise<Api[]> {
   }
 
   const data = await res.json();
-  const apis: Api[] = Array.isArray(data) ? data : [];
-  return apis
-    .filter((api) => api.is_active !== false)
-    .sort((a, b) => (a.sort_order ?? Number.MAX_SAFE_INTEGER) - (b.sort_order ?? Number.MAX_SAFE_INTEGER));
+  let apis: Api[] = Array.isArray(data) ? data : [];
+  if (!options?.includeInactive) {
+    apis = apis.filter((api) => api.is_active !== false);
+  }
+  return apis.sort(
+    (a, b) =>
+      (a.sort_order ?? Number.MAX_SAFE_INTEGER) -
+      (b.sort_order ?? Number.MAX_SAFE_INTEGER),
+  );
 }
 
 export interface Plan {
