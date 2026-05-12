@@ -57,7 +57,8 @@ type ApiId =
   | "tts"
   | "stt"
   | "voiceClone"
-  | "image2text";
+  | "image2text"
+  | "t2m";
 
 type ApiItem = {
   id: ApiId;
@@ -505,6 +506,16 @@ function IconUpload(props: { className?: string }) {
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <path d="M7 10l5-5 5 5" />
       <path d="M12 5v12" />
+    </IconBase>
+  );
+}
+
+function IconMusicNote(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
     </IconBase>
   );
 }
@@ -1419,6 +1430,11 @@ export default function ApiTestPage() {
         name: "Image2Text",
         description: "이미지 분석 및 텍스트 추출 (OCR)",
       },
+      {
+        id: "t2m",
+        name: "Text-to-Music",
+        description: "텍스트 프롬프트로 음악 생성",
+      },
     ],
     [],
   );
@@ -1453,7 +1469,8 @@ export default function ApiTestPage() {
       api === "tts" ||
       api === "stt" ||
       api === "voiceClone" ||
-      api === "image2text"
+      api === "image2text" ||
+      api === "t2m"
     ) {
       setSelectedApi(api);
       // 홈 카드에서 들어올 때는 바로 해당 챕터 상세를 보여줌
@@ -1613,6 +1630,7 @@ export default function ApiTestPage() {
       stt: createDefaultConsoleState("stt"),
       voiceClone: createDefaultConsoleState("voiceClone"),
       image2text: createDefaultConsoleState("image2text"),
+      t2m: createDefaultConsoleState("t2m"),
     }),
   );
   const [consoleCopied, setConsoleCopied] = useState<boolean>(false);
@@ -1633,7 +1651,8 @@ export default function ApiTestPage() {
     | "TTS"
     | "STT"
     | "Voice Clone"
-    | "Vision";
+    | "Vision"
+  | "Text-to-Music";
   type LibraryFormat = "Transformers" | "GGUF" | "vLLM" | "ONNX";
 
   type MarketplaceItem = {
@@ -1756,6 +1775,15 @@ export default function ApiTestPage() {
         taskTags: ["Vision", "OCR", "Multimodal"],
         formats: ["vLLM"],
       },
+      {
+        id: "t2m-modu",
+        task: "Text-to-Music",
+        apiId: "t2m",
+        model: "T2M",
+        modelSizeB: 0,
+        taskTags: ["T2M", "Music", "Audio"],
+        formats: ["Transformers"],
+      },
     ],
     [],
   );
@@ -1775,6 +1803,7 @@ export default function ApiTestPage() {
     STT: true,
     "Voice Clone": true,
     Vision: true,
+    "Text-to-Music": true,
   });
   const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
   /** 목록 → 상세 진입 직전의 Tasks 필터(복귀 시 복원). 상세 내 API 전환(moveToApiDetail)에서는 갱신하지 않음 */
@@ -1820,6 +1849,7 @@ export default function ApiTestPage() {
     () => [
       "STT",
       "TTS",
+      "Text-to-Music",
       "Embedding",
       "Reranker",
       "Voice Clone",
@@ -1874,6 +1904,10 @@ export default function ApiTestPage() {
                                 taskParam === "image2text" ||
                                 taskParam === "ocr"
                               ? "Vision"
+                            : taskParam === "t2m" ||
+                                taskParam === "text-to-music" ||
+                                taskParam === "texttomusic"
+                              ? "Text-to-Music"
                               : null;
 
     if (!targetTask) return;
@@ -1900,6 +1934,7 @@ export default function ApiTestPage() {
     if (targetTask === "STT") setSelectedApi("stt");
     if (targetTask === "Voice Clone") setSelectedApi("voiceClone");
     if (targetTask === "Vision") setSelectedApi("image2text");
+    if (targetTask === "Text-to-Music") setSelectedApi("t2m");
   }, [taskKeys]);
 
   const SESSION_SNAPSHOT_KEY = "apiTestResultSnapshot";
@@ -2211,6 +2246,7 @@ export default function ApiTestPage() {
     "STT": "stt",
     "Voice Clone": "voice-clone",
     "Vision": "vision",
+    "Text-to-Music": "t2m",
   };
 
   function enterDetailFor(item: MarketplaceItem) {
@@ -2402,6 +2438,19 @@ export default function ApiTestPage() {
   const [image2textDevCodeOpen, setImage2TextDevCodeOpen] = useState(false);
   const [image2textDevCodeCopied, setImage2TextDevCodeCopied] = useState(false);
 
+  // Text-to-Music
+  const [t2mPrompt, setT2mPrompt] = useState("Upbeat jazz with piano and saxophone, 120bpm, warm and lively");
+  const [t2mDuration, setT2mDuration] = useState(10);
+  const [t2mAudioUrl, setT2mAudioUrl] = useState<string | null>(null);
+  const [t2mIsLoading, setT2mIsLoading] = useState(false);
+  const [t2mError, setT2mError] = useState<string | null>(null);
+  const [t2mPlaying, setT2mPlaying] = useState(false);
+  const [t2mProgress, setT2mProgress] = useState(0);
+  const [t2mDurationMs, setT2mDurationMs] = useState(0);
+  const [t2mWave, setT2mWave] = useState<number[]>([]);
+  const t2mAudioRef = useRef<HTMLAudioElement | null>(null);
+  const t2mBlobUrlRef = useRef<string | null>(null);
+
   const [rerankerDevCodeOpen, setRerankerDevCodeOpen] = useState(false);
   const [rerankerDevCodeCopied, setRerankerDevCodeCopied] = useState(false);
   const [ttsDevCodeOpen, setTtsDevCodeOpen] = useState(false);
@@ -2539,7 +2588,8 @@ export default function ApiTestPage() {
     (selectedApi === "tts" && ttsHasWorkflowResult) ||
     (selectedApi === "stt" && sttHasWorkflowResult) ||
     (selectedApi === "voiceClone" && Boolean(vcAudioUrl)) ||
-    (selectedApi === "image2text" && Boolean(image2textResult));
+    (selectedApi === "image2text" && Boolean(image2textResult)) ||
+    (selectedApi === "t2m" && Boolean(t2mAudioUrl));
 
   const { mounted: workflowBannerMounted, visible: workflowBannerVisible } =
     useResultTriggeredBanner(hasWorkflowBannerResult);
@@ -2624,6 +2674,8 @@ export default function ApiTestPage() {
         return <IconVoiceClone className={base} />;
       case "Vision":
         return <IconImage className={base} />;
+      case "Text-to-Music":
+        return <IconMusicNote className={base} />;
       default:
         return null;
     }
@@ -2943,6 +2995,8 @@ export default function ApiTestPage() {
         return "예: 클론된 목소리로 읽어줄 내용을 입력하세요…";
       case "image2text":
         return "예: 이미지를 업로드하고 분석 지시를 입력하세요…";
+      case "t2m":
+        return "예: Upbeat jazz with piano and saxophone, 120bpm…";
       default:
         return "메시지를 입력하세요…";
     }
@@ -3198,6 +3252,21 @@ export default function ApiTestPage() {
       setImage2TextError(null);
       setImage2TextIsLoading(false);
     }
+    if (api === "t2m") {
+      if (t2mBlobUrlRef.current) {
+        URL.revokeObjectURL(t2mBlobUrlRef.current);
+        t2mBlobUrlRef.current = null;
+      }
+      setT2mPrompt("Upbeat jazz with piano and saxophone, 120bpm, warm and lively");
+      setT2mDuration(10);
+      setT2mAudioUrl(null);
+      setT2mIsLoading(false);
+      setT2mError(null);
+      setT2mWave([]);
+      setT2mDurationMs(0);
+      setT2mProgress(0);
+      setT2mPlaying(false);
+    }
     if (api === "adCopy") {
       setAdCopyBrief(DEFAULT_AD_COPY_BRIEF);
       setAdCopyTone("");
@@ -3303,6 +3372,7 @@ export default function ApiTestPage() {
       next.STT = selectedApi === "stt";
       next["Voice Clone"] = selectedApi === "voiceClone";
       next.Vision = selectedApi === "image2text";
+      next["Text-to-Music"] = selectedApi === "t2m";
       return next;
     });
   }, [selectedApi, viewMode]);
@@ -3749,6 +3819,31 @@ export default function ApiTestPage() {
     const link = document.createElement("a");
     link.href = vcAudioUrl;
     link.download = `voice-clone-${Date.now()}.wav`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  function handleT2mPlayPause() {
+    if (!t2mAudioUrl) return;
+    const el = t2mAudioRef.current;
+    if (!el) return;
+    if (t2mPlaying) {
+      el.pause();
+      setT2mPlaying(false);
+      return;
+    }
+    void el
+      .play()
+      .then(() => setT2mPlaying(true))
+      .catch(() => setT2mPlaying(false));
+  }
+
+  function handleT2mSave() {
+    if (!t2mAudioUrl || typeof document === "undefined") return;
+    const link = document.createElement("a");
+    link.href = t2mAudioUrl;
+    link.download = `t2m-${Date.now()}.wav`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -6226,7 +6321,8 @@ export default function ApiTestPage() {
                     selectedApi === "tts" ||
                     selectedApi === "stt" ||
                     selectedApi === "voiceClone" ||
-                    selectedApi === "image2text" ? (
+                    selectedApi === "image2text" ||
+                    selectedApi === "t2m" ? (
                       <div
                         className={
                           selectedApi === "adCopy" ||
@@ -6261,7 +6357,9 @@ export default function ApiTestPage() {
                                               ? "High-Performance Infra • Voice Clone • 실시간"
                                               : selectedApi === "image2text"
                                                 ? "High-Performance Infra • Image2Text • 실시간"
-                                                : "High-Performance Infra • Qwen3-STT • 실시간"}
+                                                : selectedApi === "t2m"
+                                                  ? "High-Performance Infra • Text-to-Music • 실시간"
+                                                  : "High-Performance Infra • Qwen3-STT • 실시간"}
                         </span>
                       </div>
                     ) : null}
@@ -6378,6 +6476,16 @@ export default function ApiTestPage() {
                         image2textIsLoading={image2textIsLoading}
                         image2textError={image2textError}
                         image2textImagePreview={image2textImagePreview}
+                        t2mAudioUrl={t2mAudioUrl}
+                        t2mIsLoading={t2mIsLoading}
+                        t2mError={t2mError}
+                        t2mAudioRef={t2mAudioRef}
+                        t2mPlaying={t2mPlaying}
+                        t2mWave={t2mWave}
+                        t2mProgress={t2mProgress}
+                        t2mDurationMs={t2mDurationMs}
+                        handleT2mPlayPause={handleT2mPlayPause}
+                        handleT2mSave={handleT2mSave}
                       />
                     </div>
                   ) : null}
@@ -6552,6 +6660,12 @@ export default function ApiTestPage() {
                       onImage2TextFileChange={handleImage2TextFileChange}
                       onImage2TextFileClear={handleImage2TextFileClear}
                       image2textIsLoading={image2textIsLoading}
+                      t2mPrompt={t2mPrompt}
+                      setT2mPrompt={setT2mPrompt}
+                      t2mDuration={t2mDuration}
+                      setT2mDuration={setT2mDuration}
+                      t2mIsLoading={t2mIsLoading}
+                      handleT2mRun={() => {}}
                     />
                   </div>
                 </div>

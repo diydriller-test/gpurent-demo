@@ -488,6 +488,14 @@ type Props = {
   onImage2TextFileChange: (file: File | null) => void;
   onImage2TextFileClear: () => void;
   image2textIsLoading: boolean;
+
+  // Text-to-Music input
+  handleT2mRun: () => void;
+  t2mPrompt: string;
+  setT2mPrompt: React.Dispatch<React.SetStateAction<string>>;
+  t2mDuration: number;
+  setT2mDuration: React.Dispatch<React.SetStateAction<number>>;
+  t2mIsLoading: boolean;
 };
 
 export function ApiInputPanel({
@@ -643,6 +651,13 @@ export function ApiInputPanel({
   onImage2TextFileChange,
   onImage2TextFileClear,
   image2textIsLoading,
+
+  handleT2mRun,
+  t2mPrompt,
+  setT2mPrompt,
+  t2mDuration,
+  setT2mDuration,
+  t2mIsLoading,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [llmAdvancedOpen, setLlmAdvancedOpen] = useState(false);
@@ -2251,6 +2266,17 @@ export function ApiInputPanel({
           IconUpload={IconUpload}
         />
       ) : null}
+
+      {selectedApi === "t2m" ? (
+        <T2mSection
+          t2mPrompt={t2mPrompt}
+          setT2mPrompt={setT2mPrompt}
+          t2mDuration={t2mDuration}
+          setT2mDuration={setT2mDuration}
+          t2mIsLoading={t2mIsLoading}
+          handleT2mRun={handleT2mRun}
+        />
+      ) : null}
     </div>
   );
 }
@@ -2692,6 +2718,100 @@ function Image2TextSection({
             </>
           ) : (
             "이미지 분석"
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// T2mSection — 텍스트 프롬프트 + 길이 슬라이더 UI
+// ---------------------------------------------------------------------------
+
+type T2mSectionProps = {
+  t2mPrompt: string;
+  setT2mPrompt: React.Dispatch<React.SetStateAction<string>>;
+  t2mDuration: number;
+  setT2mDuration: React.Dispatch<React.SetStateAction<number>>;
+  t2mIsLoading: boolean;
+  handleT2mRun: () => void;
+};
+
+function T2mSection({
+  t2mPrompt,
+  setT2mPrompt,
+  t2mDuration,
+  setT2mDuration,
+  t2mIsLoading,
+  handleT2mRun,
+}: T2mSectionProps) {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleT2mRun();
+      }}
+    >
+      <div className="flex flex-col gap-3">
+        {/* 프롬프트 */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">음악 프롬프트</p>
+          <textarea
+            value={t2mPrompt}
+            onChange={(e) => setT2mPrompt(e.target.value)}
+            rows={3}
+            placeholder="예: 잔잔한 피아노 멜로디에 가벼운 재즈 드럼이 어우러진 카페 BGM"
+            className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+
+        {/* 길이 슬라이더 */}
+        <div>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-foreground/60">길이</p>
+            <span className="font-mono text-xs text-foreground/60">
+              {t2mDuration}초
+            </span>
+          </div>
+          <input
+            type="range"
+            min={5}
+            max={60}
+            step={5}
+            value={t2mDuration}
+            onChange={(e) => setT2mDuration(Number(e.target.value))}
+            className="mt-1.5 w-full accent-accent"
+          />
+          <div className="mt-0.5 flex justify-between font-mono text-[10px] text-foreground/40">
+            <span>5초</span>
+            <span>60초</span>
+          </div>
+        </div>
+
+        {/* 실행 버튼 */}
+        <button
+          type="submit"
+          disabled={t2mIsLoading || !t2mPrompt.trim()}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-[13px] font-medium text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {t2mIsLoading ? (
+            <>
+              <svg
+                className="h-4 w-4 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+              <span>생성 중...</span>
+            </>
+          ) : (
+            "음악 생성"
           )}
         </button>
       </div>

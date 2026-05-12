@@ -10,7 +10,8 @@ export type ApiId =
   | "tts"
   | "stt"
   | "voiceClone"
-  | "image2text";
+  | "image2text"
+  | "t2m";
 
 /** POST /api/sentiment 응답과 동일 구조 */
 export type SentimentAnalysisPayload = {

@@ -106,6 +106,18 @@ type Props = {
   image2textIsLoading: boolean;
   image2textError: string | null;
   image2textImagePreview: string | null;
+
+  // Text-to-Music
+  t2mAudioUrl: string | null;
+  t2mIsLoading: boolean;
+  t2mError: string | null;
+  t2mAudioRef: React.RefObject<HTMLAudioElement | null>;
+  t2mPlaying: boolean;
+  t2mWave: number[];
+  t2mProgress: number;
+  t2mDurationMs: number;
+  handleT2mPlayPause: () => void;
+  handleT2mSave: () => void;
 };
 
 export function ApiOutputPanel({
@@ -161,6 +173,16 @@ export function ApiOutputPanel({
   image2textIsLoading,
   image2textError,
   image2textImagePreview,
+  t2mAudioUrl,
+  t2mIsLoading,
+  t2mError,
+  t2mAudioRef,
+  t2mPlaying,
+  t2mWave,
+  t2mProgress,
+  t2mDurationMs,
+  handleT2mPlayPause,
+  handleT2mSave,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -946,6 +968,163 @@ export function ApiOutputPanel({
                     <p className="mt-3 text-xs text-foreground/55">
                       하단에서 이미지를 업로드하고 &quot;이미지 분석&quot;을 눌러주세요.
                     </p>
+                  ) : null}
+                </div>
+              </div>
+            );
+
+          case "t2m":
+            return (
+              <div className="min-w-0 space-y-3">
+                <audio
+                  ref={t2mAudioRef}
+                  src={t2mAudioUrl ?? undefined}
+                  preload="auto"
+                  className="hidden"
+                />
+                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-xs text-accent">Audio Player</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        생성 후 실제 오디오 재생 · 진행률은 재생 시간에 따라
+                        갱신됩니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleT2mSave}
+                      disabled={!t2mAudioUrl}
+                      title="생성 음악 파일 저장"
+                      aria-label="생성 음악 파일 저장"
+                      className={[
+                        "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors",
+                        t2mAudioUrl
+                          ? "border-accent/45 bg-background/35 text-accent hover:border-accent/70 hover:bg-accent/10"
+                          : "cursor-not-allowed border-white/10 bg-background/20 text-foreground/35",
+                      ].join(" ")}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-5 w-5"
+                        aria-hidden="true"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <path d="M7 10l5 5 5-5" />
+                        <path d="M12 15V3" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div
+                    className={[
+                      "mt-4 transition-opacity duration-300",
+                      t2mAudioUrl
+                        ? "opacity-100"
+                        : "pointer-events-none opacity-50",
+                    ].join(" ")}
+                  >
+                    {!t2mAudioUrl ? (
+                      <p className="mb-3 text-xs text-foreground/55">
+                        생성 후 이용 가능합니다. 하단에서 &quot;음악 생성&quot;을
+                        눌러 음악을 생성해 주세요.
+                      </p>
+                    ) : null}
+
+                    <div className="flex items-center justify-between gap-4">
+                      <button
+                        type="button"
+                        disabled={!t2mAudioUrl}
+                        onClick={handleT2mPlayPause}
+                        className={[
+                          "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity",
+                          t2mAudioUrl
+                            ? "hover:opacity-90"
+                            : "cursor-not-allowed opacity-40",
+                        ].join(" ")}
+                      >
+                        {t2mPlaying ? (
+                          <IconPause className="h-5 w-5" />
+                        ) : (
+                          <IconPlay className="h-5 w-5" />
+                        )}
+                      </button>
+                      <div className="flex-1">
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-2 rounded-full bg-accent transition-[width] duration-100 ease-linear"
+                            style={{
+                              width: `${Math.round(t2mProgress * 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between font-mono text-[11px] text-foreground/50">
+                          <span>
+                            {((t2mDurationMs * t2mProgress) / 1000).toFixed(1)}s
+                          </span>
+                          <span>{(t2mDurationMs / 1000).toFixed(1)}s</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative mt-4 overflow-hidden rounded-xl border border-accent/15 bg-zinc-950/40 px-2 py-3">
+                    <div className="flex h-14 items-end justify-center gap-[3px]">
+                      {(t2mIsLoading
+                        ? Array.from(
+                            { length: 32 },
+                            (_, i) => 0.35 + (i % 5) * 0.1,
+                          )
+                        : t2mWave?.length
+                          ? t2mWave
+                          : Array.from({ length: 32 }, () => 0.12)
+                      )
+                        .slice(0, 32)
+                        .map((v, idx) => {
+                          const h = Math.max(8, Math.round(v * 44));
+                          return (
+                            <div
+                              key={`t2m-w-${idx}-${t2mIsLoading ? "s" : "d"}`}
+                              className={[
+                                "w-[5px] origin-bottom rounded-sm",
+                                t2mPlaying ? "bg-accent" : "bg-white/15",
+                              ].join(" ")}
+                              style={{
+                                height: h,
+                                ...(t2mIsLoading
+                                  ? {
+                                      animation:
+                                        "t2mWv 1.15s ease-in-out infinite",
+                                      animationDelay: `${idx * 32}ms`,
+                                    }
+                                  : {}),
+                              }}
+                            />
+                          );
+                        })}
+                    </div>
+                    {t2mIsLoading ? (
+                      <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-center text-[11px] font-medium text-accent/90">
+                        음악 생성 중…
+                      </p>
+                    ) : null}
+                  </div>
+                  <style>{`
+                    @keyframes t2mWv {
+                      0%, 100% { transform: scaleY(0.38); opacity: 0.55; }
+                      50% { transform: scaleY(1); opacity: 1; }
+                    }
+                  `}</style>
+
+                  {t2mError ? (
+                    <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-300">
+                      {t2mError}
+                    </div>
                   ) : null}
                 </div>
               </div>
