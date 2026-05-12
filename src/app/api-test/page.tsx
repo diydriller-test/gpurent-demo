@@ -6324,7 +6324,7 @@ export default function ApiTestPage() {
                   selectedApi !== "sentiment" &&
                   selectedApi !== "ner" &&
                   selectedApi !== "textToSql" ? (
-                    <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+                    <div className={`min-h-0 flex-1 px-3 py-4 ${selectedApi === "llm" || selectedApi === "stt" ? "overflow-y-auto" : "overflow-y-hidden"}`}>
                       <ApiOutputPanel
                         selectedApi={selectedApi}
                         messages={messages}
