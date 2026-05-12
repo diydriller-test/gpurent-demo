@@ -1866,7 +1866,27 @@ export default function ApiTestPage() {
             (a.sort_order ?? Number.MAX_SAFE_INTEGER) -
             (b.sort_order ?? Number.MAX_SAFE_INTEGER),
         );
-        if (!cancelled) setApisFromBackend(sorted);
+        const hasT2m = sorted.some((a) => getApiTask(a) === "Text-to-Music");
+        const withT2m: Api[] = hasT2m
+          ? sorted
+          : [
+              ...sorted,
+              {
+                id: -1,
+                name: "Text-to-Music API",
+                slug: "t2m",
+                company_id: 1,
+                company_name: "코그로보",
+                task_key: "Text-to-Music",
+                task_label: "Text-to-Music",
+                card_sublabel: "ACE-Step XL • T2M",
+                model_display: "ACE-Step",
+                tags: ["T2M", "Music", "Audio"],
+                is_active: true,
+                sort_order: 999,
+              },
+            ];
+        if (!cancelled) setApisFromBackend(withT2m);
       } catch {
         if (!cancelled) setApisFromBackend([]);
       }

@@ -224,7 +224,8 @@ export function getApiTask(api: Api): PlanTask | null {
     k === "TTS" ||
     k === "STT" ||
     k === "Voice Clone" ||
-    k === "Vision"
+    k === "Vision" ||
+    k === "Text-to-Music"
   ) {
     return k;
   }
