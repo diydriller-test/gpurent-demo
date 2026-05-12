@@ -60,7 +60,7 @@ export function PlaygroundDeveloperCodeSection({
         onClick={() => setDevCodeOpen((v) => !v)}
         className={[
           "w-full rounded-xl border px-4 py-3 text-xs font-medium",
-          "border-white/10 bg-transparent text-foreground/70",
+          "border-foreground/12 bg-transparent text-foreground/70",
           "hover:border-accent/60 hover:text-accent-bright",
           "transition-colors",
         ].join(" ")}
@@ -76,7 +76,7 @@ export function PlaygroundDeveloperCodeSection({
             : "max-h-0 opacity-0 pointer-events-none mt-3",
         ].join(" ")}
       >
-        <div className="relative rounded-xl border border-white/10 bg-zinc-950 p-3">
+        <div className="relative rounded-xl border border-foreground/10 bg-surface p-3">
           <button
             type="button"
             onClick={async () => {
@@ -96,7 +96,7 @@ export function PlaygroundDeveloperCodeSection({
               "absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
               devCodeCopied
                 ? "border-accent/50 bg-accent/10 text-accent"
-                : "border-white/10 bg-background/20 text-foreground/60 hover:border-accent/50 hover:text-accent-bright",
+                : "border-foreground/12 bg-background/40 text-foreground/60 hover:border-accent/50 hover:text-accent-bright",
             ].join(" ")}
           >
             {devCodeCopied ? (
@@ -106,7 +106,7 @@ export function PlaygroundDeveloperCodeSection({
             )}
           </button>
 
-          <pre className="mt-1 max-h-[320px] overflow-auto whitespace-pre rounded-lg border border-white/5 bg-zinc-950 p-3 font-mono text-[12px] leading-relaxed text-foreground/90">
+          <pre className="mt-1 max-h-[320px] overflow-auto whitespace-pre rounded-lg border border-foreground/8 bg-background/60 p-3 font-mono text-[12px] leading-relaxed text-foreground/90">
             <code>{renderHighlightedPython(codePython)}</code>
           </pre>
         </div>
