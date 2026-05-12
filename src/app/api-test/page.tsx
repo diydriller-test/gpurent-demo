@@ -2044,7 +2044,7 @@ export default function ApiTestPage() {
       case "All":
         return (
           <>
-            입점된 다양한 API 모델의 성능을 실시간으로 테스트해 볼 수 있는
+            다양한 AI API 모델의 성능을 실시간으로 테스트해 볼 수 있는
             체험존입니다. 🚀
           </>
         );
@@ -2196,7 +2196,7 @@ export default function ApiTestPage() {
       default:
         return (
           <>
-            입점된 다양한 API 모델의 성능을 실시간으로 테스트해 볼 수 있는
+            다양한 AI API 모델의 성능을 실시간으로 테스트해 볼 수 있는
             체험존입니다. 🚀
           </>
         );
