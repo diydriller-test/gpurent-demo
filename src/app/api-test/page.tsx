@@ -6150,8 +6150,8 @@ export default function ApiTestPage() {
                   selectedApi === "sentiment" ||
                   selectedApi === "ner" ||
                   selectedApi === "textToSql"
-                    ? "h-[calc(100vh-200px)]"
-                    : "h-[calc(100vh-240px)]"
+                    ? "h-[calc(100vh-140px)]"
+                    : "h-[calc(100vh-160px)]"
                 }`}
               >
                 <div
@@ -6567,8 +6567,8 @@ export default function ApiTestPage() {
                   selectedApi === "sentiment" ||
                   selectedApi === "ner" ||
                   selectedApi === "textToSql"
-                    ? "h-[calc(100vh-200px)]"
-                    : "h-[calc(100vh-240px)]"
+                    ? "h-[calc(100vh-140px)]"
+                    : "h-[calc(100vh-160px)]"
                 }`}
               >
                 <div className="border-b border-white/5 bg-background/20 p-4">
