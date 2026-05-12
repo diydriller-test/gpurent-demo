@@ -185,7 +185,27 @@ function PlansPageContent() {
     getApis()
       .then((data) => {
         if (cancelled) return;
-        setApis(data);
+        const hasT2m = data.some((a) => getApiTask(a) === "Text-to-Music");
+        const withT2m: Api[] = hasT2m
+          ? data
+          : [
+              ...data,
+              {
+                id: -1,
+                name: "Text-to-Music API",
+                slug: "t2m",
+                company_id: 1,
+                company_name: "코그로보",
+                task_key: "Text-to-Music",
+                task_label: "Text-to-Music",
+                card_sublabel: "ACE-Step XL • T2M",
+                model_display: "ACE-Step",
+                tags: ["#T2M", "#Music", "#Audio"],
+                is_active: true,
+                sort_order: 999,
+              },
+            ];
+        setApis(withT2m);
         setUsingDemoApis(false);
         setError(null);
       })
