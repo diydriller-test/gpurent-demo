@@ -626,6 +626,47 @@ function mockWaveform(seedText: string, length = 24) {
   return bars;
 }
 
+/** T2M 데모용 재생 가능한 WAV blob URL (서버 연동 전 시연용) */
+function createMockT2mWavBlobUrl(durationSec = 10): string {
+  const sampleRate = 44100;
+  const numSamples = Math.floor(sampleRate * durationSec);
+  const dataSize = numSamples * 2;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+  const writeStr = (offset: number, s: string) => {
+    for (let i = 0; i < s.length; i++) {
+      view.setUint8(offset + i, s.charCodeAt(i));
+    }
+  };
+  writeStr(0, "RIFF");
+  view.setUint32(4, 36 + dataSize, true);
+  writeStr(8, "WAVE");
+  writeStr(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, "data");
+  view.setUint32(40, dataSize, true);
+  // 화음(chord) 느낌: 261Hz + 329Hz + 392Hz (C4 E4 G4)
+  for (let i = 0; i < numSamples; i++) {
+    const t = i / sampleRate;
+    const env = Math.min(1, t * 2) * Math.max(0, 1 - (t - durationSec + 1));
+    const s =
+      (Math.sin(2 * Math.PI * 261.63 * t) * 0.18 +
+        Math.sin(2 * Math.PI * 329.63 * t) * 0.15 +
+        Math.sin(2 * Math.PI * 392.0 * t) * 0.13) *
+      env *
+      32767;
+    view.setInt16(44 + i * 2, s, true);
+  }
+  const blob = new Blob([buffer], { type: "audio/wav" });
+  return URL.createObjectURL(blob);
+}
+
 /** TTS 데모용 재생 가능한 WAV blob URL (실전 API 전 시연용) */
 function createMockTtsWavBlobUrl(durationSec = 2.5): string {
   const sampleRate = 44100;
@@ -3824,6 +3865,110 @@ export default function ApiTestPage() {
     link.remove();
   }
 
+  function handleT2mRun() {
+    void runT2mGeneration();
+  }
+
+  async function runT2mGeneration() {
+    if (t2mIsLoading) return;
+
+    if (t2mBlobUrlRef.current) {
+      URL.revokeObjectURL(t2mBlobUrlRef.current);
+      t2mBlobUrlRef.current = null;
+    }
+
+    setT2mAudioUrl(null);
+    setT2mError(null);
+    setT2mPlaying(false);
+    setT2mProgress(0);
+    setT2mWave([]);
+    setT2mIsLoading(true);
+
+    patchConsole("t2m", {
+      statusCode: null,
+      statusLine: "Pending...",
+      responseJson: "",
+      error: null,
+    });
+
+    try {
+      const token = getToken();
+      const res = await fetch("/api/t2m", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          prompt: t2mPrompt.trim(),
+          audio_duration: t2mDuration,
+        }),
+      });
+
+      if (!res.ok) {
+        const errJson = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
+        const errMsg = errJson?.error ?? "T2M 요청에 실패했습니다.";
+        setT2mError(errMsg);
+        patchConsole("t2m", {
+          statusCode: res.status,
+          statusLine: `${res.status} ${res.statusText || "Error"}`,
+          responseJson: JSON.stringify(errJson ?? {}, null, 2),
+          error: errMsg,
+        });
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      t2mBlobUrlRef.current = url;
+
+      setT2mAudioUrl(url);
+      setT2mWave(mockWaveform(t2mPrompt, 32));
+      setT2mDurationMs(t2mDuration * 1000);
+
+      patchConsole("t2m", {
+        statusCode: 200,
+        statusLine: "200 OK",
+        responseJson: JSON.stringify(
+          {
+            status: "success",
+            audio_duration: t2mDuration,
+            prompt: t2mPrompt.trim(),
+            content_type: blob.type || res.headers.get("content-type") || null,
+          },
+          null,
+          2,
+        ),
+        error: null,
+      });
+
+      window.setTimeout(() => {
+        const el = t2mAudioRef.current;
+        if (!el) return;
+        void el
+          .play()
+          .then(() => setT2mPlaying(true))
+          .catch(() => setT2mPlaying(false));
+      }, 50);
+    } catch {
+      const errMsg = "T2M API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.";
+      setT2mError(errMsg);
+      patchConsole("t2m", {
+        statusCode: 500,
+        statusLine: "500 T2M Error",
+        responseJson: JSON.stringify({ error: "fetch failed" }, null, 2),
+        error: errMsg,
+      });
+    } finally {
+      setT2mIsLoading(false);
+    }
+  }
+
   function handleT2mPlayPause() {
     if (!t2mAudioUrl) return;
     const el = t2mAudioRef.current;
@@ -6665,7 +6810,7 @@ export default function ApiTestPage() {
                       t2mDuration={t2mDuration}
                       setT2mDuration={setT2mDuration}
                       t2mIsLoading={t2mIsLoading}
-                      handleT2mRun={() => {}}
+                      handleT2mRun={handleT2mRun}
                     />
                   </div>
                 </div>
