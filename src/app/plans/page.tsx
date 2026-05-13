@@ -650,9 +650,6 @@ function PlansPageContent() {
                             "hover:shadow-[0_0_60px_rgba(232, 136, 138,0.12)]",
                           ].join(" ")}
                         >
-                          <p className="font-mono text-[11px] text-foreground/50">
-                            {display.sublabel}
-                          </p>
                           <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
                             {display.task ? getPlanTaskDisplayName(display.task) : api.name}
                           </p>
