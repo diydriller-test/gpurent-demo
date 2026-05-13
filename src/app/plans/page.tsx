@@ -656,9 +656,6 @@ function PlansPageContent() {
                           <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
                             {display.task ? getPlanTaskDisplayName(display.task) : api.name}
                           </p>
-                          <p className="mt-1 text-[11px] text-foreground/40">
-                            {api.company_name || "코그로보"}
-                          </p>
                           <p className="mt-2 text-[11px] text-foreground/45">
                             트래픽 기반 · 등급별 과금
                           </p>

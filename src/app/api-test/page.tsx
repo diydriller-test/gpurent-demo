@@ -6439,9 +6439,6 @@ export default function ApiTestPage() {
                         <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
                           {item.model}
                         </p>
-                        <p className="mt-1 text-[11px] text-foreground/40">
-                          {rowApi?.company_name?.trim() || "코그로보"}
-                        </p>
                         {rowApi?.is_active === false ? (
                           <p className="mt-1 text-[11px] font-medium text-foreground/45">
                             비활성
