@@ -356,7 +356,7 @@ function PlansPageContent() {
           <>
             <div className="mb-16 text-center">
               <h1 className="text-3xl font-bold text-foreground md:text-4xl">
-                {selectedApi.name} 플랜 선택
+                {(() => { const t = getApiTask(selectedApi); return t ? getPlanTaskDisplayName(t) : selectedApi.name; })()} 플랜 선택
               </h1>
               <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
                 사용량에 맞는 등급을 선택하세요. 트래픽에 따라 API 사용량이
