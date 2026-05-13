@@ -362,7 +362,7 @@ export function ApiOutputPanel({
                     </div>
                   ) : isEmbeddingLoading || embeddingVector ? (
                     <div className="mt-2">
-                      <div className="rounded-xl border border-white/8 bg-zinc-950/40 px-3 py-3">
+                      <div className="rounded-xl border border-white/10 bg-background/30 px-3 py-3">
                         <div className="mb-2 flex items-center justify-between">
                           <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-accent-bright/90">
                             Embedding Vector
@@ -384,7 +384,7 @@ export function ApiOutputPanel({
                             ))}
                           </div>
                         ) : (
-                          <div className="space-y-0.5 font-mono text-[11px]">
+                          <div className="max-h-64 overflow-y-auto space-y-0.5 font-mono text-[11px] pr-1">
                             {embeddingVector.slice(0, 24).map((v, i) => (
                               <div key={i} className="flex items-center gap-2">
                                 <span className="w-8 shrink-0 text-right text-foreground/30">[{i}]</span>
