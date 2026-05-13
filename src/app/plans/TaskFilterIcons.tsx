@@ -132,6 +132,30 @@ export function IconSentiment(props: { className?: string }) {
   );
 }
 
+/** 음악 생성 / Text-to-Music */
+export function IconMusicNote(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </IconBase>
+  );
+}
+
+/** 이미지 생성 / Text-to-Image */
+export function IconWand(props: { className?: string }) {
+  return (
+    <IconBase {...props}>
+      <path d="M15 4l5 5-9 9-5-5L15 4z" />
+      <path d="M2 22l6-6" />
+      <path d="M19 2l1 1" />
+      <path d="M22 5l-1-1" />
+      <path d="M22 2l-3 3" />
+    </IconBase>
+  );
+}
+
 /** 이미지 / Vision OCR */
 export function IconImage(props: { className?: string }) {
   return (
@@ -196,6 +220,10 @@ export function PlanTaskIcon({
       return <IconVoiceClone className={className} />;
     case "Vision":
       return <IconImage className={className} />;
+    case "Text-to-Music":
+      return <IconMusicNote className={className} />;
+    case "Image Generation":
+      return <IconWand className={className} />;
     default:
       return <IconLayers className={className} />;
   }

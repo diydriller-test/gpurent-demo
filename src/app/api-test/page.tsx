@@ -45,6 +45,7 @@ import {
   getPlanTaskSublabel,
   type PlanTask,
 } from "@/app/plans/planCatalog";
+import { PlanTaskIcon } from "@/app/plans/TaskFilterIcons";
 
 type ApiId =
   | "llm"
@@ -2678,41 +2679,8 @@ export default function ApiTestPage() {
   }, []);
 
   function taskIcon(task: MarketplaceTask) {
-    const base = "h-4 w-4";
-    switch (task) {
-      case "Text Generation":
-        return <IconSparkles className={base} />;
-      case "Ad Copy":
-        return <IconPenLine className={base} />;
-      case "Text Summary":
-        return <IconTextSummary className={base} />;
-      case "Sentiment Analysis":
-        return <IconSentiment className={base} />;
-      case "NER":
-        return <IconTag className={base} />;
-      case "Text-to-SQL":
-        return <IconDatabase className={base} />;
-      case "Embedding":
-        return <IconLayers className={base} />;
-      case "Reranker":
-        return <IconShuffle className={base} />;
-      case "TTS":
-        return <IconVolume2 className={base} />;
-      case "STT":
-        return <IconMic className={base} />;
-      case "Voice Clone":
-        return <IconVoiceClone className={base} />;
-      case "Vision":
-        return <IconImage className={base} />;
-      case "Text-to-Music":
-        return <IconMusicNote className={base} />;
-      case "Image Generation":
-        return <IconImage className={base} />;
-      case "Other":
-        return <IconLayers className={base} />;
-      default:
-        return null;
-    }
+    if (task === "Other") return null;
+    return <PlanTaskIcon task={task as PlanTask} className="h-4 w-4" />;
   }
 
   function showComingSoon(message: string) {
