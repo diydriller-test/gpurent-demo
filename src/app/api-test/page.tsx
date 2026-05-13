@@ -7389,7 +7389,9 @@ export default function ApiTestPage() {
               selectedApi === "tts" ||
               selectedApi === "stt" ||
               selectedApi === "voiceClone" ||
-              selectedApi === "image2text") ? (
+              selectedApi === "image2text" ||
+              selectedApi === "t2i" ||
+              selectedApi === "t2m") ? (
               <section className="w-full lg:basis-full">
                 <div className="rounded-xl border-t border-accent/20 bg-accent/5 px-4 py-3">
                   <div
@@ -7468,6 +7470,46 @@ export default function ApiTestPage() {
                           [Embedding]
                         </button>
                         으로 사내 지식 베이스에 저장해보세요.
+                      </p>
+                    ) : selectedApi === "t2i" ? (
+                      <p className="text-sm leading-relaxed text-foreground/90">
+                        이미지 생성 완료! 이미지에 어울리는 문구를{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("adCopy")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [Ad Copy]
+                        </button>
+                        로 만들거나{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("llm")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [LLM]
+                        </button>
+                        으로 설명 문구를 작성해보세요.
+                      </p>
+                    ) : selectedApi === "t2m" ? (
+                      <p className="text-sm leading-relaxed text-foreground/90">
+                        음악이 완성됐습니다!{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("tts")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [TTS]
+                        </button>
+                        로 나레이션을 더하거나{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("llm")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [LLM]
+                        </button>
+                        으로 가사와 설명 문구를 작성해보세요.
                       </p>
                     ) : (
                       <SmartSolutionGuide
