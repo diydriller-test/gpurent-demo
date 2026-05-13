@@ -1470,7 +1470,7 @@ export default function ApiTestPage() {
       },
       {
         id: "reranker",
-        name: "Reranker",
+        name: "Reranking",
         description: "검색 결과 재정렬로 정확도 향상",
       },
       {
@@ -1490,7 +1490,7 @@ export default function ApiTestPage() {
       },
       {
         id: "image2text",
-        name: "Image2Text",
+        name: "Image-to-Text",
         description: "이미지 분석 및 텍스트 추출 (OCR)",
       },
       {
