@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 
-const T2M_BASE_URL =
-  process.env.T2M_BASE_URL?.trim() || "http://192.168.1.77:8008";
-const T2M_ACCESS_TOKEN =
-  process.env.T2M_ACCESS_TOKEN?.trim() ||
-  "kogrobo-957302895023562087626278967896";
+import { resolveUpstreamContext } from "../_lib/upstream";
 
 export const maxDuration = 300;
 
@@ -44,8 +40,9 @@ export async function POST(req: Request) {
       );
     }
 
+    const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const inferenceId = randomInferenceId();
-    const upstreamUrl = `${T2M_BASE_URL}/_inference/text2music/${inferenceId}`;
+    const upstreamUrl = `${upstreamBasePath}/music/_inference/text2music/${inferenceId}`;
 
     const payload = {
       prompt,
@@ -81,10 +78,11 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        access_token: T2M_ACCESS_TOKEN,
+        ...(apiKey ? { access_token: apiKey } : {}),
       },
       body: JSON.stringify(payload),
       signal: controller.signal,
+      cache: "no-store",
     });
 
     if (!upstreamRes.ok) {
