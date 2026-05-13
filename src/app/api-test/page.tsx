@@ -1924,7 +1924,12 @@ export default function ApiTestPage() {
                                 taskParam === "text-to-music" ||
                                 taskParam === "texttomusic"
                               ? "Text-to-Music"
-                              : null;
+                              : taskParam === "t2i" ||
+                                  taskParam === "text-to-image" ||
+                                  taskParam === "imagegeneration" ||
+                                  taskParam === "image-generation"
+                                ? "Image Generation"
+                                : null;
 
     if (!targetTask) return;
 

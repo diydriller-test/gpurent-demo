@@ -9,7 +9,7 @@ type ApiCard = {
   name: string;
   description: string;
   icon: string;
-  apiId?: "llm" | "embedding" | "reranker" | "tts" | "stt" | "voice-clone" | "image2text";
+  apiId?: "llm" | "embedding" | "reranker" | "tts" | "stt" | "voice-clone" | "image2text" | "t2m" | "t2i";
   comingSoon?: boolean;
 };
 
@@ -55,6 +55,18 @@ const APIS: ApiCard[] = [
     description: "대화·요약·질문 답변 같은 텍스트 작업을 쓰는 API",
     icon: "✦",
     apiId: "llm",
+  },
+  {
+    name: "Text-to-Music",
+    description: "텍스트 설명으로 음악을 생성해주는 Audio Generation API",
+    icon: "♬",
+    apiId: "t2m",
+  },
+  {
+    name: "Image Generation",
+    description: "텍스트 프롬프트로 이미지를 생성해주는 T2I API",
+    icon: "✧",
+    apiId: "t2i",
   },
   {
     name: "더 많은 API 확인하러 가기",
