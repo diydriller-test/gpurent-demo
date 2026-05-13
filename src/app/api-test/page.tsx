@@ -42,6 +42,7 @@ import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 import {
   getApiTask,
   getPlanCardDisplay,
+  getPlanTaskDisplayName,
   getPlanTaskSublabel,
   type PlanTask,
 } from "@/app/plans/planCatalog";
@@ -1750,6 +1751,7 @@ export default function ApiTestPage() {
       task: resolvedTask,
       apiId: playgroundApiId,
       model:
+        (task ? getPlanTaskDisplayName(task) : null) ||
         (api.model_display && api.model_display.trim()) ||
         api.name ||
         card.modelDisplay,
