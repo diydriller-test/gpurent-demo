@@ -7377,6 +7377,16 @@ export default function ApiTestPage() {
               </div>
             </aside>
 
+            {/* C: 실행 전 항상 노출되는 플랜 유도 버튼 */}
+            <div className="w-full">
+              <Link
+                href={`/plans?chapter=${selectedApi}&auto=1`}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-accent/85"
+              >
+                {selectedApiItem?.name ?? "API"} 플랜 보기 →
+              </Link>
+            </div>
+
             {workflowBannerMounted &&
             (selectedApi === "llm" ||
               selectedApi === "adCopy" ||
