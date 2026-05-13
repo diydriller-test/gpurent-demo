@@ -1498,6 +1498,11 @@ export default function ApiTestPage() {
         name: "Text-to-Music",
         description: "텍스트 프롬프트로 음악 생성",
       },
+      {
+        id: "t2i",
+        name: "Image Generation",
+        description: "텍스트 프롬프트로 이미지 생성",
+      },
     ],
     [],
   );
