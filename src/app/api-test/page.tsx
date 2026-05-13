@@ -6673,14 +6673,18 @@ export default function ApiTestPage() {
 
                 <div
                   key={selectedApi}
-                  className="api-center-anim flex min-h-0 flex-1 flex-col"
+                  className={
+                    selectedApi === "llm" || selectedApi === "stt"
+                      ? "api-center-anim flex min-h-0 flex-1 flex-col"
+                      : "api-center-anim min-h-0 flex-1 overflow-y-auto"
+                  }
                 >
                   {selectedApi !== "adCopy" &&
                   selectedApi !== "summarize" &&
                   selectedApi !== "sentiment" &&
                   selectedApi !== "ner" &&
                   selectedApi !== "textToSql" ? (
-                    <div className={`min-h-0 flex-1 px-3 py-4 ${selectedApi === "llm" || selectedApi === "stt" ? "overflow-y-auto" : "overflow-y-hidden"}`}>
+                    <div className={`px-3 py-4 ${selectedApi === "llm" || selectedApi === "stt" ? "min-h-0 flex-1 overflow-y-auto" : ""}`}>
                       <ApiOutputPanel
                         selectedApi={selectedApi}
                         messages={messages}
@@ -6752,9 +6756,11 @@ export default function ApiTestPage() {
                   ) : null}
                   <div
                     className={
-                      selectedApi === "ner"
-                        ? "min-h-0 flex-1 overflow-hidden px-3 py-2"
-                        : "min-h-0 flex-shrink-0 overflow-y-auto px-3 py-3"
+                      selectedApi === "llm" || selectedApi === "stt"
+                        ? "flex-shrink-0 px-3 py-3"
+                        : selectedApi === "ner"
+                          ? "min-h-0 flex-1 overflow-hidden px-3 py-2"
+                          : "px-3 py-3"
                     }
                   >
                     <ApiInputPanel
