@@ -2087,8 +2087,8 @@ export default function ApiTestPage() {
       case "All":
         return (
           <>
-            다양한 AI API 모델의 성능을 실시간으로 테스트해 볼 수 있는
-            체험존입니다. 🚀
+            각 AI API 모델에 파라미터를 구성하고 추론 결과를 실시간으로
+            확인합니다.
           </>
         );
       case "My":
@@ -2251,8 +2251,8 @@ export default function ApiTestPage() {
       default:
         return (
           <>
-            다양한 AI API 모델의 성능을 실시간으로 테스트해 볼 수 있는
-            체험존입니다. 🚀
+            각 AI API 모델에 파라미터를 구성하고 추론 결과를 실시간으로
+            확인합니다.
           </>
         );
     }
@@ -6165,7 +6165,7 @@ export default function ApiTestPage() {
               API 체험
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              다양한 API 모델의 성능을 실시간으로 테스트해 볼 수 있는 체험존입니다.
+              각 AI API 모델에 파라미터를 구성하고 추론 결과를 실시간으로 확인합니다.
             </p>
             <p className="mx-auto mt-3 max-w-2xl text-sm text-foreground/50">
               마음에 드는 API를 찾으셨다면{" "}
