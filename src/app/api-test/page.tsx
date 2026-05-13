@@ -2102,8 +2102,8 @@ export default function ApiTestPage() {
       case "All":
         return (
           <>
-            각 AI API 모델에 파라미터를 구성하고 추론 결과를 실시간으로
-            확인합니다.
+            <span className="text-accent font-semibold">AI API 플레이그라운드</span>:
+            각 모델에 파라미터를 구성하고 추론 결과를 실시간으로 확인합니다.
           </>
         );
       case "My":
@@ -2256,8 +2256,8 @@ export default function ApiTestPage() {
       default:
         return (
           <>
-            각 AI API 모델에 파라미터를 구성하고 추론 결과를 실시간으로
-            확인합니다.
+            <span className="text-accent font-semibold">AI API 플레이그라운드</span>:
+            각 모델에 파라미터를 구성하고 추론 결과를 실시간으로 확인합니다.
           </>
         );
     }
