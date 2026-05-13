@@ -118,6 +118,12 @@ type Props = {
   t2mDurationMs: number;
   handleT2mPlayPause: () => void;
   handleT2mSave: () => void;
+
+  // Text-to-Image
+  t2iImageUrl: string | null;
+  t2iIsLoading: boolean;
+  t2iError: string | null;
+  handleT2iSave: () => void;
 };
 
 export function ApiOutputPanel({
@@ -183,6 +189,10 @@ export function ApiOutputPanel({
   t2mDurationMs,
   handleT2mPlayPause,
   handleT2mSave,
+  t2iImageUrl,
+  t2iIsLoading,
+  t2iError,
+  handleT2iSave,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -1124,6 +1134,69 @@ export function ApiOutputPanel({
                   {t2mError ? (
                     <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-300">
                       {t2mError}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            );
+
+          case "t2i":
+            return (
+              <div className="min-w-0 space-y-3">
+                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                  <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-xs text-accent">Image Viewer</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">
+                        생성 후 이미지가 표시됩니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleT2iSave}
+                      disabled={!t2iImageUrl}
+                      title="생성 이미지 저장"
+                      aria-label="생성 이미지 저장"
+                      className={[
+                        "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-colors",
+                        t2iImageUrl
+                          ? "border-accent/45 bg-background/35 text-accent hover:border-accent/70 hover:bg-accent/10"
+                          : "cursor-not-allowed border-white/10 bg-background/20 text-foreground/35",
+                      ].join(" ")}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <path d="M7 10l5 5 5-5" />
+                        <path d="M12 15V3" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="mt-4 overflow-hidden rounded-xl border border-accent/15 bg-zinc-950/40">
+                    {t2iIsLoading ? (
+                      <div className="flex h-64 items-center justify-center gap-2 text-sm text-accent/80">
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                        이미지 생성 중…
+                      </div>
+                    ) : t2iImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={t2iImageUrl}
+                        alt="생성된 이미지"
+                        className="w-full object-contain"
+                      />
+                    ) : (
+                      <div className="flex h-64 items-center justify-center text-xs text-foreground/40">
+                        생성 후 이미지가 표시됩니다.
+                      </div>
+                    )}
+                  </div>
+
+                  {t2iError ? (
+                    <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-300">
+                      {t2iError}
                     </div>
                   ) : null}
                 </div>

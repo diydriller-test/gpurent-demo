@@ -496,6 +496,20 @@ type Props = {
   t2mDuration: number;
   setT2mDuration: React.Dispatch<React.SetStateAction<number>>;
   t2mIsLoading: boolean;
+
+  // Text-to-Image input
+  handleT2iRun: () => void;
+  t2iPrompt: string;
+  setT2iPrompt: React.Dispatch<React.SetStateAction<string>>;
+  t2iNegativePrompt: string;
+  setT2iNegativePrompt: React.Dispatch<React.SetStateAction<string>>;
+  t2iWidth: number;
+  setT2iWidth: React.Dispatch<React.SetStateAction<number>>;
+  t2iHeight: number;
+  setT2iHeight: React.Dispatch<React.SetStateAction<number>>;
+  t2iSteps: number;
+  setT2iSteps: React.Dispatch<React.SetStateAction<number>>;
+  t2iIsLoading: boolean;
 };
 
 export function ApiInputPanel({
@@ -658,6 +672,19 @@ export function ApiInputPanel({
   t2mDuration,
   setT2mDuration,
   t2mIsLoading,
+
+  handleT2iRun,
+  t2iPrompt,
+  setT2iPrompt,
+  t2iNegativePrompt,
+  setT2iNegativePrompt,
+  t2iWidth,
+  setT2iWidth,
+  t2iHeight,
+  setT2iHeight,
+  t2iSteps,
+  setT2iSteps,
+  t2iIsLoading,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [llmAdvancedOpen, setLlmAdvancedOpen] = useState(false);
@@ -2277,6 +2304,23 @@ export function ApiInputPanel({
           handleT2mRun={handleT2mRun}
         />
       ) : null}
+
+      {selectedApi === "t2i" ? (
+        <T2iSection
+          t2iPrompt={t2iPrompt}
+          setT2iPrompt={setT2iPrompt}
+          t2iNegativePrompt={t2iNegativePrompt}
+          setT2iNegativePrompt={setT2iNegativePrompt}
+          t2iWidth={t2iWidth}
+          setT2iWidth={setT2iWidth}
+          t2iHeight={t2iHeight}
+          setT2iHeight={setT2iHeight}
+          t2iSteps={t2iSteps}
+          setT2iSteps={setT2iSteps}
+          t2iIsLoading={t2iIsLoading}
+          handleT2iRun={handleT2iRun}
+        />
+      ) : null}
     </div>
   );
 }
@@ -2812,6 +2856,145 @@ function T2mSection({
             </>
           ) : (
             "음악 생성"
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// T2iSection — 텍스트 프롬프트 + 크기/스텝 설정 UI
+// ---------------------------------------------------------------------------
+
+type T2iSectionProps = {
+  t2iPrompt: string;
+  setT2iPrompt: React.Dispatch<React.SetStateAction<string>>;
+  t2iNegativePrompt: string;
+  setT2iNegativePrompt: React.Dispatch<React.SetStateAction<string>>;
+  t2iWidth: number;
+  setT2iWidth: React.Dispatch<React.SetStateAction<number>>;
+  t2iHeight: number;
+  setT2iHeight: React.Dispatch<React.SetStateAction<number>>;
+  t2iSteps: number;
+  setT2iSteps: React.Dispatch<React.SetStateAction<number>>;
+  t2iIsLoading: boolean;
+  handleT2iRun: () => void;
+};
+
+const T2I_SIZE_PRESETS = [
+  { label: "1:1", width: 1024, height: 1024 },
+  { label: "16:9", width: 1360, height: 768 },
+  { label: "9:16", width: 768, height: 1360 },
+  { label: "4:3", width: 1024, height: 768 },
+];
+
+function T2iSection({
+  t2iPrompt,
+  setT2iPrompt,
+  t2iNegativePrompt,
+  setT2iNegativePrompt,
+  t2iWidth,
+  setT2iWidth,
+  t2iHeight,
+  setT2iHeight,
+  t2iSteps,
+  setT2iSteps,
+  t2iIsLoading,
+  handleT2iRun,
+}: T2iSectionProps) {
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleT2iRun();
+      }}
+    >
+      <div className="flex flex-col gap-3">
+        {/* 프롬프트 */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">이미지 프롬프트</p>
+          <textarea
+            value={t2iPrompt}
+            onChange={(e) => setT2iPrompt(e.target.value)}
+            rows={3}
+            placeholder="예: A serene mountain landscape at sunset, photorealistic, 8k"
+            className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+
+        {/* 네거티브 프롬프트 */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">네거티브 프롬프트 <span className="text-foreground/40">(선택)</span></p>
+          <input
+            type="text"
+            value={t2iNegativePrompt}
+            onChange={(e) => setT2iNegativePrompt(e.target.value)}
+            placeholder="예: blurry, low quality, distorted"
+            className="mt-1 w-full rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+
+        {/* 크기 프리셋 */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">크기</p>
+          <div className="mt-1.5 flex gap-2">
+            {T2I_SIZE_PRESETS.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => { setT2iWidth(p.width); setT2iHeight(p.height); }}
+                className={[
+                  "flex-1 rounded-lg border py-1.5 text-[11px] font-medium transition-colors",
+                  t2iWidth === p.width && t2iHeight === p.height
+                    ? "border-accent/60 bg-accent/10 text-accent"
+                    : "border-white/10 bg-background/30 text-foreground/60 hover:border-white/25",
+                ].join(" ")}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1 text-right font-mono text-[10px] text-foreground/40">
+            {t2iWidth} × {t2iHeight}
+          </p>
+        </div>
+
+        {/* 스텝 슬라이더 */}
+        <div>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-foreground/60">Steps</p>
+            <span className="font-mono text-xs text-foreground/60">{t2iSteps}</span>
+          </div>
+          <input
+            type="range"
+            min={20}
+            max={100}
+            step={5}
+            value={t2iSteps}
+            onChange={(e) => setT2iSteps(Number(e.target.value))}
+            className="mt-1.5 w-full accent-accent"
+          />
+          <div className="mt-0.5 flex justify-between font-mono text-[10px] text-foreground/40">
+            <span>20</span>
+            <span>100</span>
+          </div>
+        </div>
+
+        {/* 실행 버튼 */}
+        <button
+          type="submit"
+          disabled={t2iIsLoading || !t2iPrompt.trim()}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-[13px] font-medium text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {t2iIsLoading ? (
+            <>
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+              <span>생성 중...</span>
+            </>
+          ) : (
+            "이미지 생성"
           )}
         </button>
       </div>

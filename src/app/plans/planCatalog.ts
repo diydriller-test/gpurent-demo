@@ -140,7 +140,8 @@ export type PlansChapterParam =
   | "stt"
   | "voiceClone"
   | "image2text"
-  | "t2m";
+  | "t2m"
+  | "t2i";
 
 export function chapterQueryToPlanTask(
   chapter: string | null,
@@ -172,6 +173,8 @@ export function chapterQueryToPlanTask(
       return "Vision";
     case "t2m":
       return "Text-to-Music";
+    case "t2i":
+      return "Image Generation";
     default:
       return null;
   }
@@ -191,12 +194,14 @@ export type PlanTask =
   | "STT"
   | "Voice Clone"
   | "Vision"
-  | "Text-to-Music";
+  | "Text-to-Music"
+  | "Image Generation";
 
 export const PLAN_TASK_KEYS: PlanTask[] = [
   "STT",
   "TTS",
   "Text-to-Music",
+  "Image Generation",
   "Embedding",
   "Reranker",
   "Voice Clone",
@@ -225,7 +230,8 @@ export function getApiTask(api: Api): PlanTask | null {
     k === "STT" ||
     k === "Voice Clone" ||
     k === "Vision" ||
-    k === "Text-to-Music"
+    k === "Text-to-Music" ||
+    k === "Image Generation"
   ) {
     return k;
   }
@@ -324,6 +330,12 @@ const TASK_META: Record<
     modelDisplay: "T2M",
     tags: ["T2M", "Music", "Audio"],
   },
+  "Image Generation": {
+    displayName: "Image Generation",
+    sublabel: "텍스트로 이미지 생성 • T2I",
+    modelDisplay: "T2I",
+    tags: ["Image", "T2I"],
+  },
 };
 
 /** 체험 페이지와 동일한 카드 헤더 표시명 */
@@ -354,6 +366,8 @@ export function inferPlanTask(name: string): PlanTask | null {
     return "Vision";
   if (/text[-\s]?to[-\s]?music|t2m|music[-\s]?gen|musicgen|음악.*생성|텍스트.*음악/i.test(n))
     return "Text-to-Music";
+  if (/text[-\s]?to[-\s]?image|t2i|image[-\s]?gen|imagegen|이미지.*생성|텍스트.*이미지/i.test(n))
+    return "Image Generation";
   if (
     /\bad[-\s]?copy\b|광고\s*카피|advertising\s*copy|copywriting|copy[-\s]?write/i.test(
       name,

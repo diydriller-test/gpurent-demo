@@ -59,7 +59,8 @@ type ApiId =
   | "stt"
   | "voiceClone"
   | "image2text"
-  | "t2m";
+  | "t2m"
+  | "t2i";
 
 /** API `task` → 체험 Playground `selectedApi` (정적 카드 없이 API만으로 연결) */
 const PLAN_TASK_TO_PLAYGROUND_API: Partial<Record<PlanTask, ApiId>> = {
@@ -76,6 +77,7 @@ const PLAN_TASK_TO_PLAYGROUND_API: Partial<Record<PlanTask, ApiId>> = {
   "Voice Clone": "voiceClone",
   Vision: "image2text",
   "Text-to-Music": "t2m",
+  "Image Generation": "t2i",
 };
 
 type ApiItem = {
@@ -1690,6 +1692,7 @@ export default function ApiTestPage() {
       voiceClone: createDefaultConsoleState("voiceClone"),
       image2text: createDefaultConsoleState("image2text"),
       t2m: createDefaultConsoleState("t2m"),
+      t2i: createDefaultConsoleState("t2i"),
     }),
   );
   const [consoleCopied, setConsoleCopied] = useState<boolean>(false);
@@ -1712,6 +1715,7 @@ export default function ApiTestPage() {
     | "Voice Clone"
     | "Vision"
     | "Text-to-Music"
+    | "Image Generation"
     | "Other";
   type LibraryFormat = "Transformers" | "GGUF" | "vLLM" | "ONNX";
 
@@ -1771,6 +1775,7 @@ export default function ApiTestPage() {
     "Voice Clone": true,
     Vision: true,
     "Text-to-Music": true,
+    "Image Generation": true,
     Other: true,
   });
   const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
@@ -1812,7 +1817,27 @@ export default function ApiTestPage() {
                 sort_order: 999,
               },
             ];
-        if (!cancelled) setApisFromBackend(withT2m);
+        const hasT2i = withT2m.some((a) => getApiTask(a) === "Image Generation");
+        const withT2i: Api[] = hasT2i
+          ? withT2m
+          : [
+              ...withT2m,
+              {
+                id: -2,
+                name: "Image Generation API",
+                slug: "t2i",
+                company_id: 1,
+                company_name: "코그로보",
+                task_key: "Image Generation",
+                task_label: "Image Generation",
+                card_sublabel: "텍스트로 이미지 생성 • T2I",
+                model_display: "T2I",
+                tags: ["Image", "T2I"],
+                is_active: true,
+                sort_order: 1000,
+              },
+            ];
+        if (!cancelled) setApisFromBackend(withT2i);
       } catch {
         if (!cancelled) setApisFromBackend([]);
       }
@@ -1837,6 +1862,7 @@ export default function ApiTestPage() {
       "STT",
       "TTS",
       "Text-to-Music",
+      "Image Generation",
       "Embedding",
       "Reranker",
       "Voice Clone",
@@ -2048,6 +2074,8 @@ export default function ApiTestPage() {
     if (active === "STT") return "STT";
     if (active === "Voice Clone") return "VoiceClone";
     if (active === "Vision") return "Vision";
+    if (active === "Text-to-Music") return "TextToMusic";
+    if (active === "Image Generation") return "ImageGeneration";
     return "All";
   }, [filterTasks, sidebarMode, allTasksFilterOn, taskKeys]);
 
@@ -2205,6 +2233,18 @@ export default function ApiTestPage() {
             을 동시에 수행합니다.
           </>
         );
+      case "ImageGeneration":
+        return (
+          <>
+            🎨{" "}
+            <span className="text-accent font-semibold">이미지 생성 (Text-to-Image)</span>:
+            텍스트 프롬프트로{" "}
+            <span className="text-accent font-semibold">
+              고품질 이미지를 생성
+            </span>
+            합니다.
+          </>
+        );
       default:
         return (
           <>
@@ -2224,6 +2264,7 @@ export default function ApiTestPage() {
     "Voice Clone": "voice-clone",
     "Vision": "vision",
     "Text-to-Music": "t2m",
+    "Image Generation": "t2i",
   };
 
   function enterDetailFor(item: MarketplaceItem) {
@@ -2428,6 +2469,17 @@ export default function ApiTestPage() {
   const t2mAudioRef = useRef<HTMLAudioElement | null>(null);
   const t2mBlobUrlRef = useRef<string | null>(null);
 
+  // Text-to-Image
+  const [t2iPrompt, setT2iPrompt] = useState("A serene mountain landscape at sunset, photorealistic, 8k");
+  const [t2iNegativePrompt, setT2iNegativePrompt] = useState("");
+  const [t2iWidth, setT2iWidth] = useState(1024);
+  const [t2iHeight, setT2iHeight] = useState(1024);
+  const [t2iSteps, setT2iSteps] = useState(50);
+  const [t2iImageUrl, setT2iImageUrl] = useState<string | null>(null);
+  const [t2iIsLoading, setT2iIsLoading] = useState(false);
+  const [t2iError, setT2iError] = useState<string | null>(null);
+  const t2iBlobUrlRef = useRef<string | null>(null);
+
   const [rerankerDevCodeOpen, setRerankerDevCodeOpen] = useState(false);
   const [rerankerDevCodeCopied, setRerankerDevCodeCopied] = useState(false);
   const [ttsDevCodeOpen, setTtsDevCodeOpen] = useState(false);
@@ -2566,7 +2618,8 @@ export default function ApiTestPage() {
     (selectedApi === "stt" && sttHasWorkflowResult) ||
     (selectedApi === "voiceClone" && Boolean(vcAudioUrl)) ||
     (selectedApi === "image2text" && Boolean(image2textResult)) ||
-    (selectedApi === "t2m" && Boolean(t2mAudioUrl));
+    (selectedApi === "t2m" && Boolean(t2mAudioUrl)) ||
+    (selectedApi === "t2i" && Boolean(t2iImageUrl));
 
   const { mounted: workflowBannerMounted, visible: workflowBannerVisible } =
     useResultTriggeredBanner(hasWorkflowBannerResult);
@@ -3246,6 +3299,20 @@ export default function ApiTestPage() {
       setT2mProgress(0);
       setT2mPlaying(false);
     }
+    if (api === "t2i") {
+      if (t2iBlobUrlRef.current) {
+        URL.revokeObjectURL(t2iBlobUrlRef.current);
+        t2iBlobUrlRef.current = null;
+      }
+      setT2iPrompt("A serene mountain landscape at sunset, photorealistic, 8k");
+      setT2iNegativePrompt("");
+      setT2iWidth(1024);
+      setT2iHeight(1024);
+      setT2iSteps(50);
+      setT2iImageUrl(null);
+      setT2iIsLoading(false);
+      setT2iError(null);
+    }
     if (api === "adCopy") {
       setAdCopyBrief(DEFAULT_AD_COPY_BRIEF);
       setAdCopyTone("");
@@ -3906,6 +3973,108 @@ export default function ApiTestPage() {
     } finally {
       setT2mIsLoading(false);
     }
+  }
+
+  function handleT2iRun() {
+    void runT2iGeneration();
+  }
+
+  async function runT2iGeneration() {
+    if (t2iIsLoading) return;
+
+    if (t2iBlobUrlRef.current) {
+      URL.revokeObjectURL(t2iBlobUrlRef.current);
+      t2iBlobUrlRef.current = null;
+    }
+
+    setT2iImageUrl(null);
+    setT2iError(null);
+    setT2iIsLoading(true);
+
+    patchConsole("t2i", {
+      statusCode: null,
+      statusLine: "Pending...",
+      responseJson: "",
+      error: null,
+    });
+
+    try {
+      const token = getToken();
+      const res = await fetch("/api/t2i", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          prompt: t2iPrompt.trim(),
+          negative_prompt: t2iNegativePrompt.trim() || " ",
+          width: t2iWidth,
+          height: t2iHeight,
+          num_inference_steps: t2iSteps,
+        }),
+      });
+
+      if (!res.ok) {
+        const errJson = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        if (res.status === 429) {
+          setLimitExceededModalOpen(true);
+        }
+        const errMsg = errJson?.error ?? "이미지 생성 요청에 실패했습니다.";
+        setT2iError(errMsg);
+        patchConsole("t2i", {
+          statusCode: res.status,
+          statusLine: `${res.status} ${res.statusText || "Error"}`,
+          responseJson: JSON.stringify(errJson ?? {}, null, 2),
+          error: errMsg,
+        });
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      t2iBlobUrlRef.current = url;
+      setT2iImageUrl(url);
+
+      patchConsole("t2i", {
+        statusCode: 200,
+        statusLine: "200 OK",
+        responseJson: JSON.stringify(
+          {
+            status: "success",
+            prompt: t2iPrompt.trim(),
+            width: t2iWidth,
+            height: t2iHeight,
+            content_type: blob.type || res.headers.get("content-type") || null,
+          },
+          null,
+          2,
+        ),
+        error: null,
+      });
+    } catch {
+      const errMsg = "이미지 생성 API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.";
+      setT2iError(errMsg);
+      patchConsole("t2i", {
+        statusCode: 500,
+        statusLine: "500 T2I Error",
+        responseJson: JSON.stringify({ error: "fetch failed" }, null, 2),
+        error: errMsg,
+      });
+    } finally {
+      setT2iIsLoading(false);
+    }
+  }
+
+  function handleT2iSave() {
+    if (!t2iImageUrl || typeof document === "undefined") return;
+    const link = document.createElement("a");
+    link.href = t2iImageUrl;
+    link.download = `t2i-${Date.now()}.png`;
+    link.click();
+    link.remove();
   }
 
   function handleT2mPlayPause() {
@@ -6586,6 +6755,10 @@ export default function ApiTestPage() {
                         t2mDurationMs={t2mDurationMs}
                         handleT2mPlayPause={handleT2mPlayPause}
                         handleT2mSave={handleT2mSave}
+                        t2iImageUrl={t2iImageUrl}
+                        t2iIsLoading={t2iIsLoading}
+                        t2iError={t2iError}
+                        handleT2iSave={handleT2iSave}
                       />
                     </div>
                   ) : null}
@@ -6766,6 +6939,18 @@ export default function ApiTestPage() {
                       setT2mDuration={setT2mDuration}
                       t2mIsLoading={t2mIsLoading}
                       handleT2mRun={handleT2mRun}
+                      t2iPrompt={t2iPrompt}
+                      setT2iPrompt={setT2iPrompt}
+                      t2iNegativePrompt={t2iNegativePrompt}
+                      setT2iNegativePrompt={setT2iNegativePrompt}
+                      t2iWidth={t2iWidth}
+                      setT2iWidth={setT2iWidth}
+                      t2iHeight={t2iHeight}
+                      setT2iHeight={setT2iHeight}
+                      t2iSteps={t2iSteps}
+                      setT2iSteps={setT2iSteps}
+                      t2iIsLoading={t2iIsLoading}
+                      handleT2iRun={handleT2iRun}
                     />
                   </div>
                 </div>
