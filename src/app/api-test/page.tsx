@@ -7388,7 +7388,8 @@ export default function ApiTestPage() {
               selectedApi === "embedding" ||
               selectedApi === "tts" ||
               selectedApi === "stt" ||
-              selectedApi === "voiceClone") ? (
+              selectedApi === "voiceClone" ||
+              selectedApi === "image2text") ? (
               <section className="w-full lg:basis-full">
                 <div className="rounded-xl border-t border-accent/20 bg-accent/5 px-4 py-3">
                   <div
