@@ -432,7 +432,7 @@ function PlansPageContent() {
           isLoading ? (
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-6">
               <div className="h-64 w-full animate-pulse rounded-2xl border border-white/5 bg-surface/40 lg:w-[240px]" />
-              <div className="grid min-h-[200px] flex-1 grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid min-h-[200px] flex-1 grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                   <div
                     key={i}
@@ -619,7 +619,7 @@ function PlansPageContent() {
                     </span>
                   </div>
 
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {filteredApis.map((api) => {
                       const task = getApiTask(api);
                       const fallbackDisplay = getPlanCardDisplay(api);
