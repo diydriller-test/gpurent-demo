@@ -2706,6 +2706,8 @@ export default function ApiTestPage() {
         return <IconImage className={base} />;
       case "Text-to-Music":
         return <IconMusicNote className={base} />;
+      case "Image Generation":
+        return <IconImage className={base} />;
       case "Other":
         return <IconLayers className={base} />;
       default:
