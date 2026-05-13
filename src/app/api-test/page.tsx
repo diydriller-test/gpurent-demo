@@ -7372,20 +7372,17 @@ export default function ApiTestPage() {
                                   : "답변 생성 중... (응답 대기)"}
                       </div>
                     ) : null}
+
+                    <Link
+                      href={`/plans?chapter=${selectedApi}&auto=1`}
+                      className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-4 py-3 text-sm font-semibold text-accent transition-colors hover:bg-accent/20"
+                    >
+                      {selectedApiItem?.name ?? "API"} 플랜 보기 →
+                    </Link>
                   </div>
                 </div>
               </div>
             </aside>
-
-            {/* C: 실행 전 항상 노출되는 플랜 유도 버튼 */}
-            <div className="w-full">
-              <Link
-                href={`/plans?chapter=${selectedApi}&auto=1`}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-accent/85"
-              >
-                {selectedApiItem?.name ?? "API"} 플랜 보기 →
-              </Link>
-            </div>
 
             {workflowBannerMounted &&
             (selectedApi === "llm" ||
