@@ -1434,7 +1434,7 @@ export default function ApiTestPage() {
     () => [
       {
         id: "llm",
-        name: "Text",
+        name: "LLM",
         description: "프롬프트 기반 텍스트 생성",
       },
       {
