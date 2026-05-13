@@ -319,7 +319,7 @@ const TASK_META: Record<
     tags: ["VoiceClone", "Audio"],
   },
   Vision: {
-    displayName: "이미지를 문장으로 변환(Image2Text)",
+    displayName: "이미지를 문장으로 변환(Image-to-Text)",
     sublabel: "이미지 분석 • OCR",
     modelDisplay: "Vision OCR",
     tags: ["Vision", "OCR", "Multimodal"],

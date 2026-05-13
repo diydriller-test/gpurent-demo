@@ -550,12 +550,14 @@ function PlansPageContent() {
                           !allTasksFilterOn;
                         const label =
                           t === "Text Generation"
-                            ? "Text"
-                            : t === "Voice Clone"
-                                        ? "클론"
-                                        : t === "Vision"
-                                          ? "Vision"
-                                          : t;
+                            ? "LLM"
+                            : t === "Reranker"
+                              ? "Reranking"
+                              : t === "Voice Clone"
+                                ? "Voice Clone"
+                                : t === "Vision"
+                                  ? "Image-to-Text"
+                                  : t;
 
                         return (
                           <button

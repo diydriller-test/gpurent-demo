@@ -6313,22 +6313,24 @@ export default function ApiTestPage() {
                           !allTasksFilterOn;
                         const label =
                           t === "Text Generation"
-                            ? "Text"
+                            ? "LLM"
                             : t === "Ad Copy"
-                              ? "카피"
+                              ? "Ad Copy"
                               : t === "Text Summary"
-                                ? "요약"
+                                ? "Text Summary"
                                 : t === "Sentiment Analysis"
-                                  ? "감성"
+                                  ? "Sentiment"
                                   : t === "NER"
-                                    ? "개체명"
+                                    ? "NER"
                                     : t === "Text-to-SQL"
-                                      ? "SQL"
-                                      : t === "Voice Clone"
-                                        ? "클론"
-                                        : t === "Vision"
-                                          ? "Vision"
-                                          : t;
+                                      ? "Text-to-SQL"
+                                      : t === "Reranker"
+                                        ? "Reranking"
+                                        : t === "Voice Clone"
+                                          ? "Voice Clone"
+                                          : t === "Vision"
+                                            ? "Image-to-Text"
+                                            : t;
 
                         return (
                           <button

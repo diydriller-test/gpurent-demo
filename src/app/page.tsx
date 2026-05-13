@@ -45,7 +45,7 @@ const APIS: ApiCard[] = [
     apiId: "voice-clone",
   },
   {
-    name: "Image2Text",
+    name: "Image-to-Text",
     description: "이미지나 스캔 문서에서 텍스트를 뽑아주는 Vision API",
     icon: "⊞",
     apiId: "image2text",
@@ -104,7 +104,7 @@ const TASK_DISPLAY: Record<string, { icon: string; name: string; sub: string; ta
   "TTS":             { icon: "♪", name: "TTS",             sub: "텍스트 → 음성 합성",        task: "tts" },
   "STT":             { icon: "◉", name: "STT",             sub: "음성 → 텍스트 변환",        task: "stt" },
   "Voice Clone":     { icon: "⊕", name: "Voice Clone",     sub: "음성 복제 · 커스텀 보이스", task: "voice-clone" },
-  "Vision":          { icon: "⊞", name: "Image2Text",      sub: "이미지 → 텍스트 변환",      task: "image2text" },
+  "Vision":          { icon: "⊞", name: "Image-to-Text",      sub: "이미지 → 텍스트 변환",      task: "image2text" },
   "Text-to-Music":   { icon: "♬", name: "Text-to-Music",  sub: "텍스트 → 음악 생성",        task: "t2m" },
   "Image Generation":{ icon: "✧", name: "Image Generation",sub: "텍스트 → 이미지 생성",      task: "t2i" },
 };
@@ -115,7 +115,7 @@ const DEFAULT_COURSE_MENU = [
   { num: "三", icon: "◇", name: "Embedding",        sub: "문장 벡터화 · RAG 검색",    task: "embedding",   span: false },
   { num: "四", icon: "⇅", name: "Reranker",         sub: "검색 결과 순위 재정렬",      task: "reranker",    span: false },
   { num: "五", icon: "⊕", name: "Voice Clone",      sub: "음성 복제 · 커스텀 보이스", task: "voice-clone", span: false },
-  { num: "六", icon: "⊞", name: "Image2Text",       sub: "이미지 → 텍스트 변환",      task: "image2text",  span: false },
+  { num: "六", icon: "⊞", name: "Image-to-Text",       sub: "이미지 → 텍스트 변환",      task: "image2text",  span: false },
   { num: "七", icon: "✧", name: "Image Generation", sub: "텍스트 → 이미지 생성",      task: "t2i",         span: false },
   { num: "八", icon: "✦", name: "Text",             sub: "대화 · 요약 · 질문 답변",   task: "text",        span: false },
   { num: "九", icon: "♬", name: "Text-to-Music",   sub: "텍스트 → 음악 생성",        task: "t2m",         span: true  },
