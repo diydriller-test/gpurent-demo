@@ -86,23 +86,27 @@ const HANZI = ["一","二","三","四","五","六","七","八","九","十"];
 const HIDDEN_TASKS = new Set(["Ad Copy","Text Summary","Sentiment Analysis","NER","Text-to-SQL"]);
 
 const TASK_DISPLAY: Record<string, { icon: string; name: string; sub: string; task: string }> = {
-  "Text Generation": { icon: "✦", name: "Text",        sub: "대화 · 요약 · 질문 답변",   task: "text" },
-  "Embedding":       { icon: "◇", name: "Embedding",   sub: "문장 벡터화 · RAG 검색",    task: "embedding" },
-  "Reranker":        { icon: "⇅", name: "Reranker",    sub: "검색 결과 순위 재정렬",      task: "reranker" },
-  "TTS":             { icon: "♪", name: "TTS",         sub: "텍스트 → 음성 합성",        task: "tts" },
-  "STT":             { icon: "◉", name: "STT",         sub: "음성 → 텍스트 변환",        task: "stt" },
-  "Voice Clone":     { icon: "⊕", name: "Voice Clone", sub: "음성 복제 · 커스텀 보이스", task: "voice-clone" },
-  "Vision":          { icon: "⊞", name: "Image2Text",  sub: "이미지 → 텍스트 변환",      task: "image2text" },
+  "Text Generation": { icon: "✦", name: "Text",            sub: "대화 · 요약 · 질문 답변",   task: "text" },
+  "Embedding":       { icon: "◇", name: "Embedding",       sub: "문장 벡터화 · RAG 검색",    task: "embedding" },
+  "Reranker":        { icon: "⇅", name: "Reranker",        sub: "검색 결과 순위 재정렬",      task: "reranker" },
+  "TTS":             { icon: "♪", name: "TTS",             sub: "텍스트 → 음성 합성",        task: "tts" },
+  "STT":             { icon: "◉", name: "STT",             sub: "음성 → 텍스트 변환",        task: "stt" },
+  "Voice Clone":     { icon: "⊕", name: "Voice Clone",     sub: "음성 복제 · 커스텀 보이스", task: "voice-clone" },
+  "Vision":          { icon: "⊞", name: "Image2Text",      sub: "이미지 → 텍스트 변환",      task: "image2text" },
+  "Text-to-Music":   { icon: "♬", name: "Text-to-Music",  sub: "텍스트 → 음악 생성",        task: "t2m" },
+  "Image Generation":{ icon: "✧", name: "Image Generation",sub: "텍스트 → 이미지 생성",      task: "t2i" },
 };
 
 const DEFAULT_COURSE_MENU = [
-  { num: "一", icon: "✦", name: "Text",        sub: "대화 · 요약 · 질문 답변",   task: "text",        span: false },
-  { num: "二", icon: "◇", name: "Embedding",   sub: "문장 벡터화 · RAG 검색",    task: "embedding",   span: false },
-  { num: "三", icon: "⇅", name: "Reranker",    sub: "검색 결과 순위 재정렬",      task: "reranker",    span: false },
-  { num: "四", icon: "♪", name: "TTS",         sub: "텍스트 → 음성 합성",        task: "tts",         span: false },
-  { num: "五", icon: "◉", name: "STT",         sub: "음성 → 텍스트 변환",        task: "stt",         span: false },
-  { num: "六", icon: "⊕", name: "Voice Clone", sub: "음성 복제 · 커스텀 보이스", task: "voice-clone", span: false },
-  { num: "七", icon: "⊞", name: "Image2Text",  sub: "이미지 → 텍스트 변환",      task: "image2text",  span: true },
+  { num: "一", icon: "✦", name: "Text",             sub: "대화 · 요약 · 질문 답변",   task: "text",        span: false },
+  { num: "二", icon: "◇", name: "Embedding",        sub: "문장 벡터화 · RAG 검색",    task: "embedding",   span: false },
+  { num: "三", icon: "⇅", name: "Reranker",         sub: "검색 결과 순위 재정렬",      task: "reranker",    span: false },
+  { num: "四", icon: "♪", name: "TTS",              sub: "텍스트 → 음성 합성",        task: "tts",         span: false },
+  { num: "五", icon: "◉", name: "STT",              sub: "음성 → 텍스트 변환",        task: "stt",         span: false },
+  { num: "六", icon: "⊕", name: "Voice Clone",      sub: "음성 복제 · 커스텀 보이스", task: "voice-clone", span: false },
+  { num: "七", icon: "⊞", name: "Image2Text",       sub: "이미지 → 텍스트 변환",      task: "image2text",  span: false },
+  { num: "八", icon: "♬", name: "Text-to-Music",   sub: "텍스트 → 음악 생성",        task: "t2m",         span: false },
+  { num: "九", icon: "✧", name: "Image Generation", sub: "텍스트 → 이미지 생성",      task: "t2i",         span: true },
 ];
 
 const FEATURES_04 = [
