@@ -253,7 +253,7 @@ const TASK_META: Record<
   { displayName: string; sublabel: string; modelDisplay: string; tags: string[] }
 > = {
   "Text Generation": {
-    displayName: "Text",
+    displayName: "LLM",
     sublabel: "Qwen 3.6 • Text Generation",
     modelDisplay: "Qwen 3.6",
     tags: ["LLM", "Text-Gen"],
@@ -289,49 +289,49 @@ const TASK_META: Record<
     tags: ["Text-to-SQL", "SQL", "Analytics"],
   },
   Embedding: {
-    displayName: "Embedding",
+    displayName: "텍스트 임베딩(Embedding)",
     sublabel: "Qwen-Embedding • Embedding",
     modelDisplay: "Qwen-Embedding-8B",
     tags: ["Embedding", "Semantic-Search"],
   },
   Reranker: {
-    displayName: "Reranker",
+    displayName: "문장 재순위(Reranking)",
     sublabel: "Qwen3 Reranker • Reranker",
     modelDisplay: "Qwen3 Reranker-8B",
     tags: ["Reranker", "Qwen3", "Search-Quality"],
   },
   TTS: {
-    displayName: "TTS",
+    displayName: "텍스트를 음성으로 변환(TTS)",
     sublabel: "Qwen3 Generation • TTS",
     modelDisplay: "Qwen3-TTS",
     tags: ["TTS", "Audio"],
   },
   STT: {
-    displayName: "STT",
+    displayName: "음성을 텍스트로 변환(STT)",
     sublabel: "Qwen3 Audio • STT",
     modelDisplay: "Qwen3-STT",
     tags: ["STT", "Transcription"],
   },
   "Voice Clone": {
-    displayName: "Voice Clone",
+    displayName: "목소리 복제(Voice Clone)",
     sublabel: "Voice Clone • TTS",
     modelDisplay: "Voice Clone",
     tags: ["VoiceClone", "Audio"],
   },
   Vision: {
-    displayName: "Image2Text",
+    displayName: "이미지를 문장으로 변환(Image2Text)",
     sublabel: "이미지 분석 • OCR",
     modelDisplay: "Vision OCR",
     tags: ["Vision", "OCR", "Multimodal"],
   },
   "Text-to-Music": {
-    displayName: "Text-to-Music",
+    displayName: "문장을 음악으로 변환(Text-to-Music)",
     sublabel: "텍스트로 음악 생성 • T2M",
     modelDisplay: "T2M",
     tags: ["T2M", "Music", "Audio"],
   },
   "Image Generation": {
-    displayName: "Image Generation",
+    displayName: "이미지 생성(Image Generation)",
     sublabel: "텍스트로 이미지 생성 • T2I",
     modelDisplay: "T2I",
     tags: ["Image", "T2I"],
