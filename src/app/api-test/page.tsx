@@ -7448,6 +7448,26 @@ export default function ApiTestPage() {
                         </button>
                         으로 사내 지식 베이스에 저장해보세요.
                       </p>
+                    ) : selectedApi === "image2text" ? (
+                      <p className="text-sm leading-relaxed text-foreground/90">
+                        이미지에서 텍스트 추출 완료! 이제 추출된 내용을{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("llm")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [LLM]
+                        </button>{" "}
+                        으로 분석하거나{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("embedding")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [Embedding]
+                        </button>
+                        으로 사내 지식 베이스에 저장해보세요.
+                      </p>
                     ) : (
                       <SmartSolutionGuide
                         selectedApi={selectedApi}
