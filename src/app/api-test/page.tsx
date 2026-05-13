@@ -1860,8 +1860,8 @@ export default function ApiTestPage() {
     };
   }, []);
 
-  const taskKeys = useMemo<MarketplaceTask[]>(
-    () => [
+  const taskKeys = useMemo<MarketplaceTask[]>(() => {
+    const VISIBLE: MarketplaceTask[] = [
       "STT",
       "TTS",
       "Text-to-Music",
@@ -1871,9 +1871,14 @@ export default function ApiTestPage() {
       "Voice Clone",
       "Vision",
       "Text Generation",
-    ],
-    [],
-  );
+    ];
+    if (apisFromBackend.length === 0) return VISIBLE;
+    const orderFor = (task: MarketplaceTask): number => {
+      const api = apisFromBackend.find((a) => getApiTask(a) === task);
+      return api?.sort_order ?? Number.MAX_SAFE_INTEGER;
+    };
+    return [...VISIBLE].sort((a, b) => orderFor(a) - orderFor(b));
+  }, [apisFromBackend]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

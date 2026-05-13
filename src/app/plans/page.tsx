@@ -73,20 +73,16 @@ function PlansPageContent() {
   );
   const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
 
-  const visibleTaskKeys = useMemo(
-    () =>
-      PLAN_TASK_KEYS.filter(
-        (t) =>
-          !(
-            t === "Ad Copy" ||
-            t === "Text Summary" ||
-            t === "Sentiment Analysis" ||
-            t === "NER" ||
-            t === "Text-to-SQL"
-          ),
-      ),
-    [],
-  );
+  const visibleTaskKeys = useMemo(() => {
+    const NLP_HIDDEN = new Set(["Ad Copy", "Text Summary", "Sentiment Analysis", "NER", "Text-to-SQL"]);
+    const visible = PLAN_TASK_KEYS.filter((t) => !NLP_HIDDEN.has(t));
+    if (apis.length === 0) return visible;
+    const orderFor = (task: PlanTask): number => {
+      const api = apis.find((a) => getApiTask(a) === task);
+      return api?.sort_order ?? Number.MAX_SAFE_INTEGER;
+    };
+    return [...visible].sort((a, b) => orderFor(a) - orderFor(b));
+  }, [apis]);
 
   const allTasksFilterOn = useMemo(
     () => visibleTaskKeys.every((k) => filterTasks[k]),
