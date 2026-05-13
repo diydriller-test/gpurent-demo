@@ -27,18 +27,6 @@ const APIS: ApiCard[] = [
     apiId: "tts",
   },
   {
-    name: "Text-to-Music",
-    description: "텍스트 설명으로 음악을 생성해주는 Audio Generation API",
-    icon: "♬",
-    apiId: "t2m",
-  },
-  {
-    name: "Image Generation",
-    description: "텍스트 프롬프트로 이미지를 생성해주는 T2I API",
-    icon: "✧",
-    apiId: "t2i",
-  },
-  {
     name: "Embedding",
     description: "문장을 숫자 벡터로 바꿔서 검색·RAG에 쓰기 좋은 임베딩",
     icon: "◇",
@@ -61,6 +49,18 @@ const APIS: ApiCard[] = [
     description: "이미지나 스캔 문서에서 텍스트를 뽑아주는 Vision API",
     icon: "⊞",
     apiId: "image2text",
+  },
+  {
+    name: "Text-to-Music",
+    description: "텍스트 설명으로 음악을 생성해주는 Audio Generation API",
+    icon: "♬",
+    apiId: "t2m",
+  },
+  {
+    name: "Image Generation",
+    description: "텍스트 프롬프트로 이미지를 생성해주는 T2I API",
+    icon: "✧",
+    apiId: "t2i",
   },
   {
     name: "Text",
@@ -403,30 +403,32 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    getApis().then((apis) => {
-      const items: CourseItem[] = apis
-        .filter((api) => {
-          const tk = api.task_key ?? "";
-          return !HIDDEN_TASKS.has(tk);
-        })
-        .map((api, idx) => {
-          const tk = api.task_key ?? "";
-          const display = TASK_DISPLAY[tk];
-          if (!display) return null;
-          const isLast = idx === apis.filter((a) => {
-            const t = a.task_key ?? "";
-            return !HIDDEN_TASKS.has(t) && TASK_DISPLAY[t];
-          }).length - 1;
-          return {
-            num: HANZI[idx] ?? String(idx + 1),
-            icon: display.icon,
-            name: display.name,
-            sub: display.sub,
-            task: display.task,
-            span: isLast,
-          };
-        })
-        .filter((x): x is CourseItem => x !== null);
+    getApis().then((raw) => {
+      const sorted = [...raw].sort(
+        (a, b) => (a.sort_order ?? 9999) - (b.sort_order ?? 9999),
+      );
+      const hasT2m = sorted.some((a) => a.task_key === "Text-to-Music");
+      const hasT2i = sorted.some((a) => a.task_key === "Image Generation");
+      const apis = [
+        ...sorted,
+        ...(hasT2m ? [] : [{ id: -1, name: "Text-to-Music API", company_id: 1, company_name: "코그로보", task_key: "Text-to-Music", sort_order: 999 }]),
+        ...(hasT2i ? [] : [{ id: -2, name: "Image Generation API", company_id: 1, company_name: "코그로보", task_key: "Image Generation", sort_order: 1000 }]),
+      ];
+      const visible = apis.filter((api) => {
+        const tk = api.task_key ?? "";
+        return !HIDDEN_TASKS.has(tk) && TASK_DISPLAY[tk];
+      });
+      const items: CourseItem[] = visible.map((api, idx) => {
+        const display = TASK_DISPLAY[api.task_key ?? ""]!;
+        return {
+          num: HANZI[idx] ?? String(idx + 1),
+          icon: display.icon,
+          name: display.name,
+          sub: display.sub,
+          task: display.task,
+          span: idx === visible.length - 1,
+        };
+      });
       if (items.length > 0) setCourseMenu(items);
     }).catch(() => {});
   }, []);
