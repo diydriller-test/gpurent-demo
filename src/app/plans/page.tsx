@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import confetti from "canvas-confetti";
 import {
   getApis,
   getPlans,
@@ -59,6 +60,8 @@ function PlansPageContent() {
   const [planActionError, setPlanActionError] = useState<string | null>(null);
   const [updatingPlanId, setUpdatingPlanId] = useState<number | null>(null);
   const [pendingPlanId, setPendingPlanId] = useState<number | null>(null);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
   /** 백엔드 /apis 실패 시 데모 목록을 쓰는 중 */
   const [usingDemoApis, setUsingDemoApis] = useState(false);
 
@@ -310,7 +313,7 @@ function PlansPageContent() {
     setPendingPlanId(planId);
   }
 
-  async function handleRegisterPlan() {
+  function handleRegisterPlan() {
     if (!selectedApi) return;
     if (!pendingPlanId) {
       setPlanActionError("먼저 플랜을 선택해주세요.");
@@ -327,11 +330,24 @@ function PlansPageContent() {
       return;
     }
     setPlanActionError(null);
+    setConfirmModalOpen(true);
+  }
+
+  async function handleConfirmRegister() {
+    if (!selectedApi || !pendingPlanId) return;
+    setConfirmModalOpen(false);
     setUpdatingPlanId(pendingPlanId);
     try {
       await updatePlan(selectedApi.id, pendingPlanId, selectedApi.slug);
       await fetchUser();
       setPendingPlanId(null);
+      setSuccessModalOpen(true);
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.55 },
+        colors: ["#e8888a", "#f5c6c7", "#ffffff", "#ffd700"],
+      });
     } catch (err) {
       setPlanActionError(
         err instanceof Error ? err.message : "플랜 변경에 실패했습니다."
@@ -914,6 +930,58 @@ function PlansPageContent() {
           </p>
         )}
       </main>
+
+      {/* 등록 확인 모달 */}
+      {confirmModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-surface p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-foreground">플랜을 등록하시겠습니까?</h2>
+            <p className="mt-2 text-sm text-foreground/65">
+              선택한 플랜으로 등록됩니다. 관리자 승인 후 이용하실 수 있습니다.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmModalOpen(false)}
+                className="flex-1 rounded-xl border border-white/10 bg-background/40 py-2.5 text-sm font-medium text-foreground/70 transition-colors hover:bg-background/60"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRegister}
+                className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                등록하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 등록 완료 모달 */}
+      {successModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-surface p-6 shadow-xl text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/15 text-3xl">
+              🎉
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">등록이 완료되었습니다!</h2>
+            <p className="mt-3 text-sm leading-relaxed text-foreground/65">
+              플랜 등록 신청이 접수되었습니다.<br />
+              관리자 승인 후 이용하실 수 있으며,<br />
+              <span className="font-medium text-accent">빠른 시일 내에 승인</span>해드리겠습니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSuccessModalOpen(false)}
+              className="mt-6 w-full rounded-xl bg-accent py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
