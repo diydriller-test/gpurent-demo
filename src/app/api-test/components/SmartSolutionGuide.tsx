@@ -56,7 +56,6 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
   if (selectedApi === "textToSql") {
     return (
       <p className="text-sm leading-relaxed text-foreground/90">
-        <span className="mr-2">🗄️</span>
         <span className="font-semibold text-foreground">
           SQL 초안이 준비됐습니다.
         </span>{" "}
@@ -75,7 +74,6 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
   if (selectedApi === "ner") {
     return (
       <p className="text-sm leading-relaxed text-foreground/90">
-        <span className="mr-2">📍</span>
         <span className="font-semibold text-foreground">
           문장 속 개체가 정리됐습니다.
         </span>{" "}
@@ -94,7 +92,6 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
   if (selectedApi === "sentiment") {
     return (
       <p className="text-sm leading-relaxed text-foreground/90">
-        <span className="mr-2">💬</span>
         <span className="font-semibold text-foreground">
           감정·이슈가 정리됐습니다.
         </span>{" "}
@@ -113,7 +110,6 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
   if (selectedApi === "summarize") {
     return (
       <p className="text-sm leading-relaxed text-foreground/90">
-        <span className="mr-2">📄</span>
         <span className="font-semibold text-foreground">
           요약문이 준비됐습니다.
         </span>{" "}
@@ -128,7 +124,6 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
   if (selectedApi === "adCopy") {
     return (
       <p className="text-sm leading-relaxed text-foreground/90">
-        <span className="mr-2">✍️</span>
         <span className="font-semibold text-foreground">
           광고 카피 초안이 준비됐습니다.
         </span>{" "}
@@ -143,7 +138,6 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
   if (selectedApi === "reranker") {
     return (
       <p className="text-sm leading-relaxed text-foreground/90">
-        <span className="mr-2">🎯</span>
         <span className="font-semibold text-foreground">더 나은 검색을 원하시나요?</span>{" "}
         <GuideApiLink
           label="Embedding"
@@ -160,7 +154,6 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
   if (selectedApi === "embedding") {
     return (
       <p className="text-sm leading-relaxed text-foreground/90">
-        <span className="mr-2">🔍</span>
         <span className="font-semibold text-foreground">지능형 검색의 시작!</span>{" "}
         변환된 벡터를{" "}
         <GuideApiLink
@@ -176,7 +169,6 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
   if (selectedApi === "tts") {
     return (
       <p className="text-sm leading-relaxed text-foreground/90">
-        <span className="mr-2">🔊</span>
         <span className="font-semibold text-foreground">
           음성으로 전달할 준비가 됐어요!
         </span>{" "}
@@ -191,7 +183,6 @@ export function SmartSolutionGuide({ selectedApi, onNavigateApi }: Props) {
 
   return (
     <p className="text-sm leading-relaxed text-foreground/90">
-      <span className="mr-2">🚀</span>
       <span className="font-semibold text-foreground">
         복잡한 비즈니스 로직도 척척!
       </span>{" "}
