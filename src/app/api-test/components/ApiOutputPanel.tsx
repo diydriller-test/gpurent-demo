@@ -2,7 +2,6 @@ import React, { useState } from "react";
 
 import type { ApiId, ChatMessage, RerankResult } from "../lib/types";
 import { ChatMarkdown } from "./ChatMarkdown";
-import { EmbeddingFingerprintHeatmap } from "./EmbeddingFingerprintHeatmap";
 
 function CopyIcon({ className }: { className?: string }) {
   return (
@@ -54,8 +53,6 @@ type Props = {
   embeddingVector: number[] | null;
   embeddingError: string | null;
   isEmbeddingLoading: boolean;
-  embeddingAnimationKey: string;
-
   // Reranker
   rerankQuestion: string;
   rerankDocsText: string;
@@ -137,7 +134,6 @@ export function ApiOutputPanel({
   embeddingVector,
   embeddingError,
   isEmbeddingLoading,
-  embeddingAnimationKey,
   rerankQuestion,
   rerankDocsText,
   setRerankQuestion,
@@ -365,31 +361,50 @@ export function ApiOutputPanel({
                       </p>
                     </div>
                   ) : isEmbeddingLoading || embeddingVector ? (
-                    <div className="mt-2 space-y-2">
-                      <div className="rounded-xl border border-accent/15 bg-zinc-950/40 px-3 py-3">
-                        <p className="text-center font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-bright/95">
-                          의미적 지문 (Semantic Fingerprint)
-                        </p>
-                        <p className="mt-1 text-center text-[10px] text-foreground/45">
-                          4,096차원을 64×64 히트맵으로 시각화합니다. 셀에
-                          마우스를 올리면 차원 인덱스와 값을 확인할 수 있습니다.
-                        </p>
-
-                        <div className="mt-2.5">
-                          <EmbeddingFingerprintHeatmap
-                            vector={embeddingVector}
-                            isLoading={isEmbeddingLoading}
-                            animationKey={embeddingAnimationKey}
-                          />
+                    <div className="mt-2">
+                      <div className="rounded-xl border border-white/8 bg-zinc-950/40 px-3 py-3">
+                        <div className="mb-2 flex items-center justify-between">
+                          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.15em] text-accent-bright/90">
+                            Embedding Vector
+                          </p>
+                          {embeddingVector && !isEmbeddingLoading && (
+                            <p className="font-mono text-[10px] text-foreground/40">
+                              {embeddingVector.length.toLocaleString()}dim
+                            </p>
+                          )}
                         </div>
+                        {isEmbeddingLoading || !embeddingVector ? (
+                          <div className="space-y-1.5 py-1">
+                            {Array.from({ length: 8 }).map((_, i) => (
+                              <div
+                                key={i}
+                                className="h-4 animate-pulse rounded bg-white/5"
+                                style={{ width: `${60 + (i % 3) * 15}%` }}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="space-y-0.5 font-mono text-[11px]">
+                            {embeddingVector.slice(0, 24).map((v, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <span className="w-8 shrink-0 text-right text-foreground/30">[{i}]</span>
+                                <span
+                                  className={
+                                    v > 0 ? "text-emerald-400/80" : "text-rose-400/80"
+                                  }
+                                >
+                                  {v.toFixed(8)}
+                                </span>
+                              </div>
+                            ))}
+                            {embeddingVector.length > 24 && (
+                              <p className="pt-1 text-[10px] text-foreground/30">
+                                … 외 {(embeddingVector.length - 24).toLocaleString()}개
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
-
-                      {embeddingVector && !isEmbeddingLoading ? (
-                        <p className="text-[11px] text-foreground/60">
-                          이 지문 패턴이 비슷할수록 문장의 의미가 가깝다는
-                          뜻입니다.
-                        </p>
-                      ) : null}
                     </div>
                   ) : (
                     <div className="mt-3 rounded-xl border border-white/5 bg-background/20 p-3">

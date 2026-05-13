@@ -6685,7 +6685,6 @@ export default function ApiTestPage() {
                         embeddingVector={embeddingVector}
                         embeddingError={embeddingError}
                         isEmbeddingLoading={isEmbeddingLoading}
-                        embeddingAnimationKey={String(embeddingDisplayNonce)}
                         rerankQuestion={rerankQuestion}
                         rerankDocsText={rerankDocsText}
                         setRerankQuestion={setRerankQuestion}
