@@ -7430,7 +7430,6 @@ export default function ApiTestPage() {
                     </div>
                     {selectedApi === "stt" ? (
                       <p className="text-sm leading-relaxed text-foreground/90">
-                        <span className="mr-2">🎙️</span>
                         인식된 목소리를 텍스트로 완성! 이제 추출된 내용을{" "}
                         <button
                           type="button"
