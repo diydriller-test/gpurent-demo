@@ -2515,8 +2515,13 @@ export default function ApiTestPage() {
   );
 
   const ttsDevCodePython = useMemo(
-    () => buildTtsDevCodePython({ text: ttsText }),
-    [ttsText],
+    () =>
+      buildTtsDevCodePython({
+        text: ttsText,
+        language: ttsLanguage,
+        speaker: ttsSpeaker,
+      }),
+    [ttsText, ttsLanguage, ttsSpeaker],
   );
 
   const sttDevCodePython = useMemo(

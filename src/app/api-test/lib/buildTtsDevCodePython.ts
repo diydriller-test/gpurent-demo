@@ -7,8 +7,21 @@ import { escapeForPythonJsonString } from "./escapeForPythonJsonString";
 const URL = "http://aiapi.kogrobo.com:11115/v1/audio/speech";
 const MODEL = "Qwen3-TTS";
 
-export function buildTtsDevCodePython({ text }: { text: string }) {
+export function buildTtsDevCodePython({
+  text,
+  language,
+  speaker,
+}: {
+  text: string;
+  language?: string;
+  speaker?: string;
+}) {
   const content = escapeForPythonJsonString(text.trim() || "안녕하세요.");
+  const voice = (speaker ?? "ryan").toLowerCase();
+  const langLine =
+    language && language !== "auto"
+      ? `    "language": "${language}",\n`
+      : "";
 
   return `import requests
 
@@ -21,8 +34,8 @@ headers = {
 data = {
     "model": "${MODEL}",
     "input": "${content}",
-    "voice": "ryan",
-    "response_format": "mp3",
+    "voice": "${voice}",
+${langLine}    "response_format": "mp3",
 }
 
 response = requests.post(url, headers=headers, json=data)
