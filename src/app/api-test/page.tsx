@@ -2117,7 +2117,6 @@ export default function ApiTestPage() {
       case "Text":
         return (
           <>
-            ✨{" "}
             <span className="text-accent font-semibold">
               비즈니스 대화 및 요약
             </span>
@@ -2131,7 +2130,6 @@ export default function ApiTestPage() {
       case "AdCopy":
         return (
           <>
-            ✍️{" "}
             <span className="text-accent font-semibold">광고·마케팅 카피</span>:
             브리프·톤·채널에 맞춰{" "}
             <span className="text-accent font-semibold">배너·SNS 등 문구</span>
@@ -2141,7 +2139,7 @@ export default function ApiTestPage() {
       case "TextSummary":
         return (
           <>
-            📄 <span className="text-accent font-semibold">텍스트 요약</span>:
+            <span className="text-accent font-semibold">텍스트 요약</span>:
             리뷰·뉴스·회의록 등 긴 본문에서{" "}
             <span className="text-accent font-semibold">
               핵심만 추려 짧게 압축
@@ -2152,7 +2150,7 @@ export default function ApiTestPage() {
       case "SentimentAnalysis":
         return (
           <>
-            💬 <span className="text-accent font-semibold">리뷰 감정 분석</span>
+            <span className="text-accent font-semibold">리뷰 감정 분석</span>
             : 긍·부정·중립과{" "}
             <span className="text-accent font-semibold">측면별 점수</span>로
             브랜드 평판·이슈를 빠르게 파악하는 자사 자연어 처리 엔진 기반
@@ -2162,7 +2160,6 @@ export default function ApiTestPage() {
       case "NERTask":
         return (
           <>
-            🏷️{" "}
             <span className="text-accent font-semibold">개체명 인식 (NER)</span>
             : 인물·장소·시간·금액 등을{" "}
             <span className="text-accent font-semibold">
@@ -2174,7 +2171,6 @@ export default function ApiTestPage() {
       case "TextToSqlTask":
         return (
           <>
-            🗄️{" "}
             <span className="text-accent font-semibold">
               Text-to-SQL (쿼리 자동 생성)
             </span>
@@ -2186,7 +2182,6 @@ export default function ApiTestPage() {
       case "Embedding":
         return (
           <>
-            🔍{" "}
             <span className="text-accent font-semibold">
               지능형 데이터 검색
             </span>
@@ -2201,7 +2196,6 @@ export default function ApiTestPage() {
       case "Rerank":
         return (
           <>
-            🎯{" "}
             <span className="text-accent font-semibold">검색 결과 최적화</span>:
             단순 검색을 넘어, 사용자의 의도에 가장 가까운 순서로{" "}
             <span className="text-accent font-semibold">정확도를 극대화</span>
@@ -2211,7 +2205,6 @@ export default function ApiTestPage() {
       case "TTS":
         return (
           <>
-            🔊{" "}
             <span className="text-accent font-semibold">텍스트 → 음성 합성</span>:
             입력한 문장을 선택한{" "}
             <span className="text-accent font-semibold">화자·언어</span>로
@@ -2221,7 +2214,6 @@ export default function ApiTestPage() {
       case "STT":
         return (
           <>
-            🎙️{" "}
             <span className="text-accent font-semibold">음성 → 텍스트 변환</span>:
             녹음 파일이나 마이크 입력을{" "}
             <span className="text-accent font-semibold">텍스트로 변환</span>하는
@@ -2231,7 +2223,7 @@ export default function ApiTestPage() {
       case "VoiceClone":
         return (
           <>
-            🎭 <span className="text-accent font-semibold">보이스 클론</span>:
+            <span className="text-accent font-semibold">보이스 클론</span>:
             짧은 참조 음성만으로 동일한 목소리를 재현합니다.{" "}
             <span className="text-accent font-semibold">
               원하는 텍스트를 클론된 목소리로
@@ -2242,7 +2234,6 @@ export default function ApiTestPage() {
       case "Vision":
         return (
           <>
-            🖼️{" "}
             <span className="text-accent font-semibold">이미지 분석 (Image2Text)</span>:
             이미지를 업로드하면{" "}
             <span className="text-accent font-semibold">
@@ -2254,7 +2245,6 @@ export default function ApiTestPage() {
       case "ImageGeneration":
         return (
           <>
-            🎨{" "}
             <span className="text-accent font-semibold">이미지 생성 (Text-to-Image)</span>:
             텍스트 프롬프트로{" "}
             <span className="text-accent font-semibold">
