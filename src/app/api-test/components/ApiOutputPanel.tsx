@@ -422,10 +422,10 @@ export function ApiOutputPanel({
 
           case "reranker":
             return (
-              <div className="flex h-full min-h-0 flex-col gap-3">
-                <div className="min-h-0 flex-1 overflow-hidden">
-                  <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden lg:flex-row">
-                    <div className="min-h-0 w-full rounded-2xl border border-white/10 bg-background/25 p-4 lg:w-5/12">
+              <div className="flex flex-col gap-3 lg:h-full lg:min-h-0">
+                <div className="flex-1 lg:min-h-0 lg:overflow-hidden">
+                  <div className="flex flex-col gap-3 lg:h-full lg:min-h-0 lg:flex-row lg:overflow-hidden">
+                    <div className="w-full min-h-[220px] rounded-2xl border border-white/10 bg-background/25 p-4 lg:min-h-0 lg:w-5/12">
                       <div className="h-full min-h-0 overflow-y-auto pr-1">
                         <div>
                           <p className="font-mono text-xs text-foreground/60">
@@ -480,7 +480,7 @@ export function ApiOutputPanel({
                       </div>
                     </div>
 
-                    <div className="min-h-0 w-full rounded-2xl border border-accent/25 bg-accent/5 p-4 lg:w-7/12 lg:flex lg:flex-col">
+                    <div className="w-full min-h-[220px] rounded-2xl border border-accent/25 bg-accent/5 p-4 lg:min-h-0 lg:w-7/12 lg:flex lg:flex-col">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="font-mono text-xs text-accent">

@@ -6487,6 +6487,13 @@ export default function ApiTestPage() {
           </div>
         ) : (
           <div className="relative flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:gap-3">
+            {/* 모바일 환경 안내 배너 */}
+            <div className="w-full rounded-xl border border-amber-500/20 bg-amber-500/6 px-4 py-2.5 lg:hidden">
+              <p className="text-center text-xs text-amber-200/70">
+                더 넓은 화면에서 편하게 체험할 수 있습니다.
+              </p>
+            </div>
+
             {/* Center: Playground */}
             <section className="w-full lg:min-w-0 lg:flex-1">
               <div
@@ -6496,8 +6503,8 @@ export default function ApiTestPage() {
                   selectedApi === "sentiment" ||
                   selectedApi === "ner" ||
                   selectedApi === "textToSql"
-                    ? "h-[calc(100vh-140px)]"
-                    : "h-[calc(100vh-160px)]"
+                    ? "min-h-[480px] lg:h-[calc(100vh-140px)]"
+                    : "min-h-[520px] lg:h-[calc(100vh-160px)]"
                 }`}
               >
                 <div
@@ -6939,7 +6946,7 @@ export default function ApiTestPage() {
             </section>
 
             {/* Right: Developer Console */}
-            <aside className="w-full lg:w-[38%] lg:min-w-[320px] lg:flex-shrink-0">
+            <aside className="w-full lg:w-[38%] lg:flex-shrink-0">
               <div
                 className={`flex min-h-0 flex-col rounded-2xl border border-white/5 bg-surface/35 backdrop-blur-xl overflow-hidden ${
                   selectedApi === "adCopy" ||
@@ -6947,8 +6954,8 @@ export default function ApiTestPage() {
                   selectedApi === "sentiment" ||
                   selectedApi === "ner" ||
                   selectedApi === "textToSql"
-                    ? "h-[calc(100vh-140px)]"
-                    : "h-[calc(100vh-160px)]"
+                    ? "min-h-[360px] lg:h-[calc(100vh-140px)]"
+                    : "min-h-[360px] lg:h-[calc(100vh-160px)]"
                 }`}
               >
                 <div className="border-b border-white/5 bg-background/20 p-4">
