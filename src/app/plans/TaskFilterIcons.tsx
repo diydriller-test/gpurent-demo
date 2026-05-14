@@ -99,39 +99,6 @@ export function IconVoiceClone(props: { className?: string }) {
   );
 }
 
-/** 광고 카피 / 문구 작성 */
-export function IconPenLine(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-    </IconBase>
-  );
-}
-
-/** 텍스트 요약 (본문 압축) */
-export function IconTextSummary(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M5 8h14" />
-      <path d="M5 12h10" />
-      <path d="M5 16h6" />
-    </IconBase>
-  );
-}
-
-/** 감정·극성 분석 */
-export function IconSentiment(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-      <path d="M9 9h.01" />
-      <path d="M15 9h.01" />
-      <circle cx="12" cy="12" r="10" />
-    </IconBase>
-  );
-}
-
 /** 음악 생성 / Text-to-Music */
 export function IconMusicNote(props: { className?: string }) {
   return (
@@ -167,27 +134,6 @@ export function IconImage(props: { className?: string }) {
   );
 }
 
-/** 데이터베이스 / Text-to-SQL */
-export function IconDatabase(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-      <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
-    </IconBase>
-  );
-}
-
-/** 텍스트 태그 / NER */
-export function IconTag(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M12 2H2v10l9.29 9.29a1 1 0 001.41 0l6.59-6.59a1 1 0 000-1.41L12 2z" />
-      <path d="M7 7h.01" />
-    </IconBase>
-  );
-}
-
 export function PlanTaskIcon({
   task,
   className = "h-4 w-4",
@@ -198,16 +144,6 @@ export function PlanTaskIcon({
   switch (task) {
     case "Text Generation":
       return <IconSparkles className={className} />;
-    case "Ad Copy":
-      return <IconPenLine className={className} />;
-    case "Text Summary":
-      return <IconTextSummary className={className} />;
-    case "Sentiment Analysis":
-      return <IconSentiment className={className} />;
-    case "NER":
-      return <IconTag className={className} />;
-    case "Text-to-SQL":
-      return <IconDatabase className={className} />;
     case "Embedding":
       return <IconLayers className={className} />;
     case "Reranker":

@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { SiteNav } from "@/components/SiteNav";
+import {
+  PlatformCard,
+  PlatformButton,
+  PlatformPageHeader,
+  PlatformShell,
+} from "@/components/platform/PlatformShell";
 
 type DocSection = {
   id: string;
@@ -17,8 +22,137 @@ type DocSection = {
   notes?: string[];
 };
 
+type SnippetLanguage = "curl" | "typescript" | "python";
+
+type QuickstartSnippet = {
+  id: SnippetLanguage;
+  label: string;
+  code: string;
+};
+
 const BASE_URL_NOTE =
-  "브라우저에서 호출 시 동일 오리진 기준 상대 경로(예: /api/chat)를 사용합니다.";
+  "브라우저에서 호출할 때는 /api/chat처럼 same-origin relative path를 사용하세요.";
+
+const QUICKSTART_SNIPPETS: QuickstartSnippet[] = [
+  {
+    id: "curl",
+    label: "cURL",
+    code: `curl -X POST "$AI_OMAKASE_BASE_URL/api/chat" \\
+  -H "Authorization: Bearer $AI_OMAKASE_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "input": "Summarize this incident report and suggest next actions.",
+    "temperature": 0.1
+  }'`,
+  },
+  {
+    id: "typescript",
+    label: "TypeScript",
+    code: `const response = await fetch(\`\${baseUrl}/api/chat\`, {
+  method: "POST",
+  headers: {
+    Authorization: \`Bearer \${apiKey}\`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    input: "Summarize this incident report and suggest next actions.",
+    temperature: 0.1,
+  }),
+});
+
+if (!response.ok) {
+  throw new Error(\`AI API request failed: \${response.status}\`);
+}
+
+const result = await response.json();
+console.log(result.text);`,
+  },
+  {
+    id: "python",
+    label: "Python",
+    code: `import os
+import requests
+
+response = requests.post(
+    f"{os.environ['AI_OMAKASE_BASE_URL']}/api/chat",
+    headers={
+        "Authorization": f"Bearer {os.environ['AI_OMAKASE_API_KEY']}",
+        "Content-Type": "application/json",
+    },
+    json={
+        "input": "Summarize this incident report and suggest next actions.",
+        "temperature": 0.1,
+    },
+    timeout=60,
+)
+response.raise_for_status()
+print(response.json()["text"])`,
+  },
+];
+
+const QUICKSTART_STEPS = [
+  {
+    label: "01",
+    title: "Create an API key",
+    body: "계정에서 API key를 만들고 server-side environment variable로 보관하세요. client bundle에는 절대 포함하지 않습니다.",
+  },
+  {
+    label: "02",
+    title: "Call the selected endpoint",
+    body: "Workbench에서 테스트한 API를 고르고, endpoint reference에 있는 request body로 호출합니다.",
+  },
+  {
+    label: "03",
+    title: "Read the result",
+    body: "response는 제품에 붙이기 쉬운 형태로 유지됩니다. cost와 latency는 usage view에서 확인하세요.",
+  },
+];
+
+const USE_CASES = [
+  {
+    title: "Support triage",
+    body: "티켓 요약, 우선순위 분류, 다음 액션 제안은 text endpoint 하나로 시작할 수 있습니다.",
+    path: "/api/chat",
+  },
+  {
+    title: "RAG search",
+    body: "Embedding으로 후보를 만들고 Re-ranking으로 문맥 관련도에 맞게 정렬합니다.",
+    path: "/api/embedding + /api/rerank",
+  },
+  {
+    title: "Voice workflow",
+    body: "STT, TTS, Voice Clone을 같은 auth flow와 usage model 안에서 연결합니다.",
+    path: "/api/stt + /api/tts",
+  },
+];
+
+const ERROR_ROWS = [
+  {
+    status: "400",
+    meaning: "request body, file, required field가 올바르지 않습니다.",
+    action: "field name과 Content-Type을 먼저 확인하세요.",
+  },
+  {
+    status: "401 / 403",
+    meaning: "API key 또는 계정 권한이 유효하지 않습니다.",
+    action: "Authorization header와 key 상태를 확인하세요.",
+  },
+  {
+    status: "429",
+    meaning: "일일 체험 한도 또는 usage limit에 도달했습니다.",
+    action: "usage를 확인하거나 더 높은 plan을 선택하세요.",
+  },
+  {
+    status: "500 / 502",
+    meaning: "내부 처리 또는 upstream model response가 실패했습니다.",
+    action: "retry handling을 추가하고 같은 입력이 반복 실패하면 log를 확인하세요.",
+  },
+  {
+    status: "504",
+    meaning: "voice, vision, long-form 작업이 time limit을 초과했습니다.",
+    action: "input size를 줄이거나 async flow로 나눠 처리하세요.",
+  },
+];
 
 const SECTIONS: DocSection[] = [
   {
@@ -27,19 +161,19 @@ const SECTIONS: DocSection[] = [
     method: "POST",
     path: "/api/chat",
     description:
-      "프롬프트 입력에 대해 한국어로 텍스트 응답을 생성합니다. 내부적으로 LLM 업스트림과 연동됩니다.",
-    requestLabel: "본문 (application/json)",
+      "Generates a text response from a prompt through the text generation endpoint.",
+    requestLabel: "Body (application/json)",
     request: `{
-  "input": "질문 또는 지시문",
+  "input": "Question or instruction",
   "temperature": 0.1
 }`,
-    responseLabel: "성공 (200)",
+    responseLabel: "Success (200)",
     response: `{
-  "text": "모델이 생성한 한국어 답변 문자열"
+  "text": "Generated response text"
 }`,
     notes: [
-      "`temperature`는 생략 시 0.1에 가깝게 처리됩니다.",
-      "한도 초과 시 429와 `{ \"error\": \"일일 체험 한도를 초과했습니다. ...\" }` 형태로 응답할 수 있습니다.",
+      "`temperature` defaults near 0.1 when omitted.",
+      "Usage limits may return 429 with an `error` payload.",
     ],
   },
   {
@@ -47,19 +181,19 @@ const SECTIONS: DocSection[] = [
     title: "Embedding",
     method: "POST",
     path: "/api/embedding",
-    description: "입력 텍스트를 임베딩 벡터(숫자 배열)로 변환합니다.",
-    requestLabel: "본문 (application/json)",
+    description: "Converts input text into an embedding vector.",
+    requestLabel: "Body (application/json)",
     request: `{
-  "input": "임베딩할 문장",
+  "input": "Text to embed",
   "input_type": "string"
 }`,
-    responseLabel: "성공 (200)",
+    responseLabel: "Success (200)",
     response: `{
   "embeddingVector": [0.012, -0.034, ...]
 }`,
     notes: [
-      "`text` 필드로 보내도 동작합니다(내부에서 `input`과 동일하게 처리).",
-      "업스트림 오류 시 `error` 메시지와 함께 비-200 상태 코드가 반환될 수 있습니다.",
+      "`text` is also accepted and normalized to `input` internally.",
+      "Upstream failures may return a non-200 status with an `error` message.",
     ],
   },
   {
@@ -67,41 +201,41 @@ const SECTIONS: DocSection[] = [
     title: "Re-ranking",
     method: "POST",
     path: "/api/rerank",
-    description: "질의와 후보 문장 목록을 받아 관련도에 따라 재정렬하는 결과를 반환합니다.",
-    requestLabel: "본문 (application/json)",
+    description: "Ranks candidate passages by relevance to a query.",
+    requestLabel: "Body (application/json)",
     request: `{
-  "query": "검색 질의",
-  "input": ["후보 문장 1", "후보 문장 2"]
+  "query": "Search query",
+  "input": ["Candidate passage 1", "Candidate passage 2"]
 }`,
-    responseLabel: "성공 (200)",
-    response: `// 업스트림 Re-rank API 응답 구조가 그대로 전달됩니다.`,
+    responseLabel: "Success (200)",
+    response: `// The upstream Re-rank API response is passed through.`,
     notes: [
-      "`query`는 비어 있으면 안 되고, `input`은 문자열 배열이어야 합니다.",
+      "`query` must not be empty, and `input` must be an array of strings.",
     ],
   },
   {
     id: "tts",
-    title: "TTS (텍스트 음성 변환)",
+    title: "TTS (Text-to-Speech)",
     method: "POST",
     path: "/api/tts",
     description:
-      "텍스트를 음성으로 합성합니다. 업스트림 TTS로 프록시하며, 성공 시 오디오 바이너리를 반환합니다. 음성 목록은 `GET /api/tts`로 조회할 수 있습니다.",
-    requestLabel: "본문 (application/json)",
+      "Synthesizes speech from text through the upstream TTS service. Use `GET /api/tts` to fetch available speakers.",
+    requestLabel: "Body (application/json)",
     request: `{
-  "text": "읽을 문장(필수)",
-  "language": "ko | korean | english | japanese 등 (선택)",
-  "speaker": "ryan 등 (선택)",
-  "instruct": "스타일·톤 지시 (선택)",
-  "style_instruction": "instruct 별칭 (선택)"
+  "text": "Text to read (required)",
+  "language": "ko | korean | english | japanese (optional)",
+  "speaker": "ryan (optional)",
+  "instruct": "Style or tone instruction (optional)",
+  "style_instruction": "Alias for instruct (optional)"
 }`,
-    responseLabel: "성공 (200)",
-    response: `Content-Type: audio/mpeg 등 (업스트림이 반환한 오디오 타입)
-<바이너리 오디오 스트림>`,
+    responseLabel: "Success (200)",
+    response: `Content-Type: audio/mpeg or another upstream audio type
+<binary audio stream>`,
     notes: [
-      "`text`만 필수입니다. `language`는 짧은 코드(ko, en) 또는 korean/english 등으로 보낼 수 있습니다.",
-      "오류 시 JSON `{ \"error\": \"...\" }`와 함께 400·429·500·504 등이 반환될 수 있습니다. 한도 초과 시 429 메시지가 올 수 있습니다.",
-      "합성 요청은 최대 약 58초 제한이 있어, 초과 시 504가 날 수 있습니다.",
-      "스피커 목록: `GET /api/tts` (업스트림 `/tts/speakers` 프록시).",
+      "`text` is the only required field. `language` accepts short codes such as ko/en or names such as korean/english.",
+      "Errors return JSON with an `error` field and may use 400, 429, 500, or 504.",
+      "Synthesis requests have an approximate 58-second execution limit.",
+      "Speaker list: `GET /api/tts`, proxied from upstream `/tts/speakers`.",
     ],
   },
   {
@@ -110,46 +244,46 @@ const SECTIONS: DocSection[] = [
     method: "POST",
     path: "/api/stt",
     description:
-      "음성 파일을 업로드하여 텍스트로 변환합니다. `multipart/form-data`로 전송합니다.",
-    requestLabel: "본문 (multipart/form-data)",
-    request: `필드:
-  file        — 오디오 파일 (필수)
-  language    — 선택
-  task        — 선택
-  beam_size   — 선택
-  vad_filter  — 선택`,
-    responseLabel: "성공 (200)",
-    response: `업스트림 STT 서비스의 JSON 응답이 그대로 반환됩니다.`,
+      "Uploads an audio file and converts it to text with `multipart/form-data`.",
+    requestLabel: "Body (multipart/form-data)",
+    request: `Fields:
+  file        — audio file (required)
+  language    — optional
+  task        — optional
+  beam_size   — optional
+  vad_filter  — optional`,
+    responseLabel: "Success (200)",
+    response: `The upstream STT JSON response is returned as-is.`,
     notes: [
-      "최대 실행 시간 제한이 있어 장시간 처리 시 504(시간 초과)가 날 수 있습니다.",
-      "`file`이 없으면 400과 안내 메시지가 반환됩니다.",
+      "Long-running jobs may hit the execution limit and return 504.",
+      "Missing `file` returns 400 with a validation message.",
     ],
   },
   {
     id: "voice-clone",
-    title: "Voice Clone (보이스 클론)",
+    title: "Voice Clone",
     method: "POST",
     path: "/api/voice-clone",
     description:
-      "참조 음성 파일을 업로드하면 해당 화자의 목소리로 텍스트를 합성합니다. `x_vector_only_mode`로 합성 방식을 선택할 수 있습니다. `multipart/form-data`로 전송합니다.",
-    requestLabel: "본문 (multipart/form-data)",
-    request: `필드:
-  ref_audio         — 참조 음성 파일 (필수, WAV/MP3 등)
-  text              — 합성할 텍스트 (필수)
-  language          — 언어 (선택, 기본 Korean)
-                      Korean | English | Chinese | Japanese 등
-  x_vector_only_mode — true | false (선택, 기본 true)
-                      true  → 음색만 복제 (ref_text 불필요, 빠름)
-                      false → 음색+억양·스타일 복제 (ref_text 권장)
-  ref_text          — 참조 음성의 스크립트 (x_vector_only_mode=false 시 권장)`,
-    responseLabel: "성공 (200)",
-    response: `Content-Type: audio/wav (또는 업스트림 오디오 타입)
-<바이너리 오디오 스트림>`,
+      "Uploads a reference voice and synthesizes text with that speaker profile. Send as `multipart/form-data`.",
+    requestLabel: "Body (multipart/form-data)",
+    request: `Fields:
+  ref_audio         — reference audio file (required, WAV/MP3, etc.)
+  text              — text to synthesize (required)
+  language          — optional, default Korean
+                      Korean | English | Chinese | Japanese
+  x_vector_only_mode — true | false (optional, default true)
+                      true  → clone timbre only (faster, no ref_text)
+                      false → clone timbre, prosody, and style (ref_text recommended)
+  ref_text          — reference transcript, recommended when x_vector_only_mode=false`,
+    responseLabel: "Success (200)",
+    response: `Content-Type: audio/wav or another upstream audio type
+<binary audio stream>`,
     notes: [
-      "`ref_audio`와 `text`만 필수입니다.",
-      "`x_vector_only_mode=true`일 때는 `ref_text` 없이도 동작하며, 더 빠르게 합성됩니다.",
-      "`x_vector_only_mode=false`일 때는 `ref_text`(참조 음성 스크립트)를 함께 보내면 억양·발화 스타일까지 복제됩니다.",
-      "최대 실행 시간 제한(60초)이 있어 초과 시 504가 날 수 있습니다.",
+      "`ref_audio` and `text` are required.",
+      "`x_vector_only_mode=true` works without `ref_text` and is faster.",
+      "`x_vector_only_mode=false` can use `ref_text` to preserve prosody and speaking style.",
+      "Requests have a 60-second execution limit and may return 504.",
     ],
   },
   {
@@ -158,29 +292,39 @@ const SECTIONS: DocSection[] = [
     method: "POST",
     path: "/api/image2text",
     description:
-      "이미지를 업로드하면 Vision 모델이 내용을 설명하고 이미지 내 텍스트를 추출합니다. `multipart/form-data`로 전송합니다.",
-    requestLabel: "본문 (multipart/form-data)",
-    request: `필드:
-  image       — 이미지 파일 (필수, JPG/PNG/WEBP/GIF 등)
-  prompt      — 분석 지시 (선택)
-                기본값: "이 이미지 내용을 한국어로 설명하고,
-                         이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘."
-  temperature — 0~1 실수 (선택, 기본 0.1)`,
-    responseLabel: "성공 (200)",
+      "Uploads an image for vision analysis and text extraction with `multipart/form-data`.",
+    requestLabel: "Body (multipart/form-data)",
+    request: `Fields:
+  image       — image file (required, JPG/PNG/WEBP/GIF)
+  prompt      — optional analysis instruction
+  temperature — optional float from 0 to 1, default 0.1`,
+    responseLabel: "Success (200)",
     response: `{
-  "text": "이미지 분석 결과 및 추출된 텍스트 문자열"
+  "text": "Image analysis and extracted text"
 }`,
     notes: [
-      "`image` 파일만 필수입니다. `prompt`를 생략하면 이미지 설명 + 텍스트 추출 지시가 기본으로 사용됩니다.",
-      "이미지는 서버에서 base64로 인코딩되어 Vision API로 전달됩니다.",
-      "응답이 빈 문자열이거나 형식이 올바르지 않으면 502가 반환될 수 있습니다.",
-      "최대 실행 시간 제한(115초)이 있어 초과 시 504가 날 수 있습니다.",
-      "한도 초과 시 `/api/chat`과 동일하게 429 응답이 올 수 있습니다.",
+      "`image` is the only required field. Omitting `prompt` uses the default image description and text extraction instruction.",
+      "Images are base64-encoded server-side before being sent to the Vision API.",
+      "Empty or malformed upstream responses may return 502.",
+      "Requests have a 115-second execution limit and may return 504.",
+      "Usage limits may return 429, same as `/api/chat`.",
     ],
   },
 ];
 
-const TOC_SECTION_IDS = ["overview", ...SECTIONS.map((s) => s.id)];
+const DOCS_TOC_ITEMS = [
+  { id: "quickstart", label: "Quickstart" },
+  { id: "auth", label: "API key" },
+  { id: "examples", label: "Examples" },
+  { id: "endpoints", label: "Endpoints" },
+  ...SECTIONS.map((section) => ({
+    id: section.id,
+    label: section.title,
+  })),
+  { id: "errors", label: "Error handling" },
+];
+
+const TOC_SECTION_IDS = DOCS_TOC_ITEMS.map((item) => item.id);
 
 const LAST_TOC_SECTION_ID = TOC_SECTION_IDS[TOC_SECTION_IDS.length - 1];
 
@@ -219,8 +363,58 @@ function docsTocLinkClass(isActive: boolean) {
     : "block rounded-lg px-2 py-1.5 text-foreground/70 transition-all duration-300 hover:bg-white/5 hover:text-accent";
 }
 
+function CodeBlock({
+  code,
+  label,
+  className = "",
+}: {
+  code: string;
+  label?: string;
+  className?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const copyCode = async () => {
+    await navigator.clipboard.writeText(code.trim());
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  };
+
+  return (
+    <div
+      className={[
+        "overflow-hidden rounded-xl border border-black/[0.06] bg-[#0b0c10] text-white shadow-[0_18px_70px_rgba(8,9,13,0.10)]",
+        className,
+      ].join(" ")}
+    >
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <p className="font-mono text-[11px] uppercase tracking-normal text-white/44">
+          {label ?? "code"}
+        </p>
+        <button
+          type="button"
+          onClick={copyCode}
+          aria-label={`${label ?? "code"} 복사`}
+          className="rounded-md border border-white/10 px-2.5 py-1.5 font-mono text-[11px] text-white/68 transition-colors hover:border-white/24 hover:text-white"
+        >
+          {copied ? "copied" : "copy"}
+        </button>
+      </div>
+      <pre className="overflow-x-auto p-4 font-mono text-[12px] leading-6 text-white/82 md:text-[13px]">
+        {code.trim()}
+      </pre>
+    </div>
+  );
+}
+
 export default function DocsPage() {
-  const [activeSectionId, setActiveSectionId] = useState<string>("overview");
+  const [activeSectionId, setActiveSectionId] = useState<string>("quickstart");
+  const [selectedSnippet, setSelectedSnippet] =
+    useState<SnippetLanguage>("curl");
+
+  const activeSnippet =
+    QUICKSTART_SNIPPETS.find((snippet) => snippet.id === selectedSnippet) ??
+    QUICKSTART_SNIPPETS[0];
 
   useEffect(() => {
     let raf = 0;
@@ -247,41 +441,29 @@ export default function DocsPage() {
       window.removeEventListener("hashchange", update);
     };
   }, []);
-  return (
-    <div className="min-h-screen bg-grid-pattern">
-      <SiteNav fixed />
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 pt-24 pb-12 lg:flex-row lg:gap-12 lg:pb-16">
-        <aside className="shrink-0 lg:w-56">
+  return (
+    <PlatformShell hideSidebar>
+      <div className="flex flex-col gap-8 pb-12 lg:flex-row lg:gap-10 lg:pb-16">
+        <aside className="shrink-0 lg:w-60">
           <nav
             aria-label="문서 목차"
-            className="lg:sticky lg:top-24 lg:self-start"
+            className="platform-panel rounded-xl p-3 lg:sticky lg:top-24 lg:self-start"
           >
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-foreground/40">
-              On this page
+            <p className="mb-3 px-2 font-mono text-[11px] uppercase tracking-normal text-black/36">
+              Docs
             </p>
             <ul className="space-y-1 text-sm">
-              <li>
-                <a
-                  href="#overview"
-                  aria-current={
-                    activeSectionId === "overview" ? "location" : undefined
-                  }
-                  className={docsTocLinkClass(activeSectionId === "overview")}
-                >
-                  개요 · 인증
-                </a>
-              </li>
-              {SECTIONS.map((s) => (
-                <li key={s.id}>
+              {DOCS_TOC_ITEMS.map((item) => (
+                <li key={item.id}>
                   <a
-                    href={`#${s.id}`}
+                    href={`#${item.id}`}
                     aria-current={
-                      activeSectionId === s.id ? "location" : undefined
+                      activeSectionId === item.id ? "location" : undefined
                     }
-                    className={docsTocLinkClass(activeSectionId === s.id)}
+                    className={docsTocLinkClass(activeSectionId === item.id)}
                   >
-                    {s.title}
+                    {item.label}
                   </a>
                 </li>
               ))}
@@ -289,90 +471,271 @@ export default function DocsPage() {
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1">
-          <header className="mb-12 scroll-mt-28" id="overview">
-            <h1 className="text-3xl font-bold text-foreground md:text-4xl">
-              API 문서
-            </h1>
-            <p className="mt-4 max-w-2xl text-foreground/70">
-              AI API 오마카세 데모 앱이 제공하는 HTTP 엔드포인트 요약입니다. 요청 시
-              발급받은 액세스 토큰이 필요한 경우, 아래 헤더를 포함합니다.
-            </p>
-            <p className="mt-3 max-w-2xl border-l-2 border-accent/40 pl-4 text-sm leading-relaxed text-foreground/60">
-              앞으로도 새로운 API가 계속 추가되고, 기존 엔드포인트 스펙도 개선될
-              예정입니다. 아래 목록은 시점에 따라 늘어나거나 바뀔 수 있으니
-              공지·문서 업데이트를 함께 확인해 주세요.
-            </p>
-            <div className="mt-6 space-y-3 rounded-xl border border-white/10 bg-surface/50 p-4 font-mono text-sm">
-              <p className="text-foreground/50">Authorization: Bearer {"<your_access_token>"}</p>
-              <p className="border-t border-white/10 pt-3 text-foreground/45">
-                {BASE_URL_NOTE}
+        <main className="min-w-0 flex-1 space-y-6">
+          <section className="scroll-mt-28" id="quickstart">
+            <PlatformPageHeader
+              eyebrow="developer docs"
+              title="1분 안에 첫 AI API를 연결하세요."
+              description="endpoint를 고르고, 동작하는 request를 복사한 뒤 server-side API key로 연결하세요. 첫 예제는 text request로 시작합니다."
+              action={
+                <PlatformButton href="/api-test?api=llm" variant="secondary">
+                  워크벤치에서 실행
+                </PlatformButton>
+              }
+            />
+
+            <div className="grid gap-5 lg:grid-cols-[0.92fr_1.08fr]">
+              <PlatformCard className="flex flex-col justify-between gap-8 p-6 md:p-8">
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                    endpoint-first integration
+                  </p>
+                  <h2 className="mt-4 max-w-xl text-[28px] font-semibold leading-tight text-[#08090d] md:text-[38px]">
+                    Workbench에서 테스트하고 request를 복사하세요.
+                  </h2>
+                  <p className="mt-4 max-w-xl text-[15px] leading-7 text-black/56">
+                    각 API는 명확한 endpoint와 request shape를 가집니다. 이 문서는
+                    실제 backend에 붙일 수 있는 가장 작은 코드 경로부터 시작합니다.
+                  </p>
+                </div>
+
+                <div className="grid gap-3">
+                  {QUICKSTART_STEPS.map((step) => (
+                    <div
+                      key={step.label}
+                      className="grid grid-cols-[44px_1fr] gap-4 border-t border-black/[0.06] pt-4 first:border-t-0 first:pt-0"
+                    >
+                      <span className="font-mono text-[12px] text-accent">
+                        {step.label}
+                      </span>
+                      <div>
+                        <h3 className="text-[15px] font-semibold text-[#08090d]">
+                          {step.title}
+                        </h3>
+                        <p className="mt-1 text-sm leading-6 text-black/52">
+                          {step.body}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </PlatformCard>
+
+              <div className="min-w-0">
+                <div className="mb-2 flex flex-wrap gap-1 rounded-xl border border-black/[0.06] bg-white/72 p-1">
+                  {QUICKSTART_SNIPPETS.map((snippet) => (
+                    <button
+                      key={snippet.id}
+                      type="button"
+                      onClick={() => setSelectedSnippet(snippet.id)}
+                      className={[
+                        "rounded-lg px-3 py-2 font-mono text-[12px] transition-colors",
+                        selectedSnippet === snippet.id
+                          ? "bg-[#08090d] text-white"
+                          : "text-black/48 hover:bg-black/[0.035] hover:text-black/78",
+                      ].join(" ")}
+                    >
+                      {snippet.label}
+                    </button>
+                  ))}
+                </div>
+                <CodeBlock
+                  code={activeSnippet.code}
+                  label={`${activeSnippet.label} quickstart`}
+                />
+              </div>
+            </div>
+          </section>
+
+          <section id="auth" className="scroll-mt-28">
+            <PlatformCard className="grid gap-6 md:grid-cols-[0.85fr_1.15fr] md:p-8">
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                  credentials
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-[#08090d]">
+                  API key flow
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-black/56">
+                  API key는 server에서 읽고, 모든 request에 Bearer token으로
+                  전달하세요. frontend에는 safe proxy route만 노출합니다.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <CodeBlock
+                  label="headers"
+                  code={`Authorization: Bearer <your_access_token>
+Content-Type: application/json`}
+                />
+                <p className="text-sm leading-6 text-black/48">
+                  {BASE_URL_NOTE}
+                </p>
+              </div>
+            </PlatformCard>
+          </section>
+
+          <section id="examples" className="scroll-mt-28">
+            <PlatformCard className="md:p-8">
+              <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                    production patterns
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold text-[#08090d]">
+                    선택한 API endpoint로 구성하기
+                  </h2>
+                </div>
+                <p className="max-w-md text-sm leading-6 text-black/52">
+                  각 기능은 고유한 endpoint를 가지며, auth, usage, example은 하나의
+                  platform workflow 안에서 확인할 수 있습니다.
+                </p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                {USE_CASES.map((item) => (
+                  <div
+                    key={item.title}
+                    className="rounded-xl border border-black/[0.06] bg-background p-4"
+                  >
+                    <code className="font-mono text-[11px] text-accent">
+                      {item.path}
+                    </code>
+                    <h3 className="mt-4 text-[15px] font-semibold text-[#08090d]">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-black/52">
+                      {item.body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </PlatformCard>
+          </section>
+
+          <section id="endpoints" className="scroll-mt-28">
+            <div className="mb-5 border-b border-black/[0.06] pb-6">
+              <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                endpoint reference
+              </p>
+              <h2 className="mt-3 text-[30px] font-semibold leading-tight text-[#08090d]">
+                request를 복사하고 workflow를 연결하세요.
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-black/54">
+                아래 spec은 현재 앱에서 제공하는 API surface를 기준으로 합니다.
+                Workbench에서 테스트한 endpoint와 같은 request shape를 사용하세요.
               </p>
             </div>
-          </header>
 
-          <div className="space-y-12">
-            {SECTIONS.map((api) => (
-              <section
-                key={api.id}
-                id={api.id}
-                className="scroll-mt-28 rounded-2xl border border-white/5 bg-surface/50 p-6 md:p-8"
-              >
-                <div className="mb-4 flex flex-wrap items-baseline gap-3">
-                  <h2 className="text-xl font-semibold text-foreground md:text-2xl">
-                    {api.title}
-                  </h2>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-lg bg-accent/20 px-2 py-1 font-mono text-xs font-medium text-accent md:text-sm">
-                      {api.method}
-                    </span>
-                    <code className="rounded-lg bg-background/50 px-2 py-1 font-mono text-sm text-foreground/90">
-                      {api.path}
+            <div className="space-y-5">
+              {SECTIONS.map((api) => (
+                <section
+                  key={api.id}
+                  id={api.id}
+                  className="platform-card scroll-mt-28 rounded-xl p-6 md:p-8"
+                >
+                  <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <h3 className="text-xl font-semibold text-[#08090d] md:text-2xl">
+                        {api.title}
+                      </h3>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-black/56">
+                        {api.description}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      <span className="rounded-md bg-accent/10 px-2 py-1 font-mono text-xs font-medium text-accent md:text-sm">
+                        {api.method}
+                      </span>
+                      <code className="rounded-md border border-black/[0.06] bg-background px-2 py-1 font-mono text-sm text-foreground/90">
+                        {api.path}
+                      </code>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6 md:grid-cols-1 md:gap-8 lg:grid-cols-2">
+                    <div>
+                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-foreground/45">
+                        {api.requestLabel ?? "Request"}
+                      </h3>
+                      <CodeBlock code={api.request} label="request" />
+                    </div>
+                    <div>
+                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-foreground/45">
+                        {api.responseLabel ?? "Response"}
+                      </h3>
+                      <CodeBlock code={api.response} label="response" />
+                    </div>
+                  </div>
+
+                  {api.notes && api.notes.length > 0 ? (
+                    <ul className="mt-6 space-y-2 border-t border-black/[0.06] pt-5 text-sm text-black/52">
+                      {api.notes.map((note) => (
+                        <li
+                          key={note}
+                          className="grid grid-cols-[14px_1fr] gap-2"
+                        >
+                          <span className="mt-2 h-1 w-1 rounded-full bg-accent" />
+                          <span>{note}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </section>
+              ))}
+            </div>
+          </section>
+
+          <section id="errors" className="scroll-mt-28">
+            <PlatformCard className="md:p-8">
+              <div className="mb-6">
+                <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                  resilient integration
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-[#08090d]">
+                  Error handling
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-black/56">
+                  status code를 기준으로 retry, input correction, usage 안내를
+                  client에서 분리하세요.
+                </p>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border border-black/[0.06]">
+                <div className="grid grid-cols-[88px_1fr_1fr] border-b border-black/[0.06] bg-background px-4 py-3 font-mono text-[11px] uppercase tracking-normal text-black/36">
+                  <span>Status</span>
+                  <span>Meaning</span>
+                  <span>Next action</span>
+                </div>
+                {ERROR_ROWS.map((row) => (
+                  <div
+                    key={row.status}
+                    className="grid grid-cols-1 gap-2 border-b border-black/[0.06] px-4 py-4 last:border-b-0 md:grid-cols-[88px_1fr_1fr]"
+                  >
+                    <code className="font-mono text-sm font-semibold text-accent">
+                      {row.status}
                     </code>
+                    <p className="text-sm leading-6 text-black/62">
+                      {row.meaning}
+                    </p>
+                    <p className="text-sm leading-6 text-black/52">
+                      {row.action}
+                    </p>
                   </div>
-                </div>
-                <p className="mb-6 text-foreground/65">{api.description}</p>
+                ))}
+              </div>
+            </PlatformCard>
+          </section>
 
-                <div className="grid gap-6 md:grid-cols-1 md:gap-8 lg:grid-cols-2">
-                  <div>
-                    <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-foreground/45">
-                      {api.requestLabel ?? "요청"}
-                    </h3>
-                    <pre className="overflow-x-auto rounded-xl border border-white/10 bg-background/40 p-4 font-mono text-xs leading-relaxed text-foreground/85 md:text-sm">
-                      {api.request.trim()}
-                    </pre>
-                  </div>
-                  <div>
-                    <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-foreground/45">
-                      {api.responseLabel ?? "응답"}
-                    </h3>
-                    <pre className="overflow-x-auto rounded-xl border border-white/10 bg-background/40 p-4 font-mono text-xs leading-relaxed text-foreground/85 md:text-sm">
-                      {api.response.trim()}
-                    </pre>
-                  </div>
-                </div>
-
-                {api.notes && api.notes.length > 0 ? (
-                  <ul className="mt-6 list-disc space-y-1.5 pl-5 text-sm text-foreground/55">
-                    {api.notes.map((note) => (
-                      <li key={note}>{note}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </section>
-            ))}
-          </div>
-
-          <p className="mt-14 border-t border-white/10 pt-10 text-center text-sm text-foreground/45">
-            API는 지속적으로 추가·확장되며, 엔드포인트와 제한 사항은 서비스
-            업데이트에 따라 달라질 수 있습니다. 최신 동작은{" "}
-            <Link href="/api-test" className="text-accent hover:underline">
-              API 체험
+          <p className="mt-14 border-t border-black/[0.06] pt-10 text-center text-sm text-foreground/45">
+            API는 계속 추가되고 확장될 수 있으며 endpoint limit도 변경될 수 있습니다.
+            최신 동작은{" "}
+            <Link href="/api-test?api=llm" className="text-accent hover:underline">
+              Workbench
             </Link>
-            과 실제 응답을 기준으로 확인해 주세요.
+            {" "}와 live response에서 확인하세요.
           </p>
         </main>
       </div>
-    </div>
+    </PlatformShell>
   );
 }

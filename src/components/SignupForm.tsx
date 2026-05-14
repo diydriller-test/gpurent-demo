@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { signup } from "@/lib/api";
 
 interface SignupFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (nextPath: string) => void;
   onBack?: () => void;
 }
 
@@ -47,14 +47,12 @@ export function SignupForm({ onSuccess, onBack }: SignupFormProps) {
     setIsLoading(true);
     try {
       await signup({ email, username, password });
+      const nextRedirect = redirectPath ?? "/profile?firstRun=1";
+      const nextPath = `/login?redirect=${encodeURIComponent(nextRedirect)}&firstRun=1`;
       if (onSuccess) {
-        onSuccess();
+        onSuccess(nextPath);
       } else {
-        router.push(
-          redirectPath
-            ? `/login?redirect=${encodeURIComponent(redirectPath)}`
-            : "/login",
-        );
+        router.push(nextPath);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "회원가입에 실패했습니다.");
@@ -74,24 +72,31 @@ export function SignupForm({ onSuccess, onBack }: SignupFormProps) {
         <span>뒤로가기</span>
       </button>
 
-      <div className="mb-8 mt-4 text-center">
-        <h1 className="text-2xl font-bold text-foreground">회원가입</h1>
-        <p className="mt-2 text-sm text-foreground/60">
-          무료로 시작하고 API 키를 발급받으세요
+      <div className="mb-8 mt-4">
+        <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+          첫 실행
+        </p>
+        <h1 className="mt-3 text-[30px] font-semibold leading-tight text-[#08090d]">
+          몇 분 안에 첫 실행까지 이어집니다.
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-black/56">
+          계정을 만든 뒤 바로 로그인하고, API key와 플레이그라운드 실행 화면으로
+          이어집니다.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-500">
             {error}
           </div>
         )}
 
-        <div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
           <label
             htmlFor="signup-username"
-            className="mb-2 block text-sm font-medium text-foreground/80"
+            className="mb-2 block text-sm font-medium text-black/70"
           >
             사용자명
           </label>
@@ -102,14 +107,14 @@ export function SignupForm({ onSuccess, onBack }: SignupFormProps) {
             placeholder="username"
             required
             disabled={isLoading}
-            className="w-full rounded-xl border border-white/10 bg-background/50 px-4 py-3 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
+            className="w-full rounded-lg border border-black/[0.08] bg-white px-4 py-3 text-foreground placeholder:text-black/32 focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-black/[0.04] disabled:opacity-50"
           />
-        </div>
+          </div>
 
-        <div>
+          <div>
           <label
             htmlFor="signup-email"
-            className="mb-2 block text-sm font-medium text-foreground/80"
+            className="mb-2 block text-sm font-medium text-black/70"
           >
             이메일
           </label>
@@ -120,14 +125,15 @@ export function SignupForm({ onSuccess, onBack }: SignupFormProps) {
             placeholder="you@example.com"
             required
             disabled={isLoading}
-            className="w-full rounded-xl border border-white/10 bg-background/50 px-4 py-3 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
+            className="w-full rounded-lg border border-black/[0.08] bg-white px-4 py-3 text-foreground placeholder:text-black/32 focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-black/[0.04] disabled:opacity-50"
           />
+          </div>
         </div>
 
         <div>
           <label
             htmlFor="signup-password"
-            className="mb-2 block text-sm font-medium text-foreground/80"
+            className="mb-2 block text-sm font-medium text-black/70"
           >
             비밀번호
           </label>
@@ -139,14 +145,14 @@ export function SignupForm({ onSuccess, onBack }: SignupFormProps) {
             required
             minLength={8}
             disabled={isLoading}
-            className="w-full rounded-xl border border-white/10 bg-background/50 px-4 py-3 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
+            className="w-full rounded-lg border border-black/[0.08] bg-white px-4 py-3 text-foreground placeholder:text-black/32 focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-black/[0.04] disabled:opacity-50"
           />
         </div>
 
         <div>
           <label
             htmlFor="signup-confirmPassword"
-            className="mb-2 block text-sm font-medium text-foreground/80"
+            className="mb-2 block text-sm font-medium text-black/70"
           >
             비밀번호 확인
           </label>
@@ -157,20 +163,20 @@ export function SignupForm({ onSuccess, onBack }: SignupFormProps) {
             placeholder="비밀번호를 다시 입력하세요"
             required
             disabled={isLoading}
-            className="w-full rounded-xl border border-white/10 bg-background/50 px-4 py-3 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
+            className="w-full rounded-lg border border-black/[0.08] bg-white px-4 py-3 text-foreground placeholder:text-black/32 focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-black/[0.04] disabled:opacity-50"
           />
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full rounded-xl bg-accent py-3 font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-lg bg-[#08090d] py-3 font-medium text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isLoading ? "처리 중..." : "회원가입"}
+          {isLoading ? "작업 공간을 준비하는 중..." : "바로 시작하기"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-foreground/60">
+      <p className="mt-6 text-center text-sm text-black/52">
         이미 계정이 있으신가요?{" "}
         <Link
           href={redirectPath ? `/login?redirect=${encodeURIComponent(redirectPath)}` : "/login"}

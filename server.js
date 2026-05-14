@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { createServer: createHttpServer } = require('http')
 const { createServer: createHttpsServer } = require('https')
 const fs = require('fs')

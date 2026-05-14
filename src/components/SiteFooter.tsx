@@ -73,8 +73,7 @@ export function SiteFooter() {
         </div>
 
         <p className="mt-6 text-[13px] text-foreground/30 md:text-sm">
-          Copyright © {new Date().getFullYear()} AI API 오마카세. All Rights
-          Reserved.
+          Copyright © {new Date().getFullYear()} AI API 오마카세. 모든 권리 보유.
         </p>
       </div>
     </footer>

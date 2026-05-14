@@ -14,9 +14,13 @@ import {
   type User,
 } from "@/lib/api";
 import { getToken } from "@/lib/token";
-import { SiteNav } from "@/components/SiteNav";
+import {
+  PlatformPageHeader,
+  PlatformShell,
+} from "@/components/platform/PlatformShell";
 import {
   chapterQueryToPlanTask,
+  DEMO_APIS_FALLBACK,
   DEMO_PLANS_THREE_TIERS,
   getApiTask,
   getPlanCardDisplay,
@@ -46,7 +50,7 @@ function PlansPageContent() {
 
   /** 플레이그라운드 `?chapter=&auto=1` 필터 적용 여부 */
   const chapterLinkFilterAppliedRef = useRef<string | null>(null);
-  /** 해당 챕터 API 자동 선택(플랜 화면) 1회만 */
+  /** 해당 챕터 API 선택(플랜 화면) 1회만 */
   const playgroundAutoSelectDoneRef = useRef(false);
 
   const [apis, setApis] = useState<Api[]>([]);
@@ -64,6 +68,7 @@ function PlansPageContent() {
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   /** 백엔드 /apis 실패 시 데모 목록을 쓰는 중 */
   const [usingDemoApis, setUsingDemoApis] = useState(false);
+  const [calculatorRequests, setCalculatorRequests] = useState(250_000);
 
   const [filterTasks, setFilterTasks] = useState<Record<PlanTask, boolean>>(
     () => {
@@ -77,8 +82,7 @@ function PlansPageContent() {
   const [sidebarMode, setSidebarMode] = useState<"all" | "my">("all");
 
   const visibleTaskKeys = useMemo(() => {
-    const NLP_HIDDEN = new Set(["Ad Copy", "Text Summary", "Sentiment Analysis", "NER", "Text-to-SQL"]);
-    const visible = PLAN_TASK_KEYS.filter((t) => !NLP_HIDDEN.has(t));
+    const visible = PLAN_TASK_KEYS;
     if (apis.length === 0) return visible;
     const orderFor = (task: PlanTask): number => {
       const api = apis.find((a) => getApiTask(a) === task);
@@ -114,6 +118,7 @@ function PlansPageContent() {
       if (sidebarMode === "my") {
         return !!user?.api_plans?.some((p) => p.api_id === api.id);
       }
+      if (!chapterParam) return true;
       const task = getApiTask(api);
       if (allTasksFilterOn) return true;
       if (!task) return false;
@@ -126,7 +131,7 @@ function PlansPageContent() {
       if (d !== 0) return d;
       return a.name.localeCompare(b.name, "ko");
     });
-  }, [apis, filterTasks, allTasksFilterOn, sidebarMode, user]);
+  }, [apis, filterTasks, allTasksFilterOn, sidebarMode, user, chapterParam]);
 
   useEffect(() => {
     if (!chapterParam) {
@@ -184,6 +189,12 @@ function PlansPageContent() {
     getApis()
       .then((data) => {
         if (cancelled) return;
+        if (data.length === 0) {
+          setApis(DEMO_APIS_FALLBACK);
+          setUsingDemoApis(true);
+          setError(null);
+          return;
+        }
         const hasT2m = data.some((a) => getApiTask(a) === "Text-to-Music");
         const withT2m: Api[] = hasT2m
           ? data
@@ -210,9 +221,9 @@ function PlansPageContent() {
       })
       .catch(() => {
         if (cancelled) return;
-        setApis([]);
-        setUsingDemoApis(false);
-        setError("API 목록을 불러올 수 없습니다.");
+        setApis(DEMO_APIS_FALLBACK);
+        setUsingDemoApis(true);
+        setError(null);
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -252,7 +263,7 @@ function PlansPageContent() {
           selectedTask === "Voice Clone"
             ? "TTS"
             : selectedTask === "Vision"
-              ? "Ad Copy"
+              ? "Text Generation"
               : null;
 
         if (!fallbackTask) {
@@ -360,25 +371,43 @@ function PlansPageContent() {
   const hasToken = typeof window !== "undefined" && !!getToken();
   const isLoggedIn = user !== null;
   const isAuthChecking = hasToken && userLoading;
+  const calculator = useMemo(() => {
+    const paidPlans = plans
+      .map((plan) => ({
+        plan,
+        price: parseFloat(plan.price_monthly),
+      }))
+      .filter(({ price }) => Number.isFinite(price) && price > 0)
+      .sort((a, b) => a.price - b.price);
+    const recommended = paidPlans.find(
+      ({ plan }) => calculatorRequests / 2_592_000 <= plan.max_rps,
+    ) ?? paidPlans[paidPlans.length - 1] ?? null;
+    const recommendedPrice = recommended?.price ?? 0;
+    const singleModelBaseline = Math.round(recommendedPrice * 1.42);
+    const savings =
+      recommendedPrice > 0
+        ? Math.max(0, singleModelBaseline - recommendedPrice)
+        : 0;
+
+    return {
+      recommended,
+      recommendedPrice,
+      singleModelBaseline,
+      savings,
+      blendedLatency: recommended ? "평균 처리량 기준 추천" : "요청량 기준 계산",
+    };
+  }, [plans, calculatorRequests]);
 
   return (
-    <div className="min-h-screen bg-grid-pattern">
-      {/* Navigation */}
-      <SiteNav fixed />
-
-      {/* Main */}
-      <main className="mx-auto max-w-7xl px-6 pt-24 pb-16 md:pb-24">
+    <PlatformShell hideSidebar>
+      <main className="pb-16 md:pb-24">
         {selectedApi ? (
           <>
-            <div className="mb-16 text-center">
-              <h1 className="text-3xl font-bold text-foreground md:text-4xl">
-                {(() => { const t = getApiTask(selectedApi); return t ? getPlanTaskDisplayName(t) : selectedApi.name; })()} 플랜 선택
-              </h1>
-              <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-                사용량에 맞는 등급을 선택하세요. 트래픽에 따라 API 사용량이
-                제한됩니다.
-              </p>
-            </div>
+            <PlatformPageHeader
+              eyebrow="요금"
+              title={`${(() => { const t = getApiTask(selectedApi); return t ? getPlanTaskDisplayName(t) : selectedApi.name; })()} 요금제`}
+              description="선택한 API의 월 요금, 초당 요청 수(RPS), 사용 한도를 비교하고 필요한 플랜을 고르세요."
+            />
 
             <button
               type="button"
@@ -400,30 +429,71 @@ function PlansPageContent() {
             </button>
           </>
         ) : (
-          <div className="mb-10 text-center">
-            <h1 className="text-3xl font-bold text-foreground md:text-4xl">
-              API별 요금제
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              토큰이 아닌 <span className="text-accent">트래픽 기준</span>으로
-              등급을 선택합니다. API를 누르면 월 요금·초당 요청 수(RPS) 한도를 확인할 수
-              있어요.
-            </p>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-foreground/50">
-              먼저 써보시려면{" "}
+          <PlatformPageHeader
+            eyebrow="요금"
+            title="API별 사용량에 맞춰 고르는 요금"
+            description={
+              <>
+                필요한 API를 선택하고, 예상 트래픽에 맞춰{" "}
+                <span className="text-accent">RPS와 월 요청 한도</span>를
+                확인하세요. 테스트 후 운영 규모에 맞는 플랜을 고르는 구조입니다.
+              </>
+            }
+            action={
               <Link
-                href="/api-test"
-                className="text-accent underline decoration-accent/40 underline-offset-2 hover:opacity-90"
+                href="/api-test?api=llm"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-black/[0.08] bg-white px-4 text-[13px] font-semibold text-black/72 transition-colors hover:border-black/20 hover:text-black"
               >
-                API 체험
+                워크벤치 열기
               </Link>
-              에서 먼저 써보신 후, 여기서 API별로 플랜을 선택하세요.
-            </p>
-          </div>
+            }
+          />
         )}
 
+        {!selectedApi ? (
+          <section className="mb-8 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+            <div className="rounded-xl border border-black/[0.08] bg-white p-6 shadow-[0_18px_70px_rgba(8,9,13,0.05)]">
+              <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                API 비용 모델
+              </p>
+              <h2 className="mt-3 max-w-2xl text-2xl font-semibold leading-tight text-foreground">
+                어떤 API를 얼마나 쓸지 기준으로 비용을 예측합니다.
+              </h2>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                {[
+                  ["API별 플랜", "기능별 월 요금과 RPS 확인"],
+                  ["크레딧 구조", "요청량 기준으로 사용량 파악"],
+                  ["운영 한도", "트래픽 증가에 맞춰 단계 선택"],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-xl border border-black/[0.06] bg-background px-4 py-3">
+                    <p className="font-mono text-[10px] uppercase text-black/36">
+                      {label}
+                    </p>
+                    <p className="mt-2 text-sm font-medium leading-5 text-foreground">
+                      {value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-black/[0.08] bg-foreground p-6 text-white shadow-[0_18px_70px_rgba(8,9,13,0.12)]">
+              <p className="font-mono text-[11px] uppercase tracking-normal text-white/42">
+                플랜 선택 기준
+              </p>
+              <p className="mt-4 text-4xl font-semibold tracking-normal">
+                RPS
+              </p>
+              <p className="mt-2 text-sm leading-6 text-white/64">
+                워크벤치에서 API를 테스트한 뒤, 실제 월 요청량과 필요한 RPS에
+                맞춰 플랜을 선택하세요.
+              </p>
+            </div>
+          </section>
+        ) : null}
+
         {(isLoggedIn || isAuthChecking) && selectedApi && (
-          <div className="mb-8 rounded-2xl border border-white/5 bg-surface/50 px-6 py-4">
+          <div className="mb-8 rounded-xl border border-black/[0.06] bg-white px-6 py-4">
             <p className="text-sm text-foreground/80">
               현재 플랜:{" "}
               <span className="font-medium text-accent">
@@ -444,21 +514,127 @@ function PlansPageContent() {
           </div>
         )}
 
+        {selectedApi ? (
+          <section className="mb-8 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="rounded-xl border border-black/[0.08] bg-white p-6 shadow-[0_18px_70px_rgba(8,9,13,0.05)]">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                    요금 계산기
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold leading-tight text-foreground">
+                    필요한 처리량을 미리 계산해보세요.
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-black/56">
+                    월 요청량을 넣으면 평균 RPS 기준으로 필요한 요금제를 추정합니다.
+                    실제 과금 로직은 변경하지 않고, 의사결정용 UI로만 제공됩니다.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-accent/25 bg-accent/5 px-4 py-3">
+                  <p className="font-mono text-[10px] uppercase text-accent/70">
+                    추천 플랜
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">
+                    {calculator.recommended?.plan.name ?? "플랜 선택"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm font-medium text-foreground">
+                    월 요청량
+                  </p>
+                  <p className="font-mono text-sm text-foreground">
+                    {calculatorRequests.toLocaleString("ko-KR")}
+                  </p>
+                </div>
+                <input
+                  type="range"
+                  min={50_000}
+                  max={2_000_000}
+                  step={50_000}
+                  value={calculatorRequests}
+                  onChange={(event) =>
+                    setCalculatorRequests(Number(event.target.value))
+                  }
+                  className="mt-3 w-full accent-accent"
+                />
+              </div>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl border border-black/[0.06] bg-background px-4 py-3">
+                  <p className="font-mono text-[10px] uppercase text-black/36">
+                    예상 월 비용
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-foreground">
+                    {calculator.recommended
+                      ? formatPrice(String(calculator.recommendedPrice))
+                      : "계산 대기"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-black/[0.06] bg-background px-4 py-3">
+                  <p className="font-mono text-[10px] uppercase text-black/36">
+                    상위 플랜 기준
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-foreground">
+                    {calculator.recommended
+                      ? formatPrice(String(calculator.singleModelBaseline))
+                      : "—"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-accent/20 bg-accent/5 px-4 py-3">
+                  <p className="font-mono text-[10px] uppercase text-accent/70">
+                    예상 차액
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-accent">
+                    {calculator.recommended
+                      ? formatPrice(String(calculator.savings))
+                      : "—"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-black/[0.08] bg-white p-6 shadow-[0_18px_70px_rgba(8,9,13,0.05)]">
+              <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                크레딧을 쓰는 이유
+              </p>
+              <div className="mt-4 space-y-4">
+                {[
+                  ["API별 선택", "필요한 기능만 골라 플랜을 선택"],
+                  ["크레딧 풀", "요청량과 플랜 기준으로 사용량 확인"],
+                  ["엔터프라이즈 운영 준비", "RPS/IP 한도로 운영 한도 예측"],
+                ].map(([label, body]) => (
+                  <div key={label} className="border-t border-black/[0.06] pt-4 first:border-t-0 first:pt-0">
+                    <p className="text-sm font-semibold text-foreground">
+                      {label}
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-black/56">
+                      {body}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
+
         {!selectedApi ? (
           isLoading ? (
             <div className="flex flex-col gap-6 lg:flex-row lg:gap-6">
-              <div className="h-64 w-full animate-pulse rounded-2xl border border-white/5 bg-surface/40 lg:w-[240px]" />
+              <div className="h-64 w-full animate-pulse rounded-xl border border-black/[0.06] bg-white lg:w-[240px]" />
               <div className="grid min-h-[200px] flex-1 grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                   <div
                     key={i}
-                    className="h-44 animate-pulse rounded-2xl border border-white/5 bg-surface/50"
+                    className="h-44 animate-pulse rounded-xl border border-black/[0.06] bg-white"
                   />
                 ))}
               </div>
             </div>
           ) : filteredApis.length === 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-background/20 px-6 py-12 text-center">
+            <div className="rounded-xl border border-black/[0.08] bg-background px-6 py-12 text-center">
               <p className="text-foreground/70">
                 {sidebarMode === "my"
                   ? "구독 중인 API가 없습니다. 로그인 후 플랜을 구매하면 여기에 표시됩니다."
@@ -478,19 +654,19 @@ function PlansPageContent() {
                 }}
                 className="mt-4 rounded-xl border border-accent/45 bg-transparent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10"
               >
-                전체 보기 (All)
+                전체 보기
               </button>
             </div>
           ) : (
-            <div className="relative flex flex-col gap-6 lg:flex-row lg:gap-6">
-              <aside className="w-full lg:w-[240px] lg:flex-shrink-0">
-                <div className="rounded-2xl border border-white/5 bg-surface/40 p-3 backdrop-blur-xl">
-                  <p className="font-mono text-xs text-foreground/60">Tasks</p>
+            <div className="relative">
+              <aside className="hidden">
+                <div className="platform-panel rounded-xl p-3">
+                  <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">필터</p>
                   <h2 className="mt-1 text-lg font-semibold text-foreground">
-                    API 유형 필터
+                    기능
                   </h2>
-                  <div className="mt-4 rounded-xl border border-white/5 bg-background/20 p-3">
-                    <div className="flex flex-wrap gap-2">
+                  <div className="mt-4">
+                    <div className="flex flex-wrap gap-2 lg:flex-col">
                       <button
                         type="button"
                         onClick={() => {
@@ -504,25 +680,25 @@ function PlansPageContent() {
                           });
                         }}
                         className={[
-                          "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                          "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
+                          "inline-flex items-center gap-2 rounded-lg border px-2.5 py-2 transition-colors",
+                          "border-black/[0.08] bg-white hover:border-black/[0.16] hover:bg-background",
                           isAllTasksActive
-                            ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
+                            ? "border-accent/35 bg-accent/5"
                             : "",
                         ].join(" ")}
                       >
                         <span
                           className={[
-                            "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
+                            "inline-flex h-6 w-6 items-center justify-center rounded-md border",
                             isAllTasksActive
-                              ? "border-accent/40 bg-accent/10 text-accent"
-                              : "border-white/10 bg-background/20 text-foreground/70",
+                              ? "border-accent/30 bg-accent/10 text-accent"
+                              : "border-black/[0.08] bg-background text-foreground/70",
                           ].join(" ")}
                         >
                           <IconLayers className="h-4 w-4" />
                         </span>
                         <span className="font-mono text-[11px] text-foreground/80">
-                          All
+                          전체
                         </span>
                       </button>
 
@@ -537,25 +713,25 @@ function PlansPageContent() {
                           setSidebarMode("my");
                         }}
                         className={[
-                          "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                          "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
+                          "inline-flex items-center gap-2 rounded-lg border px-2.5 py-2 transition-colors",
+                          "border-black/[0.08] bg-white hover:border-black/[0.16] hover:bg-background",
                           sidebarMode === "my"
-                            ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
+                            ? "border-accent/35 bg-accent/5"
                             : "",
                         ].join(" ")}
                       >
                         <span
                           className={[
-                            "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
+                            "inline-flex h-6 w-6 items-center justify-center rounded-md border",
                             sidebarMode === "my"
-                              ? "border-accent/40 bg-accent/10 text-accent"
-                              : "border-white/10 bg-background/20 text-foreground/70",
+                              ? "border-accent/30 bg-accent/10 text-accent"
+                              : "border-black/[0.08] bg-background text-foreground/70",
                           ].join(" ")}
                         >
                           <IconUser className="h-4 w-4" />
                         </span>
                         <span className="font-mono text-[11px] text-foreground/80">
-                          My
+                          내 API
                         </span>
                       </button>
 
@@ -590,19 +766,19 @@ function PlansPageContent() {
                               });
                             }}
                             className={[
-                              "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                              "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
+                            "inline-flex items-center gap-2 rounded-lg border px-2.5 py-2 transition-colors",
+                              "border-black/[0.08] bg-white hover:border-black/[0.16] hover:bg-background",
                               isActive
-                                ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
+                                ? "border-accent/35 bg-accent/5"
                                 : "",
                             ].join(" ")}
                           >
                             <span
                               className={[
-                                "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
+                                "inline-flex h-6 w-6 items-center justify-center rounded-md border",
                                 isActive
-                                  ? "border-accent/40 bg-accent/10 text-accent"
-                                  : "border-white/10 bg-background/20 text-foreground/70",
+                                  ? "border-accent/30 bg-accent/10 text-accent"
+                                  : "border-black/[0.08] bg-background text-foreground/70",
                               ].join(" ")}
                             >
                               <PlanTaskIcon task={t} />
@@ -618,8 +794,8 @@ function PlansPageContent() {
                 </div>
               </aside>
 
-              <section className="min-w-0 flex-1">
-                <div className="rounded-2xl border border-white/5 bg-surface/35 p-4 backdrop-blur-xl">
+              <section className="min-w-0">
+                <div className="platform-panel rounded-xl p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-mono text-xs text-foreground/60">
@@ -663,9 +839,8 @@ function PlansPageContent() {
                           type="button"
                           onClick={() => handleSelectApi(api)}
                           className={[
-                            "group relative rounded-2xl border bg-background/20 p-4 text-left transition-all",
-                            "border-white/5 hover:-translate-y-0.5 hover:border-accent/45 hover:bg-background/30",
-                            "hover:shadow-[0_0_60px_rgba(232, 136, 138,0.12)]",
+                            "group relative rounded-xl border bg-white p-4 text-left transition-all",
+                            "border-black/[0.06] hover:border-black/[0.16] hover:bg-background",
                           ].join(" ")}
                         >
                           <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
@@ -715,12 +890,12 @@ function PlansPageContent() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-[420px] animate-pulse rounded-2xl border border-white/5 bg-surface/50"
+                  className="h-[420px] animate-pulse rounded-xl border border-black/[0.06] bg-white"
                 />
               ))}
             </div>
           ) : error ? (
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-8 text-center">
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-8 text-center">
               <p className="text-red-400">{error}</p>
               <button
                 type="button"
@@ -747,7 +922,7 @@ function PlansPageContent() {
             </div>
           ) : (
             <>
-              <div className="grid gap-8 lg:grid-cols-3">
+              <div className="grid gap-4 lg:grid-cols-3">
               {plans.map((plan) => {
                 const currentApiPlan = user?.api_plans?.find((p) => p.api_id === selectedApi.id);
                 const isCurrentPlan = currentApiPlan?.plan_id === plan.id;
@@ -755,59 +930,94 @@ function PlansPageContent() {
                 const isUpdating = updatingPlanId === plan.id;
                 const isComingSoon =
                   !usingDemoApis && (parseFloat(plan.price_monthly) === 0);
+                const numericPrice = parseFloat(plan.price_monthly);
+                const impliedMonthlyCapacity = Math.round(plan.max_rps * 2_592_000);
+                const costPerTenK =
+                  Number.isFinite(numericPrice) && numericPrice > 0
+                    ? Math.round(numericPrice / Math.max(1, impliedMonthlyCapacity / 10_000))
+                    : 0;
 
                 return (
                   <div
                     key={plan.id}
-                    className={`group relative flex flex-col rounded-2xl border border-white/5 bg-surface/80 p-8 transition-all duration-300 hover:border-white/10 hover:bg-surface ${isCurrentPlan ? "ring-2 ring-accent/30" : ""} ${isPendingPlan ? "ring-2 ring-emerald-400/50" : ""}`}
+                    className={`group relative flex flex-col rounded-xl border border-black/[0.08] bg-white p-6 transition-all duration-300 hover:border-black/[0.16] hover:shadow-[0_18px_70px_rgba(8,9,13,0.055)] ${isCurrentPlan ? "ring-2 ring-accent/20" : ""} ${isPendingPlan ? "ring-2 ring-emerald-400/40" : ""}`}
                   >
                     {isCurrentPlan && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="rounded-full bg-accent/20 border border-accent/50 px-4 py-1 text-xs font-medium text-accent">
+                        <span className="rounded-full bg-accent/10 border border-accent/35 px-4 py-1 text-xs font-medium text-accent">
                           현재 플랜
                         </span>
                       </div>
                     )}
                     {!isCurrentPlan && isPendingPlan && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="rounded-full border border-emerald-400/50 bg-emerald-400/15 px-4 py-1 text-xs font-medium text-emerald-300">
+                        <span className="rounded-full border border-emerald-500/35 bg-emerald-500/10 px-4 py-1 text-xs font-medium text-emerald-700">
                           선택됨
                         </span>
                       </div>
                     )}
 
-                    <div className="mb-6">
-                      <h2 className="text-xl font-semibold text-foreground">{plan.name}</h2>
-                      <p className="mt-2 text-sm text-foreground/60">{plan.description}</p>
+                    <div className="mb-5">
+                      <p className="font-mono text-[10px] uppercase tracking-normal text-black/36">
+                        플랜 등급
+                      </p>
+                      <h2 className="mt-2 text-xl font-semibold text-foreground">{plan.name}</h2>
+                      <p className="mt-2 text-sm leading-6 text-foreground/56">{plan.description}</p>
                     </div>
 
-                    <div className="mb-6 flex items-baseline gap-1">
-                      <span className="text-3xl font-bold text-foreground">
+                    <div className="mb-5">
+                      <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-semibold text-foreground">
                         {formatPrice(plan.price_monthly)}
                       </span>
                       <span className="text-foreground/60">{plan.period}</span>
+                      </div>
+                      <p className="mt-2 font-mono text-[11px] text-black/42">
+                        {costPerTenK > 0
+                          ? `~${costPerTenK.toLocaleString("ko-KR")}원 / 10k requests`
+                          : "크레딧 요금 준비 중"}
+                      </p>
                     </div>
 
-                    <div className="mb-6 grid gap-3 rounded-xl bg-background/30 px-4 py-3">
+                    <div className="mb-5 grid gap-3 rounded-xl border border-black/[0.06] bg-background px-4 py-3">
                       <div>
-                        <p className="font-mono text-sm text-accent">
-                          초당 최대 {plan.max_rps}회 요청
+                        <p className="font-mono text-sm text-foreground">
+                          {plan.max_rps} RPS 요금
                         </p>
                         <p className="mt-1 text-xs text-foreground/50">
-                          RPS(Requests Per Second) {plan.max_rps}
+                          월 약 {impliedMonthlyCapacity.toLocaleString("ko-KR")} requests
                         </p>
                       </div>
                       <div>
-                        <p className="font-mono text-sm text-accent">
-                          최대 IP {plan.max_ip_count ?? "—"}개
+                        <p className="font-mono text-sm text-foreground">
+                          {plan.max_ip_count ?? "—"} IP allowance
                         </p>
                         <p className="mt-1 text-xs text-foreground/50">
-                          동시에 사용할 수 있는 IP 개수
+                          팀, 서비스, production gateway access
                         </p>
                       </div>
                     </div>
 
-                    <ul className="mb-8 flex-1 space-y-3">
+                    <div className="mb-5 grid grid-cols-2 gap-2">
+                      <div className="rounded-lg border border-accent/20 bg-accent/5 px-3 py-2">
+                        <p className="font-mono text-[10px] uppercase text-accent/70">
+                          API 선택
+                        </p>
+                        <p className="mt-1 text-xs font-medium text-foreground">
+                          사용자 선택
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-black/[0.06] bg-background px-3 py-2">
+                        <p className="font-mono text-[10px] uppercase text-black/36">
+                          latency
+                        </p>
+                        <p className="mt-1 text-xs font-medium text-foreground">
+                          API별 기준
+                        </p>
+                      </div>
+                    </div>
+
+                    <ul className="mb-6 flex-1 space-y-3">
                       {plan.features.map((feature) => (
                         <li key={feature} className="flex items-center gap-2 text-sm text-foreground/80">
                           <span className="text-accent">✓</span>
@@ -829,8 +1039,8 @@ function PlansPageContent() {
                           usingDemoApis
                             ? "border border-dashed border-amber-500/35 bg-amber-500/10 text-foreground/90 hover:bg-amber-500/15"
                             : isCurrentPlan
-                              ? "border border-white/10 bg-surface text-foreground/50"
-                              : "border border-white/10 text-foreground hover:border-accent/50 hover:bg-accent/10"
+                              ? "border border-black/[0.08] bg-white text-foreground/50"
+                            : "border border-black/[0.08] text-foreground hover:border-accent/35 hover:bg-accent/5"
                         }`}
                       >
                         {usingDemoApis
@@ -855,7 +1065,7 @@ function PlansPageContent() {
                             "데모입니다. 가입·결제는 백엔드 연결 후 진행할 수 있어요.",
                           )
                         }
-                        className="block w-full rounded-xl border border-dashed border-white/20 py-3 text-center font-medium text-foreground/80 transition-all hover:border-accent/40 hover:bg-accent/10"
+                        className="block w-full rounded-xl border border-dashed border-black/[0.16] py-3 text-center font-medium text-foreground/80 transition-all hover:border-accent/40 hover:bg-accent/10"
                       >
                         데모 — 실제 신청은 연결 후
                       </button>
@@ -863,14 +1073,14 @@ function PlansPageContent() {
                       <button
                         type="button"
                         disabled
-                        className="block w-full rounded-xl border border-white/10 py-3 text-center font-medium text-foreground/50 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                        className="block w-full rounded-xl border border-black/[0.08] py-3 text-center font-medium text-foreground/50 transition-all disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         준비중
                       </button>
                     ) : (
                       <Link
                         href="/signup"
-                        className="block w-full rounded-xl border border-white/10 py-3 text-center font-medium text-foreground transition-all hover:border-accent/50 hover:bg-accent/10"
+                        className="block w-full rounded-xl border border-black/[0.08] py-3 text-center font-medium text-foreground transition-all hover:border-accent/35 hover:bg-accent/5"
                       >
                         이 플랜으로 시작
                       </Link>
@@ -901,7 +1111,7 @@ function PlansPageContent() {
                       className="rounded-xl border border-dashed border-accent/50 bg-accent/10 px-8 py-3 font-medium text-accent transition-colors hover:bg-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       결제하기<br /> 
-                      (Coming Soon)
+                      (준비 중)
                     </button>
                   </div>
                 </div>
@@ -934,7 +1144,7 @@ function PlansPageContent() {
       {/* 등록 확인 모달 */}
       {confirmModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-surface p-6 shadow-xl">
+          <div className="w-full max-w-sm rounded-xl border border-black/[0.08] bg-white p-6 shadow-xl">
             <h2 className="text-lg font-semibold text-foreground">플랜을 등록하시겠습니까?</h2>
             <p className="mt-2 text-sm text-foreground/65">
               선택한 플랜으로 등록됩니다. 관리자 승인 후 이용하실 수 있습니다.
@@ -943,7 +1153,7 @@ function PlansPageContent() {
               <button
                 type="button"
                 onClick={() => setConfirmModalOpen(false)}
-                className="flex-1 rounded-xl border border-white/10 bg-background/40 py-2.5 text-sm font-medium text-foreground/70 transition-colors hover:bg-background/60"
+                className="flex-1 rounded-xl border border-black/[0.08] bg-white py-2.5 text-sm font-medium text-foreground/70 transition-colors hover:bg-black/[0.035]"
               >
                 취소
               </button>
@@ -962,7 +1172,7 @@ function PlansPageContent() {
       {/* 등록 완료 모달 */}
       {successModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-surface p-6 shadow-xl text-center">
+          <div className="w-full max-w-sm rounded-xl border border-black/[0.08] bg-white p-6 shadow-xl text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/15 text-3xl">
               🎉
             </div>
@@ -982,7 +1192,7 @@ function PlansPageContent() {
           </div>
         </div>
       )}
-    </div>
+    </PlatformShell>
   );
 }
 
@@ -990,9 +1200,11 @@ export default function PlansPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-grid-pattern">
+        <PlatformShell hideSidebar>
+          <div className="flex min-h-screen items-center justify-center">
           <p className="text-sm text-foreground/60">로딩 중…</p>
-        </div>
+          </div>
+        </PlatformShell>
       }
     >
       <PlansPageContent />

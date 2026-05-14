@@ -10,51 +10,32 @@ import React, {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { DEFAULT_AD_COPY_LANGUAGE } from "@/lib/adCopyLanguages";
 import { getApis, getMe, type Api, type User } from "@/lib/api";
-import { SiteNav } from "@/components/SiteNav";
 import { getToken } from "@/lib/token";
-import { SmartSolutionGuide } from "./components/SmartSolutionGuide";
 import { JsonCode } from "./components/JsonCode";
 import { DeveloperCodeSection } from "./components/DeveloperCodeSection";
 import { EmbeddingDeveloperCodeSection } from "./components/EmbeddingDeveloperCodeSection";
 import { PlaygroundDeveloperCodeSection } from "./components/PlaygroundDeveloperCodeSection";
 import { ApiOutputPanel } from "./components/ApiOutputPanel";
 import { ApiInputPanel } from "./components/ApiInputPanel";
+import { PlatformShell } from "@/components/platform/PlatformShell";
 import { buildLlmDevCodePython } from "./lib/buildLlmDevCodePython";
 import { buildEmbeddingDevCodePython } from "./lib/buildEmbeddingDevCodePython";
 import { buildRerankDevCodePython } from "./lib/buildRerankDevCodePython";
 import { buildTtsDevCodePython } from "./lib/buildTtsDevCodePython";
 import { buildSttDevCodePython } from "./lib/buildSttDevCodePython";
-import { buildAdCopyDevCodePython } from "./lib/buildAdCopyDevCodePython";
-import { buildSummarizeDevCodePython } from "./lib/buildSummarizeDevCodePython";
-import { buildSentimentDevCodePython } from "./lib/buildSentimentDevCodePython";
-import { buildNerDevCodePython } from "./lib/buildNerDevCodePython";
-import { buildTextToSqlDevCodePython } from "./lib/buildTextToSqlDevCodePython";
 import { buildVoiceCloneDevCodePython } from "./lib/buildVoiceCloneDevCodePython";
 import { buildImage2TextDevCodePython } from "./lib/buildImage2TextDevCodePython";
-import type {
-  NerPayload,
-  SentimentAnalysisPayload,
-  TextToSqlPayload,
-} from "./lib/types";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 import {
   getApiTask,
   getPlanCardDisplay,
   getPlanTaskDisplayName,
-  getPlanTaskSublabel,
   type PlanTask,
 } from "@/app/plans/planCatalog";
-import { PlanTaskIcon } from "@/app/plans/TaskFilterIcons";
 
 type ApiId =
   | "llm"
-  | "adCopy"
-  | "summarize"
-  | "sentiment"
-  | "ner"
-  | "textToSql"
   | "embedding"
   | "reranker"
   | "tts"
@@ -67,11 +48,6 @@ type ApiId =
 /** API `task` → 체험 Playground `selectedApi` (정적 카드 없이 API만으로 연결) */
 const PLAN_TASK_TO_PLAYGROUND_API: Partial<Record<PlanTask, ApiId>> = {
   "Text Generation": "llm",
-  "Ad Copy": "adCopy",
-  "Text Summary": "summarize",
-  "Sentiment Analysis": "sentiment",
-  NER: "ner",
-  "Text-to-SQL": "textToSql",
   Embedding: "embedding",
   Reranker: "reranker",
   TTS: "tts",
@@ -102,20 +78,6 @@ const DEFAULT_EMBEDDING_PLAYGROUND_TEXT =
 
 const DEFAULT_TTS_PLAYGROUND_TEXT =
   "안녕하세요. AI API 오마카세 데모를 재생합니다.";
-
-const DEFAULT_AD_COPY_BRIEF =
-  "신제품 커피 머신 — 집에서 캡슐 커피 한 잔, 아침 루틴에 맞춘 광고 카피";
-
-const DEFAULT_SUMMARY_TEXT = `지난 분기 고객 리뷰와 내부 VOC를 종합한 결과, 배송 지연에 대한 불만이 전년 대비 약 18% 증가했으며, 특히 주말 주문 건에서 체감이 컸습니다. 반면 제품 품질·포장 만족도는 92% 수준으로 유지되었고, 교환·환불 절차에 대한 긍정 평가도 높았습니다. 운영팀은 물류 파트너와의 캐파 조정 및 피크 시간대 알림을 강화하기로 했고, 고객 커뮤니케이션 템플릿은 '지연 사유·예상 도착'을 한 번에 안내하도록 개편합니다. 다음 스프린트에서는 실시간 배송 추적 API 연동과 CS 자동 분류(감성·토픽) 파일럿을 진행할 예정입니다.`;
-
-const DEFAULT_SENTIMENT_TEXT =
-  "치킨은 맛있는데 배송이 1시간 넘게 걸렸어요. 포장은 괜찮았어요.";
-
-const DEFAULT_NER_TEXT = `내일 오후 2시에 세현님과 영등포 코그로보 사무실에서 3,000,000원 규모의 프로젝트 계약건으로 미팅이 있습니다.`;
-const DEFAULT_NER_INSTRUCTION =
-  "예: 인물과 장소만 우선 추출해줘 / 금액과 날짜를 빠짐없이 표시해줘";
-
-const DEFAULT_TEXT_TO_SQL_TEXT = `최근 일주일 동안 PROTOCL 앱에서 루틴을 10번 이상 완료한 유저 수 알려줘.`;
 const TTS_LANGUAGE_OPTIONS = [
   { value: "auto", label: "Auto" },
   { value: "chinese", label: "Chinese" },
@@ -346,69 +308,6 @@ function IconBase({
   );
 }
 
-function IconSparkles(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M12 2l1.2 4.3L17.5 8l-4.3 1.2L12 13.5l-1.2-4.3L6.5 8l4.3-1.7L12 2z" />
-      <path d="M5 14l.7 2.4L8 17l-2.3.6L5 20l-.7-2.4L2 17l2.3-.6L5 14z" />
-      <path d="M19 13l.7 2.4L22 16l-2.3.6L19 19l-.7-2.4L16 16l2.3-.6L19 13z" />
-    </IconBase>
-  );
-}
-
-function IconLayers(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M12 3l9 5-9 5-9-5 9-5z" />
-      <path d="M3 12l9 5 9-5" />
-      <path d="M3 16l9 5 9-5" />
-    </IconBase>
-  );
-}
-
-function IconUser(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M12 11a4 4 0 100-8 4 4 0 000 8z" />
-      <path d="M4 20a8 8 0 0116 0" />
-    </IconBase>
-  );
-}
-
-function IconShuffle(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M16 3h5v5" />
-      <path d="M4 20l16-16" />
-      <path d="M21 3l-2 2" />
-      <path d="M16 21h5v-5" />
-      <path d="M4 4l16 16" />
-      <path d="M21 21l-2-2" />
-    </IconBase>
-  );
-}
-
-function IconVolume2(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M11 5L6 9H2v6h4l5 4V5z" />
-      <path d="M15.5 8.5a4.5 4.5 0 010 7" />
-      <path d="M18 6a8 8 0 010 12" />
-    </IconBase>
-  );
-}
-
-function IconVoiceClone(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M9 11a4 4 0 100-8 4 4 0 000 8z" />
-      <path d="M3 20a6 6 0 0112 0" />
-      <path d="M17 9c1.5 1.5 1.5 4.5 0 6" />
-      <path d="M20 7c3 3 3 7 0 10" />
-    </IconBase>
-  );
-}
-
 function IconPlus(props: { className?: string }) {
   return (
     <IconBase {...props}>
@@ -427,71 +326,12 @@ function IconX(props: { className?: string }) {
   );
 }
 
-function IconImage(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <path d="M21 15l-5-5L5 21" />
-    </IconBase>
-  );
-}
-
 function IconMic(props: { className?: string }) {
   return (
     <IconBase {...props}>
       <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
       <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
       <path d="M12 19v4" />
-    </IconBase>
-  );
-}
-
-function IconPenLine(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-    </IconBase>
-  );
-}
-
-function IconTextSummary(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M5 8h14" />
-      <path d="M5 12h10" />
-      <path d="M5 16h6" />
-    </IconBase>
-  );
-}
-
-function IconSentiment(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-      <path d="M9 9h.01" />
-      <path d="M15 9h.01" />
-      <circle cx="12" cy="12" r="10" />
-    </IconBase>
-  );
-}
-
-function IconTag(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M12 2H2v10l9.29 9.29a1 1 0 001.41 0l6.59-6.59a1 1 0 000-1.41L12 2z" />
-      <path d="M7 7h.01" />
-    </IconBase>
-  );
-}
-
-function IconDatabase(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-      <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
     </IconBase>
   );
 }
@@ -528,16 +368,6 @@ function IconUpload(props: { className?: string }) {
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <path d="M7 10l5-5 5 5" />
       <path d="M12 5v12" />
-    </IconBase>
-  );
-}
-
-function IconMusicNote(props: { className?: string }) {
-  return (
-    <IconBase {...props}>
-      <path d="M9 18V5l12-2v13" />
-      <circle cx="6" cy="18" r="3" />
-      <circle cx="18" cy="16" r="3" />
     </IconBase>
   );
 }
@@ -648,81 +478,6 @@ function mockWaveform(seedText: string, length = 24) {
   return bars;
 }
 
-/** T2M 데모용 재생 가능한 WAV blob URL (서버 연동 전 시연용) */
-function createMockT2mWavBlobUrl(durationSec = 10): string {
-  const sampleRate = 44100;
-  const numSamples = Math.floor(sampleRate * durationSec);
-  const dataSize = numSamples * 2;
-  const buffer = new ArrayBuffer(44 + dataSize);
-  const view = new DataView(buffer);
-  const writeStr = (offset: number, s: string) => {
-    for (let i = 0; i < s.length; i++) {
-      view.setUint8(offset + i, s.charCodeAt(i));
-    }
-  };
-  writeStr(0, "RIFF");
-  view.setUint32(4, 36 + dataSize, true);
-  writeStr(8, "WAVE");
-  writeStr(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  writeStr(36, "data");
-  view.setUint32(40, dataSize, true);
-  // 화음(chord) 느낌: 261Hz + 329Hz + 392Hz (C4 E4 G4)
-  for (let i = 0; i < numSamples; i++) {
-    const t = i / sampleRate;
-    const env = Math.min(1, t * 2) * Math.max(0, 1 - (t - durationSec + 1));
-    const s =
-      (Math.sin(2 * Math.PI * 261.63 * t) * 0.18 +
-        Math.sin(2 * Math.PI * 329.63 * t) * 0.15 +
-        Math.sin(2 * Math.PI * 392.0 * t) * 0.13) *
-      env *
-      32767;
-    view.setInt16(44 + i * 2, s, true);
-  }
-  const blob = new Blob([buffer], { type: "audio/wav" });
-  return URL.createObjectURL(blob);
-}
-
-/** TTS 데모용 재생 가능한 WAV blob URL (실전 API 전 시연용) */
-function createMockTtsWavBlobUrl(durationSec = 2.5): string {
-  const sampleRate = 44100;
-  const numSamples = Math.floor(sampleRate * durationSec);
-  const dataSize = numSamples * 2;
-  const buffer = new ArrayBuffer(44 + dataSize);
-  const view = new DataView(buffer);
-  const writeStr = (offset: number, s: string) => {
-    for (let i = 0; i < s.length; i++) {
-      view.setUint8(offset + i, s.charCodeAt(i));
-    }
-  };
-  writeStr(0, "RIFF");
-  view.setUint32(4, 36 + dataSize, true);
-  writeStr(8, "WAVE");
-  writeStr(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  writeStr(36, "data");
-  view.setUint32(40, dataSize, true);
-  for (let i = 0; i < numSamples; i++) {
-    const t = (i / sampleRate) * 440 * 2 * Math.PI;
-    const s = Math.sin(t) * 0.28 * 32767;
-    view.setInt16(44 + i * 2, s, true);
-  }
-  const blob = new Blob([buffer], { type: "audio/wav" });
-  return URL.createObjectURL(blob);
-}
-
 function formatTime(ts: number) {
   const d = new Date(ts);
   const hh = String(d.getHours()).padStart(2, "0");
@@ -825,281 +580,6 @@ function tryParseLlmConsoleToPlayground(jsonText: string): {
     const content = msgContent ?? directInput;
     if (typeof content === "string") {
       out.prompt = content;
-    }
-
-    return out;
-  } catch {
-    return null;
-  }
-}
-
-function buildAdCopyConsoleRequestJson(
-  brief: string,
-  tone: string,
-  channel: string,
-  temperature: number,
-  language: string,
-) {
-  return JSON.stringify(
-    {
-      brief,
-      tone,
-      channel,
-      temperature,
-      language,
-    },
-    null,
-    2,
-  );
-}
-
-function tryParseAdCopyConsoleToPlayground(jsonText: string): {
-  brief?: string;
-  tone?: string;
-  channel?: string;
-  temperature?: number;
-  language?: string;
-} | null {
-  try {
-    const parsed = JSON.parse(jsonText) as {
-      brief?: unknown;
-      tone?: unknown;
-      channel?: unknown;
-      temperature?: unknown;
-      language?: unknown;
-    };
-    const out: {
-      brief?: string;
-      tone?: string;
-      channel?: string;
-      temperature?: number;
-      language?: string;
-    } = {};
-
-    if (typeof parsed.brief === "string") out.brief = parsed.brief;
-    if (typeof parsed.tone === "string") out.tone = parsed.tone;
-    if (typeof parsed.channel === "string") out.channel = parsed.channel;
-    if (typeof parsed.language === "string") out.language = parsed.language;
-    if (
-      typeof parsed.temperature === "number" &&
-      Number.isFinite(parsed.temperature)
-    ) {
-      out.temperature = clamp(parsed.temperature, 0, 1);
-    } else if (
-      typeof parsed.temperature === "string" &&
-      parsed.temperature.trim() !== "" &&
-      Number.isFinite(Number(parsed.temperature))
-    ) {
-      out.temperature = clamp(Number(parsed.temperature), 0, 1);
-    }
-
-    return out;
-  } catch {
-    return null;
-  }
-}
-
-function buildSummarizeConsoleRequestJson(
-  text: string,
-  style: string,
-  temperature: number,
-) {
-  return JSON.stringify(
-    {
-      text,
-      style,
-      temperature,
-    },
-    null,
-    2,
-  );
-}
-
-function tryParseSummarizeConsoleToPlayground(jsonText: string): {
-  text?: string;
-  style?: string;
-  temperature?: number;
-} | null {
-  try {
-    const parsed = JSON.parse(jsonText) as {
-      text?: unknown;
-      style?: unknown;
-      styleLine?: unknown;
-      temperature?: unknown;
-    };
-    const out: {
-      text?: string;
-      style?: string;
-      temperature?: number;
-    } = {};
-
-    if (typeof parsed.text === "string") out.text = parsed.text;
-    if (typeof parsed.style === "string") out.style = parsed.style;
-    else if (typeof parsed.styleLine === "string") out.style = parsed.styleLine;
-    if (
-      typeof parsed.temperature === "number" &&
-      Number.isFinite(parsed.temperature)
-    ) {
-      out.temperature = clamp(parsed.temperature, 0, 1);
-    } else if (
-      typeof parsed.temperature === "string" &&
-      parsed.temperature.trim() !== "" &&
-      Number.isFinite(Number(parsed.temperature))
-    ) {
-      out.temperature = clamp(Number(parsed.temperature), 0, 1);
-    }
-
-    return out;
-  } catch {
-    return null;
-  }
-}
-
-function buildSentimentConsoleRequestJson(text: string, temperature: number) {
-  return JSON.stringify(
-    {
-      text,
-      temperature,
-    },
-    null,
-    2,
-  );
-}
-
-function tryParseSentimentConsoleToPlayground(jsonText: string): {
-  text?: string;
-  temperature?: number;
-} | null {
-  try {
-    const parsed = JSON.parse(jsonText) as {
-      text?: unknown;
-      temperature?: unknown;
-    };
-    const out: {
-      text?: string;
-      temperature?: number;
-    } = {};
-
-    if (typeof parsed.text === "string") out.text = parsed.text;
-    if (
-      typeof parsed.temperature === "number" &&
-      Number.isFinite(parsed.temperature)
-    ) {
-      out.temperature = clamp(parsed.temperature, 0, 1);
-    } else if (
-      typeof parsed.temperature === "string" &&
-      parsed.temperature.trim() !== "" &&
-      Number.isFinite(Number(parsed.temperature))
-    ) {
-      out.temperature = clamp(Number(parsed.temperature), 0, 1);
-    }
-
-    return out;
-  } catch {
-    return null;
-  }
-}
-
-function buildNerConsoleRequestJson(
-  text: string,
-  temperature: number,
-  prompt = "",
-) {
-  return JSON.stringify(
-    {
-      text,
-      ...(prompt.trim() ? { prompt } : {}),
-      temperature,
-    },
-    null,
-    2,
-  );
-}
-
-function tryParseNerConsoleToPlayground(jsonText: string): {
-  text?: string;
-  prompt?: string;
-  temperature?: number;
-} | null {
-  try {
-    const parsed = JSON.parse(jsonText) as {
-      text?: unknown;
-      prompt?: unknown;
-      temperature?: unknown;
-    };
-    const out: {
-      text?: string;
-      prompt?: string;
-      temperature?: number;
-    } = {};
-
-    if (typeof parsed.text === "string") out.text = parsed.text;
-    if (typeof parsed.prompt === "string") out.prompt = parsed.prompt;
-    if (
-      typeof parsed.temperature === "number" &&
-      Number.isFinite(parsed.temperature)
-    ) {
-      out.temperature = clamp(parsed.temperature, 0, 1);
-    } else if (
-      typeof parsed.temperature === "string" &&
-      parsed.temperature.trim() !== "" &&
-      Number.isFinite(Number(parsed.temperature))
-    ) {
-      out.temperature = clamp(Number(parsed.temperature), 0, 1);
-    }
-
-    return out;
-  } catch {
-    return null;
-  }
-}
-
-function buildTextToSqlConsoleRequestJson(
-  text: string,
-  ddl: string,
-  temperature: number,
-) {
-  return JSON.stringify(
-    {
-      text,
-      ...(ddl.trim() ? { ddl: ddl.trim() } : {}),
-      temperature,
-    },
-    null,
-    2,
-  );
-}
-
-function tryParseTextToSqlConsoleToPlayground(jsonText: string): {
-  text?: string;
-  ddl?: string;
-  temperature?: number;
-} | null {
-  try {
-    const parsed = JSON.parse(jsonText) as {
-      text?: unknown;
-      ddl?: unknown;
-      temperature?: unknown;
-    };
-    const out: {
-      text?: string;
-      ddl?: string;
-      temperature?: number;
-    } = {};
-
-    if (typeof parsed.text === "string") out.text = parsed.text;
-    if (typeof parsed.ddl === "string") out.ddl = parsed.ddl;
-    if (
-      typeof parsed.temperature === "number" &&
-      Number.isFinite(parsed.temperature)
-    ) {
-      out.temperature = clamp(parsed.temperature, 0, 1);
-    } else if (
-      typeof parsed.temperature === "string" &&
-      parsed.temperature.trim() !== "" &&
-      Number.isFinite(Number(parsed.temperature))
-    ) {
-      out.temperature = clamp(Number(parsed.temperature), 0, 1);
     }
 
     return out;
@@ -1438,32 +918,6 @@ export default function ApiTestPage() {
         description: "프롬프트 기반 텍스트 생성",
       },
       {
-        id: "adCopy",
-        name: "Ad Copy",
-        description: "광고 카피라이팅 생성 (자사 NLP 엔진)",
-      },
-      {
-        id: "summarize",
-        name: "Text Summary",
-        description: "긴 문서·리뷰를 핵심만 압축 요약 (자사 NLP 엔진)",
-      },
-      {
-        id: "sentiment",
-        name: "Sentiment",
-        description: "리뷰 감정 분석 · 측면별 긍·부정·점수 (자사 NLP 엔진)",
-      },
-      {
-        id: "ner",
-        name: "NER",
-        description:
-          "개체명 인식 · 인물·장소·시간·금액 등 추출 (자사 NLP 엔진)",
-      },
-      {
-        id: "textToSql",
-        name: "Text-to-SQL",
-        description: "자연어 질문을 SQL로 변환 · 분석·리포트 질의 (자사 엔진)",
-      },
-      {
         id: "embedding",
         name: "Embedding",
         description: "문장을 벡터로 변환",
@@ -1527,18 +981,14 @@ export default function ApiTestPage() {
 
     if (
       api === "llm" ||
-      api === "adCopy" ||
-      api === "summarize" ||
-      api === "sentiment" ||
-      api === "ner" ||
-      api === "textToSql" ||
       api === "embedding" ||
       api === "reranker" ||
       api === "tts" ||
       api === "stt" ||
       api === "voiceClone" ||
       api === "image2text" ||
-      api === "t2m"
+      api === "t2m" ||
+      api === "t2i"
     ) {
       setSelectedApi(api);
       // 홈 카드에서 들어올 때는 바로 해당 챕터 상세를 보여줌
@@ -1548,54 +998,6 @@ export default function ApiTestPage() {
 
   const [isChatLoading, setIsChatLoading] = useState(false);
   const pendingAssistantIdRef = useRef<string | null>(null);
-
-  const [adCopyBrief, setAdCopyBrief] = useState(DEFAULT_AD_COPY_BRIEF);
-  const [adCopyTone, setAdCopyTone] = useState("");
-  const [adCopyChannel, setAdCopyChannel] = useState("");
-  const [adCopyLanguage, setAdCopyLanguage] = useState(
-    DEFAULT_AD_COPY_LANGUAGE,
-  );
-  const [adCopyTemperature, setAdCopyTemperature] = useState(0.7);
-  const [adCopyResult, setAdCopyResult] = useState<string | null>(null);
-  const [isAdCopyLoading, setIsAdCopyLoading] = useState(false);
-  const [adCopyDevCodeOpen, setAdCopyDevCodeOpen] = useState(false);
-  const [adCopyDevCodeCopied, setAdCopyDevCodeCopied] = useState(false);
-
-  const [summarizeText, setSummarizeText] = useState(DEFAULT_SUMMARY_TEXT);
-  const [summarizeStyle, setSummarizeStyle] = useState("");
-  const [summarizeTemperature, setSummarizeTemperature] = useState(0.3);
-  const [summarizeResult, setSummarizeResult] = useState<string | null>(null);
-  const [isSummarizeLoading, setIsSummarizeLoading] = useState(false);
-  const [summarizeDevCodeOpen, setSummarizeDevCodeOpen] = useState(false);
-  const [summarizeDevCodeCopied, setSummarizeDevCodeCopied] = useState(false);
-
-  const [sentimentText, setSentimentText] = useState(DEFAULT_SENTIMENT_TEXT);
-  const [sentimentTemperature, setSentimentTemperature] = useState(0.2);
-  const [sentimentAnalysis, setSentimentAnalysis] =
-    useState<SentimentAnalysisPayload | null>(null);
-  const [sentimentError, setSentimentError] = useState<string | null>(null);
-  const [isSentimentLoading, setIsSentimentLoading] = useState(false);
-  const [sentimentDevCodeOpen, setSentimentDevCodeOpen] = useState(false);
-  const [sentimentDevCodeCopied, setSentimentDevCodeCopied] = useState(false);
-
-  const [nerText, setNerText] = useState(DEFAULT_NER_TEXT);
-  const [nerPrompt, setNerPrompt] = useState("");
-  const [nerTemperature, setNerTemperature] = useState(0.1);
-  const [nerResult, setNerResult] = useState<NerPayload | null>(null);
-  const [nerError, setNerError] = useState<string | null>(null);
-  const [isNerLoading, setIsNerLoading] = useState(false);
-  const [nerDevCodeOpen, setNerDevCodeOpen] = useState(false);
-  const [nerDevCodeCopied, setNerDevCodeCopied] = useState(false);
-
-  const [textToSqlText, setTextToSqlText] = useState(DEFAULT_TEXT_TO_SQL_TEXT);
-  const [textToSqlDdl, setTextToSqlDdl] = useState("");
-  const [textToSqlTemperature, setTextToSqlTemperature] = useState(0.2);
-  const [textToSqlResult, setTextToSqlResult] =
-    useState<TextToSqlPayload | null>(null);
-  const [textToSqlError, setTextToSqlError] = useState<string | null>(null);
-  const [isTextToSqlLoading, setIsTextToSqlLoading] = useState(false);
-  const [textToSqlDevCodeOpen, setTextToSqlDevCodeOpen] = useState(false);
-  const [textToSqlDevCodeCopied, setTextToSqlDevCodeCopied] = useState(false);
 
   type ConsoleState = {
     requestJson: string;
@@ -1608,31 +1010,6 @@ export default function ApiTestPage() {
     (api: ApiId): string => {
       if (api === "llm") {
         return buildLlmConsoleRequestJson("", "", llmTemperature);
-      }
-      if (api === "adCopy") {
-        return buildAdCopyConsoleRequestJson(
-          DEFAULT_AD_COPY_BRIEF,
-          "",
-          "",
-          0.7,
-          DEFAULT_AD_COPY_LANGUAGE,
-        );
-      }
-      if (api === "summarize") {
-        return buildSummarizeConsoleRequestJson(DEFAULT_SUMMARY_TEXT, "", 0.3);
-      }
-      if (api === "sentiment") {
-        return buildSentimentConsoleRequestJson(DEFAULT_SENTIMENT_TEXT, 0.2);
-      }
-      if (api === "ner") {
-        return buildNerConsoleRequestJson(DEFAULT_NER_TEXT, 0.1);
-      }
-      if (api === "textToSql") {
-        return buildTextToSqlConsoleRequestJson(
-          DEFAULT_TEXT_TO_SQL_TEXT,
-          "",
-          0.2,
-        );
       }
       if (api === "reranker") {
         return buildRerankConsoleRequestJson(
@@ -1687,11 +1064,6 @@ export default function ApiTestPage() {
   const [consoleByApi, setConsoleByApi] = useState<Record<ApiId, ConsoleState>>(
     () => ({
       llm: createDefaultConsoleState("llm"),
-      adCopy: createDefaultConsoleState("adCopy"),
-      summarize: createDefaultConsoleState("summarize"),
-      sentiment: createDefaultConsoleState("sentiment"),
-      ner: createDefaultConsoleState("ner"),
-      textToSql: createDefaultConsoleState("textToSql"),
       embedding: createDefaultConsoleState("embedding"),
       reranker: createDefaultConsoleState("reranker"),
       tts: createDefaultConsoleState("tts"),
@@ -1710,11 +1082,6 @@ export default function ApiTestPage() {
 
   type MarketplaceTask =
     | "Text Generation"
-    | "Ad Copy"
-    | "Text Summary"
-    | "Sentiment Analysis"
-    | "NER"
-    | "Text-to-SQL"
     | "Embedding"
     | "Reranker"
     | "TTS"
@@ -1733,12 +1100,13 @@ export default function ApiTestPage() {
     backendApiId?: number;
     apiId?: ApiId;
     model: string;
+    description?: string;
     modelSizeB: number;
     taskTags: string[]; // e.g. ["LLM", "Text-Gen"]
     formats: LibraryFormat[]; // filterable formats
   };
 
-  function backendApiToMarketplaceItem(api: Api): MarketplaceItem {
+  const backendApiToMarketplaceItem = useCallback((api: Api): MarketplaceItem => {
     const task = getApiTask(api);
     const card = getPlanCardDisplay(api);
     const resolvedTask: MarketplaceTask = task
@@ -1760,22 +1128,18 @@ export default function ApiTestPage() {
         (api.model_display && api.model_display.trim()) ||
         api.name ||
         card.modelDisplay,
+      description: api.card_sublabel || card.sublabel,
       modelSizeB: 0,
       taskTags:
         api.tags && api.tags.length > 0 ? api.tags : card.tags,
       formats: ["Transformers"] as LibraryFormat[],
     };
-  }
+  }, []);
 
   const [filterTasks, setFilterTasks] = useState<
     Record<MarketplaceTask, boolean>
   >({
     "Text Generation": true,
-    "Ad Copy": false,
-    "Text Summary": false,
-    "Sentiment Analysis": false,
-    NER: false,
-    "Text-to-SQL": false,
     Embedding: true,
     Reranker: true,
     TTS: true,
@@ -1895,51 +1259,32 @@ export default function ApiTestPage() {
     const targetTask: MarketplaceTask | null =
       taskParam === "llm" || taskParam === "text"
         ? "Text Generation"
-        : taskParam === "adcopy" || taskParam === "ad-copy"
-          ? "Ad Copy"
-          : taskParam === "summarize" ||
-              taskParam === "summary" ||
-              taskParam === "text-summary"
-            ? "Text Summary"
-            : taskParam === "sentiment" ||
-                taskParam === "review-sentiment" ||
-                taskParam === "감정"
-              ? "Sentiment Analysis"
-              : taskParam === "ner" ||
-                  taskParam === "named-entity" ||
-                  taskParam === "개체명"
-                ? "NER"
-                : taskParam === "text-to-sql" ||
-                    taskParam === "texttosql" ||
-                    taskParam === "nl2sql" ||
-                    taskParam === "쿼리"
-                  ? "Text-to-SQL"
-                  : taskParam === "embedding"
-                    ? "Embedding"
-                    : taskParam === "reranker" || taskParam === "rerank"
-                      ? "Reranker"
-                      : taskParam === "tts"
-                        ? "TTS"
-                        : taskParam === "stt" || taskParam === "sst"
-                          ? "STT"
-                          : taskParam === "voice-clone" ||
-                              taskParam === "voiceclone" ||
-                              taskParam === "보이스클론"
-                            ? "Voice Clone"
-                            : taskParam === "vision" ||
-                                taskParam === "image2text" ||
-                                taskParam === "ocr"
-                              ? "Vision"
-                            : taskParam === "t2m" ||
-                                taskParam === "text-to-music" ||
-                                taskParam === "texttomusic"
-                              ? "Text-to-Music"
-                              : taskParam === "t2i" ||
-                                  taskParam === "text-to-image" ||
-                                  taskParam === "imagegeneration" ||
-                                  taskParam === "image-generation"
-                                ? "Image Generation"
-                                : null;
+        : taskParam === "embedding"
+          ? "Embedding"
+          : taskParam === "reranker" || taskParam === "rerank"
+            ? "Reranker"
+            : taskParam === "tts"
+              ? "TTS"
+              : taskParam === "stt" || taskParam === "sst"
+                ? "STT"
+                : taskParam === "voice-clone" ||
+                    taskParam === "voiceclone" ||
+                    taskParam === "보이스클론"
+                  ? "Voice Clone"
+                  : taskParam === "vision" ||
+                      taskParam === "image2text" ||
+                      taskParam === "ocr"
+                    ? "Vision"
+                    : taskParam === "t2m" ||
+                        taskParam === "text-to-music" ||
+                        taskParam === "texttomusic"
+                      ? "Text-to-Music"
+                      : taskParam === "t2i" ||
+                          taskParam === "text-to-image" ||
+                          taskParam === "imagegeneration" ||
+                          taskParam === "image-generation"
+                        ? "Image Generation"
+                        : null;
 
     if (!targetTask) return;
 
@@ -1955,11 +1300,6 @@ export default function ApiTestPage() {
     });
 
     if (targetTask === "Text Generation") setSelectedApi("llm");
-    if (targetTask === "Ad Copy") setSelectedApi("adCopy");
-    if (targetTask === "Text Summary") setSelectedApi("summarize");
-    if (targetTask === "Sentiment Analysis") setSelectedApi("sentiment");
-    if (targetTask === "NER") setSelectedApi("ner");
-    if (targetTask === "Text-to-SQL") setSelectedApi("textToSql");
     if (targetTask === "Embedding") setSelectedApi("embedding");
     if (targetTask === "Reranker") setSelectedApi("reranker");
     if (targetTask === "TTS") setSelectedApi("tts");
@@ -2005,7 +1345,6 @@ export default function ApiTestPage() {
       if (snap.image2textPrompt !== undefined) setImage2TextPrompt(snap.image2textPrompt);
       if (snap.consoleByApi) setConsoleByApi(snap.consoleByApi);
     } catch {}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -2033,19 +1372,36 @@ export default function ApiTestPage() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [viewMode, taskKeys]);
 
-  function resolveMarketplacePlan(item: MarketplaceItem) {
+  const resolveMarketplacePlan = useCallback((item: MarketplaceItem) => {
     const api =
       item.backendApiId != null
         ? apisFromBackend.find((a) => a.id === item.backendApiId)
         : apisFromBackend.find((a) => getApiTask(a) === (item.task as PlanTask));
     if (!api) return null;
     return userMe?.api_plans?.find((p) => p.api_id === api.id) ?? null;
-  }
+  }, [apisFromBackend, userMe]);
 
   const allTasksFilterOn = taskKeys.every((t) => filterTasks[t]);
 
   const filteredMarketplace = useMemo(() => {
-    if (apisFromBackend.length === 0) return [];
+    if (apisFromBackend.length === 0) {
+      return taskKeys.reduce<MarketplaceItem[]>((items, task) => {
+          const apiId = PLAN_TASK_TO_PLAYGROUND_API[task as PlanTask];
+          const api = apiId ? apis.find((item) => item.id === apiId) : null;
+          if (!apiId || !api) return items;
+          items.push({
+            id: `fallback-api-${apiId}`,
+            task,
+            apiId,
+            model: api.name,
+            description: api.description,
+            modelSizeB: 0,
+            taskTags: [api.name],
+            formats: ["Transformers"] as LibraryFormat[],
+          });
+          return items;
+        }, []);
+    }
 
     const rows = apisFromBackend.map((api) =>
       backendApiToMarketplaceItem(api),
@@ -2071,9 +1427,16 @@ export default function ApiTestPage() {
     return [...filtered].sort(
       (a, b) => orderFor(a.backendApiId) - orderFor(b.backendApiId),
     );
-  }, [filterTasks, sidebarMode, apisFromBackend, userMe, allTasksFilterOn]);
-
-  const isAllTasksActive = sidebarMode === "all" && allTasksFilterOn;
+  }, [
+    filterTasks,
+    sidebarMode,
+    apis,
+    apisFromBackend,
+    allTasksFilterOn,
+    backendApiToMarketplaceItem,
+    resolveMarketplacePlan,
+    taskKeys,
+  ]);
 
   const activeTaskKey = useMemo(() => {
     if (sidebarMode === "my") return "My";
@@ -2081,11 +1444,6 @@ export default function ApiTestPage() {
     const active = taskKeys.find((t) => filterTasks[t]);
     if (!active) return "All";
     if (active === "Text Generation") return "Text";
-    if (active === "Ad Copy") return "AdCopy";
-    if (active === "Text Summary") return "TextSummary";
-    if (active === "Sentiment Analysis") return "SentimentAnalysis";
-    if (active === "NER") return "NERTask";
-    if (active === "Text-to-SQL") return "TextToSqlTask";
     if (active === "Embedding") return "Embedding";
     if (active === "Reranker") return "Rerank";
     if (active === "TTS") return "TTS";
@@ -2103,13 +1461,13 @@ export default function ApiTestPage() {
         return (
           <>
             <span className="text-accent font-semibold">AI API 플레이그라운드</span>:
-            각 모델에 파라미터를 구성하고 추론 결과를 실시간으로 확인합니다.
+            API별 입력값을 구성하고 추론 결과를 실시간으로 확인합니다.
           </>
         );
       case "My":
         return (
           <>
-            <span className="text-accent font-semibold">내 구독(My)</span>:
+            <span className="text-accent font-semibold">내 API</span>:
             플랜에서 구매한 API만 모아서 볼 수 있습니다. 로그인 후 구독이 있으면
             카드에 현재 플랜이 표시됩니다.
           </>
@@ -2125,58 +1483,6 @@ export default function ApiTestPage() {
               초거대 언어 모델(LLM)
             </span>{" "}
             서비스입니다.
-          </>
-        );
-      case "AdCopy":
-        return (
-          <>
-            <span className="text-accent font-semibold">광고·마케팅 카피</span>:
-            브리프·톤·채널에 맞춰{" "}
-            <span className="text-accent font-semibold">배너·SNS 등 문구</span>
-            를 생성하는 자사 자연어 처리 엔진 기반 서비스입니다.
-          </>
-        );
-      case "TextSummary":
-        return (
-          <>
-            <span className="text-accent font-semibold">텍스트 요약</span>:
-            리뷰·뉴스·회의록 등 긴 본문에서{" "}
-            <span className="text-accent font-semibold">
-              핵심만 추려 짧게 압축
-            </span>
-            하는 자사 자연어 처리 엔진 기반 서비스입니다.
-          </>
-        );
-      case "SentimentAnalysis":
-        return (
-          <>
-            <span className="text-accent font-semibold">리뷰 감정 분석</span>
-            : 긍·부정·중립과{" "}
-            <span className="text-accent font-semibold">측면별 점수</span>로
-            브랜드 평판·이슈를 빠르게 파악하는 자사 자연어 처리 엔진 기반
-            서비스입니다.
-          </>
-        );
-      case "NERTask":
-        return (
-          <>
-            <span className="text-accent font-semibold">개체명 인식 (NER)</span>
-            : 인물·장소·시간·금액 등을{" "}
-            <span className="text-accent font-semibold">
-              label·category로 정형 추출
-            </span>
-            하는 자사 자연어 처리 엔진 기반 서비스입니다.
-          </>
-        );
-      case "TextToSqlTask":
-        return (
-          <>
-            <span className="text-accent font-semibold">
-              Text-to-SQL (쿼리 자동 생성)
-            </span>
-            : 기획·마케팅 질문을{" "}
-            <span className="text-accent font-semibold">MySQL 호환 SELECT</span>
-            로 바꿔 주는 자사 자연어 처리 엔진 기반 서비스입니다.
           </>
         );
       case "Embedding":
@@ -2257,7 +1563,7 @@ export default function ApiTestPage() {
         return (
           <>
             <span className="text-accent font-semibold">AI API 플레이그라운드</span>:
-            각 모델에 파라미터를 구성하고 추론 결과를 실시간으로 확인합니다.
+            API별 입력값을 구성하고 추론 결과를 실시간으로 확인합니다.
           </>
         );
     }
@@ -2291,7 +1597,7 @@ export default function ApiTestPage() {
       window.history.pushState({ apiTestDetail: true }, "", url);
       return;
     }
-    showComingSoon("준비 중입니다 (Coming Soon)");
+    showComingSoon("준비 중입니다.");
   }
 
   // Embedding
@@ -2301,63 +1607,13 @@ export default function ApiTestPage() {
   const [embeddingVector, setEmbeddingVector] = useState<number[] | null>(null);
   const [isEmbeddingLoading, setIsEmbeddingLoading] = useState(false);
   const [embeddingError, setEmbeddingError] = useState<string | null>(null);
-  const [embeddingDisplayNonce, setEmbeddingDisplayNonce] = useState(0);
+  const [, setEmbeddingDisplayNonce] = useState(0);
   const [embeddingDevCodeOpen, setEmbeddingDevCodeOpen] = useState(false);
   const [embeddingDevCodeCopied, setEmbeddingDevCodeCopied] = useState(false);
 
   const embeddingDevCodePython = useMemo(
     () => buildEmbeddingDevCodePython({ inputText: embeddingText }),
     [embeddingText],
-  );
-
-  const adCopyDevCodePython = useMemo(
-    () =>
-      buildAdCopyDevCodePython({
-        brief: adCopyBrief,
-        tone: adCopyTone,
-        channel: adCopyChannel,
-        temperature: adCopyTemperature,
-        language: adCopyLanguage,
-      }),
-    [adCopyBrief, adCopyTone, adCopyChannel, adCopyTemperature, adCopyLanguage],
-  );
-
-  const summarizeDevCodePython = useMemo(
-    () =>
-      buildSummarizeDevCodePython({
-        text: summarizeText,
-        style: summarizeStyle,
-        temperature: summarizeTemperature,
-      }),
-    [summarizeText, summarizeStyle, summarizeTemperature],
-  );
-
-  const sentimentDevCodePython = useMemo(
-    () =>
-      buildSentimentDevCodePython({
-        text: sentimentText,
-        temperature: sentimentTemperature,
-      }),
-    [sentimentText, sentimentTemperature],
-  );
-
-  const nerDevCodePython = useMemo(
-    () =>
-      buildNerDevCodePython({
-        text: nerText,
-        temperature: nerTemperature,
-      }),
-    [nerText, nerTemperature],
-  );
-
-  const textToSqlDevCodePython = useMemo(
-    () =>
-      buildTextToSqlDevCodePython({
-        text: textToSqlText,
-        ddl: textToSqlDdl,
-        temperature: textToSqlTemperature,
-      }),
-    [textToSqlDdl, textToSqlText, textToSqlTemperature],
   );
 
   // Reranker
@@ -2542,7 +1798,6 @@ export default function ApiTestPage() {
         prompt: image2textPrompt || DEFAULT_IMAGE2TEXT_PROMPT,
         temperature: 0.1,
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [image2textPrompt],
   );
 
@@ -2604,27 +1859,8 @@ export default function ApiTestPage() {
   const sttHasWorkflowResult =
     typeof sttTranscript === "string" && sttTranscript.trim().length > 0;
 
-  const adCopyHasWorkflowResult =
-    typeof adCopyResult === "string" && adCopyResult.trim().length > 0;
-
-  const summarizeHasWorkflowResult =
-    typeof summarizeResult === "string" && summarizeResult.trim().length > 0;
-
-  const sentimentHasWorkflowResult =
-    sentimentAnalysis !== null && !sentimentError;
-
-  const nerHasWorkflowResult = nerResult !== null && !nerError;
-
-  const textToSqlHasWorkflowResult =
-    textToSqlResult !== null && !textToSqlError;
-
   const hasWorkflowBannerResult =
     (selectedApi === "llm" && llmHasWorkflowResult) ||
-    (selectedApi === "adCopy" && adCopyHasWorkflowResult) ||
-    (selectedApi === "summarize" && summarizeHasWorkflowResult) ||
-    (selectedApi === "sentiment" && sentimentHasWorkflowResult) ||
-    (selectedApi === "ner" && nerHasWorkflowResult) ||
-    (selectedApi === "textToSql" && textToSqlHasWorkflowResult) ||
     (selectedApi === "embedding" && embeddingHasWorkflowResult) ||
     (selectedApi === "reranker" && rerankerHasWorkflowResult) ||
     (selectedApi === "tts" && ttsHasWorkflowResult) ||
@@ -2689,11 +1925,6 @@ export default function ApiTestPage() {
       }
     };
   }, []);
-
-  function taskIcon(task: MarketplaceTask) {
-    if (task === "Other") return null;
-    return <PlanTaskIcon task={task as PlanTask} className="h-4 w-4" />;
-  }
 
   function showComingSoon(message: string) {
     setComingSoonMessage(message);
@@ -2834,103 +2065,6 @@ export default function ApiTestPage() {
   }, [prompt, llmSystemPrompt, llmTemperature]);
 
   useEffect(() => {
-    const nextRequestJson = buildAdCopyConsoleRequestJson(
-      adCopyBrief,
-      adCopyTone,
-      adCopyChannel,
-      adCopyTemperature,
-      adCopyLanguage,
-    );
-    setConsoleByApi((prev) => {
-      if (prev.adCopy.requestJson === nextRequestJson) return prev;
-      return {
-        ...prev,
-        adCopy: {
-          ...prev.adCopy,
-          requestJson: nextRequestJson,
-        },
-      };
-    });
-  }, [
-    adCopyBrief,
-    adCopyTone,
-    adCopyChannel,
-    adCopyTemperature,
-    adCopyLanguage,
-  ]);
-
-  useEffect(() => {
-    const nextRequestJson = buildSummarizeConsoleRequestJson(
-      summarizeText,
-      summarizeStyle,
-      summarizeTemperature,
-    );
-    setConsoleByApi((prev) => {
-      if (prev.summarize.requestJson === nextRequestJson) return prev;
-      return {
-        ...prev,
-        summarize: {
-          ...prev.summarize,
-          requestJson: nextRequestJson,
-        },
-      };
-    });
-  }, [summarizeText, summarizeStyle, summarizeTemperature]);
-
-  useEffect(() => {
-    const nextRequestJson = buildSentimentConsoleRequestJson(
-      sentimentText,
-      sentimentTemperature,
-    );
-    setConsoleByApi((prev) => {
-      if (prev.sentiment.requestJson === nextRequestJson) return prev;
-      return {
-        ...prev,
-        sentiment: {
-          ...prev.sentiment,
-          requestJson: nextRequestJson,
-        },
-      };
-    });
-  }, [sentimentText, sentimentTemperature]);
-
-  useEffect(() => {
-    const nextRequestJson = buildNerConsoleRequestJson(
-      nerText,
-      nerTemperature,
-      nerPrompt,
-    );
-    setConsoleByApi((prev) => {
-      if (prev.ner.requestJson === nextRequestJson) return prev;
-      return {
-        ...prev,
-        ner: {
-          ...prev.ner,
-          requestJson: nextRequestJson,
-        },
-      };
-    });
-  }, [nerPrompt, nerText, nerTemperature]);
-
-  useEffect(() => {
-    const nextRequestJson = buildTextToSqlConsoleRequestJson(
-      textToSqlText,
-      textToSqlDdl,
-      textToSqlTemperature,
-    );
-    setConsoleByApi((prev) => {
-      if (prev.textToSql.requestJson === nextRequestJson) return prev;
-      return {
-        ...prev,
-        textToSql: {
-          ...prev.textToSql,
-          requestJson: nextRequestJson,
-        },
-      };
-    });
-  }, [textToSqlDdl, textToSqlText, textToSqlTemperature]);
-
-  useEffect(() => {
     const nextRequestJson = buildEmbeddingConsoleRequestJson(embeddingText);
 
     setConsoleByApi((prev) => {
@@ -2986,17 +2120,7 @@ export default function ApiTestPage() {
   const placeholder = useMemo(() => {
     switch (selectedApi) {
       case "llm":
-        return "질문이나 요약을 요청해 보세요. (AI API 오마카세 텍스트 코스)";
-      case "adCopy":
-        return "브리프는 하단 입력에서 수정하세요.";
-      case "summarize":
-        return "요약할 본문은 하단 입력에서 수정하세요.";
-      case "sentiment":
-        return "분석할 리뷰는 하단 입력에서 수정하세요.";
-      case "ner":
-        return "개체를 추출할 문장은 하단 입력에서 수정하세요.";
-      case "textToSql":
-        return "SQL로 바꿀 자연어 질문은 하단 입력에서 수정하세요.";
+        return "예: 한국어 고객 문의를 요약하고, 우선순위와 다음 액션을 제안해줘.";
       case "embedding":
         return "예: 벡터로 변환할 문장을 입력하세요…";
       case "reranker":
@@ -3055,79 +2179,6 @@ export default function ApiTestPage() {
       }
       if (parsed.prompt !== undefined) {
         setPrompt(parsed.prompt);
-      }
-      return;
-    }
-    if (selectedApi === "adCopy") {
-      const parsed = tryParseAdCopyConsoleToPlayground(nextJson);
-      if (!parsed) return;
-      if (parsed.brief !== undefined) {
-        setAdCopyBrief(parsed.brief);
-      }
-      if (parsed.tone !== undefined) {
-        setAdCopyTone(parsed.tone);
-      }
-      if (parsed.channel !== undefined) {
-        setAdCopyChannel(parsed.channel);
-      }
-      if (parsed.temperature !== undefined) {
-        setAdCopyTemperature(parsed.temperature);
-      }
-      if (parsed.language !== undefined) {
-        setAdCopyLanguage(parsed.language);
-      }
-      return;
-    }
-    if (selectedApi === "summarize") {
-      const parsed = tryParseSummarizeConsoleToPlayground(nextJson);
-      if (!parsed) return;
-      if (parsed.text !== undefined) {
-        setSummarizeText(parsed.text);
-      }
-      if (parsed.style !== undefined) {
-        setSummarizeStyle(parsed.style);
-      }
-      if (parsed.temperature !== undefined) {
-        setSummarizeTemperature(parsed.temperature);
-      }
-      return;
-    }
-    if (selectedApi === "sentiment") {
-      const parsed = tryParseSentimentConsoleToPlayground(nextJson);
-      if (!parsed) return;
-      if (parsed.text !== undefined) {
-        setSentimentText(parsed.text);
-      }
-      if (parsed.temperature !== undefined) {
-        setSentimentTemperature(parsed.temperature);
-      }
-      return;
-    }
-    if (selectedApi === "ner") {
-      const parsed = tryParseNerConsoleToPlayground(nextJson);
-      if (!parsed) return;
-      if (parsed.text !== undefined) {
-        setNerText(parsed.text);
-      }
-      if (parsed.prompt !== undefined) {
-        setNerPrompt(parsed.prompt);
-      }
-      if (parsed.temperature !== undefined) {
-        setNerTemperature(parsed.temperature);
-      }
-      return;
-    }
-    if (selectedApi === "textToSql") {
-      const parsed = tryParseTextToSqlConsoleToPlayground(nextJson);
-      if (!parsed) return;
-      if (parsed.text !== undefined) {
-        setTextToSqlText(parsed.text);
-      }
-      if (parsed.ddl !== undefined) {
-        setTextToSqlDdl(parsed.ddl);
-      }
-      if (parsed.temperature !== undefined) {
-        setTextToSqlTemperature(parsed.temperature);
       }
       return;
     }
@@ -3295,40 +2346,6 @@ export default function ApiTestPage() {
       setT2iIsLoading(false);
       setT2iError(null);
     }
-    if (api === "adCopy") {
-      setAdCopyBrief(DEFAULT_AD_COPY_BRIEF);
-      setAdCopyTone("");
-      setAdCopyChannel("");
-      setAdCopyLanguage(DEFAULT_AD_COPY_LANGUAGE);
-      setAdCopyTemperature(0.7);
-      setAdCopyResult(null);
-    }
-    if (api === "summarize") {
-      setSummarizeText(DEFAULT_SUMMARY_TEXT);
-      setSummarizeStyle("");
-      setSummarizeTemperature(0.3);
-      setSummarizeResult(null);
-    }
-    if (api === "sentiment") {
-      setSentimentText(DEFAULT_SENTIMENT_TEXT);
-      setSentimentTemperature(0.2);
-      setSentimentAnalysis(null);
-      setSentimentError(null);
-    }
-    if (api === "ner") {
-      setNerText(DEFAULT_NER_TEXT);
-      setNerPrompt("");
-      setNerTemperature(0.1);
-      setNerResult(null);
-      setNerError(null);
-    }
-    if (api === "textToSql") {
-      setTextToSqlText(DEFAULT_TEXT_TO_SQL_TEXT);
-      setTextToSqlDdl("");
-      setTextToSqlTemperature(0.2);
-      setTextToSqlResult(null);
-      setTextToSqlError(null);
-    }
     setConsoleCopied(false);
   }
 
@@ -3389,11 +2406,6 @@ export default function ApiTestPage() {
     setFilterTasks((prev) => {
       const next = { ...prev };
       next["Text Generation"] = selectedApi === "llm";
-      next["Ad Copy"] = selectedApi === "adCopy";
-      next["Text Summary"] = selectedApi === "summarize";
-      next["Sentiment Analysis"] = selectedApi === "sentiment";
-      next.NER = selectedApi === "ner";
-      next["Text-to-SQL"] = selectedApi === "textToSql";
       next.Embedding = selectedApi === "embedding";
       next.Reranker = selectedApi === "reranker";
       next.TTS = selectedApi === "tts";
@@ -4677,389 +3689,6 @@ export default function ApiTestPage() {
     void handleSttRun();
   }
 
-  async function handleAdCopyRun() {
-    if (isAdCopyLoading) return;
-    const brief = adCopyBrief.trim();
-    if (!brief) return;
-    setIsAdCopyLoading(true);
-    setAdCopyResult(null);
-    setConsoleCopied(false);
-    patchConsole("adCopy", {
-      statusCode: null,
-      statusLine: "Pending...",
-      requestJson: buildAdCopyConsoleRequestJson(
-        adCopyBrief,
-        adCopyTone,
-        adCopyChannel,
-        adCopyTemperature,
-        adCopyLanguage,
-      ),
-      responseJson: "",
-      error: null,
-    });
-    try {
-      const token = getToken();
-      const res = await fetch("/api/ad-copy", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          brief,
-          tone: adCopyTone.trim() || undefined,
-          channel: adCopyChannel.trim() || undefined,
-          temperature: adCopyTemperature,
-          language: adCopyLanguage,
-        }),
-      });
-      const data = (await res.json().catch(() => null)) as {
-        copy?: unknown;
-        headline?: unknown;
-        body?: unknown;
-        error?: unknown;
-      } | null;
-      patchConsole("adCopy", {
-        statusCode: res.status,
-        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-        responseJson: JSON.stringify(data ?? {}, null, 2),
-      });
-      if (!res.ok) {
-        if (res.status === 429) setLimitExceededModalOpen(true);
-        setAdCopyResult(
-          typeof data?.error === "string" ? data.error : "요청에 실패했습니다.",
-        );
-        return;
-      }
-      const copyLegacy =
-        typeof data?.copy === "string" ? data.copy.trim() : "";
-      const headline =
-        typeof data?.headline === "string" ? data.headline.trim() : "";
-      const bodyLine =
-        typeof data?.body === "string" ? data.body.trim() : "";
-      const display =
-        copyLegacy ||
-        [headline, bodyLine].filter((s) => s.length > 0).join("\n\n");
-      setAdCopyResult(display || "응답이 비어있습니다.");
-    } catch {
-      patchConsole("adCopy", {
-        statusLine: "—",
-        statusCode: 500,
-        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-      });
-      setAdCopyResult("서버 연결에 실패했습니다.");
-    } finally {
-      setIsAdCopyLoading(false);
-    }
-  }
-
-  async function handleSummarizeRun() {
-    if (isSummarizeLoading) return;
-    const text = summarizeText.trim();
-    if (!text) return;
-    setIsSummarizeLoading(true);
-    setSummarizeResult(null);
-    setConsoleCopied(false);
-    patchConsole("summarize", {
-      statusCode: null,
-      statusLine: "Pending...",
-      requestJson: buildSummarizeConsoleRequestJson(
-        summarizeText,
-        summarizeStyle,
-        summarizeTemperature,
-      ),
-      responseJson: "",
-      error: null,
-    });
-    try {
-      const token = getToken();
-      const res = await fetch("/api/summarize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          text,
-          style: summarizeStyle.trim() || undefined,
-          temperature: summarizeTemperature,
-        }),
-      });
-      const data = (await res.json().catch(() => null)) as {
-        summary?: unknown;
-        error?: unknown;
-      } | null;
-      patchConsole("summarize", {
-        statusCode: res.status,
-        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-        responseJson: JSON.stringify(data ?? {}, null, 2),
-      });
-      if (!res.ok) {
-        if (res.status === 429) setLimitExceededModalOpen(true);
-        setSummarizeResult(
-          typeof data?.error === "string" ? data.error : "요청에 실패했습니다.",
-        );
-        return;
-      }
-      const summary =
-        typeof data?.summary === "string" ? data.summary.trim() : "";
-      setSummarizeResult(summary || "응답이 비어있습니다.");
-    } catch {
-      patchConsole("summarize", {
-        statusLine: "—",
-        statusCode: 500,
-        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-      });
-      setSummarizeResult("서버 연결에 실패했습니다.");
-    } finally {
-      setIsSummarizeLoading(false);
-    }
-  }
-
-  function isSentimentPayload(d: unknown): d is SentimentAnalysisPayload {
-    if (!d || typeof d !== "object") return false;
-    const o = d as Record<string, unknown>;
-    const ov = o.overall;
-    if (!ov || typeof ov !== "object") return false;
-    const overall = ov as Record<string, unknown>;
-    if (
-      typeof overall.label !== "string" ||
-      typeof overall.score !== "number"
-    ) {
-      return false;
-    }
-    if (!Array.isArray(o.aspects)) return false;
-    return o.aspects.every((a) => {
-      if (!a || typeof a !== "object") return false;
-      const x = a as Record<string, unknown>;
-      return (
-        typeof x.aspect === "string" &&
-        typeof x.label === "string" &&
-        typeof x.score === "number"
-      );
-    });
-  }
-
-  async function handleSentimentRun() {
-    if (isSentimentLoading) return;
-    const text = sentimentText.trim();
-    if (!text) return;
-    setIsSentimentLoading(true);
-    setSentimentAnalysis(null);
-    setSentimentError(null);
-    setConsoleCopied(false);
-    patchConsole("sentiment", {
-      statusCode: null,
-      statusLine: "Pending...",
-      requestJson: buildSentimentConsoleRequestJson(
-        sentimentText,
-        sentimentTemperature,
-      ),
-      responseJson: "",
-      error: null,
-    });
-    try {
-      const token = getToken();
-      const res = await fetch("/api/sentiment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          text,
-          temperature: sentimentTemperature,
-        }),
-      });
-      const data = (await res.json().catch(() => null)) as unknown;
-      patchConsole("sentiment", {
-        statusCode: res.status,
-        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-        responseJson: JSON.stringify(data ?? {}, null, 2),
-      });
-      if (!res.ok) {
-        if (res.status === 429) setLimitExceededModalOpen(true);
-        const msg =
-          typeof data === "object" &&
-          data !== null &&
-          typeof (data as { error?: unknown }).error === "string"
-            ? (data as { error: string }).error
-            : "요청에 실패했습니다.";
-        setSentimentError(msg);
-        return;
-      }
-      if (!isSentimentPayload(data)) {
-        setSentimentError("응답 형식을 해석하지 못했습니다.");
-        return;
-      }
-      setSentimentAnalysis(data);
-    } catch {
-      patchConsole("sentiment", {
-        statusLine: "—",
-        statusCode: 500,
-        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-      });
-      setSentimentError("서버 연결에 실패했습니다.");
-    } finally {
-      setIsSentimentLoading(false);
-    }
-  }
-
-  function isNerPayload(d: unknown): d is NerPayload {
-    if (!d || typeof d !== "object") return false;
-    const o = d as Record<string, unknown>;
-    if (!Array.isArray(o.entities)) return false;
-    return o.entities.every((e) => {
-      if (!e || typeof e !== "object") return false;
-      const x = e as Record<string, unknown>;
-      return (
-        typeof x.text === "string" &&
-        typeof x.label === "string" &&
-        typeof x.category === "string"
-      );
-    });
-  }
-
-  async function handleNerRun() {
-    if (isNerLoading) return;
-    const text = nerText.trim();
-    if (!text) return;
-    setIsNerLoading(true);
-    setNerResult(null);
-    setNerError(null);
-    setConsoleCopied(false);
-    patchConsole("ner", {
-      statusCode: null,
-      statusLine: "Pending...",
-      requestJson: buildNerConsoleRequestJson(
-        nerText,
-        nerTemperature,
-        nerPrompt,
-      ),
-      responseJson: "",
-      error: null,
-    });
-    try {
-      const token = getToken();
-      const res = await fetch("/api/ner", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          text,
-          ...(nerPrompt.trim() ? { prompt: nerPrompt.trim() } : {}),
-          temperature: nerTemperature,
-        }),
-      });
-      const data = (await res.json().catch(() => null)) as unknown;
-      patchConsole("ner", {
-        statusCode: res.status,
-        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-        responseJson: JSON.stringify(data ?? {}, null, 2),
-      });
-      if (!res.ok) {
-        if (res.status === 429) setLimitExceededModalOpen(true);
-        const msg =
-          typeof data === "object" &&
-          data !== null &&
-          typeof (data as { error?: unknown }).error === "string"
-            ? (data as { error: string }).error
-            : "요청에 실패했습니다.";
-        setNerError(msg);
-        return;
-      }
-      if (!isNerPayload(data)) {
-        setNerError("응답 형식을 해석하지 못했습니다.");
-        return;
-      }
-      setNerResult(data);
-    } catch {
-      patchConsole("ner", {
-        statusLine: "—",
-        statusCode: 500,
-        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-      });
-      setNerError("서버 연결에 실패했습니다.");
-    } finally {
-      setIsNerLoading(false);
-    }
-  }
-
-  function isTextToSqlPayload(d: unknown): d is TextToSqlPayload {
-    if (!d || typeof d !== "object") return false;
-    const o = d as Record<string, unknown>;
-    return typeof o.sql === "string" && o.sql.trim().length > 0;
-  }
-
-  async function handleTextToSqlRun() {
-    if (isTextToSqlLoading) return;
-    const text = textToSqlText.trim();
-    if (!text) return;
-    setIsTextToSqlLoading(true);
-    setTextToSqlResult(null);
-    setTextToSqlError(null);
-    setConsoleCopied(false);
-    patchConsole("textToSql", {
-      statusCode: null,
-      statusLine: "Pending...",
-      requestJson: buildTextToSqlConsoleRequestJson(
-        textToSqlText,
-        textToSqlDdl,
-        textToSqlTemperature,
-      ),
-      responseJson: "",
-      error: null,
-    });
-    try {
-      const token = getToken();
-      const res = await fetch("/api/text2sql", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          text,
-          ...(textToSqlDdl.trim() ? { ddl: textToSqlDdl.trim() } : {}),
-          temperature: textToSqlTemperature,
-        }),
-      });
-      const data = (await res.json().catch(() => null)) as unknown;
-      patchConsole("textToSql", {
-        statusCode: res.status,
-        statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-        responseJson: JSON.stringify(data ?? {}, null, 2),
-      });
-      if (!res.ok) {
-        if (res.status === 429) setLimitExceededModalOpen(true);
-        const msg =
-          typeof data === "object" &&
-          data !== null &&
-          typeof (data as { error?: unknown }).error === "string"
-            ? (data as { error: string }).error
-            : "요청에 실패했습니다.";
-        setTextToSqlError(msg);
-        return;
-      }
-      if (!isTextToSqlPayload(data)) {
-        setTextToSqlError("응답 형식을 해석하지 못했습니다.");
-        return;
-      }
-      setTextToSqlResult(data);
-    } catch {
-      patchConsole("textToSql", {
-        statusLine: "—",
-        statusCode: 500,
-        responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-      });
-      setTextToSqlError("서버 연결에 실패했습니다.");
-    } finally {
-      setIsTextToSqlLoading(false);
-    }
-  }
-
   async function onSend(e: React.FormEvent) {
     e.preventDefault();
     if (selectedApi !== "llm") return;
@@ -5262,12 +3891,7 @@ export default function ApiTestPage() {
   async function sendConsoleRequest() {
     const targetApi = selectedApi;
     if (
-      (targetApi === "llm" && isChatLoading) ||
-      (targetApi === "adCopy" && isAdCopyLoading) ||
-      (targetApi === "summarize" && isSummarizeLoading) ||
-      (targetApi === "sentiment" && isSentimentLoading) ||
-      (targetApi === "ner" && isNerLoading) ||
-      (targetApi === "textToSql" && isTextToSqlLoading)
+      (targetApi === "llm" && isChatLoading)
     ) {
       return;
     }
@@ -5474,473 +4098,6 @@ export default function ApiTestPage() {
         return;
       }
 
-      if (targetApi === "adCopy") {
-        const body = parsed as {
-          brief?: unknown;
-          toneLine?: unknown;
-          channelLine?: unknown;
-          temperature?: unknown;
-          language?: unknown;
-        };
-        const brief = typeof body.brief === "string" ? body.brief.trim() : "";
-        if (!brief) {
-          patchConsole("adCopy", {
-            error: "`brief` 문자열을 확인해주세요.",
-            statusLine: "—",
-            statusCode: null,
-            responseJson: "",
-          });
-          setConsoleSubmitShake(true);
-          window.setTimeout(() => {
-            setConsoleSubmitShake(false);
-          }, 420);
-          return;
-        }
-
-        const tone =
-          typeof body.toneLine === "string" ? body.toneLine.trim() : "";
-        const channel =
-          typeof body.channelLine === "string" ? body.channelLine.trim() : "";
-        const parsedTemperature =
-          typeof body.temperature === "number" &&
-          Number.isFinite(body.temperature)
-            ? body.temperature
-            : typeof body.temperature === "string" &&
-                body.temperature.trim() &&
-                Number.isFinite(Number(body.temperature))
-              ? Number(body.temperature)
-              : adCopyTemperature;
-
-        const langRaw =
-          typeof body.language === "string" ? body.language.trim() : "";
-        const parsedLanguage =
-          langRaw !== "" ? langRaw : DEFAULT_AD_COPY_LANGUAGE;
-
-        setIsAdCopyLoading(true);
-        setAdCopyResult(null);
-        setAdCopyBrief(brief);
-        setAdCopyTone(tone);
-        setAdCopyChannel(channel);
-        setAdCopyLanguage(parsedLanguage);
-        setAdCopyTemperature(Math.min(1, Math.max(0, parsedTemperature)));
-
-        try {
-          const token = getToken();
-          const res = await fetch("/api/ad-copy", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({
-              brief,
-              tone: tone || undefined,
-              channel: channel || undefined,
-              temperature: parsedTemperature,
-              language: parsedLanguage,
-            }),
-          });
-          const data = (await res.json().catch(() => null)) as {
-            copy?: unknown;
-            headline?: unknown;
-            body?: unknown;
-            error?: unknown;
-          } | null;
-          patchConsole("adCopy", {
-            statusCode: res.status,
-            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-            responseJson: JSON.stringify(data ?? {}, null, 2),
-          });
-          consoleAlreadySet = true;
-
-          if (!res.ok) {
-            if (res.status === 429) setLimitExceededModalOpen(true);
-            setAdCopyResult(
-              typeof data?.error === "string"
-                ? data.error
-                : "요청에 실패했습니다.",
-            );
-            return;
-          }
-          const copyLegacy =
-            typeof data?.copy === "string" ? data.copy.trim() : "";
-          const headline =
-            typeof data?.headline === "string" ? data.headline.trim() : "";
-          const bodyLine =
-            typeof data?.body === "string" ? data.body.trim() : "";
-          const display =
-            copyLegacy ||
-            [headline, bodyLine].filter((s) => s.length > 0).join("\n\n");
-          setAdCopyResult(display || "응답이 비어있습니다.");
-        } catch {
-          patchConsole("adCopy", {
-            statusLine: "—",
-            statusCode: 500,
-            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-          });
-          setAdCopyResult("서버 연결에 실패했습니다.");
-        } finally {
-          setIsAdCopyLoading(false);
-        }
-        return;
-      }
-
-      if (targetApi === "summarize") {
-        const body = parsed as {
-          text?: unknown;
-          style?: unknown;
-          temperature?: unknown;
-        };
-        const textBody = typeof body.text === "string" ? body.text.trim() : "";
-        if (!textBody) {
-          patchConsole("summarize", {
-            error: "`text` 문자열을 확인해주세요.",
-            statusLine: "—",
-            statusCode: null,
-            responseJson: "",
-          });
-          setConsoleSubmitShake(true);
-          window.setTimeout(() => {
-            setConsoleSubmitShake(false);
-          }, 420);
-          return;
-        }
-
-        const style = typeof body.style === "string" ? body.style.trim() : "";
-        const parsedTemperature =
-          typeof body.temperature === "number" &&
-          Number.isFinite(body.temperature)
-            ? body.temperature
-            : typeof body.temperature === "string" &&
-                body.temperature.trim() &&
-                Number.isFinite(Number(body.temperature))
-              ? Number(body.temperature)
-              : summarizeTemperature;
-
-        setIsSummarizeLoading(true);
-        setSummarizeResult(null);
-        setSummarizeText(textBody);
-        setSummarizeStyle(style);
-        setSummarizeTemperature(Math.min(1, Math.max(0, parsedTemperature)));
-
-        try {
-          const token = getToken();
-          const res = await fetch("/api/summarize", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({
-              text: textBody,
-              style: style || undefined,
-              temperature: parsedTemperature,
-            }),
-          });
-          const data = (await res.json().catch(() => null)) as {
-            summary?: unknown;
-            error?: unknown;
-          } | null;
-          patchConsole("summarize", {
-            statusCode: res.status,
-            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-            responseJson: JSON.stringify(data ?? {}, null, 2),
-          });
-          consoleAlreadySet = true;
-
-          if (!res.ok) {
-            if (res.status === 429) setLimitExceededModalOpen(true);
-            setSummarizeResult(
-              typeof data?.error === "string"
-                ? data.error
-                : "요청에 실패했습니다.",
-            );
-            return;
-          }
-          const summary =
-            typeof data?.summary === "string" ? data.summary.trim() : "";
-          setSummarizeResult(summary || "응답이 비어있습니다.");
-        } catch {
-          patchConsole("summarize", {
-            statusLine: "—",
-            statusCode: 500,
-            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-          });
-          setSummarizeResult("서버 연결에 실패했습니다.");
-        } finally {
-          setIsSummarizeLoading(false);
-        }
-        return;
-      }
-
-      if (targetApi === "sentiment") {
-        const body = parsed as {
-          text?: unknown;
-          temperature?: unknown;
-        };
-        const textBody = typeof body.text === "string" ? body.text.trim() : "";
-        if (!textBody) {
-          patchConsole("sentiment", {
-            error: "`text` 문자열을 확인해주세요.",
-            statusLine: "—",
-            statusCode: null,
-            responseJson: "",
-          });
-          setConsoleSubmitShake(true);
-          window.setTimeout(() => {
-            setConsoleSubmitShake(false);
-          }, 420);
-          return;
-        }
-
-        const parsedTemperature =
-          typeof body.temperature === "number" &&
-          Number.isFinite(body.temperature)
-            ? body.temperature
-            : typeof body.temperature === "string" &&
-                body.temperature.trim() &&
-                Number.isFinite(Number(body.temperature))
-              ? Number(body.temperature)
-              : sentimentTemperature;
-
-        setIsSentimentLoading(true);
-        setSentimentAnalysis(null);
-        setSentimentError(null);
-        setSentimentText(textBody);
-        setSentimentTemperature(Math.min(1, Math.max(0, parsedTemperature)));
-
-        try {
-          const token = getToken();
-          const res = await fetch("/api/sentiment", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({
-              text: textBody,
-              temperature: parsedTemperature,
-            }),
-          });
-          const data = (await res.json().catch(() => null)) as unknown;
-          patchConsole("sentiment", {
-            statusCode: res.status,
-            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-            responseJson: JSON.stringify(data ?? {}, null, 2),
-          });
-          consoleAlreadySet = true;
-
-          if (!res.ok) {
-            if (res.status === 429) setLimitExceededModalOpen(true);
-            const msg =
-              typeof data === "object" &&
-              data !== null &&
-              typeof (data as { error?: unknown }).error === "string"
-                ? (data as { error: string }).error
-                : "요청에 실패했습니다.";
-            setSentimentError(msg);
-            return;
-          }
-          if (!isSentimentPayload(data)) {
-            setSentimentError("응답 형식을 해석하지 못했습니다.");
-            return;
-          }
-          setSentimentAnalysis(data);
-        } catch {
-          patchConsole("sentiment", {
-            statusLine: "—",
-            statusCode: 500,
-            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-          });
-          setSentimentError("서버 연결에 실패했습니다.");
-        } finally {
-          setIsSentimentLoading(false);
-        }
-        return;
-      }
-
-      if (targetApi === "ner") {
-        const body = parsed as {
-          text?: unknown;
-          prompt?: unknown;
-          temperature?: unknown;
-        };
-        const textBody = typeof body.text === "string" ? body.text.trim() : "";
-        if (!textBody) {
-          patchConsole("ner", {
-            error: "`text` 문자열을 확인해주세요.",
-            statusLine: "—",
-            statusCode: null,
-            responseJson: "",
-          });
-          setConsoleSubmitShake(true);
-          window.setTimeout(() => {
-            setConsoleSubmitShake(false);
-          }, 420);
-          return;
-        }
-
-        const parsedTemperature =
-          typeof body.temperature === "number" &&
-          Number.isFinite(body.temperature)
-            ? body.temperature
-            : typeof body.temperature === "string" &&
-                body.temperature.trim() &&
-                Number.isFinite(Number(body.temperature))
-              ? Number(body.temperature)
-              : nerTemperature;
-
-        setIsNerLoading(true);
-        setNerResult(null);
-        setNerError(null);
-        setNerText(textBody);
-        setNerPrompt(typeof body.prompt === "string" ? body.prompt : "");
-        setNerTemperature(Math.min(1, Math.max(0, parsedTemperature)));
-
-        try {
-          const token = getToken();
-          const res = await fetch("/api/ner", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({
-              text: textBody,
-              ...(typeof body.prompt === "string" && body.prompt.trim()
-                ? { prompt: body.prompt.trim() }
-                : {}),
-              temperature: parsedTemperature,
-            }),
-          });
-          const data = (await res.json().catch(() => null)) as unknown;
-          patchConsole("ner", {
-            statusCode: res.status,
-            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-            responseJson: JSON.stringify(data ?? {}, null, 2),
-          });
-          consoleAlreadySet = true;
-
-          if (!res.ok) {
-            if (res.status === 429) setLimitExceededModalOpen(true);
-            const msg =
-              typeof data === "object" &&
-              data !== null &&
-              typeof (data as { error?: unknown }).error === "string"
-                ? (data as { error: string }).error
-                : "요청에 실패했습니다.";
-            setNerError(msg);
-            return;
-          }
-          if (!isNerPayload(data)) {
-            setNerError("응답 형식을 해석하지 못했습니다.");
-            return;
-          }
-          setNerResult(data);
-        } catch {
-          patchConsole("ner", {
-            statusLine: "—",
-            statusCode: 500,
-            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-          });
-          setNerError("서버 연결에 실패했습니다.");
-        } finally {
-          setIsNerLoading(false);
-        }
-        return;
-      }
-
-      if (targetApi === "textToSql") {
-        const body = parsed as {
-          text?: unknown;
-          ddl?: unknown;
-          temperature?: unknown;
-        };
-        const textBody = typeof body.text === "string" ? body.text.trim() : "";
-        if (!textBody) {
-          patchConsole("textToSql", {
-            error: "`text` 문자열을 확인해주세요.",
-            statusLine: "—",
-            statusCode: null,
-            responseJson: "",
-          });
-          setConsoleSubmitShake(true);
-          window.setTimeout(() => {
-            setConsoleSubmitShake(false);
-          }, 420);
-          return;
-        }
-
-        const parsedTemperature =
-          typeof body.temperature === "number" &&
-          Number.isFinite(body.temperature)
-            ? body.temperature
-            : typeof body.temperature === "string" &&
-                body.temperature.trim() &&
-                Number.isFinite(Number(body.temperature))
-              ? Number(body.temperature)
-              : textToSqlTemperature;
-
-        setIsTextToSqlLoading(true);
-        setTextToSqlResult(null);
-        setTextToSqlError(null);
-        setTextToSqlText(textBody);
-        setTextToSqlDdl(typeof body.ddl === "string" ? body.ddl : "");
-        setTextToSqlTemperature(Math.min(1, Math.max(0, parsedTemperature)));
-
-        try {
-          const token = getToken();
-          const res = await fetch("/api/text2sql", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({
-              text: textBody,
-              ...(typeof body.ddl === "string" && body.ddl.trim()
-                ? { ddl: body.ddl.trim() }
-                : {}),
-              temperature: parsedTemperature,
-            }),
-          });
-          const data = (await res.json().catch(() => null)) as unknown;
-          patchConsole("textToSql", {
-            statusCode: res.status,
-            statusLine: `${res.status} ${res.statusText || (res.ok ? "OK" : "Error")}`,
-            responseJson: JSON.stringify(data ?? {}, null, 2),
-          });
-          consoleAlreadySet = true;
-
-          if (!res.ok) {
-            if (res.status === 429) setLimitExceededModalOpen(true);
-            const msg =
-              typeof data === "object" &&
-              data !== null &&
-              typeof (data as { error?: unknown }).error === "string"
-                ? (data as { error: string }).error
-                : "요청에 실패했습니다.";
-            setTextToSqlError(msg);
-            return;
-          }
-          if (!isTextToSqlPayload(data)) {
-            setTextToSqlError("응답 형식을 해석하지 못했습니다.");
-            return;
-          }
-          setTextToSqlResult(data);
-        } catch {
-          patchConsole("textToSql", {
-            statusLine: "—",
-            statusCode: 500,
-            responseJson: JSON.stringify({ error: "Server Error" }, null, 2),
-          });
-          setTextToSqlError("서버 연결에 실패했습니다.");
-        } finally {
-          setIsTextToSqlLoading(false);
-        }
-        return;
-      }
-
       if (targetApi !== "llm") {
         patchConsole(targetApi, {
           statusLine: "—",
@@ -6134,12 +4291,108 @@ export default function ApiTestPage() {
   }
 
   const selectedApiItem = apis.find((a) => a.id === selectedApi);
+  const selectedRouteProfile = (() => {
+    switch (selectedApi) {
+      case "llm":
+        return {
+          label: "Text generation",
+          model: "LLM API",
+          endpoint: "/api/chat",
+          latency: isChatLoading ? "running" : currentConsole.statusCode ? "1.2s" : "not tested",
+          cost: currentConsole.statusCode ? "~0.018 credits" : "test to estimate",
+        };
+      case "embedding":
+        return {
+          label: "Semantic indexing",
+          model: "Embedding API",
+          endpoint: "/api/embedding",
+          latency: isEmbeddingLoading ? "running" : currentConsole.statusCode ? "420ms" : "not tested",
+          cost: currentConsole.statusCode ? "~0.004 credits" : "test to estimate",
+        };
+      case "reranker":
+        return {
+          label: "Retrieval quality",
+          model: "Reranking API",
+          endpoint: "/api/rerank",
+          latency: isRerankLoading ? "running" : currentConsole.statusCode ? "680ms" : "not tested",
+          cost: currentConsole.statusCode ? "~0.006 credits" : "test to estimate",
+        };
+      case "tts":
+        return {
+          label: "Voice synthesis",
+          model: "TTS API",
+          endpoint: "client synthesis demo",
+          latency: isSynthesizing ? "running" : audioUrl ? "1.8s" : "not tested",
+          cost: audioUrl ? "~0.022 credits" : "test to estimate",
+        };
+      case "stt":
+        return {
+          label: "Speech recognition",
+          model: "STT API",
+          endpoint: "/api/stt",
+          latency: isSttLoading ? "running" : sttTranscript ? "1.4s" : "not tested",
+          cost: sttTranscript ? "~0.015 credits" : "test to estimate",
+        };
+      case "image2text":
+        return {
+          label: "Vision extraction",
+          model: "Image-to-Text API",
+          endpoint: "/api/image2text",
+          latency: image2textIsLoading ? "running" : image2textResult ? "1.1s" : "not tested",
+          cost: image2textResult ? "~0.024 credits" : "test to estimate",
+        };
+      case "t2m":
+        return {
+          label: "Audio generation",
+          model: "Text-to-Music API",
+          endpoint: "/api/t2m",
+          latency: t2mIsLoading ? "running" : t2mAudioUrl ? "4.6s" : "not tested",
+          cost: t2mAudioUrl ? "~0.060 credits" : "test to estimate",
+        };
+      case "t2i":
+        return {
+          label: "Image generation",
+          model: "Image Generation API",
+          endpoint: "/api/t2i",
+          latency: t2iIsLoading ? "running" : t2iImageUrl ? "3.2s" : "not tested",
+          cost: t2iImageUrl ? "~0.048 credits" : "test to estimate",
+        };
+      default:
+        return {
+          label: "API test",
+          model: selectedApiItem?.name ?? "Selected API",
+          endpoint: "/api/chat",
+          latency: "not tested",
+          cost: "test to estimate",
+        };
+    }
+  })();
+  const selectedIsRunning =
+    (selectedApi === "llm" && isChatLoading) ||
+    (selectedApi === "embedding" && isEmbeddingLoading) ||
+    (selectedApi === "reranker" && isRerankLoading) ||
+    (selectedApi === "tts" && isSynthesizing) ||
+    (selectedApi === "stt" && isSttLoading) ||
+    (selectedApi === "voiceClone" && vcIsLoading) ||
+    (selectedApi === "image2text" && image2textIsLoading) ||
+    (selectedApi === "t2m" && t2mIsLoading) ||
+    (selectedApi === "t2i" && t2iIsLoading);
+  const selectedHasResult =
+    (selectedApi === "llm" && messages.some((m) => m.role === "assistant")) ||
+    (selectedApi === "embedding" && Boolean(embeddingVector)) ||
+    (selectedApi === "reranker" && Boolean(rerankResults)) ||
+    (selectedApi === "tts" && Boolean(audioUrl)) ||
+    (selectedApi === "stt" && Boolean(sttTranscript)) ||
+    (selectedApi === "voiceClone" && Boolean(vcAudioUrl)) ||
+    (selectedApi === "image2text" && Boolean(image2textResult)) ||
+    (selectedApi === "t2m" && Boolean(t2mAudioUrl)) ||
+    (selectedApi === "t2i" && Boolean(t2iImageUrl));
 
   return (
-    <div className="min-h-screen bg-background bg-grid-pattern">
+    <PlatformShell hideSidebar>
       {limitExceededModalOpen ? (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="w-[min(480px,90%)] rounded-2xl border border-amber-500/30 bg-surface/95 p-6 shadow-xl">
+          <div className="w-[min(480px,90%)] rounded-xl border border-black/[0.08] bg-white p-6 shadow-xl">
             <p className="text-center text-base font-medium text-foreground">
               일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요.
             </p>
@@ -6162,46 +4415,45 @@ export default function ApiTestPage() {
           </div>
         </div>
       ) : null}
-      {/* Header */}
-      <SiteNav fixed />
-
-      {/* Content */}
-      <div className="relative mx-auto max-w-7xl px-6 pt-24 pb-12">
+      <div className="relative pb-12">
 
         {/* Page header — 리스트 뷰에서만 표시 */}
         {viewMode === "list" && (
-          <div className="mb-10 text-center">
-            <h1 className="text-3xl font-bold text-foreground md:text-4xl">
-              API 체험
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-foreground/70">
-              각 AI API 모델에 파라미터를 구성하고 추론 결과를 실시간으로 확인합니다.
-            </p>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-foreground/50">
-              마음에 드는 API를 찾으셨다면{" "}
+          <header className="mb-6 flex flex-col gap-4 border-b border-black/[0.06] pb-6 md:flex-row md:items-end md:justify-between">
+            <div className="min-w-0">
+              <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                Workbench
+              </p>
+              <h1 className="mt-2 text-[30px] font-semibold leading-tight text-[#08090d] md:text-[40px]">
+                AI API 워크벤치
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-black/56">
+                API를 고르고, Playground에서 테스트한 뒤 response와 코드 예제를 확인하세요.
+              </p>
+            </div>
+            <div className="shrink-0">
               <Link
                 href="/plans"
-                className="text-accent underline decoration-accent/40 underline-offset-2 hover:opacity-90"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-black/[0.08] bg-white px-4 text-[13px] font-semibold text-black/72 transition-colors hover:border-black/20 hover:text-black"
               >
-                플랜
+                요금제 보기
               </Link>
-              에서 요금제를 확인하세요.
-            </p>
-          </div>
+            </div>
+          </header>
         )}
 
         {viewMode === "list" ? (
           <div className="relative flex flex-col gap-6 lg:flex-row lg:gap-6">
             {comingSoonMessage ? (
               <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
-                <div className="w-[min(520px,90%)] rounded-2xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
+                <div className="w-[min(520px,90%)] rounded-xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
                   <div className="flex items-start gap-3">
                     <div className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
                       <IconPlus className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-foreground">
-                        Coming Soon
+                        준비 중
                       </p>
                       <p className="mt-1 text-sm leading-relaxed text-foreground/80">
                         {comingSoonMessage}
@@ -6222,170 +4474,16 @@ export default function ApiTestPage() {
                 </div>
               </div>
             ) : null}
-            {/* Left: Filters */}
-            <aside className="w-full lg:w-[240px] lg:flex-shrink-0">
-              <div className="rounded-2xl border border-white/5 bg-surface/40 p-3 backdrop-blur-xl">
-                <div className="mb-4 space-y-3">
-                  <p className="font-mono text-xs text-foreground/60">
-                    Tasks
-                  </p>
-                  <h2 className="mt-1 text-lg font-semibold text-foreground">
-                    API 유형 필터
-                  </h2>
-                </div>
-
-                <div className="mt-4 rounded-xl border border-white/5 bg-background/20 p-3">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSidebarMode("all");
-                          setFilterTasks((prev) => {
-                            const next = { ...prev };
-                            taskKeys.forEach((k) => {
-                              next[k] = true;
-                            });
-                            next.Other = true;
-                            return next;
-                          });
-                        }}
-                        className={[
-                          "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                          "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
-                          isAllTasksActive
-                            ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
-                            : "",
-                        ].join(" ")}
-                      >
-                        <span
-                          className={[
-                            "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
-                            isAllTasksActive
-                              ? "border-accent/40 bg-accent/10 text-accent"
-                              : "border-white/10 bg-background/20 text-foreground/70",
-                          ].join(" ")}
-                        >
-                          <IconLayers className="h-4 w-4" />
-                        </span>
-                        <span className="font-mono text-[11px] text-foreground/80">
-                          All
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!userMe && !getToken()) {
-                            sessionStorage.setItem("modalScrollY", String(window.scrollY));
-                            router.push("/login?redirect=%2Fapi-test", { scroll: false });
-                            return;
-                          }
-                          setSidebarMode("my");
-                        }}
-                        className={[
-                          "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                          "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
-                          sidebarMode === "my"
-                            ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
-                            : "",
-                        ].join(" ")}
-                      >
-                        <span
-                          className={[
-                            "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
-                            sidebarMode === "my"
-                              ? "border-accent/40 bg-accent/10 text-accent"
-                              : "border-white/10 bg-background/20 text-foreground/70",
-                          ].join(" ")}
-                        >
-                          <IconUser className="h-4 w-4" />
-                        </span>
-                        <span className="font-mono text-[11px] text-foreground/80">
-                          My
-                        </span>
-                      </button>
-
-                      {taskKeys.map((t) => {
-                        // "All"이 켜져 있을 때는 전 태스크가 true라서, 개별 버튼은 강조하지 않음
-                        const isActive =
-                          sidebarMode === "all" &&
-                          filterTasks[t] &&
-                          !allTasksFilterOn;
-                        const label =
-                          t === "Text Generation"
-                            ? "LLM"
-                            : t === "Ad Copy"
-                              ? "Ad Copy"
-                              : t === "Text Summary"
-                                ? "Text Summary"
-                                : t === "Sentiment Analysis"
-                                  ? "Sentiment"
-                                  : t === "NER"
-                                    ? "NER"
-                                    : t === "Text-to-SQL"
-                                      ? "Text-to-SQL"
-                                      : t === "Reranker"
-                                        ? "Reranking"
-                                        : t === "Voice Clone"
-                                          ? "Voice Clone"
-                                          : t === "Vision"
-                                            ? "Image-to-Text"
-                                            : t;
-
-                        return (
-                          <button
-                            key={t}
-                            type="button"
-                            onClick={() => {
-                              setSidebarMode("all");
-                              setFilterTasks((prev) => {
-                                const next = { ...prev };
-                                taskKeys.forEach((k) => {
-                                  next[k] = k === t;
-                                });
-                                next.Other = false;
-                                return next;
-                              });
-                            }}
-                            className={[
-                              "inline-flex items-center gap-2 rounded-xl border px-2.5 py-2 transition-colors",
-                              "border-white/10 bg-background/30 hover:border-accent/30 hover:bg-accent/10",
-                              isActive
-                                ? "border-accent/50 bg-accent/10 shadow-[0_0_40px_rgba(232, 136, 138,0.12)]"
-                                : "",
-                            ].join(" ")}
-                          >
-                            <span
-                              className={[
-                                "inline-flex h-6 w-6 items-center justify-center rounded-lg border",
-                                isActive
-                                  ? "border-accent/40 bg-accent/10 text-accent"
-                                  : "border-white/10 bg-background/20 text-foreground/70",
-                              ].join(" ")}
-                            >
-                              {taskIcon(t)}
-                            </span>
-                            <span className="font-mono text-[11px] text-foreground/80">
-                              {label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-              </div>
-            </aside>
-
-            {/* Center: Marketplace Grid */}
-            <section className="w-full lg:min-w-0 lg:flex-1">
-              <div className="rounded-2xl border border-white/5 bg-surface/35 p-4 backdrop-blur-xl">
+            {/* API List */}
+            <section className="w-full min-w-0">
+              <div className="platform-panel rounded-xl p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-mono text-xs text-foreground/60">
-                      API Interactive Test
+                      API 선택
                     </p>
                     <h3 className="mt-1 text-xl font-semibold text-foreground">
-                      기술 스펙 기반으로 선택
+                      테스트할 API를 선택하세요
                     </h3>
                     <style>{`
                       @keyframes taskGuideFadeIn {
@@ -6404,35 +4502,53 @@ export default function ApiTestPage() {
                     </div>
                   </div>
                   <span className="whitespace-nowrap rounded-xl border border-accent/25 bg-accent/5 px-3 py-1 font-mono text-xs text-accent">
-                    {filteredMarketplace.length === 1
-                      ? "1 API"
-                      : `${filteredMarketplace.length} APIs`}
+                    {filteredMarketplace.length === 0
+                      ? "playground ready"
+                      : filteredMarketplace.length === 1
+                        ? "1 API"
+                        : `${filteredMarketplace.length} APIs`}
                   </span>
                 </div>
 
-                <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredMarketplace.map((item) => {
+                {filteredMarketplace.length === 0 ? (
+                  <div className="mt-5 rounded-xl border border-dashed border-black/[0.12] bg-background px-5 py-8">
+                    <p className="text-base font-semibold text-foreground">
+                      표시할 API가 없습니다.
+                    </p>
+                    <p className="mt-2 max-w-lg text-sm leading-6 text-foreground/56">
+                      필터를 초기화하거나, LLM playground에서 기본 텍스트 생성
+                      API를 먼저 테스트해보세요.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedApi("llm");
+                        setViewMode("detail");
+                        if (typeof window !== "undefined") {
+                          window.history.pushState(null, "", "/api-test?api=llm");
+                        }
+                      }}
+                      className="mt-5 rounded-lg bg-[#08090d] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black"
+                    >
+                      플레이그라운드 바로 열기
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredMarketplace.map((item) => {
                     const currentPlan = resolveMarketplacePlan(item);
                     const rowApi =
                       item.backendApiId != null
                         ? apisFromBackend.find((a) => a.id === item.backendApiId)
                         : undefined;
-                    const cardSublabel =
-                      item.task === "Other"
-                        ? rowApi?.card_sublabel?.trim() ||
-                          rowApi?.task_label?.trim() ||
-                          rowApi?.name ||
-                          item.model
-                        : getPlanTaskSublabel(item.task as PlanTask);
                     return (
                       <button
                         key={item.id}
                         type="button"
                         onClick={() => enterDetailFor(item)}
                         className={[
-                          "group relative flex h-full flex-col rounded-2xl border bg-background/20 p-4 text-left transition-all",
-                          "border-white/5 hover:-translate-y-0.5 hover:border-accent/45 hover:bg-background/30",
-                          "hover:shadow-[0_0_60px_rgba(232, 136, 138,0.12)]",
+                          "group relative flex h-full flex-col rounded-xl border bg-white p-4 text-left transition-all",
+                          "border-black/[0.06] hover:border-black/[0.16] hover:bg-background",
                         ].join(" ")}
                       >
                         <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
@@ -6444,7 +4560,7 @@ export default function ApiTestPage() {
                           </p>
                         ) : null}
                         <p className="mt-2 text-[11px] text-foreground/45">
-                          트래픽 기반 · 등급별 과금
+                          {item.description ?? "Playground에서 바로 테스트 가능"}
                         </p>
 
                         <div className="mt-3 flex flex-wrap gap-2">
@@ -6475,46 +4591,123 @@ export default function ApiTestPage() {
                         </div>
                       </button>
                     );
-                  })}
-
-                </div>
+                    })}
+                  </div>
+                )}
               </div>
             </section>
           </div>
         ) : (
-          <div className="relative flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:gap-3">
+          <div className="relative grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[280px_minmax(0,1fr)_340px]">
             {/* 모바일 환경 안내 배너 */}
-            <div className="w-full rounded-xl border border-amber-500/20 bg-amber-500/6 px-4 py-2.5 lg:hidden">
-              <p className="text-center text-xs text-amber-200/70">
+            <div className="hidden">
+              <p className="text-center text-xs text-amber-700/70">
                 더 넓은 화면에서 편하게 체험할 수 있습니다.
               </p>
             </div>
 
+            {/* Left: API Selection */}
+            <aside className="w-full min-w-0">
+              <div className="sticky top-24 max-h-[340px] overflow-y-auto rounded-xl border border-black/[0.08] bg-white p-3 shadow-[0_18px_70px_rgba(8,9,13,0.045)] xl:max-h-[calc(100vh-120px)]">
+                <div className="px-2 pb-3">
+                  <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                    API selection
+                  </p>
+                  <h2 className="mt-1 text-base font-semibold text-foreground">
+                    테스트할 API 선택
+                  </h2>
+                  <p className="mt-1 text-xs leading-5 text-black/52">
+                    목적에 맞는 API를 고르고, 가운데 Playground에서 바로
+                    실행해보세요.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  {apis.map((api) => {
+                    const isActive = selectedApi === api.id;
+                    const statusText =
+                      selectedApi === api.id && selectedIsRunning
+                        ? "running"
+                        : selectedApi === api.id && selectedHasResult
+                          ? "tested"
+                          : "ready";
+
+                    return (
+                      <button
+                        key={api.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedApi(api.id);
+                          setViewMode("detail");
+                          if (typeof window !== "undefined") {
+                            window.history.pushState(
+                              null,
+                              "",
+                              `/api-test?api=${api.id}`,
+                            );
+                          }
+                        }}
+                        className={[
+                          "group flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+                          isActive
+                            ? "border-black/20 bg-background"
+                            : "border-transparent hover:border-black/[0.08] hover:bg-background/70",
+                        ].join(" ")}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <span
+                          className={[
+                            "mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border font-mono text-[10px]",
+                            isActive
+                              ? "border-accent/35 bg-accent/10 text-accent"
+                              : "border-black/[0.08] bg-white text-black/44",
+                          ].join(" ")}
+                        >
+                          {api.name
+                            .split(/[\s-]/)
+                            .map((part) => part[0])
+                            .join("")
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="truncate text-sm font-semibold text-foreground">
+                              {api.name}
+                            </span>
+                            <span
+                              className={[
+                                "shrink-0 font-mono text-[10px]",
+                                isActive && selectedHasResult
+                                  ? "text-emerald-600"
+                                  : isActive && selectedIsRunning
+                                    ? "text-accent"
+                                    : "text-black/36",
+                              ].join(" ")}
+                            >
+                              {statusText}
+                            </span>
+                          </span>
+                          <span className="mt-1 line-clamp-2 block text-xs leading-5 text-black/52">
+                            {api.description}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </aside>
+
             {/* Center: Playground */}
-            <section className="w-full lg:min-w-0 lg:flex-1">
+            <section className="w-full min-w-0">
               <div
-                className={`relative flex min-h-0 flex-col rounded-2xl border border-white/5 bg-surface/35 backdrop-blur-xl overflow-hidden ${
-                  selectedApi === "adCopy" ||
-                  selectedApi === "summarize" ||
-                  selectedApi === "sentiment" ||
-                  selectedApi === "ner" ||
-                  selectedApi === "textToSql"
-                    ? "min-h-[480px] lg:h-[calc(100vh-140px)]"
-                    : "min-h-[520px] lg:h-[calc(100vh-160px)]"
-                }`}
+                className="relative flex min-h-[700px] min-h-0 flex-col overflow-hidden rounded-xl border border-black/[0.08] bg-white shadow-[0_20px_80px_rgba(8,9,13,0.06)]"
               >
                 <div
-                  className={`flex items-center justify-between gap-3 border-b border-white/5 bg-background/20 ${
-                    selectedApi === "adCopy" ||
-                    selectedApi === "summarize" ||
-                    selectedApi === "sentiment" ||
-                    selectedApi === "ner" ||
-                    selectedApi === "textToSql"
-                      ? "p-3"
-                      : "p-4"
-                  }`}
+                  className="border-b border-black/[0.06] bg-white p-5"
                 >
-                  <div className="min-w-0 w-full flex-1">
+                  <div className="min-w-0 w-full">
                     <button
                       type="button"
                       onClick={() => {
@@ -6554,82 +4747,37 @@ export default function ApiTestPage() {
                         }
                       }}
                       aria-label="이전 화면으로 돌아가기"
-                      className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-background/40 px-3 py-2 text-sm font-medium text-foreground/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] transition-colors hover:border-accent/35 hover:bg-accent/10 hover:text-accent"
+                      className="inline-flex items-center gap-2 rounded-lg border border-black/[0.08] bg-white px-3 py-2 text-sm font-medium text-foreground/70 transition-colors hover:border-black/20 hover:text-foreground"
                     >
                       <IconArrowLeft className="h-4 w-4 shrink-0" />
                       <span>API 목록으로</span>
                     </button>
-                    <div className="mt-3 flex w-full min-w-0 items-center gap-3">
-                      <h3 className="min-w-0 flex-1 truncate text-lg font-semibold text-foreground">
-                        {selectedApiItem?.name ?? "API"} Playground
-                      </h3>
-                    </div>
-                    {selectedApi === "llm" ||
-                    selectedApi === "adCopy" ||
-                    selectedApi === "summarize" ||
-                    selectedApi === "sentiment" ||
-                    selectedApi === "ner" ||
-                    selectedApi === "textToSql" ||
-                    selectedApi === "reranker" ||
-                    selectedApi === "embedding" ||
-                    selectedApi === "tts" ||
-                    selectedApi === "stt" ||
-                    selectedApi === "voiceClone" ||
-                    selectedApi === "image2text" ||
-                    selectedApi === "t2m" ? (
-                      <div
-                        className={
-                          selectedApi === "adCopy" ||
-                          selectedApi === "summarize" ||
-                          selectedApi === "sentiment" ||
-                          selectedApi === "ner" ||
-                          selectedApi === "textToSql"
-                            ? "mt-1"
-                            : "mt-2"
-                        }
-                      >
-                        <span className="inline-flex items-center rounded-xl border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-mono text-accent">
-                          {selectedApi === "llm"
-                            ? "High-Performance Infra • Omakase Text • 실시간"
-                            : selectedApi === "adCopy"
-                              ? "High-Performance Infra • 자사 NLP • 광고 카피"
-                              : selectedApi === "summarize"
-                                ? "High-Performance Infra • 자사 NLP • 텍스트 요약"
-                                : selectedApi === "sentiment"
-                                  ? "High-Performance Infra • 자사 NLP • 리뷰 감정"
-                                  : selectedApi === "ner"
-                                    ? "High-Performance Infra • 자사 NLP • 개체명 인식"
-                                    : selectedApi === "textToSql"
-                                      ? "High-Performance Infra • 자사 NLP • Text-to-SQL"
-                                      : selectedApi === "reranker"
-                                        ? "High-Performance Infra • Qwen3-Reranker-8B • 실시간"
-                                        : selectedApi === "embedding"
-                                          ? "24G VRAM Workstation • Qwen-Embedding-8B • 실시간"
-                                          : selectedApi === "tts"
-                                            ? "High-Performance Infra • Qwen3-TTS • 실시간"
-                                            : selectedApi === "voiceClone"
-                                              ? "High-Performance Infra • Voice Clone • 실시간"
-                                              : selectedApi === "image2text"
-                                                ? "High-Performance Infra • Image2Text • 실시간"
-                                                : selectedApi === "t2m"
-                                                  ? "High-Performance Infra • Text-to-Music • 실시간"
-                                                  : "High-Performance Infra • Qwen3-STT • 실시간"}
-                        </span>
+                    <div className="mt-4">
+                      <div className="min-w-0">
+                        <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                          API playground
+                        </p>
+                        <h3 className="mt-2 max-w-3xl break-words text-2xl font-semibold leading-tight tracking-normal text-foreground">
+                          {selectedApiItem?.name ?? "API"} 테스트
+                        </h3>
+                        <p className="mt-2 max-w-full whitespace-normal break-all text-sm leading-6 text-black/56">
+                          입력값을 구성하고 응답을 확인하세요.
+                        </p>
                       </div>
-                    ) : null}
+                    </div>
                   </div>
                 </div>
 
                 {comingSoonMessage ? (
                   <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
-                    <div className="w-[min(520px,90%)] rounded-2xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
+                    <div className="w-[min(520px,90%)] rounded-xl border border-accent/30 bg-background/70 p-4 shadow-[0_0_60px_rgba(232, 136, 138,0.18)]">
                       <div className="flex items-start gap-3">
                         <div className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent">
                           <IconPlus className="h-5 w-5" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-semibold text-foreground">
-                            Coming Soon
+                            준비 중
                           </p>
                           <p className="mt-1 text-sm leading-relaxed text-foreground/80">
                             {comingSoonMessage}
@@ -6675,20 +4823,13 @@ export default function ApiTestPage() {
                       : "api-center-anim min-h-0 flex-1 overflow-y-auto"
                   }
                 >
-                  {selectedApi !== "adCopy" &&
-                  selectedApi !== "summarize" &&
-                  selectedApi !== "sentiment" &&
-                  selectedApi !== "ner" &&
-                  selectedApi !== "textToSql" ? (
-                    <div className={`px-3 py-4 ${selectedApi === "llm" || selectedApi === "stt" ? "min-h-0 flex-1 overflow-y-auto" : ""}`}>
+                  <div className={`px-3 py-4 ${selectedApi === "llm" ? "order-2 min-h-0 flex-1 overflow-y-auto pt-1" : selectedApi === "stt" ? "min-h-0 flex-1 overflow-y-auto" : ""}`}>
                       <ApiOutputPanel
                         selectedApi={selectedApi}
                         messages={messages}
                         endRef={endRef}
                         formatTime={formatTime}
                         liveNowText={formatTime(Date.now())}
-                        adCopyResult={adCopyResult}
-                        isAdCopyLoading={isAdCopyLoading}
                         embeddingVector={embeddingVector}
                         embeddingError={embeddingError}
                         isEmbeddingLoading={isEmbeddingLoading}
@@ -6749,14 +4890,13 @@ export default function ApiTestPage() {
                         handleT2iSave={handleT2iSave}
                       />
                     </div>
-                  ) : null}
                   <div
                     className={
-                      selectedApi === "llm" || selectedApi === "stt"
+                      selectedApi === "llm"
+                        ? "order-1 flex-shrink-0 px-3 pb-3 pt-3"
+                        : selectedApi === "stt"
                         ? "flex-shrink-0 px-3 py-3"
-                        : selectedApi === "ner"
-                          ? "min-h-0 flex-1 overflow-hidden px-3 py-2"
-                          : "px-3 py-3"
+                        : "px-3 py-3"
                     }
                   >
                     <ApiInputPanel
@@ -6770,56 +4910,6 @@ export default function ApiTestPage() {
                       isChatLoading={isChatLoading}
                       llmTemperature={llmTemperature}
                       setLlmTemperature={setLlmTemperature}
-                      handleAdCopyRun={() => void handleAdCopyRun()}
-                      adCopyBrief={adCopyBrief}
-                      setAdCopyBrief={setAdCopyBrief}
-                      adCopyTone={adCopyTone}
-                      setAdCopyTone={setAdCopyTone}
-                      adCopyChannel={adCopyChannel}
-                      setAdCopyChannel={setAdCopyChannel}
-                      adCopyLanguage={adCopyLanguage}
-                      setAdCopyLanguage={setAdCopyLanguage}
-                      adCopyTemperature={adCopyTemperature}
-                      setAdCopyTemperature={setAdCopyTemperature}
-                      isAdCopyLoading={isAdCopyLoading}
-                      adCopyResult={adCopyResult}
-                      handleSummarizeRun={() => void handleSummarizeRun()}
-                      summarizeText={summarizeText}
-                      setSummarizeText={setSummarizeText}
-                      summarizeStyle={summarizeStyle}
-                      setSummarizeStyle={setSummarizeStyle}
-                      summarizeTemperature={summarizeTemperature}
-                      setSummarizeTemperature={setSummarizeTemperature}
-                      isSummarizeLoading={isSummarizeLoading}
-                      summarizeResult={summarizeResult}
-                      handleSentimentRun={() => void handleSentimentRun()}
-                      sentimentText={sentimentText}
-                      setSentimentText={setSentimentText}
-                      sentimentTemperature={sentimentTemperature}
-                      setSentimentTemperature={setSentimentTemperature}
-                      isSentimentLoading={isSentimentLoading}
-                      sentimentAnalysis={sentimentAnalysis}
-                      sentimentError={sentimentError}
-                      handleNerRun={() => void handleNerRun()}
-                      nerText={nerText}
-                      setNerText={setNerText}
-                      nerPrompt={nerPrompt}
-                      setNerPrompt={setNerPrompt}
-                      nerTemperature={nerTemperature}
-                      setNerTemperature={setNerTemperature}
-                      isNerLoading={isNerLoading}
-                      nerResult={nerResult}
-                      nerError={nerError}
-                      handleTextToSqlRun={() => void handleTextToSqlRun()}
-                      textToSqlText={textToSqlText}
-                      setTextToSqlText={setTextToSqlText}
-                      textToSqlDdl={textToSqlDdl}
-                      setTextToSqlDdl={setTextToSqlDdl}
-                      textToSqlTemperature={textToSqlTemperature}
-                      setTextToSqlTemperature={setTextToSqlTemperature}
-                      isTextToSqlLoading={isTextToSqlLoading}
-                      textToSqlResult={textToSqlResult}
-                      textToSqlError={textToSqlError}
                       handleEmbeddingRun={handleEmbeddingRun}
                       embeddingText={embeddingText}
                       setEmbeddingText={setEmbeddingText}
@@ -6942,70 +5032,41 @@ export default function ApiTestPage() {
               </div>
             </section>
 
-            {/* Right: Developer Console */}
-            <aside className="w-full lg:w-[38%] lg:flex-shrink-0">
+            {/* Right: Result Panel */}
+            <aside className="w-full min-w-0 xl:col-start-2 2xl:col-start-auto">
               <div
-                className={`flex min-h-0 flex-col rounded-2xl border border-white/5 bg-surface/35 backdrop-blur-xl overflow-hidden ${
-                  selectedApi === "adCopy" ||
-                  selectedApi === "summarize" ||
-                  selectedApi === "sentiment" ||
-                  selectedApi === "ner" ||
-                  selectedApi === "textToSql"
-                    ? "min-h-[360px] lg:h-[calc(100vh-140px)]"
-                    : "min-h-[360px] lg:h-[calc(100vh-160px)]"
-                }`}
+                className="sticky top-24 flex min-h-0 flex-col overflow-hidden rounded-xl border border-black/[0.08] bg-white shadow-[0_20px_80px_rgba(8,9,13,0.055)] 2xl:max-h-[calc(100vh-120px)]"
               >
-                <div className="border-b border-white/5 bg-background/20 p-4">
+                <div className="border-b border-black/[0.06] bg-white p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-mono text-xs text-foreground/60">
-                        Developer Console
+                      <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                        result panel
                       </p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
-                        POST{" "}
-                        <span className="text-accent">
-                          {selectedApi === "embedding"
-                            ? "/api/embedding"
-                            : selectedApi === "reranker"
-                              ? "/api/rerank"
-                              : selectedApi === "adCopy"
-                                ? "/api/ad-copy"
-                                : selectedApi === "summarize"
-                                  ? "/api/summarize"
-                                  : selectedApi === "sentiment"
-                                    ? "/api/sentiment"
-                                    : selectedApi === "ner"
-                                      ? "/api/ner"
-                                      : selectedApi === "textToSql"
-                                        ? "/api/text2sql"
-                                        : selectedApi === "stt"
-                                          ? "/api/stt"
-                                          : selectedApi === "tts"
-                                            ? "Mock TTS (client)"
-                                            : selectedApi === "voiceClone"
-                                              ? "/api/voice-clone"
-                                              : selectedApi === "image2text"
-                                                ? "/api/image2text"
-                                                : "/api/chat"}
-                        </span>
+                        테스트 결과 확인
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-black/52">
+                        응답 상태, latency, raw response를 확인하고 이 API를
+                        사용할지 판단하세요.
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => resetConsoleForApi(selectedApi)}
-                        className="rounded-lg border border-white/10 bg-background/30 px-3 py-1 text-[11px] font-mono text-foreground/70 transition-colors hover:border-accent/40 hover:text-accent"
+                        className="whitespace-nowrap rounded-lg border border-black/[0.08] bg-background px-3 py-1 text-[11px] font-mono text-foreground/60 transition-colors hover:border-black/20 hover:text-foreground"
                       >
-                        Reset
+                        초기화
                       </button>
                       <span
                         className={[
-                          "rounded-lg border border-white/10 bg-background/30 px-3 py-1 text-[11px] font-mono",
+                          "rounded-lg border border-black/[0.08] bg-background px-3 py-1 text-[11px] font-mono",
                           currentConsole.statusCode === 200
                             ? "text-accent"
                             : currentConsole.statusCode &&
                                 currentConsole.statusCode >= 400
-                              ? "text-[#f87171]"
+                              ? "text-red-500"
                               : "text-foreground/60",
                         ].join(" ")}
                       >
@@ -7017,12 +5078,99 @@ export default function ApiTestPage() {
 
                 <div className="min-h-0 flex-1 overflow-y-auto p-3">
                   <div className="space-y-3">
-                    <div className="rounded-xl border border-white/5 bg-background/20 p-3">
+                    <div className="rounded-xl border border-black/[0.08] bg-background p-4">
+                      <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+                        선택한 API
+                      </p>
+                      <p className="mt-2 text-lg font-semibold leading-tight text-foreground">
+                        {selectedRouteProfile.model}
+                      </p>
+                      <p className="mt-2 font-mono text-[11px] text-black/48">
+                        {selectedRouteProfile.endpoint}
+                      </p>
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        <div className="rounded-lg border border-black/[0.06] bg-white px-3 py-2">
+                          <p className="font-mono text-[10px] uppercase text-black/36">
+                            latency
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-foreground">
+                            {selectedRouteProfile.latency}
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-black/[0.06] bg-white px-3 py-2">
+                          <p className="font-mono text-[10px] uppercase text-black/36">
+                            cost
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-foreground">
+                            {selectedRouteProfile.cost}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-black/[0.08] bg-white p-3">
+                      <div className="space-y-3">
+                        {[
+                          {
+                            step: "1",
+                            label: "API 선택",
+                            value:
+                              selectedApiItem?.name ?? selectedRouteProfile.model,
+                            active: true,
+                          },
+                          {
+                            step: "2",
+                            label: "Playground 테스트",
+                            value: selectedIsRunning
+                              ? "실행 중"
+                              : selectedHasResult
+                                ? "완료"
+                                : "입력 후 실행",
+                            active: selectedIsRunning || selectedHasResult,
+                          },
+                          {
+                            step: "3",
+                            label: "사용 결정",
+                            value: selectedHasResult
+                              ? "응답 검토 가능"
+                              : "결과 대기",
+                            active: selectedHasResult,
+                          },
+                        ].map(({ step, label, value, active }) => (
+                          <div key={step} className="flex items-center gap-3">
+                            <span
+                              className={[
+                                "inline-flex h-6 w-6 items-center justify-center rounded-full border font-mono text-[10px]",
+                                active
+                                  ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700"
+                                  : "border-black/[0.08] bg-background text-black/40",
+                              ].join(" ")}
+                            >
+                              {step}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-foreground">
+                                {label}
+                              </p>
+                              <p className="truncate font-mono text-[10px] text-black/40">
+                                {value}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <details className="group rounded-xl border border-black/[0.08] bg-background p-3">
+                      <summary className="cursor-pointer list-none font-mono text-xs text-foreground/60 transition-colors group-open:text-foreground">
+                        Advanced request payload
+                      </summary>
+                      <div className="mt-3">
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-mono text-xs text-foreground/60">
                           Request
                         </p>
-                        <span className="rounded-lg border border-white/10 bg-background/30 px-2 py-0.5 text-[11px] text-foreground/60">
+                        <span className="rounded-lg border border-black/[0.08] bg-white px-2 py-0.5 text-[11px] text-foreground/60">
                           {selectedApi === "stt" ||
                           selectedApi === "voiceClone" ||
                           selectedApi === "image2text"
@@ -7037,7 +5185,7 @@ export default function ApiTestPage() {
                         }}
                         placeholder={`{\n  "model": "Qwen/Qwen3.6-35B-A3B",\n  "input": "직접 입력한 내용"\n}`}
                         rows={9}
-                        className="mt-3 min-h-[180px] w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 font-mono text-[12px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+                        className="mt-3 min-h-[160px] w-full resize-none rounded-xl border border-black/[0.08] bg-white px-4 py-3 font-mono text-[12px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/20"
                       />
                       <div className="mt-3 flex items-center justify-between gap-3">
                         <p className="text-xs text-foreground/60">
@@ -7048,34 +5196,31 @@ export default function ApiTestPage() {
                           onClick={sendConsoleRequest}
                           disabled={
                             (selectedApi === "llm" && isChatLoading) ||
-                            (selectedApi === "adCopy" && isAdCopyLoading) ||
-                            (selectedApi === "summarize" &&
-                              isSummarizeLoading) ||
-                            (selectedApi === "sentiment" &&
-                              isSentimentLoading) ||
-                            (selectedApi === "ner" && isNerLoading) ||
-                            (selectedApi === "textToSql" && isTextToSqlLoading)
+                            (selectedApi === "embedding" && isEmbeddingLoading) ||
+                            (selectedApi === "reranker" && isRerankLoading)
                           }
                           className={[
-                            "rounded-xl border px-5 py-3 text-xs font-medium transition-colors",
-                            "border-accent/40 bg-accent/10 text-accent hover:bg-accent/15",
+                            "rounded-xl border px-4 py-2.5 text-xs font-medium transition-colors",
+                            "border-accent/35 bg-accent/10 text-accent hover:bg-accent/15",
                             "disabled:cursor-not-allowed disabled:opacity-50",
                             consoleSubmitShake ? "console-shake" : "",
                           ].join(" ")}
                         >
                           {(selectedApi === "llm" && isChatLoading) ||
-                          (selectedApi === "adCopy" && isAdCopyLoading) ||
-                          (selectedApi === "summarize" && isSummarizeLoading) ||
-                          (selectedApi === "sentiment" && isSentimentLoading) ||
-                          (selectedApi === "ner" && isNerLoading) ||
-                          (selectedApi === "textToSql" && isTextToSqlLoading)
+                          (selectedApi === "embedding" && isEmbeddingLoading) ||
+                          (selectedApi === "reranker" && isRerankLoading)
                             ? "전송 중..."
                             : "요청 전송"}
                         </button>
                       </div>
-                    </div>
+                      </div>
+                    </details>
 
-                    <div className="rounded-xl border border-white/5 bg-background/20 p-3">
+                    <details className="group rounded-xl border border-black/[0.08] bg-background p-3">
+                      <summary className="cursor-pointer list-none font-mono text-xs text-foreground/60 transition-colors group-open:text-foreground">
+                        Raw response
+                      </summary>
+                      <div className="mt-3">
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-mono text-xs text-foreground/60">
                           Response
@@ -7123,7 +5268,7 @@ export default function ApiTestPage() {
                                 "inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
                                 consoleCopied
                                   ? "border-accent/50 bg-accent/10 text-accent"
-                                  : "border-white/10 bg-background/30 text-foreground/70 hover:border-accent/40 hover:text-accent",
+                                  : "border-black/[0.08] bg-white text-foreground/70 hover:border-accent/40 hover:text-accent",
                               ].join(" ")}
                             >
                               {consoleCopied ? (
@@ -7140,7 +5285,8 @@ export default function ApiTestPage() {
                           아직 응답 데이터가 없습니다.
                         </div>
                       )}
-                    </div>
+                      </div>
+                    </details>
 
                     {selectedApi === "llm" ? (
                       <DeveloperCodeSection
@@ -7172,100 +5318,6 @@ export default function ApiTestPage() {
                               /api/rerank
                             </span>{" "}
                             프록시를 통해 호출합니다.
-                          </>
-                        }
-                      />
-                    ) : selectedApi === "adCopy" ? (
-                      <PlaygroundDeveloperCodeSection
-                        devCodeOpen={adCopyDevCodeOpen}
-                        setDevCodeOpen={setAdCopyDevCodeOpen}
-                        devCodeCopied={adCopyDevCodeCopied}
-                        setDevCodeCopied={setAdCopyDevCodeCopied}
-                        codePython={adCopyDevCodePython}
-                        footer={
-                          <>
-                            <span className="text-foreground/80">
-                              POST /api/ad-copy
-                            </span>
-                            와 동일한 JSON 본문입니다.{" "}
-                            <span className="font-mono text-foreground/70">
-                              BASE_URL
-                            </span>
-                            을 실행 환경에 맞게 바꾸고, 필요 시{" "}
-                            <span className="font-mono text-foreground/70">
-                              Authorization
-                            </span>{" "}
-                            헤더를 켜세요. 위 요청은{" "}
-                            <span className="text-foreground/80">
-                              /api/ad-copy
-                            </span>{" "}
-                            라우트로 전송됩니다.
-                          </>
-                        }
-                      />
-                    ) : selectedApi === "summarize" ? (
-                      <PlaygroundDeveloperCodeSection
-                        devCodeOpen={summarizeDevCodeOpen}
-                        setDevCodeOpen={setSummarizeDevCodeOpen}
-                        devCodeCopied={summarizeDevCodeCopied}
-                        setDevCodeCopied={setSummarizeDevCodeCopied}
-                        codePython={summarizeDevCodePython}
-                        footer={
-                          <>
-                            데모 앱은{" "}
-                            <span className="text-foreground/80">
-                              /api/summarize
-                            </span>{" "}
-                            프록시를 통해 텍스트 요약을 생성합니다.
-                          </>
-                        }
-                      />
-                    ) : selectedApi === "sentiment" ? (
-                      <PlaygroundDeveloperCodeSection
-                        devCodeOpen={sentimentDevCodeOpen}
-                        setDevCodeOpen={setSentimentDevCodeOpen}
-                        devCodeCopied={sentimentDevCodeCopied}
-                        setDevCodeCopied={setSentimentDevCodeCopied}
-                        codePython={sentimentDevCodePython}
-                        footer={
-                          <>
-                            데모 앱은{" "}
-                            <span className="text-foreground/80">
-                              /api/sentiment
-                            </span>{" "}
-                            프록시를 통해 리뷰 감정 분석 결과를 반환합니다.
-                          </>
-                        }
-                      />
-                    ) : selectedApi === "ner" ? (
-                      <PlaygroundDeveloperCodeSection
-                        devCodeOpen={nerDevCodeOpen}
-                        setDevCodeOpen={setNerDevCodeOpen}
-                        devCodeCopied={nerDevCodeCopied}
-                        setDevCodeCopied={setNerDevCodeCopied}
-                        codePython={nerDevCodePython}
-                        footer={
-                          <>
-                            데모 앱은{" "}
-                            <span className="text-foreground/80">/api/ner</span>{" "}
-                            프록시를 통해 개체명 인식 결과를 반환합니다.
-                          </>
-                        }
-                      />
-                    ) : selectedApi === "textToSql" ? (
-                      <PlaygroundDeveloperCodeSection
-                        devCodeOpen={textToSqlDevCodeOpen}
-                        setDevCodeOpen={setTextToSqlDevCodeOpen}
-                        devCodeCopied={textToSqlDevCodeCopied}
-                        setDevCodeCopied={setTextToSqlDevCodeCopied}
-                        codePython={textToSqlDevCodePython}
-                        footer={
-                          <>
-                            데모 앱은{" "}
-                            <span className="text-foreground/80">
-                              /api/text2sql
-                            </span>{" "}
-                            프록시를 통해 자연어→SQL 결과를 반환합니다.
                           </>
                         }
                       />
@@ -7343,23 +5395,11 @@ export default function ApiTestPage() {
                     ) : null}
 
                     {(selectedApi === "llm" && isChatLoading) ||
-                    (selectedApi === "adCopy" && isAdCopyLoading) ||
-                    (selectedApi === "summarize" && isSummarizeLoading) ||
-                    (selectedApi === "sentiment" && isSentimentLoading) ||
-                    (selectedApi === "ner" && isNerLoading) ||
-                    (selectedApi === "textToSql" && isTextToSqlLoading) ? (
+                    (selectedApi === "embedding" && isEmbeddingLoading) ||
+                    (selectedApi === "reranker" && isRerankLoading) ||
+                    (selectedApi === "stt" && isSttLoading) ? (
                       <div className="rounded-xl border border-accent/25 bg-accent/5 p-3 text-xs text-accent">
-                        {selectedApi === "adCopy"
-                          ? "카피 생성 중... (응답 대기)"
-                          : selectedApi === "summarize"
-                            ? "요약 생성 중... (응답 대기)"
-                            : selectedApi === "sentiment"
-                              ? "감정 분석 중... (응답 대기)"
-                              : selectedApi === "ner"
-                                ? "개체명 추출 중... (응답 대기)"
-                                : selectedApi === "textToSql"
-                                  ? "SQL 생성 중... (응답 대기)"
-                                  : "답변 생성 중... (응답 대기)"}
+                        응답 생성 중... (응답 대기)
                       </div>
                     ) : null}
 
@@ -7376,11 +5416,6 @@ export default function ApiTestPage() {
 
             {workflowBannerMounted &&
             (selectedApi === "llm" ||
-              selectedApi === "adCopy" ||
-              selectedApi === "summarize" ||
-              selectedApi === "sentiment" ||
-              selectedApi === "ner" ||
-              selectedApi === "textToSql" ||
               selectedApi === "reranker" ||
               selectedApi === "embedding" ||
               selectedApi === "tts" ||
@@ -7470,15 +5505,7 @@ export default function ApiTestPage() {
                       </p>
                     ) : selectedApi === "t2i" ? (
                       <p className="text-sm leading-relaxed text-foreground/90">
-                        이미지 생성 완료! 이미지에 어울리는 문구를{" "}
-                        <button
-                          type="button"
-                          onClick={() => moveToApiDetail("adCopy")}
-                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
-                        >
-                          [Ad Copy]
-                        </button>
-                        로 만들거나{" "}
+                        이미지 생성 완료! 결과 이미지를 기반으로{" "}
                         <button
                           type="button"
                           onClick={() => moveToApiDetail("llm")}
@@ -7508,12 +5535,7 @@ export default function ApiTestPage() {
                         </button>
                         으로 가사와 설명 문구를 작성해보세요.
                       </p>
-                    ) : (
-                      <SmartSolutionGuide
-                        selectedApi={selectedApi}
-                        onNavigateApi={moveToApiDetail}
-                      />
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </section>
@@ -7521,6 +5543,6 @@ export default function ApiTestPage() {
           </div>
         )}
       </div>
-    </div>
+    </PlatformShell>
   );
 }

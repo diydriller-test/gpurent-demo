@@ -21,9 +21,8 @@ function SignupModal() {
     router.back();
   }
 
-  function handleSuccess() {
-    router.back();
-    router.refresh();
+  function handleSuccess(nextPath: string) {
+    router.push(nextPath);
   }
 
   return (
@@ -37,7 +36,7 @@ function SignupModal() {
 
       {/* Modal card */}
       <div className="relative z-10 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="rounded-2xl border border-white/10 bg-surface/90 p-8 shadow-2xl backdrop-blur-sm">
+        <div className="rounded-xl border border-black/[0.08] bg-white p-6 shadow-2xl md:p-8">
           <SignupForm onSuccess={handleSuccess} onBack={handleClose} />
         </div>
       </div>

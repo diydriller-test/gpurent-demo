@@ -45,10 +45,6 @@ type Props = {
   formatTime: (ts: number) => string;
   liveNowText: string;
 
-  // Ad Copy
-  adCopyResult: string | null;
-  isAdCopyLoading: boolean;
-
   // Embedding
   embeddingVector: number[] | null;
   embeddingError: string | null;
@@ -129,8 +125,6 @@ export function ApiOutputPanel({
   endRef,
   formatTime,
   liveNowText,
-  adCopyResult,
-  isAdCopyLoading,
   embeddingVector,
   embeddingError,
   isEmbeddingLoading,
@@ -205,7 +199,7 @@ export function ApiOutputPanel({
           "inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
           isCopied
             ? "border-accent/50 bg-accent/10 text-accent"
-            : "border-white/10 bg-background/25 text-foreground/65 hover:border-accent/40 hover:text-accent",
+            : "border-black/[0.08] bg-background text-foreground/65 hover:border-accent/40 hover:text-accent",
           disabled ? "cursor-not-allowed opacity-45" : "",
         ].join(" ")}
       >
@@ -237,53 +231,35 @@ export function ApiOutputPanel({
         switch (selectedApi) {
           case "llm":
             return (
-              <div className="space-y-3">
+              <div className="mx-auto w-full max-w-4xl space-y-4">
                 {messages.length === 0 ? (
-                  <div className="flex justify-start">
-                    <div className="max-w-[94%] rounded-2xl border border-white/10 bg-background/30 p-3 text-foreground">
-                      <div className="flex items-start gap-3">
-                        <span className="relative mt-1 inline-flex h-2.5 w-2.5">
-                          <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-75 animate-ping" />
-                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
-                        </span>
+                  <div className="rounded-xl border border-black/[0.08] bg-white p-6 text-foreground shadow-[0_10px_40px_rgba(8,9,13,0.045)]">
+                    <div className="flex items-start gap-4">
+                      <span className="relative mt-1 inline-flex h-3 w-3">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+                        <span className="relative inline-flex h-3 w-3 rounded-full bg-accent" />
+                      </span>
 
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-xl border border-accent/25 bg-accent/5 px-2.5 py-1 text-[11px] font-mono text-accent">
-                              LIVE
-                            </span>
-                          </div>
-
-                          <div className="mt-2 text-sm leading-relaxed text-foreground/90">
-                            <span className="font-semibold">
-                              ✨{" "}
-                              <span className="text-accent">
-                                AI API 오마카세
-                              </span>{" "}
-                              텍스트 코스와{" "}
-                              <span className="text-accent font-bold">
-                                실시간
-                              </span>
-                              으로 연결되었습니다.
-                            </span>
-                            <br />
-                            <span>
-                              <span className="font-bold text-wood">
-                                고성능 언어 추론
-                              </span>
-                              으로 질문을 분석할 준비를 마쳤습니다.
-                            </span>
-                            <br />
-                            하단 입력창에 비즈니스 분석이나 텍스트 생성을
-                            요청해보세요.
-                          </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full border border-accent/25 bg-accent/5 px-2.5 py-1 text-[11px] font-mono text-accent">
+                            LLM API ready
+                          </span>
+                          <span className="rounded-full border border-black/[0.08] bg-background px-2.5 py-1 text-[11px] font-mono text-black/48">
+                            {liveNowText}
+                          </span>
                         </div>
-                      </div>
 
-                      <div className="mt-2 flex items-center justify-end gap-2">
-                        <span className="font-mono text-[11px] text-foreground/40">
-                          {liveNowText}
-                        </span>
+                        <div className="mt-5">
+                          <p className="text-2xl font-semibold leading-tight text-foreground">
+                            텍스트 생성 API를 바로 테스트해보세요.
+                          </p>
+                          <p className="mt-3 max-w-2xl text-sm leading-6 text-black/56">
+                            입력값, system prompt, temperature를 조정하며 응답
+                            품질과 형식을 확인할 수 있습니다. 결과가 맞으면 오른쪽
+                            패널에서 response와 코드 예제를 이어서 검토하세요.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -301,19 +277,22 @@ export function ApiOutputPanel({
                     >
                       <div
                         className={[
-                          "max-w-[94%] rounded-2xl border p-3",
+                          "max-w-[92%] rounded-xl border p-4 shadow-[0_10px_34px_rgba(8,9,13,0.045)]",
                           isUser
-                            ? "border-accent/35 bg-accent/10 text-foreground"
-                            : "border-white/10 bg-background/30 text-foreground",
+                            ? "border-black/[0.08] bg-foreground text-white"
+                            : "border-black/[0.08] bg-white text-foreground",
                         ].join(" ")}
                       >
                         {isUser ? (
-                          <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                          <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed text-white">
                             {m.content}
                           </pre>
                         ) : (
                           <div>
-                            <div className="mb-2 flex justify-end">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <span className="rounded-full border border-accent/25 bg-accent/5 px-2.5 py-1 font-mono text-[11px] text-accent">
+                                response
+                              </span>
                               {renderCopyButton(`llm-${m.id}`, () =>
                                 void copyText(`llm-${m.id}`, m.content),
                               )}
@@ -325,7 +304,12 @@ export function ApiOutputPanel({
                           </div>
                         )}
                         <div className="mt-2 flex items-center justify-end gap-2">
-                          <span className="font-mono text-[11px] text-foreground/40">
+                          <span
+                            className={[
+                              "font-mono text-[11px]",
+                              isUser ? "text-white/45" : "text-foreground/40",
+                            ].join(" ")}
+                          >
                             {formatTime(m.createdAt)}
                           </span>
                         </div>
@@ -338,22 +322,10 @@ export function ApiOutputPanel({
               </div>
             );
 
-          case "summarize":
-            return null;
-
-          case "sentiment":
-            return null;
-
-          case "ner":
-            return null;
-
-          case "textToSql":
-            return null;
-
           case "embedding":
             return (
               <div className="space-y-2">
-                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-3">
+                <div className="rounded-xl border border-accent/25 bg-accent/5 p-3">
                   {embeddingError && !isEmbeddingLoading && !embeddingVector ? (
                     <div className="mt-3 rounded-xl border border-white/5 bg-background/20 p-3">
                       <p className="text-sm font-semibold text-foreground">
@@ -412,7 +384,7 @@ export function ApiOutputPanel({
                         아직 생성 결과가 없습니다.
                       </p>
                       <p className="mt-1 text-xs text-foreground/60">
-                        하단 입력 후 "임베딩 생성"을 눌러보세요.
+                        하단 입력 후 &quot;임베딩 생성&quot;을 눌러보세요.
                       </p>
                     </div>
                   )}
@@ -425,7 +397,7 @@ export function ApiOutputPanel({
               <div className="flex flex-col gap-3 lg:h-full lg:min-h-0">
                 <div className="flex-1 lg:min-h-0 lg:overflow-hidden">
                   <div className="flex flex-col gap-3 lg:h-full lg:min-h-0 lg:flex-row lg:overflow-hidden">
-                    <div className="w-full min-h-[220px] rounded-2xl border border-white/10 bg-background/25 p-4 lg:min-h-0 lg:w-5/12">
+                    <div className="w-full min-h-[220px] rounded-xl border border-white/10 bg-background/25 p-4 lg:min-h-0 lg:w-5/12">
                       <div className="h-full min-h-0 overflow-y-auto pr-1">
                         <div>
                           <p className="font-mono text-xs text-foreground/60">
@@ -480,7 +452,7 @@ export function ApiOutputPanel({
                       </div>
                     </div>
 
-                    <div className="w-full min-h-[220px] rounded-2xl border border-accent/25 bg-accent/5 p-4 lg:min-h-0 lg:w-7/12 lg:flex lg:flex-col">
+                    <div className="w-full min-h-[220px] rounded-xl border border-accent/25 bg-accent/5 p-4 lg:min-h-0 lg:w-7/12 lg:flex lg:flex-col">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="font-mono text-xs text-accent">
@@ -566,7 +538,7 @@ export function ApiOutputPanel({
                               아직 재정렬 결과가 없습니다.
                             </p>
                             <p className="mt-1 text-xs text-foreground/60">
-                              Query와 Documents를 입력한 뒤 "재정렬 실행"을
+                              Query와 Documents를 입력한 뒤 &quot;재정렬 실행&quot;을
                               눌러보세요.
                             </p>
                           </div>
@@ -587,10 +559,10 @@ export function ApiOutputPanel({
                   preload="auto"
                   className="hidden"
                 />
-                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                <div className="rounded-xl border border-accent/25 bg-accent/5 p-4">
                   <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-mono text-xs text-accent">Audio Player</p>
+                      <p className="font-mono text-xs text-accent">오디오 플레이어</p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         합성 후 실제 오디오 재생 · 진행률은 재생 시간에 따라
                         갱신됩니다.
@@ -647,7 +619,7 @@ export function ApiOutputPanel({
                         disabled={!ttsAudioUrl}
                         onClick={handleTtsPlayPause}
                         className={[
-                          "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-background shadow-[0_0_40px_rgba(232, 136, 138,0.22)] transition-opacity",
+                          "inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-background shadow-[0_0_40px_rgba(232, 136, 138,0.22)] transition-opacity",
                           ttsAudioUrl
                             ? "hover:opacity-90"
                             : "cursor-not-allowed opacity-40",
@@ -734,7 +706,7 @@ export function ApiOutputPanel({
           case "stt":
             return (
               <div className="space-y-3">
-                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                <div className="rounded-xl border border-accent/25 bg-accent/5 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-mono text-xs text-accent">
@@ -785,7 +757,7 @@ export function ApiOutputPanel({
                         아직 변환 결과가 없습니다.
                       </p>
                       <p className="mt-1 text-xs text-foreground/60">
-                        하단에서 파일 업로드 또는 마이크 UI 후 "변환하기"를
+                        하단에서 파일 업로드 또는 마이크 UI 후 &quot;변환하기&quot;를
                         눌러보세요.
                       </p>
                     </div>
@@ -811,10 +783,10 @@ export function ApiOutputPanel({
                   preload="auto"
                   className="hidden"
                 />
-                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                <div className="rounded-xl border border-accent/25 bg-accent/5 p-4">
                   <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-mono text-xs text-accent">Voice Clone Output</p>
+                      <p className="font-mono text-xs text-accent">Voice Clone 결과</p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         참조 음성의 목소리로 클론된 오디오가 여기에 재생됩니다.
                       </p>
@@ -870,7 +842,7 @@ export function ApiOutputPanel({
                         disabled={!vcAudioUrl}
                         onClick={handleVcPlayPause}
                         className={[
-                          "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity",
+                          "inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity",
                           vcAudioUrl
                             ? "hover:opacity-90"
                             : "cursor-not-allowed opacity-40",
@@ -957,8 +929,8 @@ export function ApiOutputPanel({
           case "image2text":
             return (
               <div className="min-w-0 space-y-3">
-                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
-                  <p className="font-mono text-xs text-accent">Image2Text Output</p>
+                <div className="rounded-xl border border-accent/25 bg-accent/5 p-4">
+                  <p className="font-mono text-xs text-accent">Image2Text 결과</p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
                     이미지 분석 결과가 여기에 표시됩니다.
                   </p>
@@ -1007,10 +979,10 @@ export function ApiOutputPanel({
                   preload="auto"
                   className="hidden"
                 />
-                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                <div className="rounded-xl border border-accent/25 bg-accent/5 p-4">
                   <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-mono text-xs text-accent">Audio Player</p>
+                      <p className="font-mono text-xs text-accent">오디오 플레이어</p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         생성 후 실제 오디오 재생 · 진행률은 재생 시간에 따라
                         갱신됩니다.
@@ -1067,7 +1039,7 @@ export function ApiOutputPanel({
                         disabled={!t2mAudioUrl}
                         onClick={handleT2mPlayPause}
                         className={[
-                          "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity",
+                          "inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity",
                           t2mAudioUrl
                             ? "hover:opacity-90"
                             : "cursor-not-allowed opacity-40",
@@ -1158,10 +1130,10 @@ export function ApiOutputPanel({
           case "t2i":
             return (
               <div className="min-w-0 space-y-3">
-                <div className="rounded-2xl border border-accent/25 bg-accent/5 p-4">
+                <div className="rounded-xl border border-accent/25 bg-accent/5 p-4">
                   <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-mono text-xs text-accent">Image Viewer</p>
+                      <p className="font-mono text-xs text-accent">이미지 뷰어</p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         생성 후 이미지가 표시됩니다.
                       </p>
@@ -1220,7 +1192,7 @@ export function ApiOutputPanel({
 
           default:
             return (
-              <div className="rounded-2xl border border-white/5 bg-background/20 p-4">
+              <div className="rounded-xl border border-white/5 bg-background/20 p-4">
                 <p className="text-sm font-semibold text-foreground">
                   지원 준비 중입니다.
                 </p>

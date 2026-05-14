@@ -7,7 +7,7 @@ import { login } from "@/lib/api";
 import { setToken } from "@/lib/token";
 
 interface LoginFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (nextPath: string) => void;
   onBack?: () => void;
 }
 
@@ -44,10 +44,11 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
     try {
       const { access_token } = await login({ email, password });
       setToken(access_token);
+      const nextPath = redirectPath ?? "/profile?firstRun=1";
       if (onSuccess) {
-        onSuccess();
+        onSuccess(nextPath);
       } else {
-        router.push(redirectPath ?? "/api-test");
+        router.push(nextPath);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");
@@ -67,16 +68,21 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
         <span>뒤로가기</span>
       </button>
 
-      <div className="mb-8 mt-4 text-center">
-        <h1 className="text-2xl font-bold text-foreground">로그인</h1>
-        <p className="mt-2 text-sm text-foreground/60">
-          AI API 오마카세를 사용하려면 로그인하세요
+      <div className="mb-8 mt-4">
+        <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
+          첫 실행
+        </p>
+        <h1 className="mt-3 text-[30px] font-semibold leading-tight text-[#08090d]">
+          첫 실행 흐름으로 돌아가기
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-black/56">
+          로그인 후 API key, 실행 코드, 플레이그라운드가 한 화면에서 이어집니다.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-500">
             {error}
           </div>
         )}
@@ -84,7 +90,7 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
         <div>
           <label
             htmlFor="login-email"
-            className="mb-2 block text-sm font-medium text-foreground/80"
+            className="mb-2 block text-sm font-medium text-black/70"
           >
             이메일
           </label>
@@ -95,14 +101,14 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
             placeholder="you@example.com"
             required
             disabled={isLoading}
-            className="w-full rounded-xl border border-white/10 bg-background/50 px-4 py-3 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
+            className="w-full rounded-lg border border-black/[0.08] bg-white px-4 py-3 text-foreground placeholder:text-black/32 focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-black/[0.04] disabled:opacity-50"
           />
         </div>
 
         <div>
           <label
             htmlFor="login-password"
-            className="mb-2 block text-sm font-medium text-foreground/80"
+            className="mb-2 block text-sm font-medium text-black/70"
           >
             비밀번호
           </label>
@@ -113,20 +119,20 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
             placeholder="••••••••"
             required
             disabled={isLoading}
-            className="w-full rounded-xl border border-white/10 bg-background/50 px-4 py-3 text-foreground placeholder:text-foreground/40 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
+            className="w-full rounded-lg border border-black/[0.08] bg-white px-4 py-3 text-foreground placeholder:text-black/32 focus:border-black/20 focus:outline-none focus:ring-2 focus:ring-black/[0.04] disabled:opacity-50"
           />
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full rounded-xl bg-accent py-3 font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-lg bg-[#08090d] py-3 font-medium text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isLoading ? "처리 중..." : "로그인"}
+          {isLoading ? "작업 공간을 여는 중..." : "첫 실행으로 계속하기"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-foreground/60">
+      <p className="mt-6 text-center text-sm text-black/52">
         계정이 없으신가요?{" "}
         <Link
           href={redirectPath ? `/signup?redirect=${encodeURIComponent(redirectPath)}` : "/signup"}

@@ -65,10 +65,11 @@ export function PlaygroundDeveloperCodeSection({
           "transition-colors",
         ].join(" ")}
       >
-        {`[</> Get Developer Code]`}
+        {devCodeOpen ? "코드 예제 닫기" : "코드 예제 보기"}
       </button>
 
       <div
+        aria-hidden={!devCodeOpen}
         className={[
           "overflow-hidden transition-all duration-220 ease-out",
           devCodeOpen
@@ -76,42 +77,46 @@ export function PlaygroundDeveloperCodeSection({
             : "max-h-0 opacity-0 pointer-events-none mt-3",
         ].join(" ")}
       >
-        <div className="relative rounded-xl border border-foreground/10 bg-surface p-3">
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(codePython);
-                setDevCodeCopied(true);
-                window.setTimeout(() => {
-                  setDevCodeCopied(false);
-                }, 1200);
-              } catch {
-                setDevCodeCopied(false);
-              }
-            }}
-            aria-label={devCodeCopied ? "코드 복사 완료" : "코드 복사"}
-            title={devCodeCopied ? "복사됨" : "복사"}
-            className={[
-              "absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
-              devCodeCopied
-                ? "border-accent/50 bg-accent/10 text-accent"
-                : "border-foreground/12 bg-background/40 text-foreground/60 hover:border-accent/50 hover:text-accent-bright",
-            ].join(" ")}
-          >
-            {devCodeCopied ? (
-              <CheckIcon className="h-4 w-4" />
-            ) : (
-              <CopyIcon className="h-4 w-4" />
-            )}
-          </button>
+        {devCodeOpen ? (
+          <>
+            <div className="relative rounded-xl border border-foreground/10 bg-surface p-3">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(codePython);
+                    setDevCodeCopied(true);
+                    window.setTimeout(() => {
+                      setDevCodeCopied(false);
+                    }, 1200);
+                  } catch {
+                    setDevCodeCopied(false);
+                  }
+                }}
+                aria-label={devCodeCopied ? "코드 복사 완료" : "코드 복사"}
+                title={devCodeCopied ? "복사됨" : "복사"}
+                className={[
+                  "absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
+                  devCodeCopied
+                    ? "border-accent/50 bg-accent/10 text-accent"
+                    : "border-foreground/12 bg-background/40 text-foreground/60 hover:border-accent/50 hover:text-accent-bright",
+                ].join(" ")}
+              >
+                {devCodeCopied ? (
+                  <CheckIcon className="h-4 w-4" />
+                ) : (
+                  <CopyIcon className="h-4 w-4" />
+                )}
+              </button>
 
-          <pre className="mt-1 max-h-[320px] overflow-auto whitespace-pre rounded-lg border border-foreground/8 bg-background/60 p-3 font-mono text-[12px] leading-relaxed text-foreground/90">
-            <code>{renderHighlightedPython(codePython)}</code>
-          </pre>
-        </div>
+              <pre className="mt-1 max-h-[320px] overflow-auto whitespace-pre rounded-lg border border-foreground/8 bg-background/60 p-3 pr-12 font-mono text-[12px] leading-relaxed text-foreground/90">
+                <code>{renderHighlightedPython(codePython)}</code>
+              </pre>
+            </div>
 
-        <div className="mt-3 text-[11px] text-foreground/60">{footer}</div>
+            <div className="mt-3 text-[11px] text-foreground/60">{footer}</div>
+          </>
+        ) : null}
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
 
 type InfoRow = {

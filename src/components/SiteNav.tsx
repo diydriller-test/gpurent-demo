@@ -11,10 +11,10 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "홈" },
-  { href: "/api-test", label: "API 체험" },
-  { href: "/plans", label: "플랜" },
-  { href: "/docs", label: "API 문서" },
+  { href: "/", label: "플랫폼" },
+  { href: "/api-test", label: "워크벤치" },
+  { href: "/plans", label: "요금제" },
+  { href: "/docs", label: "Docs" },
 ];
 
 export function SiteNav({
@@ -26,7 +26,8 @@ export function SiteNav({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    setMobileOpen(false);
+    const id = window.setTimeout(() => setMobileOpen(false), 0);
+    return () => window.clearTimeout(id);
   }, [pathname]);
 
   const activeHref = useMemo(() => {
@@ -43,37 +44,38 @@ export function SiteNav({
     <nav
       className={[
         fixed ? "fixed top-0 left-0 right-0 z-50" : "",
-        "border-b border-white/[0.06] bg-black backdrop-blur-xl",
+        "border-b border-black/[0.06] bg-white/88 backdrop-blur-xl",
       ].join(" ")}
     >
-      <div className="flex h-[60px] w-full items-center px-4 md:px-10">
-        {/* 로고 */}
+      <div className="flex h-[72px] w-full items-center px-5 md:px-8 lg:px-10">
         <Link
           href="/"
-          className="flex items-center gap-2.5 shrink-0"
+          className="flex shrink-0 items-center gap-3"
           onClick={() => {
             if (pathname === "/") window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         >
-          <div className="flex items-baseline gap-x-1.5">
-            <span className="font-serif text-[22px] tracking-wide text-white" style={{fontWeight: 900}}>
-              AI API
+          <div className="flex h-7 w-7 items-center justify-center rounded-md border border-black/[0.08] bg-[#08090d] text-[11px] font-semibold text-white">
+            AI
+          </div>
+          <div className="flex flex-col leading-none">
+            <span className="text-[15px] font-semibold tracking-normal text-[#08090d]">
+              AI API Omakase
             </span>
-            <span className="font-serif text-[22px] tracking-wide text-white" style={{fontWeight: 900}}>
-              오마카세
+            <span className="mt-1 font-mono text-[10px] uppercase tracking-normal text-black/36">
+              control plane
             </span>
           </div>
         </Link>
 
-        {/* 데스크탑 — 네비 중앙, 인증 우측 */}
         <div className="hidden flex-1 items-center justify-center md:flex">
-          <div className="flex items-center gap-9">
+          <div className="flex items-center gap-1 rounded-lg border border-black/[0.06] bg-black/[0.025] p-1">
             {NAV_ITEMS.map((item) =>
               item.href === activeHref ? (
                 <span
                   key={item.href}
                   aria-current="page"
-                  className="text-[15px] font-medium text-white/90"
+                  className="rounded-md bg-white px-3 py-1.5 text-[13px] font-medium text-[#08090d] shadow-[0_1px_2px_rgba(8,9,13,0.04)]"
                 >
                   {item.label}
                 </span>
@@ -81,7 +83,7 @@ export function SiteNav({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-[15px] font-normal text-white/55 transition-colors hover:text-white/85"
+                  className="rounded-md px-3 py-1.5 text-[13px] font-medium text-black/48 transition-colors hover:text-black/78"
                 >
                   {item.label}
                 </Link>
@@ -93,13 +95,13 @@ export function SiteNav({
           <NavAuthButton />
         </div>
 
-        {/* 모바일 햄버거 */}
         <div className="ml-auto flex items-center md:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? "메뉴 닫기" : "메뉴 열기"}
-            className="rounded-lg border border-white/12 bg-white/[0.04] p-2 text-white/55 transition-colors hover:border-white/25 hover:text-white/85"
+            aria-expanded={mobileOpen}
+            className="rounded-lg border border-black/[0.08] bg-white p-2 text-black/55 shadow-[0_1px_2px_rgba(8,9,13,0.04)] transition-colors hover:border-black/20 hover:text-black"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -129,10 +131,9 @@ export function SiteNav({
         </div>
       </div>
 
-      {/* 모바일 메뉴 */}
       {mobileOpen && (
         <div className="md:hidden">
-          <div className="border-t border-white/6 bg-black backdrop-blur-xl">
+          <div className="border-t border-black/[0.06] bg-white/95 backdrop-blur-xl">
             <div className="mx-auto max-w-6xl px-4 py-4">
               <div className="flex flex-col gap-2">
                 {NAV_ITEMS.map((item) =>
@@ -140,7 +141,7 @@ export function SiteNav({
                     <span
                       key={item.href}
                       aria-current="page"
-                      className="rounded-xl border border-white/14 bg-white/[0.07] px-4 py-3 text-sm font-medium text-white/88"
+                      className="rounded-lg border border-black/[0.08] bg-black/[0.04] px-4 py-3 text-sm font-medium text-[#08090d]"
                     >
                       {item.label}
                     </span>
@@ -149,14 +150,14 @@ export function SiteNav({
                       key={item.href}
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
-                      className="rounded-xl border border-white/7 bg-white/[0.02] px-4 py-3 text-sm font-medium text-white/55 transition-colors hover:border-white/18 hover:bg-white/[0.05] hover:text-white/85"
+                      className="rounded-lg border border-black/[0.06] bg-white px-4 py-3 text-sm font-medium text-black/56 transition-colors hover:border-black/14 hover:text-black"
                     >
                       {item.label}
                     </Link>
                   ),
                 )}
               </div>
-              <div className="mt-4 border-t border-white/6 pt-4">
+              <div className="mt-4 border-t border-black/[0.06] pt-4">
                 <NavAuthButton mobile />
               </div>
             </div>

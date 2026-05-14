@@ -1,10 +1,5 @@
 export type ApiId =
   | "llm"
-  | "adCopy"
-  | "summarize"
-  | "sentiment"
-  | "ner"
-  | "textToSql"
   | "embedding"
   | "reranker"
   | "tts"
@@ -13,22 +8,6 @@ export type ApiId =
   | "image2text"
   | "t2m"
   | "t2i";
-
-/** POST /api/sentiment 응답과 동일 구조 */
-export type SentimentAnalysisPayload = {
-  overall: { label: string; score: number };
-  aspects: Array<{ aspect: string; label: string; score: number }>;
-};
-
-/** POST /api/ner 응답과 동일 구조 */
-export type NerPayload = {
-  entities: Array<{ text: string; label: string; category: string }>;
-};
-
-/** POST /api/text2sql 응답과 동일 구조 */
-export type TextToSqlPayload = {
-  sql: string;
-};
 
 export type ChatRole = "user" | "assistant";
 
@@ -50,4 +29,3 @@ export type RerankResult = {
 export type SttLanguage = string;
 
 export type SttHelpTooltipId = "vad" | "beam";
-

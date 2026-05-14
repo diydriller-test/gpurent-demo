@@ -1,19 +1,20 @@
 @import "tailwindcss";
 
-/* AI API 오마카세 — 프리미엄 동양 미니멀리즘 · 한지 미색 · 다크 레드 · 골드 */
 :root {
   color-scheme: light;
-  --background: #F5F2ED;
-  --foreground: #1C1008;
-  --accent: #7A1B16;
-  --accent-bright: #9B2318;
-  --accent-dim: #5C1210;
-  --wood: #A07830;
-  --wood-dim: #7A5A22;
-  --surface: #EDE9E2;
-  --surface-hover: #E5DFD5;
-  --accent-glow: rgba(122, 27, 22, 0.15);
-  --wood-glow: rgba(160, 120, 48, 0.12);
+  --background: #F7F8FB;
+  --foreground: #08090D;
+  --accent: #0A84FF;
+  --accent-bright: #0066CC;
+  --accent-dim: #0757A6;
+  --wood: #667085;
+  --wood-dim: #475467;
+  --surface: #FFFFFF;
+  --surface-hover: #F1F3F7;
+  --accent-glow: rgba(10, 132, 255, 0.12);
+  --wood-glow: rgba(102, 112, 133, 0.10);
+  --platform-line: rgba(8, 9, 13, 0.08);
+  --platform-muted: rgba(8, 9, 13, 0.56);
 }
 
 @theme inline {
@@ -26,15 +27,64 @@
   --color-wood-dim: var(--wood-dim);
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
-  --font-sans: 'Outfit', system-ui, sans-serif;
-  /* 나눔명조 — Google Fonts 직접 로드로 한국어 완전 지원 */
-  --font-serif: 'Nanum Myeongjo', 'Apple Myungjo', 'AppleMyungjo', 'Batang', 'Gungsuh', Georgia, serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: ui-serif, Georgia, serif;
+  --font-mono: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", monospace;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
+}
+
+.bg-grid-pattern {
+  background:
+    linear-gradient(rgba(8, 9, 13, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(8, 9, 13, 0.035) 1px, transparent 1px),
+    var(--background);
+  background-size: 48px 48px;
+}
+
+.platform-shell {
+  background:
+    radial-gradient(circle at 18% -10%, rgba(10, 132, 255, 0.08), transparent 34rem),
+    linear-gradient(180deg, #fbfcfe 0%, var(--background) 24rem);
+}
+
+.platform-panel {
+  border: 1px solid var(--platform-line);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 1px 2px rgba(8, 9, 13, 0.035);
+}
+
+.platform-card {
+  border: 1px solid var(--platform-line);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(8, 9, 13, 0.035);
+}
+
+.platform-card:hover {
+  border-color: rgba(8, 9, 13, 0.14);
+}
+
+.platform-button-primary {
+  background: #08090d;
+  color: #fff;
+}
+
+.platform-button-primary:hover {
+  background: #000;
+}
+
+.platform-button-secondary {
+  border: 1px solid var(--platform-line);
+  background: #fff;
+  color: rgba(8, 9, 13, 0.72);
+}
+
+.platform-button-secondary:hover {
+  border-color: rgba(8, 9, 13, 0.18);
+  color: #08090d;
 }
 
 /* 수묵화 배경 컨테이너 */
@@ -100,10 +150,10 @@ body {
 .docs-toc-link-active {
   color: var(--accent);
   font-weight: 500;
-  background: rgba(122, 27, 22, 0.06);
+  background: rgba(10, 132, 255, 0.08);
   box-shadow:
-    inset 0 0 12px rgba(122, 27, 22, 0.04),
-    0 0 0 1px rgba(122, 27, 22, 0.20);
+    inset 0 0 12px rgba(10, 132, 255, 0.04),
+    0 0 0 1px rgba(10, 132, 255, 0.20);
 }
 
 /* API 벨트 카드 */

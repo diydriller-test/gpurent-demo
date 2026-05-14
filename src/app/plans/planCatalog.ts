@@ -41,36 +41,6 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     company_name: "코그로보",
   },
   {
-    id: 91006,
-    name: "Modu Ad Copy API",
-    company_id: 1,
-    company_name: "코그로보",
-  },
-  {
-    id: 91007,
-    name: "Modu Text Summary API",
-    company_id: 1,
-    company_name: "코그로보",
-  },
-  {
-    id: 91008,
-    name: "Modu Review Sentiment API",
-    company_id: 1,
-    company_name: "코그로보",
-  },
-  {
-    id: 91009,
-    name: "Modu NER API",
-    company_id: 1,
-    company_name: "코그로보",
-  },
-  {
-    id: 91010,
-    name: "Modu Text-to-SQL API",
-    company_id: 1,
-    company_name: "코그로보",
-  },
-  {
     id: 91012,
     name: "Vision OCR",
     company_id: 1,
@@ -129,11 +99,6 @@ export const DEMO_PLANS_THREE_TIERS: Plan[] = [
 /** api-test `selectedApi`와 동일한 문자열 (쿼리 `?chapter=` 값) */
 export type PlansChapterParam =
   | "llm"
-  | "adCopy"
-  | "summarize"
-  | "sentiment"
-  | "ner"
-  | "textToSql"
   | "embedding"
   | "reranker"
   | "tts"
@@ -149,16 +114,6 @@ export function chapterQueryToPlanTask(
   switch (chapter) {
     case "llm":
       return "Text Generation";
-    case "adCopy":
-      return "Ad Copy";
-    case "summarize":
-      return "Text Summary";
-    case "sentiment":
-      return "Sentiment Analysis";
-    case "ner":
-      return "NER";
-    case "textToSql":
-      return "Text-to-SQL";
     case "embedding":
       return "Embedding";
     case "reranker":
@@ -183,11 +138,6 @@ export function chapterQueryToPlanTask(
 /** api-test 마켓플레이스 Tasks와 동일 */
 export type PlanTask =
   | "Text Generation"
-  | "Ad Copy"
-  | "Text Summary"
-  | "Sentiment Analysis"
-  | "NER"
-  | "Text-to-SQL"
   | "Embedding"
   | "Reranker"
   | "TTS"
@@ -207,11 +157,6 @@ export const PLAN_TASK_KEYS: PlanTask[] = [
   "Voice Clone",
   "Vision",
   "Text Generation",
-  "Ad Copy",
-  "Text Summary",
-  "Sentiment Analysis",
-  "NER",
-  "Text-to-SQL",
 ];
 
 /** 플랜/마켓 API 카드와 `Api`의 task_key를 매칭 */
@@ -219,11 +164,6 @@ export function getApiTask(api: Api): PlanTask | null {
   const k = api.task_key;
   if (
     k === "Text Generation" ||
-    k === "Ad Copy" ||
-    k === "Text Summary" ||
-    k === "Sentiment Analysis" ||
-    k === "NER" ||
-    k === "Text-to-SQL" ||
     k === "Embedding" ||
     k === "Reranker" ||
     k === "TTS" ||
@@ -241,11 +181,6 @@ export function getApiTask(api: Api): PlanTask | null {
 /** 카드 상단: 백엔드 `card_sublabel` 대신 TASK_META 고정 문구 사용 (베이스 모델명 비노출) */
 export const MODU_NLP_SURFACE_TASKS: readonly PlanTask[] = [
   "Text Generation",
-  "Ad Copy",
-  "Text Summary",
-  "Sentiment Analysis",
-  "NER",
-  "Text-to-SQL",
 ];
 
 const TASK_META: Record<
@@ -257,36 +192,6 @@ const TASK_META: Record<
     sublabel: "Qwen 3.6 • Text Generation",
     modelDisplay: "Qwen 3.6",
     tags: ["LLM", "Text-Gen"],
-  },
-  "Ad Copy": {
-    displayName: "Ad Copy",
-    sublabel: "광고 카피",
-    modelDisplay: "CopyWrite",
-    tags: ["Ad-Copy", "Marketing"],
-  },
-  "Text Summary": {
-    displayName: "Text Summary",
-    sublabel: "텍스트 요약",
-    modelDisplay: "Summarize",
-    tags: ["Summary", "NLP"],
-  },
-  "Sentiment Analysis": {
-    displayName: "Sentiment",
-    sublabel: "리뷰 감정 분석",
-    modelDisplay: "Sentiment",
-    tags: ["Sentiment", "Reviews"],
-  },
-  NER: {
-    displayName: "NER",
-    sublabel: "개체명 인식",
-    modelDisplay: "NER",
-    tags: ["NER", "NLP"],
-  },
-  "Text-to-SQL": {
-    displayName: "Text-to-SQL",
-    sublabel: "Text-to-SQL",
-    modelDisplay: "SQL",
-    tags: ["Text-to-SQL", "SQL", "Analytics"],
   },
   Embedding: {
     displayName: "텍스트 임베딩(Embedding)",
@@ -368,39 +273,6 @@ export function inferPlanTask(name: string): PlanTask | null {
     return "Text-to-Music";
   if (/text[-\s]?to[-\s]?image|t2i|image[-\s]?gen|imagegen|이미지.*생성|텍스트.*이미지/i.test(n))
     return "Image Generation";
-  if (
-    /\bad[-\s]?copy\b|광고\s*카피|advertising\s*copy|copywriting|copy[-\s]?write/i.test(
-      name,
-    )
-  ) {
-    return "Ad Copy";
-  }
-  if (
-    /\bsummar(y|ize|ization)\b|텍스트\s*요약|요약\s*api/i.test(n) ||
-    /text\s*summary/i.test(name)
-  ) {
-    return "Text Summary";
-  }
-  if (
-    /\bsentiment\b|감정\s*분석|리뷰\s*감정|emotion|polarity/i.test(n) ||
-    /review\s*sentiment/i.test(name)
-  ) {
-    return "Sentiment Analysis";
-  }
-  if (
-    /\bner\b|개체명|named[-\s]?entity|entity\s*recognition/i.test(n) ||
-    /\bner\s*api/i.test(name)
-  ) {
-    return "NER";
-  }
-  if (
-    /\btext[-\s]?to[-\s]?sql\b|nl2sql|natural\s*language.*sql|쿼리\s*자동|자연어.*sql|sql\s*생성|\bsql\b/i.test(
-      n,
-    ) ||
-    /text[-\s]?to[-\s]?sql\s*api/i.test(name)
-  ) {
-    return "Text-to-SQL";
-  }
   if (
     /\bllm\b|\bgpt\b|chat|text.?gen|oss|completion|openai|language.?model/i.test(
       n,

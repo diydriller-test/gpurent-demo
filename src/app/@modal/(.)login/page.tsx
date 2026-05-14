@@ -21,9 +21,8 @@ function LoginModal() {
     router.back();
   }
 
-  function handleSuccess() {
-    router.back();
-    router.refresh();
+  function handleSuccess(nextPath: string) {
+    router.push(nextPath);
   }
 
   return (
@@ -37,7 +36,7 @@ function LoginModal() {
 
       {/* Modal card */}
       <div className="relative z-10 w-full max-w-md mx-4">
-        <div className="rounded-2xl border border-white/10 bg-surface/90 p-8 shadow-2xl backdrop-blur-sm">
+        <div className="rounded-xl border border-black/[0.08] bg-white p-6 shadow-2xl md:p-8">
           <LoginForm onSuccess={handleSuccess} onBack={handleClose} />
         </div>
       </div>

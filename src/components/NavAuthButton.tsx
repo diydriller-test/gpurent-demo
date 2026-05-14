@@ -15,8 +15,11 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
     : "/login";
 
   useEffect(() => {
-    setMounted(true);
-    setIsLoggedIn(!!getToken());
+    const id = window.setTimeout(() => {
+      setMounted(true);
+      setIsLoggedIn(!!getToken());
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [pathname]);
 
   function handleLogout() {
@@ -46,14 +49,14 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
           <button
             type="button"
             onClick={() => handleAuthNav(loginHref)}
-            className="flex-1 rounded-xl border border-white/12 py-3 text-center text-sm font-medium text-white/65 transition-colors hover:border-white/25 hover:text-white/85"
+            className="flex-1 rounded-lg border border-black/[0.08] bg-white py-3 text-center text-sm font-medium text-black/58 transition-colors hover:border-black/18 hover:text-black"
           >
             로그인
           </button>
           <button
             type="button"
             onClick={() => handleAuthNav("/signup")}
-            className="flex-1 rounded-xl bg-[#C8A96E] py-3 text-center text-sm font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
+            className="flex-1 rounded-lg bg-[#08090d] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-black"
           >
             회원가입
           </button>
@@ -65,14 +68,14 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
       <div className="flex gap-2">
         <Link
           href="/profile"
-          className="flex-1 rounded-xl border border-white/12 py-3 text-center text-sm font-medium text-white/65 transition-colors hover:border-white/25 hover:text-white/85"
+          className="flex-1 rounded-lg border border-black/[0.08] bg-white py-3 text-center text-sm font-medium text-black/58 transition-colors hover:border-black/18 hover:text-black"
         >
           프로필
         </Link>
         <button
           type="button"
           onClick={handleLogout}
-          className="flex-1 rounded-xl border border-white/12 py-3 text-center text-sm font-medium text-white/45 transition-colors hover:border-red-400/30 hover:text-red-300/80"
+          className="flex-1 rounded-lg border border-black/[0.08] bg-white py-3 text-center text-sm font-medium text-black/42 transition-colors hover:border-red-400/30 hover:text-red-500"
         >
           로그아웃
         </button>
@@ -94,14 +97,14 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
       <div className="flex items-center gap-5">
         <Link
           href="/profile"
-          className="text-[15px] font-normal text-white/55 transition-colors hover:text-white/85"
+          className="text-[13px] font-medium text-black/48 transition-colors hover:text-black/78"
         >
           프로필
         </Link>
         <button
           type="button"
           onClick={handleLogout}
-          className="rounded-lg border border-white/12 bg-transparent px-4 py-1.5 text-sm font-medium text-white/45 transition-colors hover:border-red-400/30 hover:text-red-300/80"
+          className="rounded-lg border border-black/[0.08] bg-white px-3.5 py-2 text-[13px] font-medium text-black/44 shadow-[0_1px_2px_rgba(8,9,13,0.04)] transition-colors hover:border-red-400/35 hover:text-red-500"
         >
           로그아웃
         </button>
@@ -114,14 +117,14 @@ export function NavAuthButton({ mobile = false }: { mobile?: boolean }) {
       <button
         type="button"
         onClick={() => handleAuthNav(loginHref)}
-        className="text-[15px] font-normal text-white/55 transition-colors hover:text-white/85"
+        className="text-[13px] font-medium text-black/48 transition-colors hover:text-black/78"
       >
         로그인
       </button>
       <button
         type="button"
         onClick={() => handleAuthNav("/signup")}
-        className="rounded-xl bg-[#C8A96E] px-5 py-2 text-[15px] font-semibold text-[#1A0A00] transition-all hover:bg-[#D4B87A]"
+        className="rounded-lg bg-[#08090d] px-4 py-2 text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(8,9,13,0.10)] transition-colors hover:bg-black"
       >
         회원가입
       </button>
