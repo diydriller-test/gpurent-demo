@@ -1163,7 +1163,7 @@ export default function ApiTestPage() {
     let cancelled = false;
     (async () => {
       try {
-        const apis = await getApis({ includeInactive: true });
+        const apis = await getApis();
         const sorted = [...apis].sort(
           (a, b) =>
             (a.sort_order ?? Number.MAX_SAFE_INTEGER) -
