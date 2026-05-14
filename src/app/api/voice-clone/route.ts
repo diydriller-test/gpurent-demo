@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     const refText = formData.get("ref_text");
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
+    const authHeader = req.headers.get("authorization");
     const inferenceId = randomInferenceId();
     const upstreamUrl = `${upstreamBasePath}/voiceclone/_inference/tts/${inferenceId}`;
 
@@ -61,10 +62,15 @@ export async function POST(req: Request) {
     const upstreamRes = await fetch(upstreamUrl, {
       method: "POST",
       headers: {
-        ...(apiKey ? { access_token: apiKey } : {}),
+        ...(apiKey
+          ? { Authorization: `Bearer ${apiKey}` }
+          : authHeader
+            ? { Authorization: authHeader }
+            : {}),
       },
       body: upstreamForm,
       signal: controller.signal,
+      cache: "no-store",
     });
 
     if (!upstreamRes.ok) {
