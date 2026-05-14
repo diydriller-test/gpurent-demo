@@ -833,7 +833,7 @@ function PlansPageContent() {
                             ? getPlanTaskSublabel(task)
                             : (api.card_sublabel ?? fallbackDisplay.sublabel),
                         modelDisplay: api.model_display ?? fallbackDisplay.modelDisplay,
-                        tags: api.tags && api.tags.length > 0 ? api.tags : fallbackDisplay.tags,
+                        tags: task ? fallbackDisplay.tags : (api.tags && api.tags.length > 0 ? api.tags : fallbackDisplay.tags),
                       };
                       const currentPlan = user?.api_plans?.find(
                         (p) => p.api_id === api.id,
