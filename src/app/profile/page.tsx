@@ -12,6 +12,9 @@ import {
   PlatformShell,
 } from "@/components/platform/PlatformShell";
 
+const DEPRECATED_API_NAME_PATTERN =
+  /\b(ad\s*copy|text\s*summary|review\s*sentiment|sentiment|ner|text[-\s]?to[-\s]?sql)\b/i;
+
 function maskKey(key: string): string {
   if (!key) return "";
   if (key.length <= 8) return "•".repeat(key.length);
@@ -167,7 +170,7 @@ curl -X POST "$AI_OMAKASE_BASE_URL/api/chat" \\
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-black/[0.06] bg-[#0b0c10] text-white shadow-[0_18px_70px_rgba(8,9,13,0.10)]">
+    <div className="min-w-0 overflow-hidden rounded-xl border border-black/[0.06] bg-[#0b0c10] text-white shadow-[0_18px_70px_rgba(8,9,13,0.10)]">
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
         <p className="font-mono text-[11px] uppercase tracking-normal text-white/44">
           {hasKey ? "실행 준비 완료" : "1분 예제"}
@@ -181,7 +184,7 @@ curl -X POST "$AI_OMAKASE_BASE_URL/api/chat" \\
           {copied ? "복사됨" : "복사"}
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 font-mono text-[12px] leading-6 text-white/82 md:text-[13px]">
+      <pre className="max-w-full overflow-x-auto p-4 font-mono text-[12px] leading-6 text-white/82 md:text-[13px]">
         {code}
       </pre>
     </div>
@@ -272,6 +275,9 @@ export default function ProfilePage() {
 
   const primaryApiKey = newlyCreatedKey?.api_key ?? apiKeys[0]?.api_key;
   const hasApiKey = Boolean(primaryApiKey);
+  const activeApiPlans = (user?.api_plans ?? []).filter(
+    (ap) => !DEPRECATED_API_NAME_PATTERN.test(ap.api_name),
+  );
 
   if (isLoading) {
     return (
@@ -362,14 +368,14 @@ export default function ProfilePage() {
           }
         />
 
-        <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-          <PlatformCard className="flex flex-col justify-between gap-8 p-6 md:p-8">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
+          <PlatformCard className="min-w-0 p-6 md:p-7">
             <div>
               <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
                 첫 실행
               </p>
-              <h2 className="mt-4 max-w-lg text-[30px] font-semibold leading-tight text-[#08090d] md:text-[40px]">
-                설정보다 먼저, 동작하는 결과를 확인하세요.
+              <h2 className="mt-4 text-[26px] font-semibold leading-tight text-[#08090d] md:text-[30px]">
+                설정보다 먼저 결과를 확인하세요.
               </h2>
               <p className="mt-4 max-w-xl text-[15px] leading-7 text-black/56">
                 신규 사용자는 이 화면에서 계정, API key, 실행 예제를 한 번에 확인합니다.
@@ -377,7 +383,7 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <div className="grid gap-3">
+            <div className="mt-8 grid gap-3">
               {[
                 {
                   label: "01",
@@ -402,7 +408,7 @@ export default function ProfilePage() {
               ].map((step) => (
                 <div
                   key={step.label}
-                  className="grid grid-cols-[44px_1fr_auto] items-start gap-4 border-t border-black/[0.06] pt-4 first:border-t-0 first:pt-0"
+                  className="grid grid-cols-[34px_minmax(0,1fr)_auto] items-start gap-3 border-t border-black/[0.06] pt-4 first:border-t-0 first:pt-0"
                 >
                   <span className="font-mono text-[12px] text-accent">
                     {step.label}
@@ -411,7 +417,7 @@ export default function ProfilePage() {
                     <h3 className="text-[15px] font-semibold text-[#08090d]">
                       {step.title}
                     </h3>
-                    <p className="mt-1 text-sm leading-6 text-black/52">
+                    <p className="mt-1 text-sm leading-6 text-black/52 break-keep">
                       {step.body}
                     </p>
                   </div>
@@ -427,7 +433,7 @@ export default function ProfilePage() {
             </div>
           </PlatformCard>
 
-          <PlatformCard className="p-6 md:p-8">
+          <PlatformCard className="min-w-0 p-6 md:p-8">
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
@@ -497,8 +503,8 @@ export default function ProfilePage() {
           </PlatformCard>
         </div>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_0.85fr]">
-          <PlatformCard>
+        <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
+          <PlatformCard className="min-w-0">
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
@@ -539,7 +545,7 @@ export default function ProfilePage() {
             )}
           </PlatformCard>
 
-          <PlatformCard>
+          <PlatformCard className="min-w-0">
             <div className="mb-5">
               <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
                 계정
@@ -581,9 +587,9 @@ export default function ProfilePage() {
               사용 중인 API
             </h2>
           </div>
-          {(user.api_plans?.length ?? 0) > 0 ? (
+          {activeApiPlans.length > 0 ? (
             <ul className="space-y-4">
-              {[...(user.api_plans ?? [])]
+              {[...activeApiPlans]
                 .sort((a, b) => a.api_name.localeCompare(b.api_name, "ko"))
                 .map((ap) => (
                   <li
