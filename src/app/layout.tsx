@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BehaviorTracker } from "@/components/BehaviorTracker";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="font-sans antialiased">
+        <BehaviorTracker />
         {children}
         {modal}
         <SiteFooter />
