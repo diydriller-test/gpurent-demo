@@ -1104,6 +1104,7 @@ export default function ApiTestPage() {
     backendApiId?: number;
     apiId?: ApiId;
     model: string;
+    modelDisplay?: string;
     description?: string;
     modelSizeB: number;
     taskTags: string[]; // e.g. ["LLM", "Text-Gen"]
@@ -1132,6 +1133,7 @@ export default function ApiTestPage() {
         (api.model_display && api.model_display.trim()) ||
         api.name ||
         card.modelDisplay,
+      modelDisplay: card.modelDisplay,
       description: api.card_sublabel || card.sublabel,
       modelSizeB: 0,
       taskTags:
@@ -4572,9 +4574,11 @@ export default function ApiTestPage() {
                             비활성
                           </p>
                         ) : null}
-                        <p className="mt-2 text-[11px] text-foreground/45">
-                          {item.description ?? "Playground에서 바로 테스트 가능"}
-                        </p>
+                        {item.modelDisplay && (
+                          <p className="mt-1 text-[11px] font-mono text-foreground/45">
+                            {item.modelDisplay}
+                          </p>
+                        )}
 
                         <div className="mt-3 flex flex-wrap gap-2">
                           {[...item.taskTags.slice(0, 3), "트래픽 기반", "등급별 과금"].map((tag) => (

@@ -851,6 +851,9 @@ function PlansPageContent() {
                           <p className="mt-1 break-words text-lg font-semibold leading-tight text-foreground">
                             {display.task ? getPlanTaskDisplayName(display.task) : api.name}
                           </p>
+                          <p className="mt-1 text-[11px] font-mono text-foreground/45">
+                            {display.modelDisplay}
+                          </p>
 
                           <div className="mt-3 flex flex-wrap gap-2">
                             {[...display.tags.slice(0, 3), "트래픽 기반", "등급별 과금"].map((tag) => (
