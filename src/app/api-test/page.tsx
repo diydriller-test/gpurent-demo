@@ -4336,6 +4336,14 @@ export default function ApiTestPage() {
           latency: isSttLoading ? "running" : sttTranscript ? "1.4s" : "not tested",
           cost: sttTranscript ? "~0.015 credits" : "test to estimate",
         };
+      case "voiceClone":
+        return {
+          label: "Voice cloning",
+          model: "Voice Clone API",
+          endpoint: "/api/voice-clone",
+          latency: vcIsLoading ? "running" : vcAudioUrl ? "2.4s" : "not tested",
+          cost: vcAudioUrl ? "~0.035 credits" : "test to estimate",
+        };
       case "image2text":
         return {
           label: "Vision extraction",
