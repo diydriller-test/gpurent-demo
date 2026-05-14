@@ -4650,6 +4650,10 @@ export default function ApiTestPage() {
                         key={api.id}
                         type="button"
                         onClick={() => {
+                          if (api.id === "t2i") {
+                            setT2iComingSoonOpen(true);
+                            return;
+                          }
                           setSelectedApi(api.id);
                           setViewMode("detail");
                           if (typeof window !== "undefined") {
