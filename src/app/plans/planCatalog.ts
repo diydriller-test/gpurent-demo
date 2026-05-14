@@ -205,7 +205,7 @@ const TASK_META: Record<
     displayName: "대규모 언어 모델(LLM)",
     sublabel: "Qwen 3.6 • Text Generation",
     modelDisplay: "Qwen3.6 35B",
-    tags: ["LLM", "Text-Gen"],
+    tags: ["LLM", "Text-Gen", "GPT"],
   },
   Embedding: {
     displayName: "텍스트 임베딩(Embedding)",
