@@ -163,7 +163,7 @@ export default function Home() {
 
                 <div className="mt-9 flex max-w-[340px] flex-col gap-3 sm:max-w-none sm:flex-row">
                   <Link
-                    href="/api-test?api=llm"
+                    href="/api-test"
                     className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#08090d] px-5 text-[14px] font-semibold text-white shadow-[0_10px_26px_rgba(8,9,13,0.16)] transition-colors hover:bg-black sm:w-auto"
                   >
                     플레이그라운드 바로 실행
@@ -406,7 +406,7 @@ export default function Home() {
 
               <div className="mt-12 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  href="/api-test?api=llm"
+                  href="/api-test"
                   className="inline-flex h-12 items-center justify-center rounded-lg bg-white px-5 text-[14px] font-semibold text-[#08090d] transition-colors hover:bg-white/90"
                 >
                   플레이그라운드 바로 실행
