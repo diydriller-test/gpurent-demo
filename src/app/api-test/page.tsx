@@ -970,7 +970,6 @@ export default function ApiTestPage() {
     null,
   );
   const [limitExceededModalOpen, setLimitExceededModalOpen] = useState(false);
-  const [t2iComingSoonOpen, setT2iComingSoonOpen] = useState(false);
   const comingSoonTimerRef = useRef<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -980,10 +979,6 @@ export default function ApiTestPage() {
     const api = params.get("api");
     const view = params.get("view");
 
-    if (api === "t2i") {
-      setT2iComingSoonOpen(true);
-      return;
-    }
     if (
       api === "llm" ||
       api === "embedding" ||
@@ -992,7 +987,8 @@ export default function ApiTestPage() {
       api === "stt" ||
       api === "voiceClone" ||
       api === "image2text" ||
-      api === "t2m"
+      api === "t2m" ||
+      api === "t2i"
     ) {
       setSelectedApi(api);
       // 홈 카드에서 들어올 때는 바로 해당 챕터 상세를 보여줌
@@ -1294,11 +1290,6 @@ export default function ApiTestPage() {
 
     if (!targetTask) return;
 
-    if (targetTask === "Image Generation") {
-      setT2iComingSoonOpen(true);
-      return;
-    }
-
     setViewMode(viewParam === "detail" ? "detail" : "list");
     setSidebarMode("all");
     setFilterTasks((prev) => {
@@ -1318,6 +1309,7 @@ export default function ApiTestPage() {
     if (targetTask === "Voice Clone") setSelectedApi("voiceClone");
     if (targetTask === "Vision") setSelectedApi("image2text");
     if (targetTask === "Text-to-Music") setSelectedApi("t2m");
+    if (targetTask === "Image Generation") setSelectedApi("t2i");
   }, [taskKeys]);
 
   const SESSION_SNAPSHOT_KEY = "apiTestResultSnapshot";
@@ -1593,10 +1585,6 @@ export default function ApiTestPage() {
   };
 
   function enterDetailFor(item: MarketplaceItem) {
-    if (item.task === "Image Generation") {
-      setT2iComingSoonOpen(true);
-      return;
-    }
     if (item.apiId) {
       listViewFilterSnapshotRef.current = {
         filterTasks: { ...filterTasks },
@@ -4654,10 +4642,6 @@ export default function ApiTestPage() {
                         key={api.id}
                         type="button"
                         onClick={() => {
-                          if (api.id === "t2i") {
-                            setT2iComingSoonOpen(true);
-                            return;
-                          }
                           setSelectedApi(api.id);
                           setViewMode("detail");
                           if (typeof window !== "undefined") {
@@ -5565,25 +5549,6 @@ export default function ApiTestPage() {
         )}
       </div>
 
-      {t2iComingSoonOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-          <div className="w-full max-w-sm rounded-xl border border-black/[0.08] bg-white p-6 shadow-xl">
-            <h2 className="text-lg font-semibold text-foreground">Coming Soon</h2>
-            <p className="mt-2 text-sm leading-relaxed text-foreground/65">
-              Image Generation API는 곧 출시될 예정입니다.
-              <br />
-              조금만 기다려 주세요!
-            </p>
-            <button
-              type="button"
-              onClick={() => setT2iComingSoonOpen(false)}
-              className="mt-6 w-full rounded-xl bg-[#08090d] py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              확인
-            </button>
-          </div>
-        </div>
-      )}
     </PlatformShell>
   );
 }

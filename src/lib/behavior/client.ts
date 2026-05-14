@@ -4,7 +4,7 @@ import { getToken, getUserId } from "@/lib/token";
 const FLUSH_MS = 1_200;
 const MAX_BATCH = 40;
 
-let queue: BehaviorEvent[] = [];
+const queue: BehaviorEvent[] = [];
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
 
 function scheduleFlush(): void {
