@@ -47,7 +47,7 @@ const TASK_ROUTES: Record<string, string> = {
 };
 
 const METRICS = [
-  { value: "14+", label: "available APIs" },
+  { value: "9", label: "available APIs" },
   { value: "1", label: "workbench" },
   { value: "RPS", label: "capacity pricing" },
 ];
@@ -126,7 +126,7 @@ export default function Home() {
             seen.add(item.label);
             return true;
           })
-          .slice(0, 8);
+          .slice(0, 9);
 
         if (next.length > 0) setCapabilities(next);
       })
@@ -151,17 +151,17 @@ export default function Home() {
                   AI API workbench
                 </div>
 
-                <h1 className="max-w-[920px] text-[42px] font-semibold leading-[1.04] tracking-normal text-[#08090d] sm:text-[56px] md:text-[70px] lg:text-[82px] xl:text-[92px]">
+                <h1 className="max-w-[920px] text-[38px] font-semibold leading-[1.07] tracking-normal text-[#08090d] sm:text-[56px] md:text-[70px] lg:text-[82px] xl:text-[92px]">
                   <span className="block">필요한 AI API를</span>
                   <span className="block">테스트하고 선택하세요.</span>
                 </h1>
 
-                <p className="mt-7 max-w-[720px] break-all text-[16px] leading-8 text-black/62 sm:break-words md:text-[19px]">
-                  AI API 오마카세는 여러 AI API를 한 곳에서 탐색하고,
-                  Playground에서 직접 테스트한 뒤 제품에 연결하는 개발자용 플랫폼입니다.
+                <p className="mt-7 max-w-[340px] break-words text-[16px] leading-8 text-black/62 sm:max-w-[720px] md:text-[19px]">
+                  AI API 오마카세는 9개 AI API를 한 곳에서 탐색하고 테스트하는
+                  개발자용 플랫폼입니다. 결과를 확인한 뒤 바로 제품에 연결하세요.
                 </p>
 
-                <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <div className="mt-9 flex max-w-[340px] flex-col gap-3 sm:max-w-none sm:flex-row">
                   <Link
                     href="/api-test?api=llm"
                     className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#08090d] px-5 text-[14px] font-semibold text-white shadow-[0_10px_26px_rgba(8,9,13,0.16)] transition-colors hover:bg-black sm:w-auto"

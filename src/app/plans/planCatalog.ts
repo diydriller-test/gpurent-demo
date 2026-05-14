@@ -46,6 +46,20 @@ export const DEMO_APIS_FALLBACK: Api[] = [
     company_id: 1,
     company_name: "코그로보",
   },
+  {
+    id: 91013,
+    name: "Text-to-Music API",
+    company_id: 1,
+    company_name: "코그로보",
+    task_key: "Text-to-Music",
+  },
+  {
+    id: 91014,
+    name: "Image Generation API",
+    company_id: 1,
+    company_name: "코그로보",
+    task_key: "Image Generation",
+  },
 ];
 
 /**

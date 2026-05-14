@@ -152,7 +152,7 @@ export function PlatformPageHeader({
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="max-w-4xl text-[36px] font-semibold leading-[1.05] tracking-normal text-[#08090d] md:text-[52px]">
+        <h1 className="max-w-4xl text-[34px] font-semibold leading-[1.06] tracking-normal text-[#08090d] md:text-[46px] lg:text-[52px]">
           {title}
         </h1>
         {description ? (

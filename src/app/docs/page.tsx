@@ -310,6 +310,51 @@ const SECTIONS: DocSection[] = [
       "Usage limits may return 429, same as `/api/chat`.",
     ],
   },
+  {
+    id: "text-to-music",
+    title: "Text-to-Music",
+    method: "POST",
+    path: "/api/t2m",
+    description:
+      "Generates music audio from a text prompt. Use this endpoint when the product needs background music, short loops, or prompt-driven audio assets.",
+    requestLabel: "Body (application/json)",
+    request: `{
+  "prompt": "Upbeat jazz with piano and saxophone, 120bpm",
+  "audio_duration": 10
+}`,
+    responseLabel: "Success (200)",
+    response: `Content-Type: audio/wav or another upstream audio type
+<binary audio stream>`,
+    notes: [
+      "`prompt` is required and should describe mood, instruments, tempo, and style.",
+      "`audio_duration` controls the generated clip length when supported by the upstream model.",
+      "Long generation requests may return 504; reduce duration or prompt complexity before retrying.",
+    ],
+  },
+  {
+    id: "image-generation",
+    title: "Image Generation",
+    method: "POST",
+    path: "/api/t2i",
+    description:
+      "Generates an image from a text prompt. Use this endpoint for creative assets, product concepts, and visual prototypes.",
+    requestLabel: "Body (application/json)",
+    request: `{
+  "prompt": "A serene mountain landscape at sunset, photorealistic",
+  "negative_prompt": "low quality, blurry",
+  "width": 1024,
+  "height": 1024,
+  "num_inference_steps": 50
+}`,
+    responseLabel: "Success (200)",
+    response: `Content-Type: image/png or another upstream image type
+<binary image stream>`,
+    notes: [
+      "`prompt` is required. `negative_prompt` can be an empty string when not needed.",
+      "`width`, `height`, and `num_inference_steps` affect generation time and output detail.",
+      "Large images or high step counts may take longer; tune settings in Workbench before shipping.",
+    ],
+  },
 ];
 
 const DOCS_TOC_ITEMS = [
