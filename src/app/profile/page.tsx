@@ -272,7 +272,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <PlatformShell>
+      <PlatformShell hideSidebar>
         <div className="flex min-h-screen items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         </div>
@@ -282,7 +282,7 @@ export default function ProfilePage() {
 
   if (error || !user) {
     return (
-      <PlatformShell>
+      <PlatformShell hideSidebar>
         <div className="flex min-h-screen items-center justify-center">
           <div className="platform-card max-w-md rounded-xl p-8 text-center">
             <p className="text-red-400">{error ?? "프로필을 불러올 수 없습니다."}</p>
@@ -299,7 +299,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <PlatformShell>
+    <PlatformShell hideSidebar>
       {regenerateConfirmOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-6"
