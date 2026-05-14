@@ -15,22 +15,22 @@ const CAPABILITY_FALLBACK: Capability[] = [
   {
     label: "Speech",
     detail: "STT, TTS, voice clone",
-    href: "/api-test?task=stt",
+    href: "/api-test?task=stt&view=detail",
   },
   {
     label: "Retrieval",
     detail: "Embedding and rerank",
-    href: "/api-test?task=embedding",
+    href: "/api-test?task=embedding&view=detail",
   },
   {
     label: "Generation",
     detail: "Text, image, music",
-    href: "/api-test?task=llm",
+    href: "/api-test?task=llm&view=detail",
   },
   {
     label: "Vision",
     detail: "Image-to-text pipelines",
-    href: "/api-test?task=image2text",
+    href: "/api-test?task=image2text&view=detail",
   },
 ];
 
@@ -118,7 +118,7 @@ export default function Home() {
             return {
               label: taskLabel(api.task_key, api.name),
               detail: api.card_sublabel ?? api.model_display ?? api.company_name,
-              href: `/api-test?task=${route}`,
+              href: `/api-test?task=${route}&view=detail`,
             };
           })
           .filter((item) => {
