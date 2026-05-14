@@ -1,8 +1,8 @@
-export type BehaviorEventType = "page_view" | "click" | "custom";
+export type BehaviorEventType = "page_view" | "element_click" | "custom";
 
 export type BehaviorEvent = {
   type: BehaviorEventType;
-  /** page_view: 보통 path, click: data-behavior 또는 ui.click, custom: 임의 이름 */
+  /** page_view: 보통 path, element_click: 가장 가까운 data-behavior 또는 ui.element_click, custom: 임의 이름 */
   name: string;
   occurred_at: string;
   properties?: Record<string, unknown>;

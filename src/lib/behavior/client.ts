@@ -108,82 +108,118 @@ export function trackBehavior(
   });
 }
 
-function clickTextSnippet(el: Element): string | undefined {
+/** 표시용 텍스트(비밀번호·일반 text 입력 값은 제외). */
+function elementVisibleText(el: Element): string | undefined {
   if (el instanceof HTMLInputElement) {
     if (el.type === "password") return undefined;
-    if (el.type === "submit" || el.type === "button") {
+    if (el.type === "submit" || el.type === "button" || el.type === "reset") {
       const v = (el.value || el.getAttribute("aria-label") || "").trim();
-      return v.slice(0, 80) || undefined;
+      return v.slice(0, 200) || undefined;
     }
-    return undefined;
+    const ph = el.getAttribute("placeholder")?.trim();
+    const aria = el.getAttribute("aria-label")?.trim();
+    const hint = (aria || ph || "").slice(0, 200);
+    return hint || undefined;
   }
-  if (
-    el instanceof HTMLButtonElement ||
-    el instanceof HTMLAnchorElement ||
-    el instanceof HTMLElement
-  ) {
-    const t = el.textContent?.trim().replace(/\s+/g, " ");
-    return t?.slice(0, 80) || undefined;
+  if (el instanceof HTMLSelectElement) {
+    const opt = el.options[el.selectedIndex];
+    const t = (opt?.text || el.value || "").trim();
+    return t.slice(0, 200) || undefined;
+  }
+  const t = el.textContent?.trim().replace(/\s+/g, " ");
+  return t?.slice(0, 200) || undefined;
+}
+
+/** `input`은 `type` 속성, 그 외는 태그명 소문자. */
+function elementDomType(el: Element): string {
+  if (el instanceof HTMLInputElement) {
+    return (el.type || "text").toLowerCase();
+  }
+  return el.tagName.toLowerCase();
+}
+
+function safeHref(anchor: HTMLAnchorElement): string | undefined {
+  if (!anchor.href) return undefined;
+  try {
+    const u = new URL(
+      anchor.href,
+      typeof location !== "undefined" ? location.href : undefined,
+    );
+    if (u.protocol === "http:" || u.protocol === "https:") {
+      return `${u.pathname}${u.search}` || u.href;
+    }
+  } catch {
+    /* noop */
   }
   return undefined;
 }
 
-function safeHref(el: Element): string | undefined {
-  if (el instanceof HTMLAnchorElement && el.href) {
-    try {
-      const u = new URL(el.href, typeof location !== "undefined" ? location.href : undefined);
-      if (u.protocol === "http:" || u.protocol === "https:") {
-        return `${u.pathname}${u.search}` || u.href;
-      }
-    } catch {
-      /* noop */
-    }
-  }
-  return undefined;
+function classAttr(el: Element): string | undefined {
+  const c = el.getAttribute("class");
+  return c ? c.slice(0, 120) : undefined;
 }
 
 /**
- * document 캡처 단계 클릭 위임 (전역 한 번 적용).
+ * 실제 클릭된 DOM 타깃 (텍스트 노드면 부모 요소).
+ * `html`/`body`, 비밀번호 필드 안, `[data-behavior-ignore]` 하위는 제외.
  */
-export function attachClickTracking(): () => void {
+function resolveClickTarget(ev: MouseEvent): Element | null {
+  const n = ev.target;
+  if (!n || !(n instanceof Node)) return null;
+  let el: Element | null = n instanceof Element ? n : n.parentElement;
+  if (!el) return null;
+  if (el.closest("[data-behavior-ignore]")) return null;
+  if (el.closest('input[type="password"]')) return null;
+  if (el === document.documentElement || el === document.body) return null;
+  return el;
+}
+
+/**
+ * document 캡처 단계에서 **클릭된 요소** 기준으로 수집 (전역 한 번 적용).
+ * 이전의 버튼/링크 한정 `closest` 방식과 달리, div·span 등 임의 요소 클릭도 기록합니다.
+ */
+export function attachElementClickTracking(): () => void {
   const handler = (ev: MouseEvent) => {
     if (!ev.isTrusted) return;
-    const raw = ev.target;
-    if (!(raw instanceof Node)) return;
-    const t = raw instanceof Element ? raw : raw.parentElement;
-    if (!t) return;
-
-    const el = t.closest(
-      'button, [role="button"], input[type="submit"], input[type="button"], a[href], [data-behavior]',
-    );
+    const el = resolveClickTarget(ev);
     if (!el) return;
 
-    if (el instanceof HTMLInputElement && el.type === "password") return;
+    const behaviorSource = el.closest("[data-behavior]");
+    const dataBehavior = behaviorSource
+      ?.getAttribute("data-behavior")
+      ?.trim();
+    const name = dataBehavior || "ui.element_click";
 
-    const dataBehavior = el.getAttribute("data-behavior")?.trim();
-    const tag = el.tagName.toLowerCase();
     const id = el.id || undefined;
-    const cls = typeof el.className === "string" ? el.className : undefined;
+    const cls = classAttr(el);
+    const role = el.getAttribute("role") || undefined;
     const path =
       typeof window !== "undefined"
         ? `${window.location.pathname}${window.location.search || ""}`
         : undefined;
 
-    const name = dataBehavior || "ui.click";
-    const text_snippet = clickTextSnippet(el);
-    const href = safeHref(el);
+    const text = elementVisibleText(el);
+    let href: string | undefined;
+    if (el instanceof HTMLAnchorElement) {
+      href = safeHref(el);
+    } else {
+      const link = el.closest("a[href]");
+      if (link instanceof HTMLAnchorElement) href = safeHref(link);
+    }
+    const type = elementDomType(el);
 
     enqueue({
-      type: "click",
+      type: "element_click",
       name,
       occurred_at: new Date().toISOString(),
       properties: {
+        type,
         ...(dataBehavior ? { data_behavior: dataBehavior } : {}),
-        tag,
         ...(id ? { id } : {}),
-        ...(cls ? { className: cls.slice(0, 120) } : {}),
+        ...(cls ? { className: cls } : {}),
+        ...(role ? { role } : {}),
         ...(href ? { href } : {}),
-        ...(text_snippet ? { text_snippet } : {}),
+        ...(text ? { text } : {}),
         ...(path ? { page_path: path } : {}),
       },
     });

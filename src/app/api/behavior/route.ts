@@ -1,14 +1,14 @@
 /**
  * 사용자 행동 수집 (Next 프록시 → 내부 백엔드).
  *
- * 브라우저 → POST `/api/behavior` (본 파일 아래 "브라우저 요청 바디" 참고)
- * Next → POST `{INTERNAL_API_URL}{INTERNAL_ANALYTICS_PATH||/analytics/behavior}` (본 파일 아래 "백엔드 요청 바디" 참고)
+ * 브라우저 → POST `/api/behavior`
+ * Next → POST `{INTERNAL_API_URL}{INTERNAL_ANALYTICS_PATH||/analytics/behavior}`
  *
  * --- 브라우저 요청 바디 (JSON) ---
  * {
  *   "events": [
  *     {
- *       "type": "page_view" | "click" | "custom",
+ *       "type": "page_view" | "element_click" | "custom",
  *       "name": string,
  *       "occurred_at": string (ISO-8601),
  *       "properties": object (선택)
@@ -16,6 +16,14 @@
  *   ],
  *   "user_id": number | null  (선택, 로그인 시 클라이언트가 저장한 id)
  * }
+ * (구 클라이언트가 보낸 이벤트 type "click"은 "element_click"으로 정규화됩니다.)
+ *
+ * element_click 시 properties에 오는 필드 예시:
+ * - type (string): input이면 input.type, 그 외 태그명 소문자 (예: "div", "button", "a")
+ * - text (string, 선택): 표시용 텍스트(비밀번호·일반 text 입력 값 본문은 제외)
+ * - href (string, 선택): http(s) 링크의 pathname+search
+ * - data_behavior, id, className, role, page_path 등 (선택)
+ *
  * 헤더: `Authorization: Bearer <token>` (로그인 시, 선택)
  *
  * --- 백엔드로 전달되는 바디 (JSON) ---
@@ -90,10 +98,15 @@ export async function POST(req: Request) {
       : undefined;
 
   const events = eventsIn.map((e) => {
+    const raw = e.type;
     const type =
-      e.type === "page_view" || e.type === "click" || e.type === "custom"
-        ? e.type
-        : "custom";
+      raw === "page_view" ||
+      raw === "element_click" ||
+      raw === "custom"
+        ? raw
+        : raw === "click"
+          ? "element_click"
+          : "custom";
     const name =
       typeof e.name === "string" && e.name.trim() ? e.name.trim() : "unknown";
     const occurred_at =

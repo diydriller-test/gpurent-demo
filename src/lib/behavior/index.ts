@@ -1,6 +1,6 @@
 export type { BehaviorEvent, BehaviorEventType, BehaviorIngestBody } from "./types";
 export {
-  attachClickTracking,
+  attachElementClickTracking,
   enqueuePageView,
   flushBehaviorQueue,
   trackBehavior,

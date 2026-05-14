@@ -3,13 +3,13 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
-  attachClickTracking,
+  attachElementClickTracking,
   enqueuePageView,
   flushBehaviorQueue,
 } from "@/lib/behavior";
 
 /**
- * 루트 레이아웃에 한 번만 두면 페이지 뷰·클릭 수집이 전역 적용됩니다.
+ * 루트 레이아웃에 한 번만 두면 페이지 뷰·요소 클릭 수집이 전역 적용됩니다.
  */
 export function BehaviorTracker() {
   const pathname = usePathname();
@@ -19,7 +19,7 @@ export function BehaviorTracker() {
   }, [pathname]);
 
   useEffect(() => {
-    const detach = attachClickTracking();
+    const detach = attachElementClickTracking();
 
     const onVisibility = () => {
       if (document.visibilityState === "hidden") {
