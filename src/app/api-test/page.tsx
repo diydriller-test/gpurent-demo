@@ -1135,7 +1135,7 @@ export default function ApiTestPage() {
       description: api.card_sublabel || card.sublabel,
       modelSizeB: 0,
       taskTags:
-        api.tags && api.tags.length > 0 ? api.tags : card.tags,
+        task ? card.tags : (api.tags && api.tags.length > 0 ? api.tags : card.tags),
       formats: ["Transformers"] as LibraryFormat[],
     };
   }, []);
