@@ -47,9 +47,9 @@ const TASK_ROUTES: Record<string, string> = {
 };
 
 const METRICS = [
-  { value: "9", label: "available APIs" },
+  { value: "8", label: "available APIs" },
   { value: "1", label: "workbench" },
-  { value: "RPS", label: "capacity pricing" },
+  { value: "RPS", label: "requests per second" },
 ];
 
 const WORKFLOW = [
