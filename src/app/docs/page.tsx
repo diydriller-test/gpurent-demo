@@ -373,8 +373,8 @@ const TOC_SECTION_IDS = DOCS_TOC_ITEMS.map((item) => item.id);
 
 const LAST_TOC_SECTION_ID = TOC_SECTION_IDS[TOC_SECTION_IDS.length - 1];
 
-/** 고정 상단 네비(h-16) + scroll-mt와 맞춘 활성화 기준선(뷰포트 상단 기준 px) */
-const TOC_ACTIVATION_LINE_PX = 112;
+/** 고정 상단 네비(h-16) + scroll-mt-28(112px) + 서브픽셀 여유 */
+const TOC_ACTIVATION_LINE_PX = 120;
 
 /**
  * 스크롤 위치에 맞는 TOC 항목 1개만 계산합니다.
