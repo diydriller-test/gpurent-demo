@@ -1115,8 +1115,7 @@ function PlansPageContent() {
                       disabled={isPendingPlanComingSoon}
                       className="rounded-xl border border-dashed border-accent/50 bg-accent/10 px-8 py-3 font-medium text-accent transition-colors hover:bg-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      결제하기<br /> 
-                      (준비 중)
+                      결제하기 (준비 중)
                     </button>
                   </div>
                 </div>
