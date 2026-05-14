@@ -1201,9 +1201,6 @@ function PlansPageContent() {
       {t2iComingSoonOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
           <div className="w-full max-w-sm rounded-xl border border-black/[0.08] bg-white p-6 shadow-xl">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-2xl">
-              🚀
-            </div>
             <h2 className="text-lg font-semibold text-foreground">Coming Soon</h2>
             <p className="mt-2 text-sm leading-relaxed text-foreground/65">
               Image Generation API는 곧 출시될 예정입니다.
