@@ -22,7 +22,7 @@ function LoginModal() {
   }
 
   function handleSuccess(nextPath: string) {
-    router.push(nextPath);
+    window.location.assign(nextPath);
   }
 
   return (
