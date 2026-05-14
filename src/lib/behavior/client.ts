@@ -166,7 +166,7 @@ function classAttr(el: Element): string | undefined {
 function resolveClickTarget(ev: MouseEvent): Element | null {
   const n = ev.target;
   if (!n || !(n instanceof Node)) return null;
-  let el: Element | null = n instanceof Element ? n : n.parentElement;
+  const el: Element | null = n instanceof Element ? n : n.parentElement;
   if (!el) return null;
   if (el.closest("[data-behavior-ignore]")) return null;
   if (el.closest('input[type="password"]')) return null;

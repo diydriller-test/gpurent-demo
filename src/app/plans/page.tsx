@@ -66,6 +66,7 @@ function PlansPageContent() {
   const [pendingPlanId, setPendingPlanId] = useState<number | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [t2iComingSoonOpen, setT2iComingSoonOpen] = useState(false);
   /** 백엔드 /apis 실패 시 데모 목록을 쓰는 중 */
   const [usingDemoApis, setUsingDemoApis] = useState(false);
   const [calculatorRequests, setCalculatorRequests] = useState(250_000);
@@ -293,6 +294,11 @@ function PlansPageContent() {
   }, [selectedApi, usingDemoApis, apis]);
 
   function handleSelectApi(api: Api) {
+    if (getApiTask(api) === "Image Generation") {
+      setT2iComingSoonOpen(true);
+      return;
+    }
+
     setSelectedApi(api);
     setPendingPlanId(null);
     window.scrollTo(0, 0);
@@ -1185,6 +1191,26 @@ function PlansPageContent() {
               type="button"
               onClick={() => setSuccessModalOpen(false)}
               className="mt-6 w-full rounded-xl bg-accent py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
+
+      {t2iComingSoonOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl border border-black/[0.08] bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-foreground">Coming Soon</h2>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+              Image Generation API는 서버 안정화 후 제공될 예정입니다.
+              <br />
+              준비가 끝나면 요금제와 테스트 화면을 함께 열겠습니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => setT2iComingSoonOpen(false)}
+              className="mt-6 w-full rounded-xl bg-[#08090d] py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               확인
             </button>
