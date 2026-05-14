@@ -970,6 +970,7 @@ export default function ApiTestPage() {
     null,
   );
   const [limitExceededModalOpen, setLimitExceededModalOpen] = useState(false);
+  const [t2iComingSoonOpen, setT2iComingSoonOpen] = useState(false);
   const comingSoonTimerRef = useRef<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
@@ -979,6 +980,10 @@ export default function ApiTestPage() {
     const api = params.get("api");
     const view = params.get("view");
 
+    if (api === "t2i") {
+      setT2iComingSoonOpen(true);
+      return;
+    }
     if (
       api === "llm" ||
       api === "embedding" ||
@@ -987,8 +992,7 @@ export default function ApiTestPage() {
       api === "stt" ||
       api === "voiceClone" ||
       api === "image2text" ||
-      api === "t2m" ||
-      api === "t2i"
+      api === "t2m"
     ) {
       setSelectedApi(api);
       // 홈 카드에서 들어올 때는 바로 해당 챕터 상세를 보여줌
@@ -1288,6 +1292,11 @@ export default function ApiTestPage() {
 
     if (!targetTask) return;
 
+    if (targetTask === "Image Generation") {
+      setT2iComingSoonOpen(true);
+      return;
+    }
+
     setViewMode(viewParam === "detail" ? "detail" : "list");
     setSidebarMode("all");
     setFilterTasks((prev) => {
@@ -1582,6 +1591,10 @@ export default function ApiTestPage() {
   };
 
   function enterDetailFor(item: MarketplaceItem) {
+    if (item.task === "Image Generation") {
+      setT2iComingSoonOpen(true);
+      return;
+    }
     if (item.apiId) {
       listViewFilterSnapshotRef.current = {
         filterTasks: { ...filterTasks },
@@ -5543,6 +5556,29 @@ export default function ApiTestPage() {
           </div>
         )}
       </div>
+
+      {t2iComingSoonOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-xl border border-black/[0.08] bg-white p-6 shadow-xl">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-2xl">
+              🔧
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">서버 점검 중</h2>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/65">
+              Image Generation API는 현재 서버 점검으로 이용이 제한됩니다.
+              <br />
+              점검 완료 후 다시 이용하실 수 있습니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => setT2iComingSoonOpen(false)}
+              className="mt-6 w-full rounded-xl bg-[#08090d] py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </PlatformShell>
   );
 }
