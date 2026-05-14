@@ -202,10 +202,10 @@ const TASK_META: Record<
   { displayName: string; sublabel: string; modelDisplay: string; tags: string[] }
 > = {
   "Text Generation": {
-    displayName: "LLM",
+    displayName: "대규모 언어 모델(LLM)",
     sublabel: "Qwen 3.6 • Text Generation",
     modelDisplay: "Qwen 3.6",
-    tags: ["LLM", "Text-Gen", "GPT"],
+    tags: ["LLM", "Text-Gen"],
   },
   Embedding: {
     displayName: "텍스트 임베딩(Embedding)",
@@ -217,7 +217,7 @@ const TASK_META: Record<
     displayName: "문장 재순위(Reranking)",
     sublabel: "Qwen3 Reranker • Reranker",
     modelDisplay: "Qwen3 Reranker-8B",
-    tags: ["Reranker", "Qwen3", "Search-Quality"],
+    tags: ["Reranker", "Search-Quality"],
   },
   TTS: {
     displayName: "텍스트를 음성으로 변환(TTS)",
