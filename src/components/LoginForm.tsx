@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { login } from "@/lib/api";
-import { setToken } from "@/lib/token";
+import { setToken, setUserId } from "@/lib/token";
 
 interface LoginFormProps {
   onSuccess?: (nextPath: string) => void;
@@ -42,8 +42,9 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
     setIsLoading(true);
 
     try {
-      const { access_token } = await login({ email, password });
+      const { access_token, user_id } = await login({ email, password });
       setToken(access_token);
+      setUserId(user_id);
       const nextPath = redirectPath ?? "/profile?firstRun=1";
       if (onSuccess) {
         onSuccess(nextPath);

@@ -46,6 +46,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   access_token: string;
+  user_id: number;
 }
 
 export async function login(data: LoginRequest): Promise<LoginResponse> {
