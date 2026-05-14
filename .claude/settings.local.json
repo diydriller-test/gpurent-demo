@@ -7,7 +7,11 @@
       "Bash(npm install *)",
       "Bash(git *)",
       "Bash(curl -s http://localhost:3000/api/apis)",
-      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(x.get\\('sort_order','?'\\), x['name']\\) for x in data]\")"
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(x.get\\('sort_order','?'\\), x['name']\\) for x in data]\")",
+      "Bash(npx tsc *)",
+      "Bash(curl -s \"http://aiapi.kogrobo.com:11115/trial/apis\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s \"http://gpurent.kogrobo.com:53001/apis\" -H \"Accept: application/json\")"
     ]
   }
 }

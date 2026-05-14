@@ -144,10 +144,13 @@ function FirstRunCodeBlock({
   hasKey: boolean;
 }) {
   const [copied, setCopied] = useState(false);
+  const baseUrl =
+    typeof window === "undefined" ? "<your_app_origin>" : window.location.origin;
   const keyLine = apiKey
     ? `export AI_OMAKASE_API_KEY="${apiKey}"`
     : `export AI_OMAKASE_API_KEY="<your_api_key>"`;
-  const code = `${keyLine}
+  const code = `export AI_OMAKASE_BASE_URL="${baseUrl}"
+${keyLine}
 
 curl -X POST "$AI_OMAKASE_BASE_URL/api/chat" \\
   -H "Authorization: Bearer $AI_OMAKASE_API_KEY" \\
