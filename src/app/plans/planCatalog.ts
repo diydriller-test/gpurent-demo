@@ -205,7 +205,7 @@ const TASK_META: Record<
     displayName: "LLM",
     sublabel: "Qwen 3.6 • Text Generation",
     modelDisplay: "Qwen 3.6",
-    tags: ["LLM", "Text-Gen"],
+    tags: ["LLM", "Text-Gen", "GPT"],
   },
   Embedding: {
     displayName: "텍스트 임베딩(Embedding)",
@@ -235,13 +235,13 @@ const TASK_META: Record<
     displayName: "목소리 복제(Voice Clone)",
     sublabel: "Voice Clone • TTS",
     modelDisplay: "Voice Clone",
-    tags: ["VoiceClone", "Audio"],
+    tags: ["VoiceClone", "Audio", "TTS"],
   },
   Vision: {
     displayName: "이미지를 문장으로 변환(Image-to-Text)",
     sublabel: "이미지 분석 • OCR",
     modelDisplay: "Vision OCR",
-    tags: ["Vision", "OCR", "Multimodal"],
+    tags: ["Vision", "OCR", "I2T"],
   },
   "Text-to-Music": {
     displayName: "문장을 음악으로 변환(Text-to-Music)",
