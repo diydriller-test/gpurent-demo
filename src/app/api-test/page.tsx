@@ -4577,7 +4577,7 @@ export default function ApiTestPage() {
                         </p>
 
                         <div className="mt-3 flex flex-wrap gap-2">
-                          {item.taskTags.slice(0, 3).map((tag) => (
+                          {[...item.taskTags.slice(0, 3), "트래픽 기반", "등급별 과금"].map((tag) => (
                             <span
                               key={tag}
                               className="rounded-lg border border-accent/25 bg-accent/5 px-2 py-1 text-[11px] font-mono text-accent"
