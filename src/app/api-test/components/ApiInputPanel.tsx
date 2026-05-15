@@ -1316,6 +1316,9 @@ export function ApiInputPanel({
 // VoiceCloneSection — 파일 업로드 + 마이크 녹음 통합 UI
 // ---------------------------------------------------------------------------
 
+const VC_MIN_RECORDING_MS = 900;
+const VC_MIN_RECORDING_BYTES = 1024;
+
 type VoiceCloneSectionProps = {
   vcRefFileName: string | null;
   vcRefAudioFileInputRef: React.RefObject<HTMLInputElement | null>;
@@ -1359,9 +1362,10 @@ function VoiceCloneSection({
   const [recordingSecs, setRecordingSecs] = useState(0);
   const [recordingError, setRecordingError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const chunksRef = useRef<BlobPart[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const recordingStartAtRef = useRef<number | null>(null);
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
@@ -1371,10 +1375,21 @@ function VoiceCloneSection({
   }, []);
 
   const stopRecording = useCallback(() => {
-    mediaRecorderRef.current?.stop();
-    streamRef.current?.getTracks().forEach((t) => t.stop());
     stopTimer();
     setIsRecording(false);
+    const recorder = mediaRecorderRef.current;
+    if (!recorder) return;
+
+    try {
+      if (recorder.state !== "inactive") {
+        recorder.stop();
+      }
+    } catch {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      mediaRecorderRef.current = null;
+      recordingStartAtRef.current = null;
+    }
   }, [stopTimer]);
 
   // 최대 60초 자동 중지
@@ -1389,15 +1404,26 @@ function VoiceCloneSection({
     return () => {
       stopTimer();
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      mediaRecorderRef.current = null;
+      streamRef.current = null;
+      recordingStartAtRef.current = null;
     };
   }, [stopTimer]);
 
   async function startRecording() {
     setRecordingError(null);
+    onVcRefAudioChange(null);
+    chunksRef.current = [];
+    recordingStartAtRef.current = null;
+
     try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("MEDIA_UNAVAILABLE");
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      chunksRef.current = [];
+      recordingStartAtRef.current = Date.now();
 
       const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
         ? "audio/webm;codecs=opus"
@@ -1412,13 +1438,45 @@ function VoiceCloneSection({
       };
 
       mr.onstop = () => {
+        const startedAt = recordingStartAtRef.current;
+        const durationMs =
+          typeof startedAt === "number" ? Date.now() - startedAt : 0;
         const blob = new Blob(chunksRef.current, {
           type: mr.mimeType || "audio/webm",
         });
-        const ext = mr.mimeType.includes("ogg") ? "ogg" : "webm";
-        const file = new File([blob], `recording.${ext}`, {
+
+        streamRef.current?.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+        mediaRecorderRef.current = null;
+        recordingStartAtRef.current = null;
+        stopTimer();
+        setIsRecording(false);
+
+        if (
+          durationMs < VC_MIN_RECORDING_MS ||
+          blob.size < VC_MIN_RECORDING_BYTES
+        ) {
+          chunksRef.current = [];
+          onVcRefAudioChange(null);
+          setRecordingError("녹음이 너무 짧습니다. 조금 더 길게 말해 주세요.");
+          return;
+        }
+
+        const mime = blob.type || "audio/wav";
+        const ext = mime.includes("webm")
+          ? "webm"
+          : mime.includes("ogg")
+            ? "ogg"
+            : mime.includes("mpeg") || mime.includes("mp3")
+              ? "mp3"
+              : mime.includes("mp4")
+                ? "mp4"
+                : "wav";
+        const file = new File([blob], `voice-clone-reference.${ext}`, {
           type: blob.type,
         });
+        chunksRef.current = [];
+        setRecordingError(null);
         onVcRefAudioChange(file);
       };
 
@@ -1428,8 +1486,24 @@ function VoiceCloneSection({
       timerRef.current = setInterval(() => {
         setRecordingSecs((s) => s + 1);
       }, 1000);
-    } catch {
-      setRecordingError("마이크 접근 권한이 필요합니다.");
+    } catch (err: unknown) {
+      const isDenied =
+        err instanceof Error &&
+        (err.name === "NotAllowedError" || err.message.includes("Permission"));
+
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      mediaRecorderRef.current = null;
+      recordingStartAtRef.current = null;
+      chunksRef.current = [];
+      stopTimer();
+      setIsRecording(false);
+      onVcRefAudioChange(null);
+      setRecordingError(
+        isDenied
+          ? "마이크 접근 권한이 필요합니다."
+          : "마이크 사용에 실패했습니다.",
+      );
     }
   }
 
