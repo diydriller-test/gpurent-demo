@@ -18,6 +18,12 @@
  * }
  * (구 클라이언트가 보낸 이벤트 type "click"은 "element_click"으로 정규화됩니다.)
  *
+ * page_view 시 properties:
+ * - path (string): pathname + search (예: "/api-test?task=stt&view=detail")
+ * - pathname (string): 경로만 (예: "/api-test")
+ * - search (string, 선택): "?" 포함 쿼리 (예: "?task=stt&view=detail")
+ * - title (string, 선택)
+ *
  * element_click 시 properties에 오는 필드 예시:
  * - type (string): input이면 input.type, 그 외 태그명 소문자 (예: "div", "button", "a")
  * - text (string, 선택): 표시용 텍스트(비밀번호·일반 text 입력 값 본문은 제외)

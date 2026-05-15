@@ -65,9 +65,14 @@ const lastPageSent = { path: "", at: 0 };
 
 /**
  * SPA 라우트 변경 시 페이지 뷰 (StrictMode 중복 완화).
+ * @param pathname - 경로만 (예: `/api-test`)
+ * @param searchRaw - 쿼리 문자열 (`task=stt&view=detail`, `?` 없이)
  */
-export function enqueuePageView(pathname: string): void {
-  const path = pathname || "/";
+export function enqueuePageView(pathname: string, searchRaw = ""): void {
+  const pathnameNorm = pathname || "/";
+  const searchTrimmed = searchRaw.trim().replace(/^\?/, "");
+  const search = searchTrimmed ? `?${searchTrimmed}` : "";
+  const path = `${pathnameNorm}${search}`;
   const now = Date.now();
   if (lastPageSent.path === path && now - lastPageSent.at < 400) return;
   lastPageSent.path = path;
@@ -84,6 +89,8 @@ export function enqueuePageView(pathname: string): void {
     occurred_at: new Date().toISOString(),
     properties: {
       path,
+      pathname: pathnameNorm,
+      ...(search ? { search } : {}),
       ...(title ? { title } : {}),
     },
   });
