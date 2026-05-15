@@ -13,24 +13,49 @@ type Capability = {
 
 const CAPABILITY_FALLBACK: Capability[] = [
   {
-    label: "Speech",
-    detail: "STT, TTS, voice clone",
+    label: "STT",
+    detail: "Qwen3 Audio · Audio",
     href: "/api-test?task=stt&view=detail",
   },
   {
-    label: "Retrieval",
-    detail: "Embedding and rerank",
+    label: "TTS",
+    detail: "Qwen3 Generation · Audio",
+    href: "/api-test?task=tts&view=detail",
+  },
+  {
+    label: "Embedding",
+    detail: "Qwen3 Embedding · Vector",
     href: "/api-test?task=embedding&view=detail",
   },
   {
-    label: "Generation",
-    detail: "Text, image, music",
-    href: "/api-test?task=llm&view=detail",
+    label: "Reranker",
+    detail: "Qwen3 Reranker · Search",
+    href: "/api-test?task=reranker&view=detail",
+  },
+  {
+    label: "Voice Clone",
+    detail: "Qwen3 Voice · Audio",
+    href: "/api-test?task=voice-clone&view=detail",
   },
   {
     label: "Vision",
-    detail: "Image-to-text pipelines",
+    detail: "Qwen3.6 Vision · Image",
     href: "/api-test?task=image2text&view=detail",
+  },
+  {
+    label: "Image Generation",
+    detail: "Coming Soon · Image",
+    href: "/api-test?task=t2i&view=detail",
+  },
+  {
+    label: "Music Generation",
+    detail: "ACE-Step · Audio",
+    href: "/api-test?task=t2m&view=detail",
+  },
+  {
+    label: "Text",
+    detail: "Qwen3.6 · Text",
+    href: "/api-test?task=llm&view=detail",
   },
 ];
 
@@ -44,6 +69,30 @@ const TASK_ROUTES: Record<string, string> = {
   "Text-to-Music": "t2m",
   "Image Generation": "t2i",
   "Text Generation": "llm",
+};
+
+const TASK_LABELS: Record<string, string> = {
+  STT: "STT",
+  TTS: "TTS",
+  Embedding: "Embedding",
+  Reranker: "Reranker",
+  "Voice Clone": "Voice Clone",
+  Vision: "Vision",
+  "Image Generation": "Image Generation",
+  "Text-to-Music": "Music Generation",
+  "Text Generation": "Text",
+};
+
+const TASK_DETAILS: Record<string, string> = {
+  STT: "Qwen3 Audio · Audio",
+  TTS: "Qwen3 Generation · Audio",
+  Embedding: "Qwen3 Embedding · Vector",
+  Reranker: "Qwen3 Reranker · Search",
+  "Voice Clone": "Qwen3 Voice · Audio",
+  Vision: "Qwen3.6 Vision · Image",
+  "Image Generation": "Coming Soon · Image",
+  "Text-to-Music": "ACE-Step · Audio",
+  "Text Generation": "Qwen3.6 · Text",
 };
 
 const METRICS = [
@@ -93,9 +142,12 @@ const ROUTING_STEPS = [
 
 function taskLabel(taskKey?: string, name?: string) {
   if (!taskKey) return name ?? "AI API";
-  if (taskKey === "Text Generation") return "Text";
-  if (taskKey === "Vision") return "Vision";
-  return taskKey;
+  return TASK_LABELS[taskKey] ?? name ?? taskKey;
+}
+
+function taskDetail(taskKey?: string, fallback?: string | null) {
+  if (!taskKey) return fallback ?? "AI Engine · API";
+  return TASK_DETAILS[taskKey] ?? fallback ?? "AI Engine · API";
 }
 
 export default function Home() {
@@ -117,7 +169,10 @@ export default function Home() {
             const route = TASK_ROUTES[task] ?? "llm";
             return {
               label: taskLabel(api.task_key, api.name),
-              detail: api.card_sublabel ?? api.model_display ?? api.company_name,
+              detail: taskDetail(
+                api.task_key,
+                api.model_display ?? api.company_name,
+              ),
               href: `/api-test?task=${route}&view=detail`,
             };
           })
