@@ -9,52 +9,54 @@ type Capability = {
   label: string;
   detail: string;
   href: string;
+  disabled?: boolean;
 };
 
 const CAPABILITY_FALLBACK: Capability[] = [
   {
     label: "STT",
-    detail: "Qwen3 Audio · Audio",
+    detail: "faster-whisper-large-v3",
     href: "/api-test?task=stt&view=detail",
   },
   {
     label: "TTS",
-    detail: "Qwen3 Generation · Audio",
+    detail: "Qwen3-TTS-12Hz-1.7B-CustomVoice",
     href: "/api-test?task=tts&view=detail",
   },
   {
     label: "Embedding",
-    detail: "Qwen3 Embedding · Vector",
+    detail: "Qwen3-Embedding-8B",
     href: "/api-test?task=embedding&view=detail",
   },
   {
-    label: "Reranker",
-    detail: "Qwen3 Reranker · Search",
+    label: "Reranking",
+    detail: "Qwen3-Reranker-8B",
     href: "/api-test?task=reranker&view=detail",
   },
   {
     label: "Voice Clone",
-    detail: "Qwen3 Voice · Audio",
+    detail: "Qwen3-TTS-12Hz-1.7B-Base",
     href: "/api-test?task=voice-clone&view=detail",
   },
   {
-    label: "Vision",
-    detail: "Qwen3.6 Vision · Image",
+    label: "Image-to-Text",
+    detail: "Qwen3.6 35B multi modal",
     href: "/api-test?task=image2text&view=detail",
   },
   {
     label: "Image Generation",
-    detail: "Coming Soon · Image",
+    detail: "Qwen-Image-Edit-2511-Lightning",
     href: "/api-test?task=t2i&view=detail",
+    disabled: true,
   },
   {
-    label: "Music Generation",
-    detail: "ACE-Step · Audio",
+    label: "Text-to-Music",
+    detail: "acestep-v15-xl-sft",
     href: "/api-test?task=t2m&view=detail",
   },
   {
-    label: "Text",
-    detail: "Qwen3.6 · Text",
+    label: "LLM",
+    detail: "Qwen3.6 35B",
     href: "/api-test?task=llm&view=detail",
   },
 ];
@@ -75,24 +77,24 @@ const TASK_LABELS: Record<string, string> = {
   STT: "STT",
   TTS: "TTS",
   Embedding: "Embedding",
-  Reranker: "Reranker",
+  Reranker: "Reranking",
   "Voice Clone": "Voice Clone",
-  Vision: "Vision",
+  Vision: "Image-to-Text",
   "Image Generation": "Image Generation",
-  "Text-to-Music": "Music Generation",
-  "Text Generation": "Text",
+  "Text-to-Music": "Text-to-Music",
+  "Text Generation": "LLM",
 };
 
 const TASK_DETAILS: Record<string, string> = {
-  STT: "Qwen3 Audio · Audio",
-  TTS: "Qwen3 Generation · Audio",
-  Embedding: "Qwen3 Embedding · Vector",
-  Reranker: "Qwen3 Reranker · Search",
-  "Voice Clone": "Qwen3 Voice · Audio",
-  Vision: "Qwen3.6 Vision · Image",
-  "Image Generation": "Coming Soon · Image",
-  "Text-to-Music": "ACE-Step · Audio",
-  "Text Generation": "Qwen3.6 · Text",
+  STT: "faster-whisper-large-v3",
+  TTS: "Qwen3-TTS-12Hz-1.7B-CustomVoice",
+  Embedding: "Qwen3-Embedding-8B",
+  Reranker: "Qwen3-Reranker-8B",
+  "Voice Clone": "Qwen3-TTS-12Hz-1.7B-Base",
+  Vision: "Qwen3.6 35B multi modal",
+  "Image Generation": "Qwen-Image-Edit-2511-Lightning",
+  "Text-to-Music": "acestep-v15-xl-sft",
+  "Text Generation": "Qwen3.6 35B",
 };
 
 const METRICS = [
@@ -153,6 +155,8 @@ function taskDetail(taskKey?: string, fallback?: string | null) {
 export default function Home() {
   const [capabilities, setCapabilities] =
     useState<Capability[]>(CAPABILITY_FALLBACK);
+  const [imageGenerationNoticeOpen, setImageGenerationNoticeOpen] =
+    useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -174,6 +178,7 @@ export default function Home() {
                 api.model_display ?? api.company_name,
               ),
               href: `/api-test?task=${route}&view=detail`,
+              disabled: api.task_key === "Image Generation",
             };
           })
           .filter((item) => {
@@ -412,25 +417,46 @@ export default function Home() {
                 같은 사용 흐름으로 다룹니다. 필요한 API를 고르고 결과를 확인하세요.
               </p>
               <div className="mt-8 grid gap-2 sm:grid-cols-2">
-                {capabilities.map((capability) => (
-                  <Link
-                    key={capability.label}
-                    href={capability.href}
-                    className="group min-h-[128px] border border-black/[0.07] bg-[#fbfbfc] p-4 transition-colors hover:border-black/[0.16] hover:bg-white"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <h3 className="text-[18px] font-semibold">
-                        {capability.label}
-                      </h3>
-                      <span className="font-mono text-[12px] text-black/24 group-hover:text-black/58">
-                        ↗
-                      </span>
-                    </div>
-                    <p className="mt-8 text-[13px] leading-5 text-black/48">
-                      {capability.detail}
-                    </p>
-                  </Link>
-                ))}
+                {capabilities.map((capability) => {
+                  const cardContent = (
+                    <>
+                      <div className="flex items-start justify-between gap-4">
+                        <h3 className="text-[18px] font-semibold">
+                          {capability.label}
+                        </h3>
+                        <span className="font-mono text-[12px] text-black/24 group-hover:text-black/58">
+                          ↗
+                        </span>
+                      </div>
+                      <p className="mt-8 break-words text-[13px] leading-5 text-black/48">
+                        {capability.detail}
+                      </p>
+                    </>
+                  );
+
+                  if (capability.disabled) {
+                    return (
+                      <button
+                        key={capability.label}
+                        type="button"
+                        onClick={() => setImageGenerationNoticeOpen(true)}
+                        className="group min-h-[128px] border border-black/[0.07] bg-[#fbfbfc] p-4 text-left transition-colors hover:border-black/[0.16] hover:bg-white"
+                      >
+                        {cardContent}
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <Link
+                      key={capability.label}
+                      href={capability.href}
+                      className="group min-h-[128px] border border-black/[0.07] bg-[#fbfbfc] p-4 transition-colors hover:border-black/[0.16] hover:bg-white"
+                    >
+                      {cardContent}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
 
@@ -477,6 +503,26 @@ export default function Home() {
           </div>
         </section>
       </main>
+
+      {imageGenerationNoticeOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl border border-black/[0.08] bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-[#08090d]">Coming Soon</h2>
+            <p className="mt-2 text-sm leading-relaxed text-black/60">
+              Image Generation API는 서버 안정화 후 제공될 예정입니다.
+              <br />
+              준비가 끝나면 Workbench에서 바로 테스트할 수 있습니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => setImageGenerationNoticeOpen(false)}
+              className="mt-6 w-full rounded-xl bg-[#08090d] py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
