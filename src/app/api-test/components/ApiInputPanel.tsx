@@ -1576,79 +1576,125 @@ function VoiceCloneSection({
       <div className="flex flex-col gap-3">
         {/* 참조 음성 */}
         <div>
-          <p className="font-mono text-xs text-foreground/60">참조 음성</p>
-          <p className="mt-0.5 text-[11px] text-foreground/40">WAV · MP3 · OGG · WebM · M4A · 최대 20MB</p>
-          <div className="mt-1 flex items-center gap-2">
-            {/* 파일 업로드 */}
-            <input
-              ref={vcRefAudioFileInputRef}
-              type="file"
-              accept="audio/*,.wav,.mp3,.ogg,.webm,.m4a"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0] ?? null;
-                onVcRefAudioChange(file);
-                e.target.value = "";
-              }}
-            />
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
+            <div className="flex-[4] min-w-0">
+              <p className="font-mono text-xs text-foreground/60">참조 음성</p>
+              <p className="mt-0.5 text-[11px] text-foreground/40">
+                WAV · MP3 · OGG · WebM · M4A · 최대 20MB
+              </p>
+            <label
+              className={[
+                "relative mt-2 block rounded-xl border border-dashed px-3 py-3 transition-colors",
+                isRecording
+                  ? "cursor-not-allowed border-white/10 bg-background/20 opacity-50"
+                  : vcRefFileName
+                    ? "cursor-pointer border-accent/40 bg-accent/5"
+                    : "cursor-pointer border-white/10 bg-background/30 hover:border-accent/30",
+              ].join(" ")}
+            >
+              <input
+                ref={vcRefAudioFileInputRef}
+                type="file"
+                accept="audio/*,.wav,.mp3,.ogg,.webm,.m4a"
+                className="hidden"
+                disabled={isRecording}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  onVcRefAudioChange(file);
+                  e.target.value = "";
+                }}
+              />
+
+              {vcRefFileName && !isRecording ? (
+                <button
+                  type="button"
+                  aria-label="참조 음성 지우기"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onVcRefAudioClear();
+                  }}
+                  className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center text-muted-foreground/40 transition-colors hover:text-foreground"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <path d="M18 6L6 18" />
+                    <path d="M6 6l12 12" />
+                  </svg>
+                </button>
+              ) : null}
+
+              <div className="flex items-center gap-2 pr-8">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-background/20 text-foreground/80">
+                  <IconUpload className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {!isRecording && vcRefFileName ? vcRefFileName : "파일 선택"}
+                  </p>
+                  {vcRefFileName && !isRecording ? (
+                    <p className="mt-1 text-xs text-accent">
+                      합성 준비 완료
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </label>
+            </div>
+
+            <div className="w-full flex-[6] min-w-0">
+            <p className="font-mono text-xs text-foreground/60">
+              마이크 녹음 (선택)
+            </p>
+            <p className="mt-0.5 text-[11px] invisible" aria-hidden="true">
+              placeholder
+            </p>
             <button
               type="button"
-              disabled={isRecording}
-              onClick={() => vcRefAudioFileInputRef.current?.click()}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] text-foreground/80 transition-colors hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={isRecording ? stopRecording : startRecording}
+              className={[
+                "mt-2 w-full rounded-xl border px-4 py-3 text-sm font-medium transition-colors",
+                isRecording
+                  ? "border-red-500/40 bg-red-500/10 text-[#ef4444]"
+                  : "border-white/10 bg-background/30 text-foreground/80 hover:border-accent/30",
+              ].join(" ")}
             >
-              <IconUpload className="h-4 w-4 shrink-0" />
-              <span className="truncate">
-                {!isRecording && vcRefFileName ? vcRefFileName : "파일 선택"}
+              <span className="inline-flex flex-wrap items-center justify-center gap-2">
+                <IconMic className="h-5 w-5" />
+                {isRecording ? "녹음 중지" : "녹음 시작"}
+                {isRecording ? (
+                  <span className="ml-3 inline-flex items-center gap-2">
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                    </span>
+                    <span>{fmtSecs(recordingSecs)}</span>
+                  </span>
+                ) : null}
               </span>
             </button>
-
-            {/* 녹음 버튼 */}
-            {isRecording ? (
-              <button
-                type="button"
-                onClick={stopRecording}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/50 bg-red-500/10 px-4 py-2 text-[13px] font-medium text-red-400 transition-colors hover:bg-red-500/20"
-              >
-                <span className="relative flex h-2 w-2 shrink-0">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-                </span>
-                <span>{fmtSecs(recordingSecs)}</span>
-                <span>중지</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={startRecording}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] text-foreground/80 transition-colors hover:border-accent/50 hover:text-accent"
-              >
-                <IconMic className="h-4 w-4 shrink-0" />
-                <span>녹음</span>
-              </button>
-            )}
-
-            {/* 초기화 */}
-            {vcRefFileName && !isRecording ? (
-              <button
-                type="button"
-                onClick={onVcRefAudioClear}
-                className="shrink-0 rounded-lg border border-white/10 bg-background/30 px-2 py-1.5 text-[11px] text-foreground/60 transition-colors hover:border-accent/40 hover:text-accent"
-              >
-                ✕
-              </button>
-            ) : null}
+            </div>
           </div>
 
           {recordingError ? (
-            <p className="mt-1 text-[11px] text-red-400">{recordingError}</p>
+            <p className="mt-1 text-[11px] text-red-400">
+              {recordingError}
+            </p>
           ) : isRecording ? (
             <p className="mt-1 text-[11px] text-red-400/80">
-              녹음 중… 중지를 누르면 자동으로 설정됩니다. (최대 60초)
+              녹음 중... 중지를 누르면 자동으로 설정됩니다. (최대 60초)
             </p>
           ) : (
             <p className="mt-1 text-[11px] text-foreground/45">
-              클론할 목소리 샘플 (WAV 권장, 5~30초) — 파일 업로드 또는 직접 녹음
+              클론할 목소리 샘플 (WAV 권장, 5~30초) - 파일 업로드 또는 직접 녹음
             </p>
           )}
         </div>
