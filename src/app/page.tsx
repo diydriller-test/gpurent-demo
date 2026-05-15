@@ -66,11 +66,17 @@ const TASK_ROUTES: Record<string, string> = {
   TTS: "tts",
   Embedding: "embedding",
   Reranker: "reranker",
+  Reranking: "reranker",
   "Voice Clone": "voiceClone",
   Vision: "image2text",
+  "Image-to-Text": "image2text",
   "Text-to-Music": "t2m",
+  "Music Generation": "t2m",
   "Image Generation": "t2i",
+  "Text-to-Image": "t2i",
   "Text Generation": "llm",
+  Text: "llm",
+  LLM: "llm",
 };
 
 const TASK_LABELS: Record<string, string> = {
@@ -78,11 +84,17 @@ const TASK_LABELS: Record<string, string> = {
   TTS: "TTS",
   Embedding: "Embedding",
   Reranker: "Reranking",
+  Reranking: "Reranking",
   "Voice Clone": "Voice Clone",
   Vision: "Image-to-Text",
+  "Image-to-Text": "Image-to-Text",
   "Image Generation": "Image Generation",
+  "Text-to-Image": "Image Generation",
   "Text-to-Music": "Text-to-Music",
+  "Music Generation": "Text-to-Music",
   "Text Generation": "LLM",
+  Text: "LLM",
+  LLM: "LLM",
 };
 
 const TASK_DETAILS: Record<string, string> = {
@@ -90,11 +102,17 @@ const TASK_DETAILS: Record<string, string> = {
   TTS: "Qwen3-TTS-12Hz-1.7B-CustomVoice",
   Embedding: "Qwen3-Embedding-8B",
   Reranker: "Qwen3-Reranker-8B",
+  Reranking: "Qwen3-Reranker-8B",
   "Voice Clone": "Qwen3-TTS-12Hz-1.7B-Base",
   Vision: "Qwen3.6 35B multi modal",
+  "Image-to-Text": "Qwen3.6 35B multi modal",
   "Image Generation": "Qwen-Image-Edit-2511-Lightning",
+  "Text-to-Image": "Qwen-Image-Edit-2511-Lightning",
   "Text-to-Music": "acestep-v15-xl-sft",
+  "Music Generation": "acestep-v15-xl-sft",
   "Text Generation": "Qwen3.6 35B",
+  Text: "Qwen3.6 35B",
+  LLM: "Qwen3.6 35B",
 };
 
 const METRICS = [
@@ -142,14 +160,34 @@ const ROUTING_STEPS = [
   ["ship", "API key + code"],
 ];
 
-function taskLabel(taskKey?: string, name?: string) {
-  if (!taskKey) return name ?? "AI API";
-  return TASK_LABELS[taskKey] ?? name ?? taskKey;
+function normalizeTask(taskKey?: string | null, name?: string | null) {
+  const raw = `${taskKey ?? ""} ${name ?? ""}`.toLowerCase();
+  if (/text[-\s]?to[-\s]?music|music generation|t2m|music/.test(raw)) {
+    return "Text-to-Music";
+  }
+  if (/text[-\s]?to[-\s]?image|image generation|imagegen|t2i/.test(raw)) {
+    return "Image Generation";
+  }
+  if (/image[-\s]?to[-\s]?text|vision|ocr|i2t/.test(raw)) {
+    return "Image-to-Text";
+  }
+  if (/voice clone|voiceclone/.test(raw)) return "Voice Clone";
+  if (/rerank/.test(raw)) return "Reranking";
+  if (/embedding/.test(raw)) return "Embedding";
+  if (/\bstt\b|speech[-\s]?to[-\s]?text|transcription/.test(raw)) return "STT";
+  if (/\btts\b|text[-\s]?to[-\s]?speech/.test(raw)) return "TTS";
+  if (/\bllm\b|text generation|chat/.test(raw)) return "LLM";
+  return taskKey ?? name ?? "AI API";
 }
 
-function taskDetail(taskKey?: string, fallback?: string | null) {
-  if (!taskKey) return fallback ?? "AI Engine · API";
-  return TASK_DETAILS[taskKey] ?? fallback ?? "AI Engine · API";
+function taskLabel(taskKey?: string | null, name?: string | null) {
+  const task = normalizeTask(taskKey, name);
+  return TASK_LABELS[task] ?? task;
+}
+
+function taskDetail(taskKey?: string | null, name?: string | null, fallback?: string | null) {
+  const task = normalizeTask(taskKey, name);
+  return TASK_DETAILS[task] ?? fallback ?? "AI Engine · API";
 }
 
 export default function Home() {
@@ -169,16 +207,17 @@ export default function Home() {
         const next = raw
           .filter((api) => api.is_active !== false)
           .map((api) => {
-            const task = api.task_key ?? api.name;
+            const task = normalizeTask(api.task_key, api.name);
             const route = TASK_ROUTES[task] ?? "llm";
             return {
-              label: taskLabel(api.task_key, api.name),
+              label: taskLabel(task, api.name),
               detail: taskDetail(
-                api.task_key,
+                task,
+                api.name,
                 api.model_display ?? api.company_name,
               ),
               href: `/api-test?task=${route}&view=detail`,
-              disabled: api.task_key === "Image Generation",
+              disabled: task === "Image Generation",
             };
           })
           .filter((item) => {
