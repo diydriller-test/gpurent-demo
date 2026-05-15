@@ -42,6 +42,11 @@ function formatPrice(priceMonthly: string): string {
   }).format(num);
 }
 
+const SECONDS_PER_30_DAY_MONTH = 2_592_000;
+const CALCULATOR_MIN_REQUESTS = 50_000;
+const CALCULATOR_MAX_REQUESTS = 250_000_000;
+const CALCULATOR_STEP_REQUESTS = 250_000;
+
 function PlansPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -69,7 +74,7 @@ function PlansPageContent() {
   const [t2iComingSoonOpen, setT2iComingSoonOpen] = useState(false);
   /** 백엔드 /apis 실패 시 데모 목록을 쓰는 중 */
   const [usingDemoApis, setUsingDemoApis] = useState(false);
-  const [calculatorRequests, setCalculatorRequests] = useState(250_000);
+  const [calculatorRequests, setCalculatorRequests] = useState(5_000_000);
 
   const [filterTasks, setFilterTasks] = useState<Record<PlanTask, boolean>>(
     () => {
@@ -378,31 +383,57 @@ function PlansPageContent() {
   const isLoggedIn = user !== null;
   const isAuthChecking = hasToken && userLoading;
   const calculator = useMemo(() => {
-    const paidPlans = plans
+    const capacityPlans = plans
       .map((plan) => ({
         plan,
         price: parseFloat(plan.price_monthly),
       }))
-      .filter(({ price }) => Number.isFinite(price) && price > 0)
-      .sort((a, b) => a.price - b.price);
-    const recommended = paidPlans.find(
-      ({ plan }) => calculatorRequests / 2_592_000 <= plan.max_rps,
-    ) ?? paidPlans[paidPlans.length - 1] ?? null;
+      .filter(({ price }) => Number.isFinite(price))
+      .sort((a, b) => {
+        const rpsDiff = a.plan.max_rps - b.plan.max_rps;
+        if (rpsDiff !== 0) return rpsDiff;
+        return a.price - b.price;
+      });
+
+    const averageRps = calculatorRequests / SECONDS_PER_30_DAY_MONTH;
+    const usageRecommendation =
+      capacityPlans.find(({ plan }) => averageRps <= plan.max_rps) ??
+      capacityPlans[capacityPlans.length - 1] ??
+      null;
+    const currentPlan = selectedApi
+      ? user?.api_plans?.find((plan) => plan.api_id === selectedApi.id)
+      : null;
+    const usageIndex = usageRecommendation
+      ? capacityPlans.findIndex(
+          ({ plan }) => plan.id === usageRecommendation.plan.id,
+        )
+      : -1;
+    const currentIndex = currentPlan
+      ? capacityPlans.findIndex(({ plan }) => plan.id === currentPlan.plan_id)
+      : -1;
+    const recommended =
+      currentIndex > usageIndex && currentIndex >= 0
+        ? capacityPlans[currentIndex]
+        : usageRecommendation;
     const recommendedPrice = recommended?.price ?? 0;
-    const singleModelBaseline = Math.round(recommendedPrice * 1.42);
-    const savings =
-      recommendedPrice > 0
-        ? Math.max(0, singleModelBaseline - recommendedPrice)
-        : 0;
+    const floorApplied =
+      currentIndex > usageIndex && currentIndex >= 0 && usageIndex >= 0;
+    const overCapacity =
+      !!recommended && averageRps > recommended.plan.max_rps;
 
     return {
+      averageRps,
+      floorApplied,
+      overCapacity,
       recommended,
       recommendedPrice,
-      singleModelBaseline,
-      savings,
-      blendedLatency: recommended ? "평균 처리량 기준 추천" : "요청량 기준 계산",
+      blendedLatency: overCapacity
+        ? "상위 플랜 상담 필요"
+        : recommended
+          ? "평균 처리량 기준 추천"
+          : "요청량 기준 계산",
     };
-  }, [plans, calculatorRequests]);
+  }, [plans, calculatorRequests, selectedApi, user]);
 
   return (
     <PlatformShell hideSidebar>
@@ -532,8 +563,8 @@ function PlansPageContent() {
                     필요한 처리량을 미리 계산해보세요.
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-black/56">
-                    월 요청량을 넣으면 평균 RPS 기준으로 필요한 요금제를 추정합니다.
-                    실제 과금 로직은 변경하지 않고, 의사결정용 UI로만 제공됩니다.
+                    월 요청량을 초당 평균 요청량으로 환산해 필요한 플랜을
+                    추정합니다. 실제 피크 트래픽은 별도 운영 여유가 필요합니다.
                   </p>
                 </div>
                 <div className="rounded-xl border border-accent/25 bg-accent/5 px-4 py-3">
@@ -541,7 +572,10 @@ function PlansPageContent() {
                     추천 플랜
                   </p>
                   <p className="mt-1 text-sm font-semibold text-foreground">
-                    {calculator.recommended?.plan.name ?? "플랜 선택"}
+                    {calculator.overCapacity
+                      ? "Enterprise 문의"
+                      : calculator.recommended?.plan.name ?? "플랜 선택"}
+                    {calculator.floorApplied ? " 유지" : ""}
                   </p>
                 </div>
               </div>
@@ -557,9 +591,9 @@ function PlansPageContent() {
                 </div>
                 <input
                   type="range"
-                  min={50_000}
-                  max={2_000_000}
-                  step={50_000}
+                  min={CALCULATOR_MIN_REQUESTS}
+                  max={CALCULATOR_MAX_REQUESTS}
+                  step={CALCULATOR_STEP_REQUESTS}
                   value={calculatorRequests}
                   onChange={(event) =>
                     setCalculatorRequests(Number(event.target.value))
@@ -581,22 +615,24 @@ function PlansPageContent() {
                 </div>
                 <div className="rounded-xl border border-black/[0.06] bg-background px-4 py-3">
                   <p className="font-mono text-[10px] uppercase text-black/36">
-                    상위 플랜 기준
+                    월 평균 RPS
                   </p>
                   <p className="mt-2 text-lg font-semibold text-foreground">
                     {calculator.recommended
-                      ? formatPrice(String(calculator.singleModelBaseline))
+                      ? `${calculator.averageRps.toFixed(2)} RPS`
                       : "—"}
                   </p>
                 </div>
                 <div className="rounded-xl border border-accent/20 bg-accent/5 px-4 py-3">
                   <p className="font-mono text-[10px] uppercase text-accent/70">
-                    예상 차액
+                    추천 기준
                   </p>
-                  <p className="mt-2 text-lg font-semibold text-accent">
-                    {calculator.recommended
-                      ? formatPrice(String(calculator.savings))
-                      : "—"}
+                  <p className="mt-2 text-sm font-semibold leading-6 text-accent">
+                    {calculator.overCapacity
+                      ? "현재 범위 초과"
+                      : calculator.floorApplied
+                      ? "현재 플랜보다 낮추지 않음"
+                      : "평균 RPS 기준"}
                   </p>
                 </div>
               </div>
