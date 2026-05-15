@@ -1449,6 +1449,29 @@ export default function ApiTestPage() {
     taskKeys,
   ]);
 
+  const detailApiItems = useMemo(() => {
+    const byApiId = new Map(apis.map((api) => [api.id, api]));
+    const orderedIds = apisFromBackend
+      .map((api) => getApiTask(api))
+      .map((task) => (task ? PLAN_TASK_TO_PLAYGROUND_API[task] : undefined))
+      .filter((id): id is ApiId => Boolean(id));
+    const seen = new Set<ApiId>();
+    const ordered = orderedIds.reduce<ApiItem[]>((items, id) => {
+      if (seen.has(id)) return items;
+      const api = byApiId.get(id);
+      if (!api) return items;
+      seen.add(id);
+      items.push(api);
+      return items;
+    }, []);
+
+    apis.forEach((api) => {
+      if (!seen.has(api.id)) ordered.push(api);
+    });
+
+    return ordered;
+  }, [apis, apisFromBackend]);
+
   const activeTaskKey = useMemo(() => {
     if (sidebarMode === "my") return "My";
     if (allTasksFilterOn) return "All";
@@ -4633,8 +4656,8 @@ export default function ApiTestPage() {
             </div>
 
             {/* Left: API Selection */}
-            <aside className="w-full min-w-0">
-              <div className="sticky top-24 max-h-[340px] overflow-y-auto rounded-xl border border-black/[0.08] bg-white p-3 shadow-[0_18px_70px_rgba(8,9,13,0.045)] xl:max-h-[calc(100vh-120px)]">
+            <aside className="w-full min-w-0 xl:sticky xl:top-24 xl:self-start">
+              <div className="max-h-[340px] overflow-y-auto rounded-xl border border-black/[0.08] bg-white p-3 shadow-[0_18px_70px_rgba(8,9,13,0.045)] xl:max-h-[calc(100vh-120px)]">
                 <div className="px-2 pb-3">
                   <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
                     API selection
@@ -4649,7 +4672,7 @@ export default function ApiTestPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  {apis.map((api) => {
+                  {detailApiItems.map((api) => {
                     const isActive = selectedApi === api.id;
                     const statusText =
                       selectedApi === api.id && selectedIsRunning
