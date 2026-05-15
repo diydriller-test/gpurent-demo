@@ -1319,6 +1319,62 @@ export function ApiInputPanel({
 const VC_MIN_RECORDING_MS = 900;
 const VC_MIN_RECORDING_BYTES = 1024;
 
+function writeAscii(view: DataView, offset: number, value: string): void {
+  for (let i = 0; i < value.length; i++) {
+    view.setUint8(offset + i, value.charCodeAt(i));
+  }
+}
+
+function audioBufferToMonoWavBlob(audioBuffer: AudioBuffer): Blob {
+  const { length, numberOfChannels, sampleRate } = audioBuffer;
+  const output = new ArrayBuffer(44 + length * 2);
+  const view = new DataView(output);
+
+  writeAscii(view, 0, "RIFF");
+  view.setUint32(4, 36 + length * 2, true);
+  writeAscii(view, 8, "WAVE");
+  writeAscii(view, 12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeAscii(view, 36, "data");
+  view.setUint32(40, length * 2, true);
+
+  let offset = 44;
+  for (let i = 0; i < length; i++) {
+    let sample = 0;
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+      sample += audioBuffer.getChannelData(channel)[i] ?? 0;
+    }
+    sample = Math.max(-1, Math.min(1, sample / Math.max(1, numberOfChannels)));
+    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+    offset += 2;
+  }
+
+  return new Blob([output], { type: "audio/wav" });
+}
+
+async function recordedBlobToWav(blob: Blob): Promise<Blob> {
+  const AudioContextCtor =
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext?: typeof AudioContext })
+      .webkitAudioContext;
+  if (!AudioContextCtor) return blob;
+
+  const audioContext = new AudioContextCtor();
+  try {
+    const buffer = await blob.arrayBuffer();
+    const decoded = await audioContext.decodeAudioData(buffer.slice(0));
+    return audioBufferToMonoWavBlob(decoded);
+  } finally {
+    void audioContext.close().catch(() => null);
+  }
+}
+
 type VoiceCloneSectionProps = {
   vcRefFileName: string | null;
   vcRefAudioFileInputRef: React.RefObject<HTMLInputElement | null>;
@@ -1462,22 +1518,22 @@ function VoiceCloneSection({
           return;
         }
 
-        const mime = blob.type || "audio/wav";
-        const ext = mime.includes("webm")
-          ? "webm"
-          : mime.includes("ogg")
-            ? "ogg"
-            : mime.includes("mpeg") || mime.includes("mp3")
-              ? "mp3"
-              : mime.includes("mp4")
-                ? "mp4"
-                : "wav";
-        const file = new File([blob], `voice-clone-reference.${ext}`, {
-          type: blob.type,
-        });
-        chunksRef.current = [];
-        setRecordingError(null);
-        onVcRefAudioChange(file);
+        void recordedBlobToWav(blob)
+          .then((wavBlob) => {
+            const file = new File([wavBlob], "voice-clone-reference.wav", {
+              type: "audio/wav",
+            });
+            chunksRef.current = [];
+            setRecordingError(null);
+            onVcRefAudioChange(file);
+          })
+          .catch(() => {
+            chunksRef.current = [];
+            onVcRefAudioChange(null);
+            setRecordingError(
+              "녹음 파일 변환에 실패했습니다. 다시 녹음해 주세요.",
+            );
+          });
       };
 
       mr.start(100);
