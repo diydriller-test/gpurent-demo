@@ -2086,6 +2086,36 @@ export default function ApiTestPage() {
   }, [audioUrl]);
 
   useEffect(() => {
+    const el = t2mAudioRef.current;
+    if (!el || !t2mAudioUrl) return;
+
+    const onLoaded = () => {
+      if (el.duration && Number.isFinite(el.duration)) {
+        setT2mDurationMs(Math.round(el.duration * 1000));
+      }
+    };
+    const onTime = () => {
+      if (el.duration && Number.isFinite(el.duration)) {
+        setT2mProgress(el.currentTime / el.duration);
+      }
+    };
+    const onEnded = () => {
+      setT2mPlaying(false);
+      setT2mProgress(0);
+      el.currentTime = 0;
+    };
+
+    el.addEventListener("loadedmetadata", onLoaded);
+    el.addEventListener("timeupdate", onTime);
+    el.addEventListener("ended", onEnded);
+    return () => {
+      el.removeEventListener("loadedmetadata", onLoaded);
+      el.removeEventListener("timeupdate", onTime);
+      el.removeEventListener("ended", onEnded);
+    };
+  }, [t2mAudioUrl]);
+
+  useEffect(() => {
     const nextRequestJson = buildLlmConsoleRequestJson(
       prompt,
       llmSystemPrompt,
