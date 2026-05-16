@@ -44,11 +44,19 @@ export async function POST(req: Request) {
     const inferenceId = randomInferenceId();
     const upstreamUrl = `${upstreamBasePath}/music/_inference/text2music/${inferenceId}`;
 
+    function detectVocalLanguage(text: string): string {
+      if (!text.trim()) return "unknown";
+      if (/[가-힣]/.test(text)) return "korean";
+      if (/[぀-ゟ゠-ヿ一-鿿]/.test(text)) return "japanese";
+      if (/[一-鿿]/.test(text)) return "chinese";
+      return "english";
+    }
+
     const payload = {
       prompt,
       lyrics,
       instrumental,
-      vocal_language: "unknown",
+      vocal_language: detectVocalLanguage(lyrics),
       bpm: null,
       keyscale: "",
       timesignature: "",
