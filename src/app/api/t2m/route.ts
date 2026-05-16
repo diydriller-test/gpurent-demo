@@ -52,6 +52,8 @@ export async function POST(req: Request) {
       return "english";
     }
 
+    const hasLyrics = lyrics.trim().length > 0;
+
     const payload = {
       prompt,
       lyrics,
@@ -62,8 +64,8 @@ export async function POST(req: Request) {
       timesignature: "",
       audio_duration: audioDuration,
       thinking: true,
-      use_cot_caption: true,
-      use_cot_language: true,
+      use_cot_caption: !hasLyrics,
+      use_cot_language: !hasLyrics,
       use_cot_metas: true,
       inference_steps: 50,
       guidance_scale: 7.0,
