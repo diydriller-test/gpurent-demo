@@ -391,6 +391,8 @@ type Props = {
   handleT2mRun: () => void;
   t2mPrompt: string;
   setT2mPrompt: React.Dispatch<React.SetStateAction<string>>;
+  t2mLyrics: string;
+  setT2mLyrics: React.Dispatch<React.SetStateAction<string>>;
   t2mDuration: number;
   setT2mDuration: React.Dispatch<React.SetStateAction<number>>;
   t2mIsLoading: boolean;
@@ -512,6 +514,8 @@ export function ApiInputPanel({
   handleT2mRun,
   t2mPrompt,
   setT2mPrompt,
+  t2mLyrics,
+  setT2mLyrics,
   t2mDuration,
   setT2mDuration,
   t2mIsLoading,
@@ -1285,6 +1289,8 @@ export function ApiInputPanel({
         <T2mSection
           t2mPrompt={t2mPrompt}
           setT2mPrompt={setT2mPrompt}
+          t2mLyrics={t2mLyrics}
+          setT2mLyrics={setT2mLyrics}
           t2mDuration={t2mDuration}
           setT2mDuration={setT2mDuration}
           t2mIsLoading={t2mIsLoading}
@@ -1939,6 +1945,8 @@ function Image2TextSection({
 type T2mSectionProps = {
   t2mPrompt: string;
   setT2mPrompt: React.Dispatch<React.SetStateAction<string>>;
+  t2mLyrics: string;
+  setT2mLyrics: React.Dispatch<React.SetStateAction<string>>;
   t2mDuration: number;
   setT2mDuration: React.Dispatch<React.SetStateAction<number>>;
   t2mIsLoading: boolean;
@@ -1948,6 +1956,8 @@ type T2mSectionProps = {
 function T2mSection({
   t2mPrompt,
   setT2mPrompt,
+  t2mLyrics,
+  setT2mLyrics,
   t2mDuration,
   setT2mDuration,
   t2mIsLoading,
@@ -1969,6 +1979,21 @@ function T2mSection({
             onChange={(e) => setT2mPrompt(e.target.value)}
             rows={3}
             placeholder="예: 잔잔한 피아노 멜로디에 가벼운 재즈 드럼이 어우러진 카페 BGM"
+            className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+
+        {/* 가사 */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">
+            가사{" "}
+            <span className="text-foreground/40">(선택)</span>
+          </p>
+          <textarea
+            value={t2mLyrics}
+            onChange={(e) => setT2mLyrics(e.target.value)}
+            rows={4}
+            placeholder={"예:\n[Verse]\nWalking through the morning light\nEverything feels warm and right"}
             className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
           />
         </div>
@@ -1999,7 +2024,7 @@ function T2mSection({
         {/* 실행 버튼 */}
         <button
           type="submit"
-          disabled={t2mIsLoading || !t2mPrompt.trim()}
+          disabled={t2mIsLoading || (!t2mPrompt.trim() && !t2mLyrics.trim())}
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-[13px] font-medium text-background shadow-[0_0_40px_rgba(232,136,138,0.22)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {t2mIsLoading ? (

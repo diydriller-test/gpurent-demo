@@ -1761,6 +1761,7 @@ export default function ApiTestPage() {
 
   // Text-to-Music
   const [t2mPrompt, setT2mPrompt] = useState("Upbeat jazz with piano and saxophone, 120bpm, warm and lively");
+  const [t2mLyrics, setT2mLyrics] = useState("");
   const [t2mDuration, setT2mDuration] = useState(10);
   const [t2mAudioUrl, setT2mAudioUrl] = useState<string | null>(null);
   const [t2mIsLoading, setT2mIsLoading] = useState(false);
@@ -2970,6 +2971,7 @@ export default function ApiTestPage() {
         },
         body: JSON.stringify({
           prompt: t2mPrompt.trim(),
+          lyrics: t2mLyrics.trim(),
           audio_duration: t2mDuration,
         }),
       });
@@ -3008,6 +3010,7 @@ export default function ApiTestPage() {
             status: "success",
             audio_duration: t2mDuration,
             prompt: t2mPrompt.trim(),
+            ...(t2mLyrics.trim() ? { lyrics: t2mLyrics.trim() } : {}),
             content_type: blob.type || res.headers.get("content-type") || null,
           },
           null,
@@ -5094,6 +5097,8 @@ export default function ApiTestPage() {
                       image2textIsLoading={image2textIsLoading}
                       t2mPrompt={t2mPrompt}
                       setT2mPrompt={setT2mPrompt}
+                      t2mLyrics={t2mLyrics}
+                      setT2mLyrics={setT2mLyrics}
                       t2mDuration={t2mDuration}
                       setT2mDuration={setT2mDuration}
                       t2mIsLoading={t2mIsLoading}
