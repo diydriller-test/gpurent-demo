@@ -1,6 +1,3 @@
-const URL =
-  "http://aiapi.kogrobo.com:11115/_inference/text_embedding/qwen3";
-
 function escapeForPythonJsonString(s: string) {
   return s
     .replace(/\\/g, "\\\\")
@@ -11,7 +8,7 @@ function escapeForPythonJsonString(s: string) {
 /**
  * Embedding Workstation 전용 포트 — `/api/embedding` 프록시와 동일한 업스트림 형식.
  */
-export function buildEmbeddingDevCodePython({ inputText }: { inputText: string }) {
+export function buildEmbeddingDevCodePython({ inputText, url }: { inputText: string; url: string }) {
   const content = escapeForPythonJsonString(
     inputText.trim() || "안녕하세요. 만나서 반갑습니다.",
   );
@@ -19,7 +16,7 @@ export function buildEmbeddingDevCodePython({ inputText }: { inputText: string }
   return `import requests
 
 # 1. API 설정 (Embedding Workstation 전용 포트)
-url = "${URL}"
+url = "${url}"
 headers = {
     "access_token": "YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
     "Content-Type": "application/json"

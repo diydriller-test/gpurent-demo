@@ -1,21 +1,21 @@
-const URL = "http://aiapi.kogrobo.com:11115/api/image2text";
-
 function escapeForPythonDoubleQuoted(s: string) {
   return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
 }
 
 export function buildImage2TextDevCodePython({
   prompt,
+  url,
 }: {
   prompt: string;
   temperature: number;
+  url: string;
 }) {
   const safePrompt = escapeForPythonDoubleQuoted(prompt.trim());
 
   return `import requests
 
 # 1. API 설정
-url = "${URL}"
+url = "${url}"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY"  # 발급받은 API 키를 입력하세요
 }

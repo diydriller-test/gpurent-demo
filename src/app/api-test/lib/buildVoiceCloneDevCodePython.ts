@@ -1,5 +1,3 @@
-const URL = "http://aiapi.kogrobo.com:11115/voiceclone/_inference/tts/my_inference";
-
 function escapeForPythonDoubleQuoted(s: string) {
   return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
@@ -9,11 +7,13 @@ export function buildVoiceCloneDevCodePython({
   language,
   xVectorOnly,
   refText,
+  url,
 }: {
   text: string;
   language: string;
   xVectorOnly: boolean;
   refText: string;
+  url: string;
 }) {
   const textSafe = escapeForPythonDoubleQuoted(text.trim() || "안녕하세요. 보이스 클론 테스트입니다.");
   const langSafe = escapeForPythonDoubleQuoted(language || "Korean");
@@ -27,7 +27,7 @@ export function buildVoiceCloneDevCodePython({
 import requests
 
 # 1. API 설정
-url = "${URL}"
+url = "${url}"
 headers = {
     "access_token": "YOUR_API_KEY"  # 발급받은 API 키를 입력하세요
 }

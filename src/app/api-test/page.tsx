@@ -28,11 +28,32 @@ import { buildVoiceCloneDevCodePython } from "./lib/buildVoiceCloneDevCodePython
 import { buildImage2TextDevCodePython } from "./lib/buildImage2TextDevCodePython";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 import {
+  chapterQueryToPlanTask,
   getApiTask,
   getPlanCardDisplay,
   getPlanTaskDisplayName,
   type PlanTask,
 } from "@/app/plans/planCatalog";
+
+const REAL_ENDPOINTS = {
+  llm: "http://aiapi.kogrobo.com:11115/v1",
+  embedding: "http://aiapi.kogrobo.com:11115/_inference/text_embedding/qwen3",
+  reranker: "http://aiapi.kogrobo.com:11115/_inference/rerank/qwen3",
+  tts: "http://aiapi.kogrobo.com:11115/v1/audio/speech",
+  stt: "http://aiapi.kogrobo.com:11115/_inference/stt/my_stt",
+  voiceClone: "http://aiapi.kogrobo.com:11115/voiceclone/_inference/tts/my_inference",
+  image2text: "http://aiapi.kogrobo.com:11115/api/image2text",
+} as const;
+
+const DUMMY_ENDPOINTS = {
+  llm: "https://api.kogrobo.com/v1",
+  embedding: "https://api.kogrobo.com/_inference/text_embedding/qwen3",
+  reranker: "https://api.kogrobo.com/_inference/rerank/qwen3",
+  tts: "https://api.kogrobo.com/v1/audio/speech",
+  stt: "https://api.kogrobo.com/_inference/stt/my_stt",
+  voiceClone: "https://api.kogrobo.com/voiceclone/_inference/tts/my_inference",
+  image2text: "https://api.kogrobo.com/api/image2text",
+} as const;
 
 type ApiId =
   | "llm"
@@ -1166,6 +1187,22 @@ export default function ApiTestPage() {
   const [apisFromBackend, setApisFromBackend] = useState<Api[]>([]);
   const [userMe, setUserMe] = useState<User | null>(null);
 
+  // 각 API별 구독 여부: 해당 API에 플랜이 있는 경우에만 실 URL 노출
+  const subscribedApis = useMemo(() => {
+    const result: Partial<Record<keyof typeof REAL_ENDPOINTS, boolean>> = {};
+    if (!userMe?.api_plans?.length) return result;
+    const chapters = ["llm", "embedding", "reranker", "tts", "stt", "voiceClone", "image2text"] as const;
+    for (const chapter of chapters) {
+      const task = chapterQueryToPlanTask(chapter);
+      if (!task) continue;
+      const backendApi = apisFromBackend.find((a) => getApiTask(a) === task);
+      if (backendApi) {
+        result[chapter] = userMe.api_plans.some((p) => p.api_id === backendApi.id);
+      }
+    }
+    return result;
+  }, [userMe, apisFromBackend]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -1651,8 +1688,11 @@ export default function ApiTestPage() {
   const [embeddingDevCodeCopied, setEmbeddingDevCodeCopied] = useState(false);
 
   const embeddingDevCodePython = useMemo(
-    () => buildEmbeddingDevCodePython({ inputText: embeddingText }),
-    [embeddingText],
+    () => buildEmbeddingDevCodePython({
+      inputText: embeddingText,
+      url: subscribedApis.embedding ? REAL_ENDPOINTS.embedding : DUMMY_ENDPOINTS.embedding,
+    }),
+    [embeddingText, subscribedApis],
   );
 
   // Reranker
@@ -1796,8 +1836,9 @@ export default function ApiTestPage() {
       buildRerankDevCodePython({
         query: rerankQuestion,
         docLines: rerankDocsText.split("\n"),
+        url: subscribedApis.reranker ? REAL_ENDPOINTS.reranker : DUMMY_ENDPOINTS.reranker,
       }),
-    [rerankQuestion, rerankDocsText],
+    [rerankQuestion, rerankDocsText, subscribedApis],
   );
 
   const ttsDevCodePython = useMemo(
@@ -1806,8 +1847,9 @@ export default function ApiTestPage() {
         text: ttsText,
         language: ttsLanguage,
         speaker: ttsSpeaker,
+        url: subscribedApis.tts ? REAL_ENDPOINTS.tts : DUMMY_ENDPOINTS.tts,
       }),
-    [ttsText, ttsLanguage, ttsSpeaker],
+    [ttsText, ttsLanguage, ttsSpeaker, subscribedApis],
   );
 
   const sttDevCodePython = useMemo(
@@ -1817,8 +1859,9 @@ export default function ApiTestPage() {
         task: STT_DEFAULT_TASK,
         beamSize: sttBeamSize,
         vadOn: sttVadOn,
+        url: subscribedApis.stt ? REAL_ENDPOINTS.stt : DUMMY_ENDPOINTS.stt,
       }),
-    [sttLanguage, sttBeamSize, sttVadOn],
+    [sttLanguage, sttBeamSize, sttVadOn, subscribedApis],
   );
 
   const vcDevCodePython = useMemo(
@@ -1828,8 +1871,9 @@ export default function ApiTestPage() {
         language: vcLanguage,
         xVectorOnly: vcXVectorOnly,
         refText: vcRefText,
+        url: subscribedApis.voiceClone ? REAL_ENDPOINTS.voiceClone : DUMMY_ENDPOINTS.voiceClone,
       }),
-    [vcText, vcLanguage, vcXVectorOnly, vcRefText],
+    [vcText, vcLanguage, vcXVectorOnly, vcRefText, subscribedApis],
   );
 
   const image2textDevCodePython = useMemo(
@@ -1837,8 +1881,9 @@ export default function ApiTestPage() {
       buildImage2TextDevCodePython({
         prompt: image2textPrompt || DEFAULT_IMAGE2TEXT_PROMPT,
         temperature: 0.1,
+        url: subscribedApis.image2text ? REAL_ENDPOINTS.image2text : DUMMY_ENDPOINTS.image2text,
       }),
-    [image2textPrompt],
+    [image2textPrompt, subscribedApis],
   );
 
   useEffect(() => {
@@ -2220,8 +2265,9 @@ export default function ApiTestPage() {
       systemPrompt: llmSystemPrompt,
       userMessage: llmDevUserMessage,
       temperature: 0.1, // Get Developer Code에는 Temperature 슬라이더를 반영하지 않음
+      baseUrl: subscribedApis.llm ? REAL_ENDPOINTS.llm : DUMMY_ENDPOINTS.llm,
     });
-  }, [llmDevUserMessage, llmSystemPrompt]);
+  }, [llmDevUserMessage, llmSystemPrompt, subscribedApis]);
 
   const currentConsole = consoleByApi[selectedApi];
 

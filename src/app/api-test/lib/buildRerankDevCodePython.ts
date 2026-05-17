@@ -1,7 +1,5 @@
 import { escapeForPythonJsonString } from "./escapeForPythonJsonString";
 
-const URL = "http://aiapi.kogrobo.com:11115/_inference/rerank/qwen3";
-
 function sanitizeDocLine(line: string): string {
   return line.trim().replace(/^-+\s*/, "");
 }
@@ -9,9 +7,11 @@ function sanitizeDocLine(line: string): string {
 export function buildRerankDevCodePython({
   query,
   docLines,
+  url,
 }: {
   query: string;
   docLines: string[];
+  url: string;
 }) {
   const q = escapeForPythonJsonString(query.trim() || "여행 추천");
   const lines = docLines.map(sanitizeDocLine).filter(Boolean);
@@ -32,7 +32,7 @@ export function buildRerankDevCodePython({
 import json
 
 # 1. API 설정
-url = "${URL}"
+url = "${url}"
 headers = {
     "access_token": "YOUR_API_KEY",
     "Content-Type": "application/json"

@@ -1,4 +1,3 @@
-const BASE_URL = "http://aiapi.kogrobo.com:11115/v1";
 const MODEL = "Qwen/Qwen3.6-35B-A3B";
 
 function escapeForPythonJsonString(s: string) {
@@ -9,10 +8,12 @@ export function buildLlmDevCodePython({
   systemPrompt,
   userMessage,
   temperature,
+  baseUrl,
 }: {
   systemPrompt: string;
   userMessage: string;
   temperature: number;
+  baseUrl: string;
 }) {
   const systemContent = escapeForPythonJsonString(systemPrompt.trim());
   const content = escapeForPythonJsonString(userMessage.trim());
@@ -25,7 +26,7 @@ export function buildLlmDevCodePython({
   return `from openai import OpenAI
 
 client = OpenAI(
-    base_url="${BASE_URL}",
+    base_url="${baseUrl}",
     api_key="YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
 )
 

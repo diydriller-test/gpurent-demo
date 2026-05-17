@@ -1,5 +1,3 @@
-const URL = "http://aiapi.kogrobo.com:11115/_inference/stt/my_stt";
-
 function escapeForPythonDoubleQuoted(s: string) {
   return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
@@ -9,11 +7,13 @@ export function buildSttDevCodePython({
   task,
   beamSize,
   vadOn,
+  url,
 }: {
   language: string;
   task: string;
   beamSize: number;
   vadOn: boolean;
+  url: string;
 }) {
   const lang = escapeForPythonDoubleQuoted(language);
   const taskSafe = escapeForPythonDoubleQuoted(task);
@@ -26,7 +26,7 @@ export function buildSttDevCodePython({
 import time
 
 # 1. API 설정
-url = "${URL}"
+url = "${url}"
 headers = {
     "access_token": "YOUR_API_KEY"  # 발급받은 API 키를 여기에 입력하세요
 }
