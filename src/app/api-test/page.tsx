@@ -32,6 +32,7 @@ import {
   getApiTask,
   getPlanCardDisplay,
   getPlanTaskDisplayName,
+  rpsToRequestsPerMinute,
   type PlanTask,
 } from "@/app/plans/planCatalog";
 
@@ -4449,6 +4450,16 @@ export default function ApiTestPage() {
 
   const selectedApiItem = apis.find((a) => a.id === selectedApi);
 
+  const selectedMarketplaceItem = filteredMarketplace.find(
+    (item) => item.apiId === selectedApi,
+  );
+  const selectedPlan = selectedMarketplaceItem
+    ? resolveMarketplacePlan(selectedMarketplaceItem)
+    : null;
+  const rateLimit = selectedPlan
+    ? `분당 ${rpsToRequestsPerMinute(selectedPlan.max_rps).toLocaleString("ko-KR")}회`
+    : "구독 후 확인";
+
   function fmtLatency(ms: number | null, isLoading: boolean): string {
     if (isLoading) return "running";
     if (ms === null) return "not tested";
@@ -4463,7 +4474,7 @@ export default function ApiTestPage() {
           model: "LLM API",
           endpoint: "/api/chat",
           latency: fmtLatency(llmLatencyMs, isChatLoading),
-          cost: currentConsole.statusCode ? "~0.018 credits" : "test to estimate",
+          rateLimit,
         };
       case "embedding":
         return {
@@ -4471,7 +4482,7 @@ export default function ApiTestPage() {
           model: "Embedding API",
           endpoint: "/api/embedding",
           latency: fmtLatency(embeddingLatencyMs, isEmbeddingLoading),
-          cost: currentConsole.statusCode ? "~0.004 credits" : "test to estimate",
+          rateLimit,
         };
       case "reranker":
         return {
@@ -4479,7 +4490,7 @@ export default function ApiTestPage() {
           model: "Reranking API",
           endpoint: "/api/rerank",
           latency: fmtLatency(rerankLatencyMs, isRerankLoading),
-          cost: currentConsole.statusCode ? "~0.006 credits" : "test to estimate",
+          rateLimit,
         };
       case "tts":
         return {
@@ -4487,7 +4498,7 @@ export default function ApiTestPage() {
           model: "TTS API",
           endpoint: "client synthesis demo",
           latency: fmtLatency(ttsLatencyMs, isSynthesizing),
-          cost: audioUrl ? "~0.022 credits" : "test to estimate",
+          rateLimit,
         };
       case "stt":
         return {
@@ -4495,7 +4506,7 @@ export default function ApiTestPage() {
           model: "STT API",
           endpoint: "/api/stt",
           latency: fmtLatency(sttLatencyMs, isSttLoading),
-          cost: sttTranscript ? "~0.015 credits" : "test to estimate",
+          rateLimit,
         };
       case "voiceClone":
         return {
@@ -4503,7 +4514,7 @@ export default function ApiTestPage() {
           model: "Voice Clone API",
           endpoint: "/api/voice-clone",
           latency: fmtLatency(vcLatencyMs, vcIsLoading),
-          cost: vcAudioUrl ? "~0.035 credits" : "test to estimate",
+          rateLimit,
         };
       case "image2text":
         return {
@@ -4511,7 +4522,7 @@ export default function ApiTestPage() {
           model: "Image-to-Text API",
           endpoint: "/api/image2text",
           latency: fmtLatency(image2textLatencyMs, image2textIsLoading),
-          cost: image2textResult ? "~0.024 credits" : "test to estimate",
+          rateLimit,
         };
       case "t2m":
         return {
@@ -4519,7 +4530,7 @@ export default function ApiTestPage() {
           model: "Text-to-Music API",
           endpoint: "/api/t2m",
           latency: fmtLatency(t2mLatencyMs, t2mIsLoading),
-          cost: t2mAudioUrl ? "~0.060 credits" : "test to estimate",
+          rateLimit,
         };
       case "t2i":
         return {
@@ -4527,7 +4538,7 @@ export default function ApiTestPage() {
           model: "Image Generation API",
           endpoint: "/api/t2i",
           latency: fmtLatency(t2iLatencyMs, t2iIsLoading),
-          cost: t2iImageUrl ? "~0.048 credits" : "test to estimate",
+          rateLimit,
         };
       default:
         return {
@@ -4535,7 +4546,7 @@ export default function ApiTestPage() {
           model: selectedApiItem?.name ?? "Selected API",
           endpoint: "/api/chat",
           latency: "not tested",
-          cost: "test to estimate",
+          rateLimit,
         };
     }
   })();
@@ -5284,10 +5295,10 @@ export default function ApiTestPage() {
                         </div>
                         <div className="rounded-lg border border-black/[0.06] bg-white px-3 py-2">
                           <p className="font-mono text-[10px] uppercase text-black/36">
-                            cost
+                            rate limit
                           </p>
                           <p className="mt-1 text-sm font-semibold text-foreground">
-                            {selectedRouteProfile.cost}
+                            {selectedRouteProfile.rateLimit}
                           </p>
                         </div>
                       </div>
