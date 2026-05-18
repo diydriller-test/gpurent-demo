@@ -26,6 +26,7 @@ import {
   getPlanCardDisplay,
   getPlanTaskDisplayName,
   getPlanTaskSublabel,
+  formatPlanRequestsPerMinute,
   MODU_NLP_SURFACE_TASKS,
   PLAN_TASK_KEYS,
   type PlanTask,
@@ -538,7 +539,9 @@ function PlansPageContent() {
                   ? "확인 중..."
                   : (() => {
                       const ap = user?.api_plans?.find((p) => p.api_id === selectedApi.id);
-                      return ap ? `${ap.plan_name} (초당 최대 ${ap.max_rps}회 요청)` : "없음";
+                      return ap
+                        ? `${ap.plan_name} (${formatPlanRequestsPerMinute(ap.max_rps)})`
+                        : "없음";
                     })()}
               </span>
             </p>
@@ -905,7 +908,8 @@ function PlansPageContent() {
 
                           {currentPlan ? (
                             <p className="mt-3 rounded-lg bg-accent/10 px-2.5 py-1.5 text-[11px] font-medium text-accent">
-                              현재: {currentPlan.plan_name} (초당 최대 {currentPlan.max_rps}회)
+                              현재: {currentPlan.plan_name} (
+                              {formatPlanRequestsPerMinute(currentPlan.max_rps)})
                             </p>
                           ) : null}
 
@@ -1024,7 +1028,7 @@ function PlansPageContent() {
                     <div className="mb-5 grid gap-3 rounded-xl border border-black/[0.06] bg-background px-4 py-3">
                       <div>
                         <p className="font-mono text-sm text-foreground">
-                          {plan.max_rps} RPS 요금
+                          {formatPlanRequestsPerMinute(plan.max_rps)}
                         </p>
                         <p className="mt-1 text-xs text-foreground/50">
                           월 약 {impliedMonthlyCapacity.toLocaleString("ko-KR")} requests

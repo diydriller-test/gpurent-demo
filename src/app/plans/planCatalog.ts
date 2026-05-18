@@ -1,5 +1,18 @@
 import type { Api, Plan } from "@/lib/api";
 
+/** UI 표기: 1 RPS → 1분 60회, 여기서 ÷3 (예: 1 RPS → 1분에 20번 요청) */
+const RPS_TO_REQUESTS_PER_MINUTE_DIVISOR = 3;
+
+export function rpsToRequestsPerMinute(rps: number): number {
+  if (!Number.isFinite(rps) || rps <= 0) return 0;
+  return Math.round((rps * 60) / RPS_TO_REQUESTS_PER_MINUTE_DIVISOR);
+}
+
+export function formatPlanRequestsPerMinute(rps: number): string {
+  const count = rpsToRequestsPerMinute(rps);
+  return `1분에 ${count.toLocaleString("ko-KR")}번 요청`;
+}
+
 /**
  * 백엔드 `/apis`를 불러오지 못할 때 UI 확인용 폴백 (이름은 inferPlanTask와 맞춤)
  */
