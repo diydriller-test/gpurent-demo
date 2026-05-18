@@ -47,7 +47,6 @@ const CAPABILITY_FALLBACK: Capability[] = [
     label: "Image Generation",
     detail: "Qwen-Image-Edit-2511-Lightning",
     href: "/api-test?task=t2i&view=detail",
-    disabled: true,
   },
   {
     label: "Text-to-Music",
@@ -193,8 +192,6 @@ function taskDetail(taskKey?: string | null, name?: string | null, fallback?: st
 export default function Home() {
   const [capabilities, setCapabilities] =
     useState<Capability[]>(CAPABILITY_FALLBACK);
-  const [imageGenerationNoticeOpen, setImageGenerationNoticeOpen] =
-    useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -217,7 +214,6 @@ export default function Home() {
                 api.model_display ?? api.company_name,
               ),
               href: `/api-test?task=${route}&view=detail`,
-              disabled: task === "Image Generation",
             };
           })
           .filter((item) => {
@@ -473,19 +469,6 @@ export default function Home() {
                     </>
                   );
 
-                  if (capability.disabled) {
-                    return (
-                      <button
-                        key={capability.label}
-                        type="button"
-                        onClick={() => setImageGenerationNoticeOpen(true)}
-                        className="group min-h-[128px] border border-black/[0.07] bg-[#fbfbfc] p-4 text-left transition-colors hover:border-black/[0.16] hover:bg-white"
-                      >
-                        {cardContent}
-                      </button>
-                    );
-                  }
-
                   return (
                     <Link
                       key={capability.label}
@@ -543,25 +526,6 @@ export default function Home() {
         </section>
       </main>
 
-      {imageGenerationNoticeOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-black/[0.08] bg-white p-6 shadow-xl">
-            <h2 className="text-lg font-semibold text-[#08090d]">Coming Soon</h2>
-            <p className="mt-2 text-sm leading-relaxed text-black/60">
-              Image Generation API는 서버 안정화 후 제공될 예정입니다.
-              <br />
-              준비가 끝나면 Workbench에서 바로 테스트할 수 있습니다.
-            </p>
-            <button
-              type="button"
-              onClick={() => setImageGenerationNoticeOpen(false)}
-              className="mt-6 w-full rounded-xl bg-[#08090d] py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              확인
-            </button>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
