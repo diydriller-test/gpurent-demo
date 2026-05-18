@@ -1803,6 +1803,7 @@ export default function ApiTestPage() {
   const [t2mPrompt, setT2mPrompt] = useState("Upbeat jazz with piano and saxophone, 120bpm, warm and lively");
   const [t2mLyrics, setT2mLyrics] = useState("");
   const [t2mDuration, setT2mDuration] = useState(10);
+  const [t2mSeed, setT2mSeed] = useState("");
   const [t2mAudioUrl, setT2mAudioUrl] = useState<string | null>(null);
   const [t2mIsLoading, setT2mIsLoading] = useState(false);
   const [t2mError, setT2mError] = useState<string | null>(null);
@@ -1819,6 +1820,7 @@ export default function ApiTestPage() {
   const [t2iWidth, setT2iWidth] = useState(1024);
   const [t2iHeight, setT2iHeight] = useState(1024);
   const [t2iSteps, setT2iSteps] = useState(50);
+  const [t2iSeed, setT2iSeed] = useState("");
   const [t2iImageUrl, setT2iImageUrl] = useState<string | null>(null);
   const [t2iIsLoading, setT2iIsLoading] = useState(false);
   const [t2iError, setT2iError] = useState<string | null>(null);
@@ -3019,6 +3021,7 @@ export default function ApiTestPage() {
           prompt: t2mPrompt.trim(),
           lyrics: t2mLyrics.trim(),
           audio_duration: t2mDuration,
+          seed: t2mSeed !== "" ? Number(t2mSeed) : -1,
         }),
       });
 
@@ -3124,6 +3127,7 @@ export default function ApiTestPage() {
           width: t2iWidth,
           height: t2iHeight,
           num_inference_steps: t2iSteps,
+          seed: t2iSeed !== "" ? Number(t2iSeed) : -1,
         }),
       });
 
@@ -5147,6 +5151,8 @@ export default function ApiTestPage() {
                       setT2mLyrics={setT2mLyrics}
                       t2mDuration={t2mDuration}
                       setT2mDuration={setT2mDuration}
+                      t2mSeed={t2mSeed}
+                      setT2mSeed={setT2mSeed}
                       t2mIsLoading={t2mIsLoading}
                       handleT2mRun={handleT2mRun}
                       t2iPrompt={t2iPrompt}
@@ -5159,6 +5165,8 @@ export default function ApiTestPage() {
                       setT2iHeight={setT2iHeight}
                       t2iSteps={t2iSteps}
                       setT2iSteps={setT2iSteps}
+                      t2iSeed={t2iSeed}
+                      setT2iSeed={setT2iSeed}
                       t2iIsLoading={t2iIsLoading}
                       handleT2iRun={handleT2iRun}
                     />

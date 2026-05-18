@@ -395,6 +395,8 @@ type Props = {
   setT2mLyrics: React.Dispatch<React.SetStateAction<string>>;
   t2mDuration: number;
   setT2mDuration: React.Dispatch<React.SetStateAction<number>>;
+  t2mSeed: string;
+  setT2mSeed: React.Dispatch<React.SetStateAction<string>>;
   t2mIsLoading: boolean;
 
   // Text-to-Image input
@@ -409,6 +411,8 @@ type Props = {
   setT2iHeight: React.Dispatch<React.SetStateAction<number>>;
   t2iSteps: number;
   setT2iSteps: React.Dispatch<React.SetStateAction<number>>;
+  t2iSeed: string;
+  setT2iSeed: React.Dispatch<React.SetStateAction<string>>;
   t2iIsLoading: boolean;
 };
 
@@ -518,6 +522,8 @@ export function ApiInputPanel({
   setT2mLyrics,
   t2mDuration,
   setT2mDuration,
+  t2mSeed,
+  setT2mSeed,
   t2mIsLoading,
 
   handleT2iRun,
@@ -531,6 +537,8 @@ export function ApiInputPanel({
   setT2iHeight,
   t2iSteps,
   setT2iSteps,
+  t2iSeed,
+  setT2iSeed,
   t2iIsLoading,
 }: Props) {
   const [llmAdvancedOpen, setLlmAdvancedOpen] = useState(false);
@@ -1293,6 +1301,8 @@ export function ApiInputPanel({
           setT2mLyrics={setT2mLyrics}
           t2mDuration={t2mDuration}
           setT2mDuration={setT2mDuration}
+          t2mSeed={t2mSeed}
+          setT2mSeed={setT2mSeed}
           t2mIsLoading={t2mIsLoading}
           handleT2mRun={handleT2mRun}
         />
@@ -1310,6 +1320,8 @@ export function ApiInputPanel({
           setT2iHeight={setT2iHeight}
           t2iSteps={t2iSteps}
           setT2iSteps={setT2iSteps}
+          t2iSeed={t2iSeed}
+          setT2iSeed={setT2iSeed}
           t2iIsLoading={t2iIsLoading}
           handleT2iRun={handleT2iRun}
         />
@@ -1949,6 +1961,8 @@ type T2mSectionProps = {
   setT2mLyrics: React.Dispatch<React.SetStateAction<string>>;
   t2mDuration: number;
   setT2mDuration: React.Dispatch<React.SetStateAction<number>>;
+  t2mSeed: string;
+  setT2mSeed: React.Dispatch<React.SetStateAction<string>>;
   t2mIsLoading: boolean;
   handleT2mRun: () => void;
 };
@@ -1960,6 +1974,8 @@ function T2mSection({
   setT2mLyrics,
   t2mDuration,
   setT2mDuration,
+  t2mSeed,
+  setT2mSeed,
   t2mIsLoading,
   handleT2mRun,
 }: T2mSectionProps) {
@@ -2021,6 +2037,22 @@ function T2mSection({
           </div>
         </div>
 
+        {/* Seed */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">
+            Seed <span className="text-foreground/40">(선택)</span>
+          </p>
+          <input
+            type="number"
+            min={0}
+            max={4294967295}
+            value={t2mSeed}
+            onChange={(e) => setT2mSeed(e.target.value)}
+            placeholder="랜덤 (미입력 시)"
+            className="mt-1 w-full rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 font-mono text-[13px] text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+
         {/* 실행 버튼 */}
         <button
           type="submit"
@@ -2065,6 +2097,8 @@ type T2iSectionProps = {
   setT2iHeight: React.Dispatch<React.SetStateAction<number>>;
   t2iSteps: number;
   setT2iSteps: React.Dispatch<React.SetStateAction<number>>;
+  t2iSeed: string;
+  setT2iSeed: React.Dispatch<React.SetStateAction<string>>;
   t2iIsLoading: boolean;
   handleT2iRun: () => void;
 };
@@ -2087,6 +2121,8 @@ function T2iSection({
   setT2iHeight,
   t2iSteps,
   setT2iSteps,
+  t2iSeed,
+  setT2iSeed,
   t2iIsLoading,
   handleT2iRun,
 }: T2iSectionProps) {
@@ -2166,6 +2202,22 @@ function T2iSection({
             <span>20</span>
             <span>100</span>
           </div>
+        </div>
+
+        {/* Seed */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">
+            Seed <span className="text-foreground/40">(선택)</span>
+          </p>
+          <input
+            type="number"
+            min={0}
+            max={4294967295}
+            value={t2iSeed}
+            onChange={(e) => setT2iSeed(e.target.value)}
+            placeholder="랜덤 (미입력 시)"
+            className="mt-1 w-full rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 font-mono text-[13px] text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
+          />
         </div>
 
         {/* 실행 버튼 */}

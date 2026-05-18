@@ -9,6 +9,7 @@ type T2mRequestBody = {
   audio_duration?: unknown;
   lyrics?: unknown;
   instrumental?: unknown;
+  seed?: unknown;
 };
 
 function randomInferenceId(): string {
@@ -32,6 +33,8 @@ export async function POST(req: Request) {
       typeof body?.lyrics === "string" ? body.lyrics : "";
     const instrumental =
       typeof body?.instrumental === "boolean" ? body.instrumental : false;
+    const seed =
+      typeof body?.seed === "number" && body.seed >= 0 ? Math.floor(body.seed) : -1;
 
     if (!prompt && !lyrics.trim()) {
       return NextResponse.json(
@@ -77,8 +80,8 @@ export async function POST(req: Request) {
       sampler_mode: "euler",
       enable_normalization: true,
       normalization_db: -1.0,
-      use_random_seed: true,
-      seed: -1,
+      use_random_seed: seed === -1,
+      seed,
       audio_format: "mp3",
       mp3_bitrate: "128k",
       mp3_sample_rate: 48000,
