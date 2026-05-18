@@ -409,8 +409,6 @@ type Props = {
   setT2iWidth: React.Dispatch<React.SetStateAction<number>>;
   t2iHeight: number;
   setT2iHeight: React.Dispatch<React.SetStateAction<number>>;
-  t2iSteps: number;
-  setT2iSteps: React.Dispatch<React.SetStateAction<number>>;
   t2iSeed: string;
   setT2iSeed: React.Dispatch<React.SetStateAction<string>>;
   t2iIsLoading: boolean;
@@ -535,8 +533,6 @@ export function ApiInputPanel({
   setT2iWidth,
   t2iHeight,
   setT2iHeight,
-  t2iSteps,
-  setT2iSteps,
   t2iSeed,
   setT2iSeed,
   t2iIsLoading,
@@ -1318,8 +1314,6 @@ export function ApiInputPanel({
           setT2iWidth={setT2iWidth}
           t2iHeight={t2iHeight}
           setT2iHeight={setT2iHeight}
-          t2iSteps={t2iSteps}
-          setT2iSteps={setT2iSteps}
           t2iSeed={t2iSeed}
           setT2iSeed={setT2iSeed}
           t2iIsLoading={t2iIsLoading}
@@ -2095,8 +2089,6 @@ type T2iSectionProps = {
   setT2iWidth: React.Dispatch<React.SetStateAction<number>>;
   t2iHeight: number;
   setT2iHeight: React.Dispatch<React.SetStateAction<number>>;
-  t2iSteps: number;
-  setT2iSteps: React.Dispatch<React.SetStateAction<number>>;
   t2iSeed: string;
   setT2iSeed: React.Dispatch<React.SetStateAction<string>>;
   t2iIsLoading: boolean;
@@ -2119,8 +2111,6 @@ function T2iSection({
   setT2iWidth,
   t2iHeight,
   setT2iHeight,
-  t2iSteps,
-  setT2iSteps,
   t2iSeed,
   setT2iSeed,
   t2iIsLoading,
@@ -2181,41 +2171,6 @@ function T2iSection({
           <p className="mt-1 text-right font-mono text-[10px] text-foreground/40">
             {t2iWidth} × {t2iHeight}
           </p>
-        </div>
-
-        {/* 스텝 슬라이더 */}
-        <div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <p className="font-mono text-xs text-foreground/60">스텝 수</p>
-              <div className="group relative inline-flex">
-                <button type="button" aria-label="스텝 수 설명" className="rounded-full p-0.5">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-[13px] w-[13px] text-muted-foreground/40" aria-hidden="true" focusable="false">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 16v-4" />
-                    <path d="M12 8h.01" />
-                  </svg>
-                </button>
-                <div className="pointer-events-none absolute bottom-full left-0 z-30 mb-2 w-[240px] max-w-[78vw] rounded-xl border border-primary/30 bg-popover p-3 text-xs opacity-0 shadow-sm transition-opacity duration-150 group-hover:opacity-100">
-                  노이즈를 단계적으로 제거하며 이미지를 완성하는 반복 횟수입니다. 높을수록 품질이 좋아지지만 생성 시간이 늘어납니다. (권장: 30–50)
-                </div>
-              </div>
-            </div>
-            <span className="font-mono text-xs text-foreground/60">{t2iSteps}</span>
-          </div>
-          <input
-            type="range"
-            min={20}
-            max={100}
-            step={5}
-            value={t2iSteps}
-            onChange={(e) => setT2iSteps(Number(e.target.value))}
-            className="mt-1.5 w-full accent-accent"
-          />
-          <div className="mt-0.5 flex justify-between font-mono text-[10px] text-foreground/40">
-            <span>20</span>
-            <span>100</span>
-          </div>
         </div>
 
         {/* Seed */}

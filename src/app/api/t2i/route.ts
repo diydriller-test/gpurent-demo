@@ -9,7 +9,6 @@ type T2iRequestBody = {
   negative_prompt?: unknown;
   width?: unknown;
   height?: unknown;
-  num_inference_steps?: unknown;
   output_format?: unknown;
   seed?: unknown;
 };
@@ -33,10 +32,7 @@ export async function POST(req: Request) {
       typeof body?.width === "number" && body.width > 0 ? body.width : 1024;
     const height =
       typeof body?.height === "number" && body.height > 0 ? body.height : 1024;
-    const numInferenceSteps =
-      typeof body?.num_inference_steps === "number"
-        ? body.num_inference_steps
-        : 50;
+    const numInferenceSteps = 10;
     const outputFormat =
       typeof body?.output_format === "string" ? body.output_format : "png";
     const seed =
@@ -70,7 +66,7 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        ...(apiKey ? { access_token: apiKey } : {}),
       },
       body: JSON.stringify(payload),
       signal: controller.signal,

@@ -1807,7 +1807,6 @@ export default function ApiTestPage() {
   const [t2iNegativePrompt, setT2iNegativePrompt] = useState("");
   const [t2iWidth, setT2iWidth] = useState(1024);
   const [t2iHeight, setT2iHeight] = useState(1024);
-  const [t2iSteps, setT2iSteps] = useState(50);
   const [t2iSeed, setT2iSeed] = useState("");
   const [t2iImageUrl, setT2iImageUrl] = useState<string | null>(null);
   const [t2iIsLoading, setT2iIsLoading] = useState(false);
@@ -2458,7 +2457,6 @@ export default function ApiTestPage() {
       setT2iNegativePrompt("");
       setT2iWidth(1024);
       setT2iHeight(1024);
-      setT2iSteps(50);
       setT2iImageUrl(null);
       setT2iIsLoading(false);
       setT2iError(null);
@@ -3136,7 +3134,7 @@ export default function ApiTestPage() {
           negative_prompt: t2iNegativePrompt.trim() || " ",
           width: t2iWidth,
           height: t2iHeight,
-          num_inference_steps: t2iSteps,
+          num_inference_steps: 10,
           seed: t2iSeed !== "" ? Number(t2iSeed) : -1,
         }),
       });
@@ -5197,8 +5195,6 @@ export default function ApiTestPage() {
                       setT2iWidth={setT2iWidth}
                       t2iHeight={t2iHeight}
                       setT2iHeight={setT2iHeight}
-                      t2iSteps={t2iSteps}
-                      setT2iSteps={setT2iSteps}
                       t2iSeed={t2iSeed}
                       setT2iSeed={setT2iSeed}
                       t2iIsLoading={t2iIsLoading}
