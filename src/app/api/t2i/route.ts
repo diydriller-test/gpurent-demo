@@ -24,8 +24,7 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json().catch(() => null)) as T2iRequestBody | null;
 
-    const prompt =
-      typeof body?.prompt === "string" ? body.prompt.trim() : "";
+    const prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
     const negativePropmt =
       typeof body?.negative_prompt === "string" ? body.negative_prompt : " ";
     const width =
@@ -35,8 +34,7 @@ export async function POST(req: Request) {
     const numInferenceSteps = 10;
     const outputFormat =
       typeof body?.output_format === "string" ? body.output_format : "png";
-    const seed =
-      typeof body?.seed === "number" ? body.seed : -1;
+    const seed = typeof body?.seed === "number" ? body.seed : -1;
 
     if (!prompt) {
       return NextResponse.json(
@@ -47,7 +45,7 @@ export async function POST(req: Request) {
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const inferenceId = randomInferenceId();
-    const upstreamUrl = `${upstreamBasePath}/image/_inference/text2image/${inferenceId}`;
+    const upstreamUrl = `${upstreamBasePath}/image/_inference/image-edit/${inferenceId}`;
 
     const payload = {
       prompt,
@@ -82,15 +80,14 @@ export async function POST(req: Request) {
       const message =
         status === 429
           ? "일일 체험 한도를 초과했습니다. 회원가입 후 이용해주세요."
-          : maybeJson?.error ??
+          : (maybeJson?.error ??
             (typeof maybeJson?.detail === "string"
               ? maybeJson.detail
-              : "이미지 생성 API 요청 실패");
+              : "이미지 생성 API 요청 실패"));
       return NextResponse.json({ error: message }, { status });
     }
 
-    const contentType =
-      upstreamRes.headers.get("content-type") ?? "image/png";
+    const contentType = upstreamRes.headers.get("content-type") ?? "image/png";
 
     return new Response(upstreamRes.body, {
       status: 200,
