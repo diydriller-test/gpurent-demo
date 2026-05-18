@@ -5,8 +5,26 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "AI API 오마카세 | 필요한 AI API를 테스트하고 선택하세요",
-  description:
-    "필요한 API만 골라 쓰는 AI API 오마카세. 임베딩, 리랭킹, TTS 등 다양한 API를 RPS 기반으로 이용하세요.",
+  description: "AI API 오마카세로 AI 에이전트 개발을 손쉽게",
+  keywords: ["AI API", "Agent", "MCP", "A2A"],
+  authors: [{ name: "주식회사 코그로보" }],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  openGraph: {
+    type: "website",
+    title: "AI API 오마카세",
+    description: "AI API 오마카세로 AI 에이전트 개발을 손쉽게",
+    url: "https://aiapi.kogrobo.com/",
+    images: [{ url: "https://aiapi.kogrobo.com/og.png" }],
+  },
+  other: {
+    Yeti: "index, follow",
+    Daumoa: "index, follow",
+    Zumbot: "index, follow",
+  },
 };
 
 export default function RootLayout({
