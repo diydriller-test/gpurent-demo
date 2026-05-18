@@ -1826,6 +1826,17 @@ export default function ApiTestPage() {
   const [t2iError, setT2iError] = useState<string | null>(null);
   const t2iBlobUrlRef = useRef<string | null>(null);
 
+  // Latency measurement (ms, null = not yet tested)
+  const [llmLatencyMs, setLlmLatencyMs] = useState<number | null>(null);
+  const [embeddingLatencyMs, setEmbeddingLatencyMs] = useState<number | null>(null);
+  const [rerankLatencyMs, setRerankLatencyMs] = useState<number | null>(null);
+  const [ttsLatencyMs, setTtsLatencyMs] = useState<number | null>(null);
+  const [sttLatencyMs, setSttLatencyMs] = useState<number | null>(null);
+  const [vcLatencyMs, setVcLatencyMs] = useState<number | null>(null);
+  const [image2textLatencyMs, setImage2TextLatencyMs] = useState<number | null>(null);
+  const [t2mLatencyMs, setT2mLatencyMs] = useState<number | null>(null);
+  const [t2iLatencyMs, setT2iLatencyMs] = useState<number | null>(null);
+
   const [rerankerDevCodeOpen, setRerankerDevCodeOpen] = useState(false);
   const [rerankerDevCodeCopied, setRerankerDevCodeCopied] = useState(false);
   const [ttsDevCodeOpen, setTtsDevCodeOpen] = useState(false);
@@ -2565,6 +2576,7 @@ export default function ApiTestPage() {
 
     try {
       const token = getToken();
+      const embStart = Date.now();
       const res = await fetch("/api/embedding", {
         method: "POST",
         headers: {
@@ -2621,6 +2633,7 @@ export default function ApiTestPage() {
 
       setEmbeddingVector(normalized);
       setEmbeddingDisplayNonce((n) => n + 1);
+      setEmbeddingLatencyMs(Date.now() - embStart);
       patchConsole("embedding", {
         statusCode: 200,
         statusLine: "200 OK",
@@ -2681,6 +2694,7 @@ export default function ApiTestPage() {
 
     try {
       const token = getToken();
+      const rerankStart = Date.now();
       const res = await fetch("/api/rerank", {
         method: "POST",
         headers: {
@@ -2709,6 +2723,7 @@ export default function ApiTestPage() {
 
       setRerankResults(sorted);
       setDisplayedQuery(query);
+      setRerankLatencyMs(Date.now() - rerankStart);
       patchConsole("reranker", {
         responseJson: JSON.stringify({ rerank: sorted }, null, 2),
       });
@@ -2762,6 +2777,7 @@ export default function ApiTestPage() {
 
     try {
       const token = getToken();
+      const ttsStart = Date.now();
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: {
@@ -2799,6 +2815,7 @@ export default function ApiTestPage() {
       setAudioUrl(url);
       setTtsPlaying(false);
       setTtsProgress(0);
+      setTtsLatencyMs(Date.now() - ttsStart);
       setTtsWave(mockWaveform(trimmed, 32)); // 파형은 텍스트 기반 데모 유지
 
       const responseBody: Record<string, unknown> = {
@@ -2881,6 +2898,7 @@ export default function ApiTestPage() {
         form.append("ref_text", vcRefText.trim());
       }
 
+      const vcStart = Date.now();
       const res = await fetch("/api/voice-clone", {
         method: "POST",
         headers: {
@@ -2913,6 +2931,7 @@ export default function ApiTestPage() {
       setVcAudioUrl(url);
       setVcPlaying(false);
       setVcProgress(0);
+      setVcLatencyMs(Date.now() - vcStart);
       setVcWave(mockWaveform(vcText.trim(), 32));
 
       const responseBody: Record<string, unknown> = {
@@ -3011,6 +3030,7 @@ export default function ApiTestPage() {
 
     try {
       const token = getToken();
+      const t2mStart = Date.now();
       const res = await fetch("/api/t2m", {
         method: "POST",
         headers: {
@@ -3050,6 +3070,7 @@ export default function ApiTestPage() {
       setT2mAudioUrl(url);
       setT2mWave(mockWaveform(t2mPrompt, 32));
       setT2mDurationMs(t2mDuration * 1000);
+      setT2mLatencyMs(Date.now() - t2mStart);
 
       patchConsole("t2m", {
         statusCode: 200,
@@ -3115,6 +3136,7 @@ export default function ApiTestPage() {
 
     try {
       const token = getToken();
+      const t2iStart = Date.now();
       const res = await fetch("/api/t2i", {
         method: "POST",
         headers: {
@@ -3153,6 +3175,7 @@ export default function ApiTestPage() {
       const url = URL.createObjectURL(blob);
       t2iBlobUrlRef.current = url;
       setT2iImageUrl(url);
+      setT2iLatencyMs(Date.now() - t2iStart);
 
       patchConsole("t2i", {
         statusCode: 200,
@@ -3309,6 +3332,7 @@ export default function ApiTestPage() {
         formData.append("prompt", image2textPrompt.trim());
       }
 
+      const img2txtStart = Date.now();
       const res = await fetch("/api/image2text", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -3337,6 +3361,7 @@ export default function ApiTestPage() {
       }
 
       setImage2TextResult(json?.text ?? "");
+      setImage2TextLatencyMs(Date.now() - img2txtStart);
     } catch {
       setImage2TextError("Image2Text API 호출에 실패했습니다.");
       patchConsole("image2text", {
@@ -3706,6 +3731,7 @@ export default function ApiTestPage() {
       formData.append("vad_filter", vad_filter);
 
       const token = getToken();
+      const sttStart = Date.now();
       const res = await fetch("/api/stt", {
         method: "POST",
         headers: {
@@ -3741,6 +3767,7 @@ export default function ApiTestPage() {
           : null;
 
       setSttTranscript(recognizedText ?? "");
+      setSttLatencyMs(Date.now() - sttStart);
 
       patchConsole("stt", {
         statusCode: res.status,
@@ -3871,6 +3898,7 @@ export default function ApiTestPage() {
 
     try {
       const token = getToken();
+      const llmStart = Date.now();
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -3918,6 +3946,7 @@ export default function ApiTestPage() {
         responseJson: JSON.stringify(data ?? {}, null, 2),
       });
       consoleAlreadySet = true;
+      setLlmLatencyMs(Date.now() - llmStart);
 
       const text =
         typeof (data as { text?: unknown } | null)?.text === "string"
@@ -4074,6 +4103,7 @@ export default function ApiTestPage() {
         setRerankResults(null);
 
         const token = getToken();
+        const rerankStart = Date.now();
         const res = await fetch("/api/rerank", {
           method: "POST",
           headers: {
@@ -4101,6 +4131,7 @@ export default function ApiTestPage() {
         const sorted = normalizeRerankResults(responseJson, input);
         setRerankResults(sorted);
         setDisplayedQuery(query);
+        setRerankLatencyMs(Date.now() - rerankStart);
         patchConsole("reranker", {
           responseJson: JSON.stringify({ rerank: sorted }, null, 2),
         });
@@ -4133,6 +4164,7 @@ export default function ApiTestPage() {
         setEmbeddingVector(null);
 
         const token = getToken();
+        const embStart = Date.now();
         const res = await fetch("/api/embedding", {
           method: "POST",
           headers: {
@@ -4168,6 +4200,7 @@ export default function ApiTestPage() {
             .filter((v): v is number => Number.isFinite(v));
           setEmbeddingVector(normalized);
           setEmbeddingDisplayNonce((n) => n + 1);
+          setEmbeddingLatencyMs(Date.now() - embStart);
         }
 
         return;
@@ -4316,6 +4349,7 @@ export default function ApiTestPage() {
       ]);
 
       const token = getToken();
+      const llmStart = Date.now();
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -4353,6 +4387,7 @@ export default function ApiTestPage() {
         throw new Error("API_ERROR");
       }
 
+      setLlmLatencyMs(Date.now() - llmStart);
       const data = responseJson as { text?: unknown } | null;
       const text =
         typeof data?.text === "string"
@@ -4413,6 +4448,13 @@ export default function ApiTestPage() {
   }
 
   const selectedApiItem = apis.find((a) => a.id === selectedApi);
+
+  function fmtLatency(ms: number | null, isLoading: boolean): string {
+    if (isLoading) return "running";
+    if (ms === null) return "not tested";
+    return ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
+  }
+
   const selectedRouteProfile = (() => {
     switch (selectedApi) {
       case "llm":
@@ -4420,7 +4462,7 @@ export default function ApiTestPage() {
           label: "Text generation",
           model: "LLM API",
           endpoint: "/api/chat",
-          latency: isChatLoading ? "running" : currentConsole.statusCode ? "1.2s" : "not tested",
+          latency: fmtLatency(llmLatencyMs, isChatLoading),
           cost: currentConsole.statusCode ? "~0.018 credits" : "test to estimate",
         };
       case "embedding":
@@ -4428,7 +4470,7 @@ export default function ApiTestPage() {
           label: "Semantic indexing",
           model: "Embedding API",
           endpoint: "/api/embedding",
-          latency: isEmbeddingLoading ? "running" : currentConsole.statusCode ? "420ms" : "not tested",
+          latency: fmtLatency(embeddingLatencyMs, isEmbeddingLoading),
           cost: currentConsole.statusCode ? "~0.004 credits" : "test to estimate",
         };
       case "reranker":
@@ -4436,7 +4478,7 @@ export default function ApiTestPage() {
           label: "Retrieval quality",
           model: "Reranking API",
           endpoint: "/api/rerank",
-          latency: isRerankLoading ? "running" : currentConsole.statusCode ? "680ms" : "not tested",
+          latency: fmtLatency(rerankLatencyMs, isRerankLoading),
           cost: currentConsole.statusCode ? "~0.006 credits" : "test to estimate",
         };
       case "tts":
@@ -4444,7 +4486,7 @@ export default function ApiTestPage() {
           label: "Voice synthesis",
           model: "TTS API",
           endpoint: "client synthesis demo",
-          latency: isSynthesizing ? "running" : audioUrl ? "1.8s" : "not tested",
+          latency: fmtLatency(ttsLatencyMs, isSynthesizing),
           cost: audioUrl ? "~0.022 credits" : "test to estimate",
         };
       case "stt":
@@ -4452,7 +4494,7 @@ export default function ApiTestPage() {
           label: "Speech recognition",
           model: "STT API",
           endpoint: "/api/stt",
-          latency: isSttLoading ? "running" : sttTranscript ? "1.4s" : "not tested",
+          latency: fmtLatency(sttLatencyMs, isSttLoading),
           cost: sttTranscript ? "~0.015 credits" : "test to estimate",
         };
       case "voiceClone":
@@ -4460,7 +4502,7 @@ export default function ApiTestPage() {
           label: "Voice cloning",
           model: "Voice Clone API",
           endpoint: "/api/voice-clone",
-          latency: vcIsLoading ? "running" : vcAudioUrl ? "2.4s" : "not tested",
+          latency: fmtLatency(vcLatencyMs, vcIsLoading),
           cost: vcAudioUrl ? "~0.035 credits" : "test to estimate",
         };
       case "image2text":
@@ -4468,7 +4510,7 @@ export default function ApiTestPage() {
           label: "Vision extraction",
           model: "Image-to-Text API",
           endpoint: "/api/image2text",
-          latency: image2textIsLoading ? "running" : image2textResult ? "1.1s" : "not tested",
+          latency: fmtLatency(image2textLatencyMs, image2textIsLoading),
           cost: image2textResult ? "~0.024 credits" : "test to estimate",
         };
       case "t2m":
@@ -4476,7 +4518,7 @@ export default function ApiTestPage() {
           label: "Audio generation",
           model: "Text-to-Music API",
           endpoint: "/api/t2m",
-          latency: t2mIsLoading ? "running" : t2mAudioUrl ? "4.6s" : "not tested",
+          latency: fmtLatency(t2mLatencyMs, t2mIsLoading),
           cost: t2mAudioUrl ? "~0.060 credits" : "test to estimate",
         };
       case "t2i":
@@ -4484,7 +4526,7 @@ export default function ApiTestPage() {
           label: "Image generation",
           model: "Image Generation API",
           endpoint: "/api/t2i",
-          latency: t2iIsLoading ? "running" : t2iImageUrl ? "3.2s" : "not tested",
+          latency: fmtLatency(t2iLatencyMs, t2iIsLoading),
           cost: t2iImageUrl ? "~0.048 credits" : "test to estimate",
         };
       default:
