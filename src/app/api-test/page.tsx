@@ -3017,6 +3017,7 @@ export default function ApiTestPage() {
     try {
       const token = getToken();
       const t2mStart = Date.now();
+      const resolvedT2mSeed = t2mSeed !== "" ? Number(t2mSeed) : Math.floor(Math.random() * 2147483647);
       const res = await fetch("/api/t2m", {
         method: "POST",
         headers: {
@@ -3027,7 +3028,7 @@ export default function ApiTestPage() {
           prompt: t2mPrompt.trim(),
           lyrics: t2mLyrics.trim(),
           audio_duration: t2mDuration,
-          seed: t2mSeed !== "" ? Number(t2mSeed) : -1,
+          seed: resolvedT2mSeed,
         }),
       });
 
@@ -3064,6 +3065,7 @@ export default function ApiTestPage() {
         responseJson: JSON.stringify(
           {
             status: "success",
+            seed: resolvedT2mSeed,
             audio_duration: t2mDuration,
             prompt: t2mPrompt.trim(),
             ...(t2mLyrics.trim() ? { lyrics: t2mLyrics.trim() } : {}),
@@ -3123,6 +3125,7 @@ export default function ApiTestPage() {
     try {
       const token = getToken();
       const t2iStart = Date.now();
+      const resolvedT2iSeed = t2iSeed !== "" ? Number(t2iSeed) : Math.floor(Math.random() * 2147483647);
       const res = await fetch("/api/t2i", {
         method: "POST",
         headers: {
@@ -3135,7 +3138,7 @@ export default function ApiTestPage() {
           width: t2iWidth,
           height: t2iHeight,
           num_inference_steps: 10,
-          seed: t2iSeed !== "" ? Number(t2iSeed) : -1,
+          seed: resolvedT2iSeed,
         }),
       });
 
@@ -3169,6 +3172,7 @@ export default function ApiTestPage() {
         responseJson: JSON.stringify(
           {
             status: "success",
+            seed: resolvedT2iSeed,
             prompt: t2iPrompt.trim(),
             width: t2iWidth,
             height: t2iHeight,
