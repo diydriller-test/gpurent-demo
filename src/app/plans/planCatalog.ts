@@ -117,7 +117,7 @@ export const DEMO_PLANS_THREE_TIERS: Plan[] = [
     description: "대규모·전용 용량·맞춤 계약",
     max_rps: 100,
     period: "",
-    features: ["전용 RPS·용량 협의", "전담 담당자", "맞춤 SLA·보안 검토"],
+    features: ["전용 RPM·용량 협의", "전담 담당자", "맞춤 SLA·보안 검토"],
     is_active: true,
     sort_order: 3,
   },

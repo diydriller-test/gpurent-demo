@@ -444,7 +444,7 @@ function PlansPageContent() {
             <PlatformPageHeader
               eyebrow="요금"
               title={`${(() => { const t = getApiTask(selectedApi); return t ? getPlanTaskDisplayName(t) : selectedApi.name; })()} 요금제`}
-              description="선택한 API의 월 요금, 초당 요청 수(RPS), 사용 한도를 비교하고 필요한 플랜을 고르세요."
+              description="선택한 API의 월 요금, 분당 요청 수(RPM), 사용 한도를 비교하고 필요한 플랜을 고르세요."
             />
 
             <button
@@ -473,7 +473,7 @@ function PlansPageContent() {
             description={
               <>
                 필요한 API를 선택하고, 예상 트래픽에 맞춰{" "}
-                <span className="text-accent">RPS와 월 요청 한도</span>를
+                <span className="text-accent">RPM과 월 요청 한도</span>를
                 확인하세요. 테스트 후 운영 규모에 맞는 플랜을 고르는 구조입니다.
               </>
             }
@@ -499,7 +499,7 @@ function PlansPageContent() {
               </h2>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {[
-                  ["API별 플랜", "기능별 월 요금과 RPS 확인"],
+                  ["API별 플랜", "기능별 월 요금과 RPM 확인"],
                   ["크레딧 구조", "요청량 기준으로 사용량 파악"],
                   ["운영 한도", "트래픽 증가에 맞춰 단계 선택"],
                 ].map(([label, value]) => (
@@ -520,10 +520,10 @@ function PlansPageContent() {
                 플랜 선택 기준
               </p>
               <p className="mt-4 text-4xl font-semibold tracking-normal">
-                RPS
+                RPM
               </p>
               <p className="mt-2 text-sm leading-6 text-white/64">
-                워크벤치에서 API를 테스트한 뒤, 실제 월 요청량과 필요한 RPS에
+                워크벤치에서 API를 테스트한 뒤, 실제 월 요청량과 필요한 RPM에
                 맞춰 플랜을 선택하세요.
               </p>
             </div>
@@ -618,11 +618,11 @@ function PlansPageContent() {
                 </div>
                 <div className="rounded-xl border border-black/[0.06] bg-background px-4 py-3">
                   <p className="font-mono text-[10px] uppercase text-black/36">
-                    월 평균 RPS
+                    월 평균 RPM
                   </p>
                   <p className="mt-2 text-lg font-semibold text-foreground">
                     {calculator.recommended
-                      ? `${calculator.averageRps.toFixed(2)} RPS`
+                      ? `${Math.round(calculator.averageRps * 60).toLocaleString("ko-KR")} RPM`
                       : "—"}
                   </p>
                 </div>
@@ -635,7 +635,7 @@ function PlansPageContent() {
                       ? "현재 범위 초과"
                       : calculator.floorApplied
                       ? "현재 플랜보다 낮추지 않음"
-                      : "평균 RPS 기준"}
+                      : "평균 RPM 기준"}
                   </p>
                 </div>
               </div>
@@ -649,7 +649,7 @@ function PlansPageContent() {
                 {[
                   ["API별 선택", "필요한 기능만 골라 플랜을 선택"],
                   ["크레딧 풀", "요청량과 플랜 기준으로 사용량 확인"],
-                  ["엔터프라이즈 운영 준비", "RPS/IP 한도로 운영 한도 예측"],
+                  ["엔터프라이즈 운영 준비", "RPM/IP 한도로 운영 한도 예측"],
                 ].map(([label, body]) => (
                   <div key={label} className="border-t border-black/[0.06] pt-4 first:border-t-0 first:pt-0">
                     <p className="text-sm font-semibold text-foreground">
@@ -850,7 +850,7 @@ function PlansPageContent() {
                         등급·트래픽 한도 선택
                       </h3>
                       <p className="mt-2 max-w-xl text-sm leading-relaxed text-foreground/55">
-                        카드를 눌러 해당 API의 월 요금·초당 요청 수(RPS) 플랜을 확인하세요.
+                        카드를 눌러 해당 API의 월 요금·분당 요청 수(RPM) 플랜을 확인하세요.
                       </p>
                     </div>
                     <span className="rounded-xl border border-accent/25 bg-accent/5 px-3 py-1 font-mono text-xs text-accent">

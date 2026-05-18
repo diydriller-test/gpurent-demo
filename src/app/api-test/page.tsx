@@ -4761,8 +4761,7 @@ export default function ApiTestPage() {
 
                         {currentPlan ? (
                           <p className="mt-3 rounded-lg bg-accent/10 px-2.5 py-1.5 text-[11px] font-medium text-accent">
-                            현재: {currentPlan.plan_name} ({currentPlan.max_rps}{" "}
-                            RPS)
+                            현재: {currentPlan.plan_name} ({rpsToRequestsPerMinute(currentPlan.max_rps).toLocaleString("ko-KR")} RPM)
                           </p>
                         ) : null}
 

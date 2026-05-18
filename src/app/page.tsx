@@ -118,7 +118,7 @@ const TASK_DETAILS: Record<string, string> = {
 const METRICS = [
   { value: "9", label: "available APIs" },
   { value: "1", label: "workbench" },
-  { value: "RPS", label: "requests per second" },
+  { value: "RPM", label: "requests per minute" },
 ];
 
 const WORKFLOW = [
@@ -144,13 +144,13 @@ const SIGNALS = [
   "Per-API playgrounds",
   "Latency and response review",
   "Playground to code handoff",
-  "RPS-based capacity planning",
+  "RPM-based capacity planning",
   "Server-side API key flow",
 ];
 
 const TRUST_POINTS = [
   "API별 빠른 테스트",
-  "예측 가능한 RPS 플랜",
+  "예측 가능한 RPM 플랜",
   "개발자 친화적 코드 handoff",
 ];
 

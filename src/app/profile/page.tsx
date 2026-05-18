@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { getMe, getApiKeys, createApiKey, regenerateApiKey, type User, type ApiKey } from "@/lib/api";
 import { getToken } from "@/lib/token";
+import { rpsToRequestsPerMinute } from "@/app/plans/planCatalog";
 import {
   PlatformButton,
   PlatformCard,
@@ -604,7 +605,7 @@ export default function ProfilePage() {
                       <div className="text-sm text-foreground/70 sm:text-right">
                         <span className="font-medium text-accent">{ap.plan_name}</span>
                         <span className="text-foreground/40"> · </span>
-                        <span>최대 {ap.max_rps} RPS</span>
+                        <span>최대 {rpsToRequestsPerMinute(ap.max_rps).toLocaleString("ko-KR")} RPM</span>
                       </div>
                     </div>
                   </li>
