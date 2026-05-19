@@ -289,7 +289,7 @@ const STT_ACCEPTED_LANGUAGE_CODES = [
 type SttLanguage = (typeof STT_ACCEPTED_LANGUAGE_CODES)[number];
 
 type SttTask = "transcribe" | "translate";
-type SttHelpTooltipId = "vad" | "beam";
+type SttHelpTooltipId = "vad" | "beam" | "task";
 const STT_LANGUAGE_PRIORITY: readonly SttLanguage[] = ["ko", "en", "ja"];
 const STT_DEFAULT_LANGUAGE: SttLanguage = "ko";
 const STT_DEFAULT_VAD_ON = true;

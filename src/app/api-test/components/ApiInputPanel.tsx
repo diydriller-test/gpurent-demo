@@ -268,7 +268,7 @@ function CustomSelect({
 }
 
 type SttTask = "transcribe" | "translate";
-type SttHelpTooltipId = "vad" | "beam";
+type SttHelpTooltipId = "vad" | "beam" | "task";
 
 type Props = {
   selectedApi: ApiId;
@@ -1176,10 +1176,17 @@ export function ApiInputPanel({
               </div>
 
               <div>
-                <p className="font-mono text-xs text-foreground/60">변환 방식</p>
-                <p className="mt-0.5 text-[11px] text-foreground/45">
-                  {sttTask === "transcribe" ? "원본 언어 그대로 텍스트 변환" : "영어로 번역하며 텍스트 변환"}
-                </p>
+                <div className="flex items-center gap-1">
+                  <p className="font-mono text-xs text-foreground/60">변환 방식</p>
+                  <SttHelpTooltip
+                    id="task"
+                    pinnedId={sttTooltipPinned}
+                    setPinnedId={setSttTooltipPinned}
+                    hoverId={sttTooltipHoverId}
+                    setHoverId={setSttTooltipHoverId}
+                    content="Transcribe는 원본 언어 그대로 텍스트로 변환합니다. Translate는 음성을 영어로 번역하면서 텍스트로 변환합니다."
+                  />
+                </div>
                 <div className="mt-2 flex gap-2">
                   {(["transcribe", "translate"] as SttTask[]).map((t) => (
                     <button
