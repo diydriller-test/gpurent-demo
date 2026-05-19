@@ -44,6 +44,7 @@ export async function POST(req: Request) {
     }
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
+    const authHeader = req.headers.get("authorization");
     const inferenceId = randomInferenceId();
     const upstreamUrl = `${upstreamBasePath}/music/_inference/text2music/${inferenceId}`;
 
@@ -91,7 +92,11 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        ...(apiKey
+          ? { Authorization: `Bearer ${apiKey}` }
+          : authHeader
+            ? { Authorization: authHeader }
+            : {}),
       },
       body: JSON.stringify(payload),
       signal: controller.signal,

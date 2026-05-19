@@ -44,6 +44,7 @@ export async function POST(req: Request) {
     }
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
+    const authHeader = req.headers.get("authorization");
     const inferenceId = randomInferenceId();
     const upstreamUrl = `${upstreamBasePath}/image/_inference/image-edit/${inferenceId}`;
 
@@ -64,7 +65,11 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(apiKey ? { access_token: apiKey } : {}),
+        ...(apiKey
+          ? { Authorization: `Bearer ${apiKey}` }
+          : authHeader
+            ? { Authorization: authHeader }
+            : {}),
       },
       body: JSON.stringify(payload),
       signal: controller.signal,
