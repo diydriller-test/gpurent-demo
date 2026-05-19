@@ -288,6 +288,7 @@ const STT_ACCEPTED_LANGUAGE_CODES = [
 ] as const;
 type SttLanguage = (typeof STT_ACCEPTED_LANGUAGE_CODES)[number];
 
+type SttTask = "transcribe" | "translate";
 type SttHelpTooltipId = "vad" | "beam";
 const STT_LANGUAGE_PRIORITY: readonly SttLanguage[] = ["ko", "en", "ja"];
 const STT_DEFAULT_LANGUAGE: SttLanguage = "ko";
@@ -783,6 +784,7 @@ function clampSttBeamSize(n: number): number {
 /** STT Playground ↔ Developer Console 동기화용 Request JSON */
 function buildSttConsoleRequestJson(
   language: SttLanguage,
+  task: SttTask,
   vadOn: boolean,
   beamSize: number,
   recordedFileInfo: string | null,
@@ -790,7 +792,7 @@ function buildSttConsoleRequestJson(
   return JSON.stringify(
     {
       language,
-      task: STT_DEFAULT_TASK,
+      task,
       vad_filter: vadOn,
       beam_size: beamSize,
       ...(recordedFileInfo ? { file: recordedFileInfo } : {}),
@@ -806,6 +808,7 @@ function buildSttConsoleRequestJson(
  */
 function tryParseSttConsoleToPlayground(jsonText: string): {
   language?: SttLanguage;
+  task?: SttTask;
   vadOn?: boolean;
   beamSize?: number;
   recordedFileInfo?: string | null;
@@ -813,12 +816,14 @@ function tryParseSttConsoleToPlayground(jsonText: string): {
   try {
     const parsed = JSON.parse(jsonText) as {
       language?: unknown;
+      task?: unknown;
       vad_filter?: unknown;
       beam_size?: unknown;
       file?: unknown;
     };
     const out: {
       language?: SttLanguage;
+      task?: SttTask;
       vadOn?: boolean;
       beamSize?: number;
       recordedFileInfo?: string | null;
@@ -829,6 +834,10 @@ function tryParseSttConsoleToPlayground(jsonText: string): {
       isSttLanguageCode(parsed.language)
     ) {
       out.language = parsed.language;
+    }
+
+    if (parsed.task === "transcribe" || parsed.task === "translate") {
+      out.task = parsed.task;
     }
 
     if (typeof parsed.vad_filter === "boolean") {
@@ -1046,6 +1055,7 @@ export default function ApiTestPage() {
       if (api === "stt") {
         return buildSttConsoleRequestJson(
           STT_DEFAULT_LANGUAGE,
+          STT_DEFAULT_TASK as SttTask,
           STT_DEFAULT_VAD_ON,
           STT_DEFAULT_BEAM_SIZE,
           null,
@@ -1725,6 +1735,7 @@ export default function ApiTestPage() {
   const [audioChunks, setAudioChunks] = useState<BlobPart[]>([]);
   const [sttLanguage, setSttLanguage] =
     useState<SttLanguage>(STT_DEFAULT_LANGUAGE);
+  const [sttTask, setSttTask] = useState<SttTask>(STT_DEFAULT_TASK as SttTask);
   const [sttVadOn, setSttVadOn] = useState<boolean>(STT_DEFAULT_VAD_ON);
   const [sttBeamSize, setSttBeamSize] = useState<number>(STT_DEFAULT_BEAM_SIZE);
   const [isSttLoading, setIsSttLoading] = useState(false);
@@ -1856,12 +1867,12 @@ export default function ApiTestPage() {
     () =>
       buildSttDevCodePython({
         language: sttLanguage,
-        task: STT_DEFAULT_TASK,
+        task: sttTask,
         beamSize: sttBeamSize,
         vadOn: sttVadOn,
         url: subscribedApis.stt ? REAL_ENDPOINTS.stt : DUMMY_ENDPOINTS.stt,
       }),
-    [sttLanguage, sttBeamSize, sttVadOn, subscribedApis],
+    [sttLanguage, sttTask, sttBeamSize, sttVadOn, subscribedApis],
   );
 
   const vcDevCodePython = useMemo(
@@ -2215,6 +2226,7 @@ export default function ApiTestPage() {
   useEffect(() => {
     const nextRequestJson = buildSttConsoleRequestJson(
       sttLanguage,
+      sttTask,
       sttVadOn,
       sttBeamSize,
       sttRecordedFileInfo,
@@ -2230,7 +2242,7 @@ export default function ApiTestPage() {
         },
       };
     });
-  }, [sttLanguage, sttVadOn, sttBeamSize, sttRecordedFileInfo]);
+  }, [sttLanguage, sttTask, sttVadOn, sttBeamSize, sttRecordedFileInfo]);
 
   const placeholder = useMemo(() => {
     switch (selectedApi) {
@@ -2340,6 +2352,9 @@ export default function ApiTestPage() {
       if (parsed.language !== undefined) {
         setSttLanguage(parsed.language);
       }
+      if (parsed.task !== undefined) {
+        setSttTask(parsed.task);
+      }
       if (parsed.vadOn !== undefined) {
         setSttVadOn(parsed.vadOn);
       }
@@ -2385,6 +2400,7 @@ export default function ApiTestPage() {
       audioChunksRef.current = [];
       setSttRecordedFileInfo(null);
       setSttLanguage(STT_DEFAULT_LANGUAGE);
+      setSttTask(STT_DEFAULT_TASK as SttTask);
       setSttVadOn(STT_DEFAULT_VAD_ON);
       setSttBeamSize(STT_DEFAULT_BEAM_SIZE);
       setSttError(null);
@@ -3716,7 +3732,7 @@ export default function ApiTestPage() {
       const formData = new FormData();
       formData.append("file", normalizedFile, normalizedFile.name);
       formData.append("language", languageCode);
-      formData.append("task", STT_DEFAULT_TASK);
+      formData.append("task", sttTask);
       formData.append("beam_size", String(sttBeamSize));
       formData.append("vad_filter", vad_filter);
 
@@ -5141,6 +5157,8 @@ export default function ApiTestPage() {
                       sttTooltipHoverId={sttTooltipHoverId}
                       setSttTooltipHoverId={setSttTooltipHoverId}
                       SttHelpTooltip={SttHelpTooltip}
+                      sttTask={sttTask}
+                      setSttTask={setSttTask}
                       sttVadOn={sttVadOn}
                       setSttVadOn={setSttVadOn}
                       STT_DEFAULT_BEAM_SIZE={STT_DEFAULT_BEAM_SIZE}

@@ -267,6 +267,7 @@ function CustomSelect({
   );
 }
 
+type SttTask = "transcribe" | "translate";
 type SttHelpTooltipId = "vad" | "beam";
 
 type Props = {
@@ -341,6 +342,9 @@ type Props = {
     setHoverId: React.Dispatch<React.SetStateAction<SttHelpTooltipId | null>>;
     content: string;
   }>;
+
+  sttTask: SttTask;
+  setSttTask: React.Dispatch<React.SetStateAction<SttTask>>;
 
   sttVadOn: boolean;
   setSttVadOn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -470,6 +474,9 @@ export function ApiInputPanel({
   sttTooltipHoverId,
   setSttTooltipHoverId,
   SttHelpTooltip,
+
+  sttTask,
+  setSttTask,
 
   sttVadOn,
   setSttVadOn,
@@ -1057,7 +1064,7 @@ export function ApiInputPanel({
               </span>
             </div>
 
-            <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <div className="mt-3 grid gap-3 md:grid-cols-4">
               <div>
                 <p className="font-mono text-xs text-foreground/60">언어</p>
                 <div ref={sttLangDropdownRootRef} className="relative">
@@ -1165,6 +1172,30 @@ export function ApiInputPanel({
                         document.body,
                       )
                     : null}
+                </div>
+              </div>
+
+              <div>
+                <p className="font-mono text-xs text-foreground/60">변환 방식</p>
+                <p className="mt-0.5 text-[11px] text-foreground/45">
+                  {sttTask === "transcribe" ? "원본 언어 그대로 텍스트 변환" : "영어로 번역하며 텍스트 변환"}
+                </p>
+                <div className="mt-2 flex gap-2">
+                  {(["transcribe", "translate"] as SttTask[]).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setSttTask(t)}
+                      className={[
+                        "flex-1 rounded-xl border px-2 py-2 text-xs font-medium transition-colors",
+                        sttTask === t
+                          ? "border-accent/40 bg-accent/10 text-accent"
+                          : "border-white/10 bg-background/30 text-foreground/80 hover:border-accent/30",
+                      ].join(" ")}
+                    >
+                      {t === "transcribe" ? "Transcribe" : "Translate"}
+                    </button>
+                  ))}
                 </div>
               </div>
 
