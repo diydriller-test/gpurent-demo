@@ -1769,7 +1769,7 @@ function VoiceCloneSection({
 
         {/* 언어 + x_vector only */}
         <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end">
-          <div className="min-w-0 flex-1">
+          <div className="w-36">
             <p className="font-mono text-xs text-foreground/60">언어</p>
             <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-foreground/12 bg-background/60 transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
               <CustomSelect
@@ -1833,10 +1833,16 @@ function VoiceCloneSection({
 
         {/* 읽어줄 텍스트 */}
         <div>
-          <p className="font-mono text-xs text-foreground/60">읽어줄 텍스트</p>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-foreground/60">읽어줄 텍스트</p>
+            <span className={`text-[11px] ${vcText.length >= 300 ? "text-red-400" : "text-foreground/40"}`}>
+              {vcText.length}/300
+            </span>
+          </div>
           <textarea
             value={vcText}
             onChange={(e) => setVcText(e.target.value)}
+            maxLength={300}
             rows={2}
             placeholder="클론된 목소리로 읽어줄 내용을 입력하세요"
             className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] leading-snug text-foreground outline-none placeholder:text-foreground/40 transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
