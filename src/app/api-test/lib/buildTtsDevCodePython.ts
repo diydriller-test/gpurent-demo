@@ -21,9 +21,11 @@ export function buildTtsDevCodePython({
     : `    # "instruct": "밝고 활기차게 말해줘",  # 스타일 지시 (선택 사항)\n`;
 
   return `import requests
+import random
 
-# 1. API 설정
-url = "${url}"
+# 1. API 설정 - 요청마다 고유한 랜덤 ID 생성
+rand = random.randint(0, 999_999_999)
+url = f"${url}/tts/_inference/tts/{rand}"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
 }
@@ -35,11 +37,11 @@ data = {
     "speaker": "${voice}",     # 화자 선택
 ${instructLine}}
 
-# 3. API 호출
-response = requests.post(url, headers=headers, json=data, timeout=60)
+# 3. API 호출 (form-encoded 형식으로 전송)
+response = requests.post(url, headers=headers, data=data, timeout=60)
 response.raise_for_status()
 
-# 4. 결과 저장
+# 4. 결과 저장 (wb: write binary)
 with open("output.mp3", "wb") as f:
     f.write(response.content)
 print("saved: output.mp3")
