@@ -661,7 +661,6 @@ function buildTtsConsoleRequestJson(
     text,
     language,
     speaker,
-    format: "mp3",
   };
   if (trimmedStyle) {
     payload.style_instruction = trimmedStyle;
