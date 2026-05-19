@@ -5712,7 +5712,7 @@ export default function ApiTestPage() {
               selectedApi === "image2text" ||
               selectedApi === "t2i" ||
               selectedApi === "t2m") ? (
-              <section className="w-full lg:basis-full">
+              <section className="w-full xl:col-start-2 2xl:col-span-2 2xl:col-start-2">
                 <div className="rounded-xl border-t border-accent/20 bg-accent/5 px-4 py-3">
                   <div
                     className={[
