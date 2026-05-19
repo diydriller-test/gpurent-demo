@@ -23,7 +23,6 @@ export function buildSttDevCodePython({
   const vadStr = vadOn ? "true" : "false";
 
   return `import requests
-import time
 
 # 1. API 설정
 url = "${url}"
@@ -44,21 +43,14 @@ try:
             "vad_filter": "${vadStr}",    # 무음 구간 자동 제거 여부 (true/false)
         }
 
-        # 3. API 호출 및 시간 측정
-        print(f"음성 변환 중... (파일: {file_path})")
-        start_time = time.time()
-
+        # 3. API 호출
         resp = requests.post(url, headers=headers, files=files, data=data, timeout=600)
         resp.raise_for_status()
 
-        duration = time.time() - start_time
         result = resp.json()
 
         # 4. 결과 출력
-        print("\\n" + "=" * 30)
         print(f"인식 결과: {result.get('text')}")
-        print(f"소요 시간: {duration:.2f}s")
-        print("=" * 30)
 
 except FileNotFoundError:
     print(f"에러: 파일을 찾을 수 없습니다. 경로를 확인해주세요: {file_path}")
