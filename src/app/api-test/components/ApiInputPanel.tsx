@@ -770,12 +770,18 @@ export function ApiInputPanel({
         >
           <div className="flex flex-col gap-3">
             <div>
-              <p className="font-mono text-xs text-foreground/60">
-                입력 (짧은 문장)
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="font-mono text-xs text-foreground/60">
+                  입력 (짧은 문장)
+                </p>
+                <span className={`text-[11px] ${embeddingText.length >= 500 ? "text-red-400" : "text-foreground/40"}`}>
+                  {embeddingText.length}/500
+                </span>
+              </div>
               <textarea
                 value={embeddingText}
                 onChange={(e) => setEmbeddingText(e.target.value)}
+                maxLength={500}
                 rows={2}
                 placeholder="예: 오늘 날씨가 참 맑고 화창하네요."
                 className="mt-1.5 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"

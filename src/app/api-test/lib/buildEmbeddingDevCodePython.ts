@@ -5,9 +5,6 @@ function escapeForPythonJsonString(s: string) {
     .replace(/\n/g, "\\n");
 }
 
-/**
- * Embedding Workstation 전용 포트 — `/api/embedding` 프록시와 동일한 업스트림 형식.
- */
 export function buildEmbeddingDevCodePython({ inputText, url }: { inputText: string; url: string }) {
   const content = escapeForPythonJsonString(
     inputText.trim() || "안녕하세요. 만나서 반갑습니다.",
@@ -15,28 +12,29 @@ export function buildEmbeddingDevCodePython({ inputText, url }: { inputText: str
 
   return `import requests
 
-# 1. API 설정 (Embedding Workstation 전용 포트)
+# 1. API 설정
 url = "${url}"
 headers = {
-    "access_token": "YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
-    "Content-Type": "application/json"
+    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Content-Type": "application/json",
 }
 
-# 2. 요청 데이터 구성 (문장을 고차원 벡터로 변환)
+# 2. 요청 데이터 설정
 data = {
-    "input": "${content}",
-    "input_type": "query",  # 또는 "document"
-    "task_settings": {}
+    "input": "${content}",  # 벡터로 변환할 텍스트
+    "input_type": "string",  # 입력 타입
+    "task_settings": {},     # 추가 설정 (기본값 사용)
 }
 
-# 3. API 호출 및 결과 출력
+# 3. API 호출
 response = requests.post(url, headers=headers, json=data)
+response.raise_for_status()
+
 result = response.json()
 
-# 4,096차원의 임베딩 벡터 추출
-embedding_vector = result['inference_results'][0]['text_embedding']
-
-print(f"Vector Dimension: {len(embedding_vector)}")
-print(f"First 5 values: {embedding_vector[:5]}")
+# 4. 결과 출력
+embedding_vector = result["inference_results"][0]["text_embedding"]
+print(f"벡터 차원: {len(embedding_vector)}")
+print(f"앞 5개 값: {embedding_vector[:5]}")
 `;
 }

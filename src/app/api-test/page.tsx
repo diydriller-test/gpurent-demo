@@ -38,7 +38,7 @@ import {
 
 const REAL_ENDPOINTS = {
   llm: "http://aiapi.kogrobo.com:11115/v1",
-  embedding: "http://aiapi.kogrobo.com:11115/_inference/text_embedding/qwen3",
+  embedding: "http://aiapi.kogrobo.com:11115/embedding/_inference/text_embedding/qwen3",
   reranker: "http://aiapi.kogrobo.com:11115/_inference/rerank/qwen3",
   tts: "http://aiapi.kogrobo.com:11115",
   stt: "http://aiapi.kogrobo.com:11115/stt/_inference/stt/my_stt",
@@ -616,7 +616,6 @@ function buildEmbeddingConsoleRequestJson(inputText: string) {
   return JSON.stringify(
     {
       input: inputText,
-      input_type: "string",
     },
     null,
     2,
