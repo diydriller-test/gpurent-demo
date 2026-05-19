@@ -804,6 +804,26 @@ function buildSttConsoleRequestJson(
   );
 }
 
+function buildT2mConsoleRequestJson(
+  prompt: string,
+  lyrics: string,
+  instrumental: boolean,
+  duration: number,
+  seed: string,
+): string {
+  return JSON.stringify(
+    {
+      prompt: prompt.trim(),
+      ...((!instrumental && lyrics.trim()) ? { lyrics: lyrics.trim() } : {}),
+      instrumental,
+      audio_duration: duration,
+      seed: seed !== "" ? Number(seed) : "(random)",
+    },
+    null,
+    2,
+  );
+}
+
 /**
  * STT 콘솔 JSON → Playground 언어 / VAD / Beam / 녹음 파일 메타
  * 파싱 실패 시 null
@@ -1084,6 +1104,15 @@ export default function ApiTestPage() {
       }
       if (api === "image2text") {
         return buildImage2TextConsoleRequestJson(DEFAULT_IMAGE2TEXT_PROMPT, null, 0.1);
+      }
+      if (api === "t2m") {
+        return buildT2mConsoleRequestJson(
+          "Upbeat jazz with piano and saxophone, 120bpm, warm and lively",
+          "",
+          false,
+          10,
+          "",
+        );
       }
       return "{}";
     },
@@ -3097,6 +3126,7 @@ export default function ApiTestPage() {
       setT2mWave(mockWaveform(t2mPrompt, 32));
       setT2mDurationMs(t2mDuration * 1000);
       setT2mLatencyMs(Date.now() - t2mStart);
+      setT2mSeed(String(resolvedT2mSeed));
 
       patchConsole("t2m", {
         statusCode: 200,
@@ -3205,6 +3235,7 @@ export default function ApiTestPage() {
       t2iBlobUrlRef.current = url;
       setT2iImageUrl(url);
       setT2iLatencyMs(Date.now() - t2iStart);
+      setT2iSeed(String(resolvedT2iSeed));
 
       patchConsole("t2i", {
         statusCode: 200,
@@ -3329,6 +3360,19 @@ export default function ApiTestPage() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [image2textPrompt, image2textFileName, image2textTemperature]);
+
+  useEffect(() => {
+    patchConsole("t2m", {
+      requestJson: buildT2mConsoleRequestJson(
+        t2mPrompt,
+        t2mLyrics,
+        t2mInstrumental,
+        t2mDuration,
+        t2mSeed,
+      ),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t2mPrompt, t2mLyrics, t2mInstrumental, t2mDuration, t2mSeed]);
 
   function handleImage2TextFileClear() {
     setImage2TextImageFile(null);
