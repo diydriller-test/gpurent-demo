@@ -1974,12 +1974,16 @@ function Image2TextSection({
 
         {/* 프롬프트 */}
         <div>
-          <p className="font-mono text-xs text-foreground/60">
-            분석 지시 (선택)
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-foreground/60">분석 지시 (선택)</p>
+            <span className={`font-mono text-xs ${image2textPrompt.length >= 200 ? "text-red-400" : "text-foreground/40"}`}>
+              {image2textPrompt.length}/200
+            </span>
+          </div>
           <textarea
             value={image2textPrompt}
             onChange={(e) => setImage2TextPrompt(e.target.value)}
+            maxLength={200}
             placeholder="이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘."
             rows={3}
             className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
