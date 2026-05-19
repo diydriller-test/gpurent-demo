@@ -2080,10 +2080,16 @@ function T2mSection({
       <div className="flex flex-col gap-3">
         {/* 프롬프트 */}
         <div>
-          <p className="font-mono text-xs text-foreground/60">음악 프롬프트</p>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-foreground/60">음악 프롬프트</p>
+            <span className={`font-mono text-xs ${t2mPrompt.length >= 300 ? "text-red-400" : "text-foreground/40"}`}>
+              {t2mPrompt.length}/300
+            </span>
+          </div>
           <textarea
             value={t2mPrompt}
             onChange={(e) => setT2mPrompt(e.target.value)}
+            maxLength={300}
             rows={3}
             placeholder="예: 잔잔한 피아노 멜로디에 가벼운 재즈 드럼이 어우러진 카페 BGM"
             className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
@@ -2092,13 +2098,19 @@ function T2mSection({
 
         {/* 가사 */}
         <div>
-          <p className="font-mono text-xs text-foreground/60">
-            가사{" "}
-            <span className="text-foreground/40">(선택)</span>
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-foreground/60">
+              가사{" "}
+              <span className="text-foreground/40">(선택)</span>
+            </p>
+            <span className={`font-mono text-xs ${t2mLyrics.length >= 500 ? "text-red-400" : "text-foreground/40"}`}>
+              {t2mLyrics.length}/500
+            </span>
+          </div>
           <textarea
             value={t2mLyrics}
             onChange={(e) => setT2mLyrics(e.target.value)}
+            maxLength={500}
             rows={4}
             placeholder={"예:\n[Verse]\nWalking through the morning light\nEverything feels warm and right"}
             className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
