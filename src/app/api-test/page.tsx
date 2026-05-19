@@ -26,6 +26,7 @@ import { buildTtsDevCodePython } from "./lib/buildTtsDevCodePython";
 import { buildSttDevCodePython } from "./lib/buildSttDevCodePython";
 import { buildVoiceCloneDevCodePython } from "./lib/buildVoiceCloneDevCodePython";
 import { buildImage2TextDevCodePython } from "./lib/buildImage2TextDevCodePython";
+import { buildT2mDevCodePython } from "./lib/buildT2mDevCodePython";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 import {
   chapterQueryToPlanTask,
@@ -44,6 +45,7 @@ const REAL_ENDPOINTS = {
   stt: "http://aiapi.kogrobo.com:11115/stt/_inference/stt/my_stt",
   voiceClone: "http://aiapi.kogrobo.com:11115",
   image2text: "http://aiapi.kogrobo.com:11115",
+  t2m: "http://aiapi.kogrobo.com:11115",
 } as const;
 
 const DUMMY_ENDPOINTS = {
@@ -54,6 +56,7 @@ const DUMMY_ENDPOINTS = {
   stt: "https://api.kogrobo.com/_inference/stt/my_stt",
   voiceClone: "https://api.kogrobo.com",
   image2text: "https://api.kogrobo.com",
+  t2m: "https://api.kogrobo.com",
 } as const;
 
 type ApiId =
@@ -1197,7 +1200,7 @@ export default function ApiTestPage() {
   const subscribedApis = useMemo(() => {
     const result: Partial<Record<keyof typeof REAL_ENDPOINTS, boolean>> = {};
     if (!userMe?.api_plans?.length) return result;
-    const chapters = ["llm", "embedding", "reranker", "tts", "stt", "voiceClone", "image2text"] as const;
+    const chapters = ["llm", "embedding", "reranker", "tts", "stt", "voiceClone", "image2text", "t2m"] as const;
     for (const chapter of chapters) {
       const task = chapterQueryToPlanTask(chapter);
       if (!task) continue;
@@ -1798,10 +1801,13 @@ export default function ApiTestPage() {
   const image2textFileInputRef = useRef<HTMLInputElement | null>(null);
   const [image2textDevCodeOpen, setImage2TextDevCodeOpen] = useState(false);
   const [image2textDevCodeCopied, setImage2TextDevCodeCopied] = useState(false);
+  const [t2mDevCodeOpen, setT2mDevCodeOpen] = useState(false);
+  const [t2mDevCodeCopied, setT2mDevCodeCopied] = useState(false);
 
   // Text-to-Music
   const [t2mPrompt, setT2mPrompt] = useState("Upbeat jazz with piano and saxophone, 120bpm, warm and lively");
   const [t2mLyrics, setT2mLyrics] = useState("");
+  const [t2mInstrumental, setT2mInstrumental] = useState(false);
   const [t2mDuration, setT2mDuration] = useState(10);
   const [t2mSeed, setT2mSeed] = useState("");
   const [t2mAudioUrl, setT2mAudioUrl] = useState<string | null>(null);
@@ -1897,6 +1903,18 @@ export default function ApiTestPage() {
         url: subscribedApis.image2text ? REAL_ENDPOINTS.image2text : DUMMY_ENDPOINTS.image2text,
       }),
     [image2textPrompt, image2textTemperature, subscribedApis],
+  );
+
+  const t2mDevCodePython = useMemo(
+    () =>
+      buildT2mDevCodePython({
+        prompt: t2mPrompt,
+        lyrics: t2mLyrics,
+        instrumental: t2mInstrumental,
+        duration: t2mDuration,
+        url: subscribedApis.t2m ? REAL_ENDPOINTS.t2m : DUMMY_ENDPOINTS.t2m,
+      }),
+    [t2mPrompt, t2mLyrics, t2mInstrumental, t2mDuration, subscribedApis],
   );
 
   useEffect(() => {
@@ -2458,6 +2476,7 @@ export default function ApiTestPage() {
         t2mBlobUrlRef.current = null;
       }
       setT2mPrompt("Upbeat jazz with piano and saxophone, 120bpm, warm and lively");
+      setT2mInstrumental(false);
       setT2mDuration(10);
       setT2mAudioUrl(null);
       setT2mIsLoading(false);
@@ -3045,7 +3064,8 @@ export default function ApiTestPage() {
         },
         body: JSON.stringify({
           prompt: t2mPrompt.trim(),
-          lyrics: t2mLyrics.trim(),
+          lyrics: t2mInstrumental ? "" : t2mLyrics.trim(),
+          instrumental: t2mInstrumental,
           audio_duration: t2mDuration,
           seed: resolvedT2mSeed,
         }),
@@ -3086,8 +3106,9 @@ export default function ApiTestPage() {
             status: "success",
             seed: resolvedT2mSeed,
             audio_duration: t2mDuration,
+            instrumental: t2mInstrumental,
             prompt: t2mPrompt.trim(),
-            ...(t2mLyrics.trim() ? { lyrics: t2mLyrics.trim() } : {}),
+            ...((!t2mInstrumental && t2mLyrics.trim()) ? { lyrics: t2mLyrics.trim() } : {}),
             content_type: blob.type || res.headers.get("content-type") || null,
           },
           null,
@@ -5210,6 +5231,8 @@ export default function ApiTestPage() {
                       setT2mPrompt={setT2mPrompt}
                       t2mLyrics={t2mLyrics}
                       setT2mLyrics={setT2mLyrics}
+                      t2mInstrumental={t2mInstrumental}
+                      setT2mInstrumental={setT2mInstrumental}
                       t2mDuration={t2mDuration}
                       setT2mDuration={setT2mDuration}
                       t2mSeed={t2mSeed}
@@ -5583,6 +5606,24 @@ export default function ApiTestPage() {
                             데모 앱은{" "}
                             <span className="text-foreground/80">
                               /api/image2text
+                            </span>{" "}
+                            프록시를 통해 동일 스펙으로 전달합니다.
+                          </>
+                        }
+                      />
+                    ) : selectedApi === "t2m" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={t2mDevCodeOpen}
+                        setDevCodeOpen={setT2mDevCodeOpen}
+                        devCodeCopied={t2mDevCodeCopied}
+                        setDevCodeCopied={setT2mDevCodeCopied}
+                        codePython={t2mDevCodePython}
+                        footer={
+                          <>
+                            JSON으로 프롬프트·가사를 전송하면 mp3 바이너리를 반환합니다.
+                            데모 앱은{" "}
+                            <span className="text-foreground/80">
+                              /api/t2m
                             </span>{" "}
                             프록시를 통해 동일 스펙으로 전달합니다.
                           </>

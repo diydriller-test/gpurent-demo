@@ -399,6 +399,8 @@ type Props = {
   setT2mPrompt: React.Dispatch<React.SetStateAction<string>>;
   t2mLyrics: string;
   setT2mLyrics: React.Dispatch<React.SetStateAction<string>>;
+  t2mInstrumental: boolean;
+  setT2mInstrumental: React.Dispatch<React.SetStateAction<boolean>>;
   t2mDuration: number;
   setT2mDuration: React.Dispatch<React.SetStateAction<number>>;
   t2mSeed: string;
@@ -529,6 +531,8 @@ export function ApiInputPanel({
   setT2mPrompt,
   t2mLyrics,
   setT2mLyrics,
+  t2mInstrumental,
+  setT2mInstrumental,
   t2mDuration,
   setT2mDuration,
   t2mSeed,
@@ -1357,6 +1361,8 @@ export function ApiInputPanel({
           setT2mPrompt={setT2mPrompt}
           t2mLyrics={t2mLyrics}
           setT2mLyrics={setT2mLyrics}
+          t2mInstrumental={t2mInstrumental}
+          setT2mInstrumental={setT2mInstrumental}
           t2mDuration={t2mDuration}
           setT2mDuration={setT2mDuration}
           t2mSeed={t2mSeed}
@@ -2050,6 +2056,8 @@ type T2mSectionProps = {
   setT2mPrompt: React.Dispatch<React.SetStateAction<string>>;
   t2mLyrics: string;
   setT2mLyrics: React.Dispatch<React.SetStateAction<string>>;
+  t2mInstrumental: boolean;
+  setT2mInstrumental: React.Dispatch<React.SetStateAction<boolean>>;
   t2mDuration: number;
   setT2mDuration: React.Dispatch<React.SetStateAction<number>>;
   t2mSeed: string;
@@ -2063,6 +2071,8 @@ function T2mSection({
   setT2mPrompt,
   t2mLyrics,
   setT2mLyrics,
+  t2mInstrumental,
+  setT2mInstrumental,
   t2mDuration,
   setT2mDuration,
   t2mSeed,
@@ -2096,25 +2106,54 @@ function T2mSection({
           />
         </div>
 
-        {/* 가사 */}
-        <div>
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-xs text-foreground/60">
-              가사{" "}
-              <span className="text-foreground/40">(선택)</span>
-            </p>
-            <span className={`font-mono text-xs ${t2mLyrics.length >= 500 ? "text-red-400" : "text-foreground/40"}`}>
-              {t2mLyrics.length}/500
-            </span>
+        {/* instrumental + 가사 */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={t2mInstrumental}
+                onChange={(e) => setT2mInstrumental(e.target.checked)}
+                className="h-4 w-4 accent-accent"
+              />
+              <span className="text-[13px] text-foreground/80">instrumental</span>
+            </label>
+            <div className="group relative flex items-center">
+              <button
+                type="button"
+                tabIndex={-1}
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/20 bg-white/8 text-[10px] text-foreground/50 transition-colors hover:border-accent/50 hover:text-accent"
+                aria-label="instrumental 설명"
+              >
+                ?
+              </button>
+              <div className="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-60 rounded-xl border border-foreground/10 bg-surface px-3 py-2.5 text-[12px] leading-relaxed text-foreground/80 opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.10)] transition-opacity duration-150 group-hover:opacity-100">
+                <p className="font-semibold text-foreground">instrumental 이란?</p>
+                <p className="mt-1">체크하면 보컬 없는 순수 연주곡으로 생성합니다. 가사 입력란이 비활성화되며, 프롬프트만으로 음악 스타일을 지정합니다.</p>
+              </div>
+            </div>
           </div>
-          <textarea
-            value={t2mLyrics}
-            onChange={(e) => setT2mLyrics(e.target.value)}
-            maxLength={500}
-            rows={4}
-            placeholder={"예:\n[Verse]\nWalking through the morning light\nEverything feels warm and right"}
-            className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
-          />
+
+          <div>
+            <div className="flex items-center justify-between">
+              <p className={`font-mono text-xs ${t2mInstrumental ? "text-foreground/30" : "text-foreground/60"}`}>
+                가사{" "}
+                <span className="text-foreground/40">(선택)</span>
+              </p>
+              <span className={`font-mono text-xs ${t2mLyrics.length >= 500 ? "text-red-400" : "text-foreground/40"}`}>
+                {t2mInstrumental ? "" : `${t2mLyrics.length}/500`}
+              </span>
+            </div>
+            <textarea
+              value={t2mInstrumental ? "" : t2mLyrics}
+              onChange={(e) => setT2mLyrics(e.target.value)}
+              disabled={t2mInstrumental}
+              maxLength={500}
+              rows={4}
+              placeholder={"예:\n[Verse]\nWalking through the morning light\nEverything feels warm and right"}
+              className={`mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30 ${t2mInstrumental ? "cursor-not-allowed opacity-40" : ""}`}
+            />
+          </div>
         </div>
 
         {/* 길이 슬라이더 */}
