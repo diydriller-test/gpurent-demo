@@ -22,6 +22,17 @@ function maskKey(key: string): string {
   return key.slice(0, 4) + "•".repeat(Math.min(key.length - 8, 20)) + key.slice(-4);
 }
 
+function formatPlanRegisteredAt(iso: string | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 function NewlyCreatedKeyBox({
   apiKey,
   message,
@@ -592,7 +603,9 @@ export default function ProfilePage() {
             <ul className="space-y-4">
               {[...activeApiPlans]
                 .sort((a, b) => a.api_name.localeCompare(b.api_name, "ko"))
-                .map((ap) => (
+                .map((ap) => {
+                  const registeredAt = formatPlanRegisteredAt(ap.created_at);
+                  return (
                   <li
                     key={`${ap.api_id}-${ap.plan_id}`}
                     className="rounded-xl border border-black/[0.06] bg-background px-4 py-4"
@@ -601,6 +614,11 @@ export default function ProfilePage() {
                       <div>
                         <p className="font-semibold text-foreground">{ap.api_name}</p>
                         <p className="text-sm text-foreground/50">{ap.company_name}</p>
+                        {registeredAt ? (
+                          <p className="mt-1 text-xs text-foreground/45">
+                            등록일: {registeredAt}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="text-sm text-foreground/70 sm:text-right">
                         <span className="font-medium text-accent">{ap.plan_name}</span>
@@ -609,7 +627,8 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   </li>
-                ))}
+                  );
+                })}
             </ul>
           ) : (
             <div>

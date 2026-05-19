@@ -163,6 +163,8 @@ export interface ApiPlan {
   plan_id: number;
   plan_name: string;
   max_rps: number;
+  /** API 플랜 구독(등록) 시각 */
+  created_at?: string;
 }
 
 export interface User {
