@@ -844,23 +844,35 @@ export function ApiInputPanel({
               </div>
             </div>
             <div>
-              <p className="font-mono text-xs text-foreground/60">
-                스타일 지시 (선택)
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="font-mono text-xs text-foreground/60">
+                  스타일 지시 (선택)
+                </p>
+                <span className={`text-[11px] ${ttsStyleInstruction.length >= 50 ? "text-red-400" : "text-foreground/40"}`}>
+                  {ttsStyleInstruction.length}/50
+                </span>
+              </div>
               <input
                 value={ttsStyleInstruction}
                 onChange={(e) => setTtsStyleInstruction(e.target.value)}
+                maxLength={50}
                 placeholder="예: 밝고 활기찬 톤으로 말해줘"
                 className="mt-1 h-9 w-full rounded-xl border border-white/10 bg-background/40 px-4 text-[13px] text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
               />
             </div>
             <div>
-              <p className="font-mono text-xs text-foreground/60">
-                읽어줄 텍스트
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="font-mono text-xs text-foreground/60">
+                  읽어줄 텍스트
+                </p>
+                <span className={`text-[11px] ${ttsText.length >= 300 ? "text-red-400" : "text-foreground/40"}`}>
+                  {ttsText.length}/300
+                </span>
+              </div>
               <textarea
                 value={ttsText}
                 onChange={(e) => setTtsText(e.target.value)}
+                maxLength={300}
                 rows={2}
                 placeholder="예: 안녕하세요, 오늘도 좋은 하루 되세요."
                 className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2 text-[13px] leading-snug text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
