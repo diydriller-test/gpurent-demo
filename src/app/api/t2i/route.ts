@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const inferenceId = randomInferenceId();
-    const upstreamUrl = `${upstreamBasePath}/image/_inference/image-edit/${inferenceId}`;
+    const upstreamUrl = `${upstreamBasePath}/_inference/image-edit/${inferenceId}`;
 
     const payload = {
       prompt,

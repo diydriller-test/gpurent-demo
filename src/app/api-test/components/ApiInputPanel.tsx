@@ -1768,7 +1768,7 @@ function VoiceCloneSection({
         </div>
 
         {/* 언어 + x_vector only */}
-        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end">
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:gap-6">
           <div className="w-36">
             <p className="font-mono text-xs text-foreground/60">언어</p>
             <div className="relative mt-1 h-9 overflow-visible rounded-xl border border-foreground/12 bg-background/60 transition-colors focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/25">
