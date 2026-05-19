@@ -2326,10 +2326,10 @@ export default function ApiTestPage() {
     return buildLlmDevCodePython({
       systemPrompt: llmSystemPrompt,
       userMessage: llmDevUserMessage,
-      temperature: 0.1, // Get Developer Code에는 Temperature 슬라이더를 반영하지 않음
+      temperature: llmTemperature,
       baseUrl: subscribedApis.llm ? REAL_ENDPOINTS.llm : DUMMY_ENDPOINTS.llm,
     });
-  }, [llmDevUserMessage, llmSystemPrompt, subscribedApis]);
+  }, [llmDevUserMessage, llmSystemPrompt, llmTemperature, subscribedApis]);
 
   const currentConsole = consoleByApi[selectedApi];
 
