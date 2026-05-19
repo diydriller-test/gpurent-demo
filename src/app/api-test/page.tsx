@@ -38,7 +38,7 @@ import {
 } from "@/app/plans/planCatalog";
 
 const REAL_ENDPOINTS = {
-  llm: "http://aiapi.kogrobo.com:11115/v1",
+  llm: "http://aiapi.kogrobo.com:11115/llm/v1",
   embedding: "http://aiapi.kogrobo.com:11115/embedding/_inference/text_embedding/qwen3",
   reranker: "http://aiapi.kogrobo.com:11115/reranker/_inference/rerank/qwen3",
   tts: "http://aiapi.kogrobo.com:11115",
@@ -49,7 +49,7 @@ const REAL_ENDPOINTS = {
 } as const;
 
 const DUMMY_ENDPOINTS = {
-  llm: "https://api.kogrobo.com/v1",
+  llm: "https://api.kogrobo.com/llm/v1",
   embedding: "https://api.kogrobo.com/_inference/text_embedding/qwen3",
   reranker: "https://api.kogrobo.com/_inference/rerank/qwen3",
   tts: "https://api.kogrobo.com",
