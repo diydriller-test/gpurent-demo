@@ -5751,7 +5751,107 @@ export default function ApiTestPage() {
                         플랜 보기 →
                       </Link>
                     </div>
-                    {selectedApi === "stt" ? (
+                    {selectedApi === "llm" ? (
+                      <p className="text-sm leading-relaxed text-foreground/90">
+                        LLM 응답 완료!{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("tts")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [TTS]
+                        </button>
+                        로 응답을 음성으로 읽어주거나{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("embedding")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [Embedding]
+                        </button>
+                        으로 결과를 벡터 DB에 저장해보세요.
+                      </p>
+                    ) : selectedApi === "embedding" ? (
+                      <p className="text-sm leading-relaxed text-foreground/90">
+                        벡터 임베딩 완료!{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("reranker")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [Reranker]
+                        </button>
+                        로 검색 결과를 재정렬하거나{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("llm")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [LLM]
+                        </button>
+                        으로 유사 문서를 기반한 답변을 생성해보세요.
+                      </p>
+                    ) : selectedApi === "reranker" ? (
+                      <p className="text-sm leading-relaxed text-foreground/90">
+                        재정렬 완료!{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("embedding")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [Embedding]
+                        </button>
+                        과 함께 RAG 검색 파이프라인을 구성하거나{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("llm")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [LLM]
+                        </button>
+                        으로 상위 문서를 기반한 최종 답변을 만들어보세요.
+                      </p>
+                    ) : selectedApi === "tts" ? (
+                      <p className="text-sm leading-relaxed text-foreground/90">
+                        음성 합성 완료!{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("stt")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [STT]
+                        </button>
+                        로 다시 텍스트로 변환하거나{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("llm")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [LLM]
+                        </button>
+                        으로 읽어줄 스크립트를 자동 생성해보세요.
+                      </p>
+                    ) : selectedApi === "voiceClone" ? (
+                      <p className="text-sm leading-relaxed text-foreground/90">
+                        목소리 클론 완료!{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("llm")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [LLM]
+                        </button>
+                        으로 읽어줄 스크립트를 작성하거나{" "}
+                        <button
+                          type="button"
+                          onClick={() => moveToApiDetail("tts")}
+                          className="font-semibold text-accent underline decoration-accent/60 underline-offset-2 transition-colors hover:text-accent-bright"
+                        >
+                          [TTS]
+                        </button>
+                        와 조합해 다양한 목소리를 비교해보세요.
+                      </p>
+                    ) : selectedApi === "stt" ? (
                       <p className="text-sm leading-relaxed text-foreground/90">
                         인식된 목소리를 텍스트로 완성! 이제 추출된 내용을{" "}
                         <button
