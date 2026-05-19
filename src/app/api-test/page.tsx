@@ -41,7 +41,7 @@ const REAL_ENDPOINTS = {
   embedding: "http://aiapi.kogrobo.com:11115/_inference/text_embedding/qwen3",
   reranker: "http://aiapi.kogrobo.com:11115/_inference/rerank/qwen3",
   tts: "http://aiapi.kogrobo.com:11115",
-  stt: "http://aiapi.kogrobo.com:11115/_inference/stt/my_stt",
+  stt: "http://aiapi.kogrobo.com:11115/stt/_inference/stt/my_stt",
   voiceClone: "http://aiapi.kogrobo.com:11115/voiceclone/_inference/tts/my_inference",
   image2text: "http://aiapi.kogrobo.com:11115/api/image2text",
 } as const;
