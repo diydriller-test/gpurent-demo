@@ -43,7 +43,7 @@ const REAL_ENDPOINTS = {
   tts: "http://aiapi.kogrobo.com:11115",
   stt: "http://aiapi.kogrobo.com:11115/stt/_inference/stt/my_stt",
   voiceClone: "http://aiapi.kogrobo.com:11115",
-  image2text: "http://aiapi.kogrobo.com:11115/api/image2text",
+  image2text: "http://aiapi.kogrobo.com:11115",
 } as const;
 
 const DUMMY_ENDPOINTS = {
@@ -53,7 +53,7 @@ const DUMMY_ENDPOINTS = {
   tts: "https://api.kogrobo.com",
   stt: "https://api.kogrobo.com/_inference/stt/my_stt",
   voiceClone: "https://api.kogrobo.com",
-  image2text: "https://api.kogrobo.com/api/image2text",
+  image2text: "https://api.kogrobo.com",
 } as const;
 
 type ApiId =
