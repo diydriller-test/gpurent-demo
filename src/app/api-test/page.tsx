@@ -1941,9 +1941,10 @@ export default function ApiTestPage() {
         lyrics: t2mLyrics,
         instrumental: t2mInstrumental,
         duration: t2mDuration,
+        seed: t2mSeed,
         url: subscribedApis.t2m ? REAL_ENDPOINTS.t2m : DUMMY_ENDPOINTS.t2m,
       }),
-    [t2mPrompt, t2mLyrics, t2mInstrumental, t2mDuration, subscribedApis],
+    [t2mPrompt, t2mLyrics, t2mInstrumental, t2mDuration, t2mSeed, subscribedApis],
   );
 
   useEffect(() => {
