@@ -400,23 +400,35 @@ export function ApiOutputPanel({
                     <div className="w-full min-h-[220px] rounded-xl border border-white/10 bg-background/25 p-4 lg:min-h-0 lg:w-5/12">
                       <div className="h-full min-h-0 overflow-y-auto pr-1">
                         <div>
-                          <p className="font-mono text-xs text-foreground/60">
-                            Query
-                          </p>
+                          <div className="flex items-center justify-between">
+                            <p className="font-mono text-xs text-foreground/60">
+                              Query
+                            </p>
+                            <span className={`text-[11px] ${rerankQuestion.length >= 100 ? "text-red-400" : "text-foreground/40"}`}>
+                              {rerankQuestion.length}/100
+                            </span>
+                          </div>
                           <textarea
                             value={rerankQuestion}
                             onChange={(e) => setRerankQuestion(e.target.value)}
+                            maxLength={100}
                             rows={2}
                             className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                           />
                         </div>
                         <div className="mt-3">
-                          <p className="font-mono text-xs text-foreground/60">
-                            Documents (줄 단위)
-                          </p>
+                          <div className="flex items-center justify-between">
+                            <p className="font-mono text-xs text-foreground/60">
+                              Documents (줄 단위)
+                            </p>
+                            <span className={`text-[11px] ${rerankDocsText.length >= 1000 ? "text-red-400" : "text-foreground/40"}`}>
+                              {rerankDocsText.length}/1000
+                            </span>
+                          </div>
                           <textarea
                             value={rerankDocsText}
                             onChange={(e) => setRerankDocsText(e.target.value)}
+                            maxLength={1000}
                             rows={5}
                             className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
                           />

@@ -34,37 +34,33 @@ import json
 # 1. API 설정
 url = "${url}"
 headers = {
-    "access_token": "YOUR_API_KEY",
-    "Content-Type": "application/json"
+    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Content-Type": "application/json",
 }
 
-# 2. 요청 데이터 구성
+# 2. 요청 데이터 설정
 data = {
-    "query": "${q}",
-    "input": [
+    "query": "${q}",  # 검색 질의문
+    "input": [        # 재정렬할 문서 리스트
         ${inputs.join(",\n        ")}
     ],
-    "task_settings": {}
 }
 
-# 3. API 호출 및 결과 처리
+# 3. API 호출
 response = requests.post(url, headers=headers, data=json.dumps(data))
+response.raise_for_status()
+
 result = response.json()
 
-# 리랭킹 결과 리스트 가져오기
-rerank_results = result.get('rerank', [])
+# 4. 결과 출력 (relevance_score 높은 순 정렬)
+rerank_results = result.get("rerank", [])
+sorted_results = sorted(rerank_results, key=lambda x: x["relevance_score"], reverse=True)
 
-# 🔥 점수(relevance_score)가 높은 순서대로 정렬 (내림차순)
-# API 응답 필드명이 'score'인 경우 x['score']로 수정하세요.
-sorted_results = sorted(rerank_results, key=lambda x: x['relevance_score'], reverse=True)
-
-# 4. 보기 좋게 출력
-print(f"🔍 질문: {data['query']}\\n")
+print(f"질문: {data['query']}\\n")
 print("-" * 50)
 for idx, res in enumerate(sorted_results):
-    score = res['relevance_score']
-    # 원본 리스트의 인덱스를 통해 텍스트 매칭
-    text = data['input'][res['index']]
+    score = res["relevance_score"]
+    text = data["input"][res["index"]]
     print(f"Rank {idx+1} | Score: {score:.4f} | {text}")
 print("-" * 50)
 `;
