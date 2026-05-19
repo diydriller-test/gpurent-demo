@@ -895,11 +895,13 @@ const DEFAULT_IMAGE2TEXT_PROMPT =
 function buildImage2TextConsoleRequestJson(
   prompt: string,
   fileName: string | null,
+  temperature: number,
 ) {
   return JSON.stringify(
     {
       image: fileName ? `(binary file: ${fileName})` : "(binary file)",
       prompt: prompt.trim() || DEFAULT_IMAGE2TEXT_PROMPT,
+      temperature,
     },
     null,
     2,
@@ -1078,7 +1080,7 @@ export default function ApiTestPage() {
         );
       }
       if (api === "image2text") {
-        return buildImage2TextConsoleRequestJson(DEFAULT_IMAGE2TEXT_PROMPT, null);
+        return buildImage2TextConsoleRequestJson(DEFAULT_IMAGE2TEXT_PROMPT, null, 0.1);
       }
       return "{}";
     },
@@ -1789,6 +1791,7 @@ export default function ApiTestPage() {
   const [image2textFileName, setImage2TextFileName] = useState<string | null>(null);
   const [image2textImagePreview, setImage2TextImagePreview] = useState<string | null>(null);
   const [image2textPrompt, setImage2TextPrompt] = useState(DEFAULT_IMAGE2TEXT_PROMPT);
+  const [image2textTemperature, setImage2TextTemperature] = useState(0.1);
   const [image2textResult, setImage2TextResult] = useState<string | null>(null);
   const [image2textIsLoading, setImage2TextIsLoading] = useState(false);
   const [image2textError, setImage2TextError] = useState<string | null>(null);
@@ -1890,10 +1893,10 @@ export default function ApiTestPage() {
     () =>
       buildImage2TextDevCodePython({
         prompt: image2textPrompt || DEFAULT_IMAGE2TEXT_PROMPT,
-        temperature: 0.1,
+        temperature: image2textTemperature,
         url: subscribedApis.image2text ? REAL_ENDPOINTS.image2text : DUMMY_ENDPOINTS.image2text,
       }),
-    [image2textPrompt, subscribedApis],
+    [image2textPrompt, image2textTemperature, subscribedApis],
   );
 
   useEffect(() => {
@@ -2444,6 +2447,7 @@ export default function ApiTestPage() {
     if (api === "image2text") {
       handleImage2TextFileClear();
       setImage2TextPrompt(DEFAULT_IMAGE2TEXT_PROMPT);
+      setImage2TextTemperature(0.1);
       setImage2TextResult(null);
       setImage2TextError(null);
       setImage2TextIsLoading(false);
@@ -3299,10 +3303,11 @@ export default function ApiTestPage() {
       requestJson: buildImage2TextConsoleRequestJson(
         image2textPrompt,
         image2textFileName,
+        image2textTemperature,
       ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [image2textPrompt, image2textFileName]);
+  }, [image2textPrompt, image2textFileName, image2textTemperature]);
 
   function handleImage2TextFileClear() {
     setImage2TextImageFile(null);
@@ -3336,6 +3341,7 @@ export default function ApiTestPage() {
       if (image2textPrompt.trim()) {
         formData.append("prompt", image2textPrompt.trim());
       }
+      formData.append("temperature", String(image2textTemperature));
 
       const img2txtStart = Date.now();
       const res = await fetch("/api/image2text", {
@@ -5193,6 +5199,8 @@ export default function ApiTestPage() {
                       handleImage2TextRun={handleImage2TextRun}
                       image2textPrompt={image2textPrompt}
                       setImage2TextPrompt={setImage2TextPrompt}
+                      image2textTemperature={image2textTemperature}
+                      setImage2TextTemperature={setImage2TextTemperature}
                       image2textFileInputRef={image2textFileInputRef}
                       image2textFileName={image2textFileName}
                       onImage2TextFileChange={handleImage2TextFileChange}

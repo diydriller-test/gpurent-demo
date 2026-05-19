@@ -385,6 +385,8 @@ type Props = {
   handleImage2TextRun: () => void;
   image2textPrompt: string;
   setImage2TextPrompt: React.Dispatch<React.SetStateAction<string>>;
+  image2textTemperature: number;
+  setImage2TextTemperature: React.Dispatch<React.SetStateAction<number>>;
   image2textFileInputRef: React.RefObject<HTMLInputElement | null>;
   image2textFileName: string | null;
   onImage2TextFileChange: (file: File | null) => void;
@@ -514,6 +516,8 @@ export function ApiInputPanel({
   handleImage2TextRun,
   image2textPrompt,
   setImage2TextPrompt,
+  image2textTemperature,
+  setImage2TextTemperature,
   image2textFileInputRef,
   image2textFileName,
   onImage2TextFileChange,
@@ -1339,6 +1343,8 @@ export function ApiInputPanel({
           onImage2TextFileClear={onImage2TextFileClear}
           image2textPrompt={image2textPrompt}
           setImage2TextPrompt={setImage2TextPrompt}
+          image2textTemperature={image2textTemperature}
+          setImage2TextTemperature={setImage2TextTemperature}
           image2textIsLoading={image2textIsLoading}
           handleImage2TextRun={handleImage2TextRun}
           IconUpload={IconUpload}
@@ -1900,6 +1906,8 @@ type Image2TextSectionProps = {
   onImage2TextFileClear: () => void;
   image2textPrompt: string;
   setImage2TextPrompt: React.Dispatch<React.SetStateAction<string>>;
+  image2textTemperature: number;
+  setImage2TextTemperature: React.Dispatch<React.SetStateAction<number>>;
   image2textIsLoading: boolean;
   handleImage2TextRun: () => void;
   IconUpload: React.ComponentType<{ className?: string }>;
@@ -1912,6 +1920,8 @@ function Image2TextSection({
   onImage2TextFileClear,
   image2textPrompt,
   setImage2TextPrompt,
+  image2textTemperature,
+  setImage2TextTemperature,
   image2textIsLoading,
   handleImage2TextRun,
   IconUpload,
@@ -1974,6 +1984,27 @@ function Image2TextSection({
             rows={3}
             className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
           />
+        </div>
+
+        {/* Temperature */}
+        <div>
+          <div className="flex items-center justify-between">
+            <p className="font-mono text-xs text-foreground/60">temperature</p>
+            <span className="font-mono text-xs text-foreground/80">{image2textTemperature.toFixed(1)}</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.1}
+            value={image2textTemperature}
+            onChange={(e) => setImage2TextTemperature(Number(e.target.value))}
+            className="mt-1 w-full accent-accent"
+          />
+          <div className="flex justify-between text-[10px] text-foreground/40">
+            <span>0.0 안정적</span>
+            <span>1.0 창의적</span>
+          </div>
         </div>
 
         {/* 실행 버튼 */}
