@@ -11,7 +11,8 @@
       "Bash(npx tsc *)",
       "Bash(curl -s \"http://aiapi.kogrobo.com:11115/trial/apis\")",
       "Bash(python3 -m json.tool)",
-      "Bash(curl -s \"http://gpurent.kogrobo.com:53001/apis\" -H \"Accept: application/json\")"
+      "Bash(curl -s \"http://gpurent.kogrobo.com:53001/apis\" -H \"Accept: application/json\")",
+      "Bash(curl *)"
     ]
   }
 }

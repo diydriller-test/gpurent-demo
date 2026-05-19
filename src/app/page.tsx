@@ -153,11 +153,13 @@ const TRUST_POINTS = [
   "개발자 친화적 코드 handoff",
 ];
 
-const ROUTING_STEPS = [
-  ["select", "Embedding"],
-  ["test", "Playground run"],
-  ["ship", "API key + code"],
-];
+const TTS_DEMO_PAYLOAD = `{
+  "text": "안녕하세요. AI API 오마카세에서 음성을 합성합니다.",
+  "voice": "warm",
+  "format": "wav"
+}`;
+
+type TtsDemoPhase = "typing" | "ready" | "generating" | "done";
 
 function normalizeTask(taskKey?: string | null, name?: string | null) {
   const raw = `${taskKey ?? ""} ${name ?? ""}`.toLowerCase();
@@ -187,6 +189,227 @@ function taskLabel(taskKey?: string | null, name?: string | null) {
 function taskDetail(taskKey?: string | null, name?: string | null, fallback?: string | null) {
   const task = normalizeTask(taskKey, name);
   return TASK_DETAILS[task] ?? fallback ?? "AI Engine · API";
+}
+
+function HeroTtsWorkbench() {
+  const [typedPayload, setTypedPayload] = useState("");
+  const [phase, setPhase] = useState<TtsDemoPhase>("typing");
+
+  useEffect(() => {
+    let cancelled = false;
+    const wait = (ms: number) =>
+      new Promise((resolve) => {
+        window.setTimeout(resolve, ms);
+      });
+
+    async function run() {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setTypedPayload(TTS_DEMO_PAYLOAD);
+        setPhase("done");
+        return;
+      }
+
+      while (!cancelled) {
+        setTypedPayload("");
+        setPhase("typing");
+        await wait(520);
+
+        for (let index = 0; index < TTS_DEMO_PAYLOAD.length; index += 1) {
+          if (cancelled) return;
+          setTypedPayload(TTS_DEMO_PAYLOAD.slice(0, index + 1));
+          await wait(TTS_DEMO_PAYLOAD[index] === "\n" ? 105 : 20);
+        }
+
+        if (cancelled) return;
+        setPhase("ready");
+        await wait(1250);
+
+        if (cancelled) return;
+        setPhase("generating");
+        await wait(980);
+
+        if (cancelled) return;
+        setPhase("done");
+        await wait(3600);
+
+        if (cancelled) return;
+        await wait(900);
+      }
+    }
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const isGenerating = phase === "generating";
+  const isDone = phase === "done";
+  const showCursor = phase === "ready" || phase === "generating";
+  const statusLabel =
+    phase === "typing" ? "typing" : phase === "ready" ? "ready" : isGenerating ? "generating" : "200 OK";
+
+  return (
+    <div className="w-full max-w-[580px] overflow-hidden border border-black/[0.08] bg-white shadow-[0_24px_90px_rgba(8,9,13,0.09)]">
+      <div className="flex h-11 items-center justify-between border-b border-black/[0.06] px-4">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+        </div>
+        <span className="truncate font-mono text-[11px] text-black/38">
+          api.workbench
+        </span>
+      </div>
+
+      <div className="relative p-4 sm:p-5">
+        <div className="border border-black/[0.06] bg-[#fbfbfc] p-4">
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-normal text-black/35">
+                selected API
+              </p>
+              <h2 className="mt-2 break-words text-[22px] font-semibold leading-tight tracking-normal">
+                TTS API
+              </h2>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d84a3a]/25 bg-[#d84a3a]/8 px-2.5 py-1.5 font-mono text-[11px] font-semibold text-[#a93229]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#d84a3a]" />
+              live test
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-2 sm:grid-cols-[1.35fr_0.9fr]">
+            <div className="min-w-0 border border-black/[0.06] bg-white p-3">
+              <p className="font-mono text-[10px] uppercase text-black/35">
+                model
+              </p>
+              <p className="mt-2 truncate font-mono text-[11px] font-semibold text-black/72">
+                Qwen3-TTS-12Hz-1.7B-CustomVoice
+              </p>
+            </div>
+            <div className="border border-black/[0.06] bg-white p-3">
+              <p className="font-mono text-[10px] uppercase text-black/35">
+                endpoint
+              </p>
+              <p className="mt-2 font-mono text-[12px] font-semibold text-black/72">
+                POST /api/tts
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 overflow-hidden border border-black/[0.08] bg-[#08090d]">
+            <div className="flex items-center justify-between border-b border-white/[0.08] px-3 py-2">
+              <p className="font-mono text-[10px] uppercase tracking-normal text-white/42">
+                request payload
+              </p>
+              <p className="font-mono text-[10px] uppercase tracking-normal text-[#d84a3a]">
+                {statusLabel}
+              </p>
+            </div>
+            <pre className="min-h-[122px] whitespace-pre-wrap p-3 font-mono text-[11px] leading-[1.58] text-white/86">
+              {typedPayload}
+              {phase === "typing" ? (
+                <span className="ml-0.5 inline-block h-3.5 w-1.5 translate-y-0.5 animate-pulse bg-[#d84a3a]" />
+              ) : null}
+            </pre>
+          </div>
+
+          <div className="relative mt-3 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              className={[
+                "inline-flex h-11 min-w-[132px] items-center justify-center bg-[#d84a3a] px-4 text-[13px] font-semibold text-white transition-transform",
+                isGenerating ? "gap-2" : "",
+                phase === "ready" ? "translate-y-px scale-[0.99]" : "",
+              ].join(" ")}
+            >
+              {isGenerating ? (
+                <span className="hero-tts-spinner h-3 w-3 rounded-full border-2 border-white/35 border-t-white" />
+              ) : null}
+              {isGenerating ? "생성 중" : isDone ? "재생 중" : "음성 합성"}
+            </button>
+            <span className="font-mono text-[10px] text-black/42">
+              API key ready
+            </span>
+            <span
+              className={[
+                "hero-demo-cursor pointer-events-none absolute left-[116px] top-[28px] z-10 h-7 w-[22px] transition-all duration-500",
+                showCursor ? "opacity-100" : "translate-x-[-36px] translate-y-[-12px] opacity-0",
+              ].join(" ")}
+              aria-hidden="true"
+            />
+          </div>
+        </div>
+
+        <div
+          className={[
+            "mt-3 border border-black/[0.06] bg-white p-4 transition-all duration-300",
+            isDone ? "translate-y-0 opacity-100" : "translate-y-2 opacity-20",
+          ].join(" ")}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-normal text-black/35">
+                generated audio
+              </p>
+              <h3 className="mt-2 text-[18px] font-semibold leading-tight">
+                생성된 음성을 바로 확인합니다.
+              </h3>
+            </div>
+            <span className="rounded-full border border-[#d84a3a]/25 bg-[#d84a3a]/8 px-2.5 py-1.5 font-mono text-[11px] font-semibold text-[#a93229]">
+              200 OK
+            </span>
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {[
+              ["latency", "1.24s"],
+              ["duration", "6.8s"],
+              ["format", "wav"],
+            ].map(([label, value]) => (
+              <div key={label} className="border border-black/[0.06] bg-[#fbfbfc] p-3">
+                <p className="font-mono text-[10px] uppercase text-black/35">
+                  {label}
+                </p>
+                <p className="mt-1 font-mono text-[12px] font-semibold">
+                  {value}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-4 text-[13px] leading-6 text-black/54">
+            텍스트, 음색, 포맷만 입력하면 워크벤치에서 합성 결과와 응답 정보를
+            한 번에 확인합니다.
+          </p>
+
+          <div className="hero-tts-wave mt-3 flex h-14 items-end justify-center gap-1 border border-[#d84a3a]/20 bg-[#d84a3a]/5">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <i
+                key={index}
+                className="block w-1.5 rounded-full bg-[#d84a3a]"
+                style={{
+                  height: `${[16, 30, 20, 42, 54, 23, 36, 26, 47, 32, 18, 38][index]}px`,
+                  animationDelay: `${index * 80}ms`,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="mt-3 grid grid-cols-1 items-center gap-3 bg-[#08090d] px-4 py-3 text-white sm:grid-cols-[1fr_auto]">
+            <p className="text-[13px] font-medium text-white/84">
+              TTS API를 API key와 코드 스니펫으로 바로 넘깁니다.
+            </p>
+            <span className="font-mono text-[11px] text-white/45">
+              audio ready
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function Home() {
@@ -299,105 +522,7 @@ export default function Home() {
             </div>
 
             <div className="flex min-w-0 items-center lg:justify-end">
-              <div className="w-full max-w-[580px] overflow-hidden border border-black/[0.08] bg-white shadow-[0_24px_90px_rgba(8,9,13,0.09)]">
-                <div className="flex h-11 items-center justify-between border-b border-black/[0.06] px-4">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-                  </div>
-                  <span className="truncate font-mono text-[11px] text-black/38">
-                    api.workbench
-                  </span>
-                </div>
-
-                <div className="p-5">
-                  <div className="border border-black/[0.06] bg-[#fbfbfc] p-4">
-                    <div className="flex items-start justify-between gap-6">
-                      <div>
-                        <p className="font-mono text-[10px] uppercase tracking-normal text-black/35">
-                          selected API
-                        </p>
-                        <h2 className="mt-2 break-words text-[22px] font-semibold leading-tight tracking-normal">
-                          Embedding API
-                        </h2>
-                      </div>
-                      <span className="rounded-md bg-[#eafaf3] px-2 py-1 font-mono text-[11px] font-medium text-[#08764c]">
-                        live
-                      </span>
-                    </div>
-
-                    <div className="mt-5 grid gap-2 sm:grid-cols-3">
-                      {ROUTING_STEPS.map(([label, value], index) => (
-                        <div
-                          key={label}
-                          className="border border-black/[0.06] bg-white p-3"
-                        >
-                          <p className="font-mono text-[10px] uppercase text-black/35">
-                            0{index + 1} · {label}
-                          </p>
-                          <p className="mt-2 text-[13px] font-semibold leading-5 text-[#08090d]">
-                            {value}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_1fr]">
-                      <div className="border border-black/[0.06] bg-[#f7f8fb] p-3">
-                        <p className="font-mono text-[10px] uppercase tracking-normal text-black/35">
-                          endpoint
-                        </p>
-                        <p className="mt-2 break-words text-[15px] font-semibold">
-                          POST /api/embedding
-                        </p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="border border-black/[0.06] bg-white p-3">
-                          <p className="font-mono text-[10px] text-black/35">
-                            latency
-                          </p>
-                          <p className="mt-1 text-[17px] font-semibold">
-                            320ms
-                          </p>
-                        </div>
-                        <div className="border border-black/[0.06] bg-white p-3">
-                          <p className="font-mono text-[10px] text-black/35">
-                            response
-                          </p>
-                          <p className="mt-1 text-[17px] font-semibold">
-                            200 OK
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 border border-black/[0.06] bg-white px-4 py-3">
-                      <p className="font-mono text-[10px] uppercase tracking-normal text-black/35">
-                        result review
-                      </p>
-                      <p className="mt-1 break-words text-[14px] leading-6 text-black/62">
-                        워크벤치에서 결과를 확인하고, 같은 endpoint를 코드 예제로
-                        바로 연결합니다.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-1 items-center gap-4 border border-black/[0.06] bg-[#08090d] p-4 text-white sm:grid-cols-[1fr_auto]">
-                    <div>
-                      <p className="font-mono text-[10px] uppercase tracking-normal text-white/36">
-                        production handoff
-                      </p>
-                      <p className="mt-1 text-[14px] font-medium text-white/84">
-                        선택한 API를 API key와 코드 스니펫으로 바로 넘깁니다.
-                      </p>
-                    </div>
-                    <span className="font-mono text-[12px] text-white/45">
-                      200 OK
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <HeroTtsWorkbench />
             </div>
           </div>
         </section>
