@@ -28,21 +28,20 @@ import time
 # 1. API 설정
 url = "${url}"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY"  # 발급받은 API 키를 여기에 입력하세요
+    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
 }
 
 # 2. 음성 파일 및 옵션 설정
-# 'path/to/your/voice_file.wav' 부분을 실제 파일 경로로 수정하세요.
-file_path = "path/to/your/voice_file.wav"
+file_path = "path/to/your/voice_file.wav"  # 실제 파일 경로로 수정하세요
 
 try:
     with open(file_path, "rb") as f:
         files = {"file": (file_path, f, "audio/wav")}
         data = {
-            "language": "${lang}",
-            "task": "${taskSafe}",
-            "beam_size": ${beam},
-            "vad_filter": "${vadStr}",
+            "language": "${lang}",       # 음성 언어 코드 (예: ko, en, ja)
+            "task": "${taskSafe}",        # transcribe: 원본 언어 변환 / translate: 영어로 번역
+            "beam_size": ${beam},         # 탐색 정밀도 (1~5, 높을수록 정확하나 느림)
+            "vad_filter": "${vadStr}",    # 무음 구간 자동 제거 여부 (true/false)
         }
 
         # 3. API 호출 및 시간 측정
