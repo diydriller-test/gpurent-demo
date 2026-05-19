@@ -40,7 +40,7 @@ const REAL_ENDPOINTS = {
   llm: "http://aiapi.kogrobo.com:11115/v1",
   embedding: "http://aiapi.kogrobo.com:11115/_inference/text_embedding/qwen3",
   reranker: "http://aiapi.kogrobo.com:11115/_inference/rerank/qwen3",
-  tts: "http://aiapi.kogrobo.com:11115/v1/audio/speech",
+  tts: "http://aiapi.kogrobo.com:3030/api/tts",
   stt: "http://aiapi.kogrobo.com:11115/_inference/stt/my_stt",
   voiceClone: "http://aiapi.kogrobo.com:11115/voiceclone/_inference/tts/my_inference",
   image2text: "http://aiapi.kogrobo.com:11115/api/image2text",
@@ -50,7 +50,7 @@ const DUMMY_ENDPOINTS = {
   llm: "https://api.kogrobo.com/v1",
   embedding: "https://api.kogrobo.com/_inference/text_embedding/qwen3",
   reranker: "https://api.kogrobo.com/_inference/rerank/qwen3",
-  tts: "https://api.kogrobo.com/v1/audio/speech",
+  tts: "https://api.kogrobo.com/api/tts",
   stt: "https://api.kogrobo.com/_inference/stt/my_stt",
   voiceClone: "https://api.kogrobo.com/voiceclone/_inference/tts/my_inference",
   image2text: "https://api.kogrobo.com/api/image2text",
@@ -1846,9 +1846,10 @@ export default function ApiTestPage() {
         text: ttsText,
         language: ttsLanguage,
         speaker: ttsSpeaker,
+        instruct: ttsStyleInstruction,
         url: subscribedApis.tts ? REAL_ENDPOINTS.tts : DUMMY_ENDPOINTS.tts,
       }),
-    [ttsText, ttsLanguage, ttsSpeaker, subscribedApis],
+    [ttsText, ttsLanguage, ttsSpeaker, ttsStyleInstruction, subscribedApis],
   );
 
   const sttDevCodePython = useMemo(
