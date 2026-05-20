@@ -419,6 +419,10 @@ type Props = {
   setT2iHeight: React.Dispatch<React.SetStateAction<number>>;
   t2iSeed: string;
   setT2iSeed: React.Dispatch<React.SetStateAction<string>>;
+  t2iImageFile: File | null;
+  setT2iImageFile: React.Dispatch<React.SetStateAction<File | null>>;
+  t2iImagePreview: string | null;
+  setT2iImagePreview: React.Dispatch<React.SetStateAction<string | null>>;
   t2iIsLoading: boolean;
 };
 
@@ -550,6 +554,10 @@ export function ApiInputPanel({
   setT2iHeight,
   t2iSeed,
   setT2iSeed,
+  t2iImageFile,
+  setT2iImageFile,
+  t2iImagePreview,
+  setT2iImagePreview,
   t2iIsLoading,
 }: Props) {
   const [llmAdvancedOpen, setLlmAdvancedOpen] = useState(false);
@@ -1384,6 +1392,10 @@ export function ApiInputPanel({
           setT2iHeight={setT2iHeight}
           t2iSeed={t2iSeed}
           setT2iSeed={setT2iSeed}
+          t2iImageFile={t2iImageFile}
+          setT2iImageFile={setT2iImageFile}
+          t2iImagePreview={t2iImagePreview}
+          setT2iImagePreview={setT2iImagePreview}
           t2iIsLoading={t2iIsLoading}
           handleT2iRun={handleT2iRun}
         />
@@ -2239,6 +2251,10 @@ type T2iSectionProps = {
   setT2iHeight: React.Dispatch<React.SetStateAction<number>>;
   t2iSeed: string;
   setT2iSeed: React.Dispatch<React.SetStateAction<string>>;
+  t2iImageFile: File | null;
+  setT2iImageFile: React.Dispatch<React.SetStateAction<File | null>>;
+  t2iImagePreview: string | null;
+  setT2iImagePreview: React.Dispatch<React.SetStateAction<string | null>>;
   t2iIsLoading: boolean;
   handleT2iRun: () => void;
 };
@@ -2261,9 +2277,31 @@ function T2iSection({
   setT2iHeight,
   t2iSeed,
   setT2iSeed,
+  t2iImageFile,
+  setT2iImageFile,
+  t2iImagePreview,
+  setT2iImagePreview,
   t2iIsLoading,
   handleT2iRun,
 }: T2iSectionProps) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const isEditMode = Boolean(t2iImageFile);
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    if (!file) return;
+    setT2iImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setT2iImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
+
+  function clearImage() {
+    setT2iImageFile(null);
+    setT2iImagePreview(null);
+  }
+
   return (
     <form
       onSubmit={(e) => {
@@ -2272,10 +2310,60 @@ function T2iSection({
       }}
     >
       <div className="flex flex-col gap-3">
+        {/* 이미지 업로드 (선택) */}
+        <div>
+          <p className="font-mono text-xs text-foreground/60">
+            참조 이미지 <span className="text-foreground/40">(선택 · 업로드 시 이미지 편집 모드)</span>
+          </p>
+          {t2iImagePreview ? (
+            <div className="mt-1.5 relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={t2iImagePreview}
+                alt="참조 이미지 미리보기"
+                className="w-full rounded-xl object-cover max-h-40 border border-white/10"
+              />
+              <button
+                type="button"
+                onClick={clearImage}
+                className="absolute top-1.5 right-1.5 flex items-center justify-center w-6 h-6 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                aria-label="이미지 제거"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+              <p className="mt-1 font-mono text-[10px] text-foreground/40 truncate">{t2iImageFile?.name}</p>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-1.5 w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-background/20 px-4 py-3 text-[12px] text-foreground/50 hover:border-accent/40 hover:text-foreground/70 transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              이미지 업로드
+            </button>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageChange}
+          />
+        </div>
+
         {/* 프롬프트 */}
         <div>
           <div className="flex items-center justify-between">
-            <p className="font-mono text-xs text-foreground/60">이미지 프롬프트</p>
+            <p className="font-mono text-xs text-foreground/60">
+              {isEditMode ? "편집 프롬프트" : "이미지 프롬프트"}
+            </p>
             <span className={`font-mono text-xs ${t2iPrompt.length >= 500 ? "text-red-400" : "text-foreground/40"}`}>
               {t2iPrompt.length}/500
             </span>
@@ -2285,7 +2373,7 @@ function T2iSection({
             onChange={(e) => setT2iPrompt(e.target.value)}
             maxLength={500}
             rows={3}
-            placeholder="예: A serene mountain landscape at sunset, photorealistic, 8k"
+            placeholder={isEditMode ? "예: Change the sky to night, add stars" : "예: A serene mountain landscape at sunset, photorealistic, 8k"}
             className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-background/40 px-4 py-2.5 text-[13px] leading-relaxed text-foreground placeholder:text-foreground/40 outline-none transition-colors focus:border-accent/60 focus:ring-2 focus:ring-accent/30"
           />
         </div>
@@ -2360,10 +2448,10 @@ function T2iSection({
               <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 12a9 9 0 1 1-6.219-8.56" />
               </svg>
-              <span>생성 중...</span>
+              <span>{isEditMode ? "편집 중..." : "생성 중..."}</span>
             </>
           ) : (
-            "이미지 생성"
+            isEditMode ? "이미지 편집" : "이미지 생성"
           )}
         </button>
       </div>

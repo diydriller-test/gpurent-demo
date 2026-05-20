@@ -4,15 +4,6 @@ import { resolveUpstreamContext } from "../_lib/upstream";
 
 export const maxDuration = 300;
 
-type T2iRequestBody = {
-  prompt?: unknown;
-  negative_prompt?: unknown;
-  width?: unknown;
-  height?: unknown;
-  num_inference_steps?: unknown;
-  seed?: unknown;
-};
-
 function randomInferenceId(): string {
   return `web-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
 }
@@ -26,30 +17,55 @@ export async function POST(req: Request) {
   const timer = setTimeout(() => controller.abort(), 290_000);
 
   try {
-    const body = (await req.json().catch(() => null)) as T2iRequestBody | null;
+    const contentType = req.headers.get("content-type") ?? "";
+    const isMultipart = contentType.includes("multipart/form-data");
 
-    const prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
-    const negativePrompt =
-      typeof body?.negative_prompt === "string" ? body.negative_prompt : " ";
-    const width =
-      typeof body?.width === "number" && body.width > 0 ? body.width : 1024;
-    const height =
-      typeof body?.height === "number" && body.height > 0 ? body.height : 1024;
-    const numInferenceSteps =
-      typeof body?.num_inference_steps === "number" &&
-      body.num_inference_steps > 0
-        ? Math.floor(body.num_inference_steps)
-        : 10;
-    const seed =
-      typeof body?.seed === "number" && body.seed >= 0
-        ? Math.floor(body.seed)
-        : randomSeed();
+    let prompt = "";
+    let negativePrompt = " ";
+    let width = 1024;
+    let height = 1024;
+    let numInferenceSteps = 10;
+    let seed = randomSeed();
+    let imageFile: File | null = null;
+
+    if (isMultipart) {
+      const form = await req.formData();
+      prompt = typeof form.get("prompt") === "string" ? (form.get("prompt") as string).trim() : "";
+      negativePrompt = typeof form.get("negative_prompt") === "string" ? (form.get("negative_prompt") as string) : " ";
+      const w = Number(form.get("width"));
+      const h = Number(form.get("height"));
+      const steps = Number(form.get("num_inference_steps"));
+      const s = Number(form.get("seed"));
+      width = w > 0 ? w : 1024;
+      height = h > 0 ? h : 1024;
+      numInferenceSteps = steps > 0 ? Math.floor(steps) : 10;
+      seed = s >= 0 && !isNaN(s) ? Math.floor(s) : randomSeed();
+      const maybeFile = form.get("image");
+      if (maybeFile instanceof File && maybeFile.size > 0) {
+        imageFile = maybeFile;
+      }
+    } else {
+      const body = (await req.json().catch(() => null)) as {
+        prompt?: unknown;
+        negative_prompt?: unknown;
+        width?: unknown;
+        height?: unknown;
+        num_inference_steps?: unknown;
+        seed?: unknown;
+      } | null;
+      prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
+      negativePrompt = typeof body?.negative_prompt === "string" ? body.negative_prompt : " ";
+      width = typeof body?.width === "number" && body.width > 0 ? body.width : 1024;
+      height = typeof body?.height === "number" && body.height > 0 ? body.height : 1024;
+      numInferenceSteps =
+        typeof body?.num_inference_steps === "number" && body.num_inference_steps > 0
+          ? Math.floor(body.num_inference_steps)
+          : 10;
+      seed = typeof body?.seed === "number" && body.seed >= 0 ? Math.floor(body.seed) : randomSeed();
+    }
 
     if (!prompt) {
-      return NextResponse.json(
-        { error: "prompt를 입력해주세요." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "prompt를 입력해주세요." }, { status: 400 });
     }
 
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
@@ -64,6 +80,9 @@ export async function POST(req: Request) {
     upstreamForm.append("height", String(height));
     upstreamForm.append("num_inference_steps", String(numInferenceSteps));
     upstreamForm.append("seed", String(seed));
+    if (imageFile) {
+      upstreamForm.append("image", imageFile);
+    }
 
     const upstreamRes = await fetch(upstreamUrl, {
       method: "POST",
@@ -95,12 +114,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: message }, { status });
     }
 
-    const contentType = upstreamRes.headers.get("content-type") ?? "image/png";
+    const resContentType = upstreamRes.headers.get("content-type") ?? "image/png";
 
     return new Response(upstreamRes.body, {
       status: 200,
       headers: {
-        "Content-Type": contentType,
+        "Content-Type": resContentType,
         "Cache-Control": "no-store",
       },
     });

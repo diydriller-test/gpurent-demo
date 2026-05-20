@@ -27,6 +27,7 @@ import { buildSttDevCodePython } from "./lib/buildSttDevCodePython";
 import { buildVoiceCloneDevCodePython } from "./lib/buildVoiceCloneDevCodePython";
 import { buildImage2TextDevCodePython } from "./lib/buildImage2TextDevCodePython";
 import { buildT2mDevCodePython } from "./lib/buildT2mDevCodePython";
+import { buildT2iDevCodePython } from "./lib/buildT2iDevCodePython";
 import { useResultTriggeredBanner } from "./hooks/useResultTriggeredBanner";
 import {
   chapterQueryToPlanTask,
@@ -46,6 +47,7 @@ const REAL_ENDPOINTS = {
   voiceClone: "http://aiapi.kogrobo.com:11115",
   image2text: "http://aiapi.kogrobo.com:11115",
   t2m: "http://aiapi.kogrobo.com:11115",
+  t2i: "http://aiapi.kogrobo.com:11115",
 } as const;
 
 const DUMMY_ENDPOINTS = {
@@ -57,6 +59,7 @@ const DUMMY_ENDPOINTS = {
   voiceClone: "https://api.kogrobo.com",
   image2text: "https://api.kogrobo.com",
   t2m: "https://api.kogrobo.com",
+  t2i: "https://api.kogrobo.com",
 } as const;
 
 type ApiId =
@@ -931,6 +934,29 @@ function buildImage2TextConsoleRequestJson(
   );
 }
 
+function buildT2iConsoleRequestJson(
+  prompt: string,
+  negativePrompt: string,
+  width: number,
+  height: number,
+  seed: string,
+  imageFileName: string | null,
+): string {
+  return JSON.stringify(
+    {
+      ...(imageFileName ? { image: `(binary file: ${imageFileName})` } : {}),
+      prompt: prompt.trim(),
+      negative_prompt: negativePrompt.trim() || undefined,
+      width,
+      height,
+      num_inference_steps: 10,
+      seed: seed !== "" ? Number(seed) : "(random)",
+    },
+    null,
+    2,
+  );
+}
+
 function tryParseVoiceCloneConsoleToPlayground(jsonText: string): {
   text?: string;
   language?: string;
@@ -1114,6 +1140,16 @@ export default function ApiTestPage() {
           "",
         );
       }
+      if (api === "t2i") {
+        return buildT2iConsoleRequestJson(
+          "A serene mountain landscape at sunset, photorealistic, 8k",
+          "",
+          1024,
+          1024,
+          "",
+          null,
+        );
+      }
       return "{}";
     },
     [llmTemperature],
@@ -1229,7 +1265,7 @@ export default function ApiTestPage() {
   const subscribedApis = useMemo(() => {
     const result: Partial<Record<keyof typeof REAL_ENDPOINTS, boolean>> = {};
     if (!userMe?.api_plans?.length) return result;
-    const chapters = ["llm", "embedding", "reranker", "tts", "stt", "voiceClone", "image2text", "t2m"] as const;
+    const chapters = ["llm", "embedding", "reranker", "tts", "stt", "voiceClone", "image2text", "t2m", "t2i"] as const;
     for (const chapter of chapters) {
       const task = chapterQueryToPlanTask(chapter);
       if (!task) continue;
@@ -1832,6 +1868,8 @@ export default function ApiTestPage() {
   const [image2textDevCodeCopied, setImage2TextDevCodeCopied] = useState(false);
   const [t2mDevCodeOpen, setT2mDevCodeOpen] = useState(false);
   const [t2mDevCodeCopied, setT2mDevCodeCopied] = useState(false);
+  const [t2iDevCodeOpen, setT2iDevCodeOpen] = useState(false);
+  const [t2iDevCodeCopied, setT2iDevCodeCopied] = useState(false);
 
   // Text-to-Music
   const [t2mPrompt, setT2mPrompt] = useState("Upbeat jazz with piano and saxophone, 120bpm, warm and lively");
@@ -1855,6 +1893,8 @@ export default function ApiTestPage() {
   const [t2iWidth, setT2iWidth] = useState(1024);
   const [t2iHeight, setT2iHeight] = useState(1024);
   const [t2iSeed, setT2iSeed] = useState("");
+  const [t2iImageFile, setT2iImageFile] = useState<File | null>(null);
+  const [t2iImagePreview, setT2iImagePreview] = useState<string | null>(null);
   const [t2iImageUrl, setT2iImageUrl] = useState<string | null>(null);
   const [t2iIsLoading, setT2iIsLoading] = useState(false);
   const [t2iError, setT2iError] = useState<string | null>(null);
@@ -1945,6 +1985,20 @@ export default function ApiTestPage() {
         url: subscribedApis.t2m ? REAL_ENDPOINTS.t2m : DUMMY_ENDPOINTS.t2m,
       }),
     [t2mPrompt, t2mLyrics, t2mInstrumental, t2mDuration, t2mSeed, subscribedApis],
+  );
+
+  const t2iDevCodePython = useMemo(
+    () =>
+      buildT2iDevCodePython({
+        prompt: t2iPrompt,
+        negativePrompt: t2iNegativePrompt,
+        width: t2iWidth,
+        height: t2iHeight,
+        seed: t2iSeed,
+        imageFileName: t2iImageFile ? t2iImageFile.name : null,
+        url: subscribedApis.t2i ? REAL_ENDPOINTS.t2i : DUMMY_ENDPOINTS.t2i,
+      }),
+    [t2iPrompt, t2iNegativePrompt, t2iWidth, t2iHeight, t2iSeed, t2iImageFile, subscribedApis],
   );
 
   useEffect(() => {
@@ -3197,20 +3251,22 @@ export default function ApiTestPage() {
       const token = getToken();
       const t2iStart = Date.now();
       const resolvedT2iSeed = t2iSeed !== "" ? Number(t2iSeed) : Math.floor(Math.random() * 2147483647);
+      const t2iForm = new FormData();
+      t2iForm.append("prompt", t2iPrompt.trim());
+      t2iForm.append("negative_prompt", t2iNegativePrompt.trim() || " ");
+      t2iForm.append("width", String(t2iWidth));
+      t2iForm.append("height", String(t2iHeight));
+      t2iForm.append("num_inference_steps", "10");
+      t2iForm.append("seed", String(resolvedT2iSeed));
+      if (t2iImageFile) {
+        t2iForm.append("image", t2iImageFile);
+      }
       const res = await fetch("/api/t2i", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          prompt: t2iPrompt.trim(),
-          negative_prompt: t2iNegativePrompt.trim() || " ",
-          width: t2iWidth,
-          height: t2iHeight,
-          num_inference_steps: 10,
-          seed: resolvedT2iSeed,
-        }),
+        body: t2iForm,
       });
 
       if (!res.ok) {
@@ -3244,6 +3300,7 @@ export default function ApiTestPage() {
         responseJson: JSON.stringify(
           {
             status: "success",
+            mode: t2iImageFile ? "image-edit" : "text-to-image",
             seed: resolvedT2iSeed,
             prompt: t2iPrompt.trim(),
             width: t2iWidth,
@@ -3374,6 +3431,20 @@ export default function ApiTestPage() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t2mPrompt, t2mLyrics, t2mInstrumental, t2mDuration, t2mSeed]);
+
+  useEffect(() => {
+    patchConsole("t2i", {
+      requestJson: buildT2iConsoleRequestJson(
+        t2iPrompt,
+        t2iNegativePrompt,
+        t2iWidth,
+        t2iHeight,
+        t2iSeed,
+        t2iImageFile ? t2iImageFile.name : null,
+      ),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t2iPrompt, t2iNegativePrompt, t2iWidth, t2iHeight, t2iSeed, t2iImageFile]);
 
   function handleImage2TextFileClear() {
     setImage2TextImageFile(null);
@@ -5294,6 +5365,10 @@ export default function ApiTestPage() {
                       setT2iHeight={setT2iHeight}
                       t2iSeed={t2iSeed}
                       setT2iSeed={setT2iSeed}
+                      t2iImageFile={t2iImageFile}
+                      setT2iImageFile={setT2iImageFile}
+                      t2iImagePreview={t2iImagePreview}
+                      setT2iImagePreview={setT2iImagePreview}
                       t2iIsLoading={t2iIsLoading}
                       handleT2iRun={handleT2iRun}
                     />
@@ -5443,7 +5518,8 @@ export default function ApiTestPage() {
                         <span className="rounded-lg border border-black/[0.08] bg-white px-2 py-0.5 text-[11px] text-foreground/60">
                           {selectedApi === "stt" ||
                           selectedApi === "voiceClone" ||
-                          selectedApi === "image2text"
+                          selectedApi === "image2text" ||
+                          (selectedApi === "t2i" && Boolean(t2iImageFile))
                             ? "multipart/form-data"
                             : "JSON Body"}
                         </span>
@@ -5669,6 +5745,27 @@ export default function ApiTestPage() {
                             데모 앱은{" "}
                             <span className="text-foreground/80">
                               /api/t2m
+                            </span>{" "}
+                            프록시를 통해 동일 스펙으로 전달합니다.
+                          </>
+                        }
+                      />
+                    ) : selectedApi === "t2i" ? (
+                      <PlaygroundDeveloperCodeSection
+                        devCodeOpen={t2iDevCodeOpen}
+                        setDevCodeOpen={setT2iDevCodeOpen}
+                        devCodeCopied={t2iDevCodeCopied}
+                        setDevCodeCopied={setT2iDevCodeCopied}
+                        codePython={t2iDevCodePython}
+                        footer={
+                          <>
+                            multipart/form-data로 프롬프트를 전송하면 png 바이너리를 반환합니다.
+                            이미지 파일을{" "}
+                            <span className="text-foreground/80">image</span>{" "}
+                            필드로 함께 전송하면 이미지 편집 모드로 동작합니다.
+                            데모 앱은{" "}
+                            <span className="text-foreground/80">
+                              /api/t2i
                             </span>{" "}
                             프록시를 통해 동일 스펙으로 전달합니다.
                           </>
