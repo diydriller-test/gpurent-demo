@@ -154,9 +154,10 @@ const TRUST_POINTS = [
 ];
 
 const TTS_DEMO_PAYLOAD = `{
-  "text": "안녕하세요. AI API 오마카세에서 음성을 합성합니다.",
-  "voice": "warm",
-  "format": "wav"
+  "language": "ko",
+  "speaker": "warm",
+  "style_instruction": "차분하고 신뢰감 있게",
+  "text": "안녕하세요. AI API 오마카세입니다."
 }`;
 
 type TtsDemoPhase = "typing" | "ready" | "generating" | "done";
@@ -251,8 +252,11 @@ function HeroTtsWorkbench() {
     phase === "typing" ? "typing" : phase === "ready" ? "ready" : isGenerating ? "generating" : "200 OK";
 
   return (
-    <div className="w-full max-w-[580px] overflow-hidden border border-black/[0.08] bg-white shadow-[0_24px_90px_rgba(8,9,13,0.09)]">
-      <div className="flex h-11 items-center justify-between border-b border-black/[0.06] px-4">
+    <div
+      data-hero-tts-workbench
+      className="w-full max-w-[540px] overflow-hidden border border-black/[0.08] bg-white shadow-[0_24px_90px_rgba(8,9,13,0.09)]"
+    >
+      <div className="flex h-9 items-center justify-between border-b border-black/[0.06] px-4">
         <div className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
@@ -263,14 +267,14 @@ function HeroTtsWorkbench() {
         </span>
       </div>
 
-      <div className="relative p-4 sm:p-5">
-        <div className="border border-black/[0.06] bg-[#fbfbfc] p-4">
+      <div className="relative p-3 sm:p-4">
+        <div className="border border-black/[0.06] bg-[#fbfbfc] p-3">
           <div className="flex items-start justify-between gap-6">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-normal text-black/35">
                 selected API
               </p>
-              <h2 className="mt-2 break-words text-[22px] font-semibold leading-tight tracking-normal">
+              <h2 className="mt-1.5 break-words text-[21px] font-semibold leading-tight tracking-normal">
                 TTS API
               </h2>
             </div>
@@ -280,27 +284,14 @@ function HeroTtsWorkbench() {
             </span>
           </div>
 
-          <div className="mt-5 grid gap-2 sm:grid-cols-[1.35fr_0.9fr]">
-            <div className="min-w-0 border border-black/[0.06] bg-white p-3">
-              <p className="font-mono text-[10px] uppercase text-black/35">
-                model
-              </p>
-              <p className="mt-2 truncate font-mono text-[11px] font-semibold text-black/72">
-                Qwen3-TTS-12Hz-1.7B-CustomVoice
-              </p>
-            </div>
-            <div className="border border-black/[0.06] bg-white p-3">
-              <p className="font-mono text-[10px] uppercase text-black/35">
-                endpoint
-              </p>
-              <p className="mt-2 font-mono text-[12px] font-semibold text-black/72">
-                POST /api/tts
-              </p>
-            </div>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-black/[0.06] py-2 font-mono text-[10px] text-black/48">
+            <span className="truncate">Qwen3-TTS-12Hz-1.7B-CustomVoice</span>
+            <span className="text-black/20">/</span>
+            <span className="font-semibold text-black/64">POST /api/tts</span>
           </div>
 
-          <div className="mt-4 overflow-hidden border border-black/[0.08] bg-[#08090d]">
-            <div className="flex items-center justify-between border-b border-white/[0.08] px-3 py-2">
+          <div className="mt-3 overflow-hidden border border-black/[0.08] bg-[#08090d]">
+            <div className="flex items-center justify-between border-b border-white/[0.08] px-3 py-1.5">
               <p className="font-mono text-[10px] uppercase tracking-normal text-white/42">
                 request payload
               </p>
@@ -308,7 +299,7 @@ function HeroTtsWorkbench() {
                 {statusLabel}
               </p>
             </div>
-            <pre className="min-h-[122px] whitespace-pre-wrap p-3 font-mono text-[11px] leading-[1.58] text-white/86">
+            <pre className="min-h-[88px] whitespace-pre-wrap p-3 font-mono text-[10.5px] leading-[1.38] text-white/86">
               {typedPayload}
               {phase === "typing" ? (
                 <span className="ml-0.5 inline-block h-3.5 w-1.5 translate-y-0.5 animate-pulse bg-[#d84a3a]" />
@@ -320,7 +311,7 @@ function HeroTtsWorkbench() {
             <button
               type="button"
               className={[
-                "inline-flex h-11 min-w-[132px] items-center justify-center bg-[#d84a3a] px-4 text-[13px] font-semibold text-white transition-transform",
+                "inline-flex h-10 min-w-[124px] items-center justify-center bg-[#d84a3a] px-4 text-[13px] font-semibold text-white transition-transform",
                 isGenerating ? "gap-2" : "",
                 phase === "ready" ? "translate-y-px scale-[0.99]" : "",
               ].join(" ")}
@@ -335,7 +326,7 @@ function HeroTtsWorkbench() {
             </span>
             <span
               className={[
-                "hero-demo-cursor pointer-events-none absolute left-[116px] top-[28px] z-10 h-7 w-[22px] transition-all duration-500",
+                "hero-demo-cursor pointer-events-none absolute left-[108px] top-[25px] z-10 h-7 w-[22px] transition-all duration-500",
                 showCursor ? "opacity-100" : "translate-x-[-36px] translate-y-[-12px] opacity-0",
               ].join(" ")}
               aria-hidden="true"
@@ -345,7 +336,7 @@ function HeroTtsWorkbench() {
 
         <div
           className={[
-            "mt-3 border border-black/[0.06] bg-white p-4 transition-all duration-300",
+            "mt-3 border border-black/[0.06] bg-white p-3 transition-all duration-300",
             isDone ? "translate-y-0 opacity-100" : "translate-y-2 opacity-20",
           ].join(" ")}
         >
@@ -354,7 +345,7 @@ function HeroTtsWorkbench() {
               <p className="font-mono text-[10px] uppercase tracking-normal text-black/35">
                 generated audio
               </p>
-              <h3 className="mt-2 text-[18px] font-semibold leading-tight">
+              <h3 className="mt-1.5 text-[17px] font-semibold leading-tight">
                 생성된 음성을 바로 확인합니다.
               </h3>
             </div>
@@ -363,49 +354,44 @@ function HeroTtsWorkbench() {
             </span>
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {[
-              ["latency", "1.24s"],
-              ["duration", "6.8s"],
-              ["format", "wav"],
-            ].map(([label, value]) => (
-              <div key={label} className="border border-black/[0.06] bg-[#fbfbfc] p-3">
-                <p className="font-mono text-[10px] uppercase text-black/35">
-                  {label}
-                </p>
-                <p className="mt-1 font-mono text-[12px] font-semibold">
-                  {value}
-                </p>
-              </div>
-            ))}
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 border-y border-black/[0.06] py-2 font-mono text-[10px] text-black/46">
+            <span>
+              latency <strong className="text-black/82">1.24s</strong>
+            </span>
+            <span>
+              duration <strong className="text-black/82">6.8s</strong>
+            </span>
+            <span>
+              format <strong className="text-black/82">wav</strong>
+            </span>
           </div>
 
-          <p className="mt-4 text-[13px] leading-6 text-black/54">
-            텍스트, 음색, 포맷만 입력하면 워크벤치에서 합성 결과와 응답 정보를
-            한 번에 확인합니다.
+          <p className="mt-3 text-[12px] leading-5 text-black/54">
+            언어, 화자, 스타일 지시와 읽어줄 텍스트를 입력하면 합성 결과와 응답 정보를
+            한 화면에서 확인합니다.
           </p>
 
-          <div className="hero-tts-wave mt-3 flex h-14 items-end justify-center gap-1 border border-[#d84a3a]/20 bg-[#d84a3a]/5">
+          <div
+            className={[
+              "hero-tts-wave mt-3 flex h-10 items-end justify-center gap-1 border border-[#d84a3a]/20 bg-[#d84a3a]/5",
+              isDone ? "is-playing" : "",
+            ].join(" ")}
+          >
             {Array.from({ length: 12 }).map((_, index) => (
               <i
                 key={index}
                 className="block w-1.5 rounded-full bg-[#d84a3a]"
                 style={{
-                  height: `${[16, 30, 20, 42, 54, 23, 36, 26, 47, 32, 18, 38][index]}px`,
+                  height: `${[10, 19, 14, 28, 36, 16, 24, 18, 31, 22, 12, 26][index]}px`,
                   animationDelay: `${index * 80}ms`,
                 }}
               />
             ))}
           </div>
 
-          <div className="mt-3 grid grid-cols-1 items-center gap-3 bg-[#08090d] px-4 py-3 text-white sm:grid-cols-[1fr_auto]">
-            <p className="text-[13px] font-medium text-white/84">
-              TTS API를 API key와 코드 스니펫으로 바로 넘깁니다.
-            </p>
-            <span className="font-mono text-[11px] text-white/45">
-              audio ready
-            </span>
-          </div>
+          <p className="mt-2 font-mono text-[10px] uppercase text-black/34">
+            audio ready · code handoff
+          </p>
         </div>
       </div>
     </div>
@@ -521,7 +507,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex min-w-0 items-center lg:justify-end">
+            <div className="flex min-w-0 items-start lg:-mt-11 lg:justify-end">
               <HeroTtsWorkbench />
             </div>
           </div>

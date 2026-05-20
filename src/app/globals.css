@@ -235,7 +235,7 @@ body {
   clip-path: polygon(0 0, 0 20px, 6px 15px, 10px 25px, 13px 24px, 9px 14px, 18px 14px);
 }
 
-.hero-tts-wave i {
+.hero-tts-wave.is-playing i {
   animation: heroTtsWave 1.3s ease-in-out infinite;
 }
 
