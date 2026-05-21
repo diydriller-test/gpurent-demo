@@ -2321,7 +2321,7 @@ function T2iSection({
               <img
                 src={t2iImagePreview}
                 alt="참조 이미지 미리보기"
-                className="w-full rounded-xl object-cover max-h-40 border border-white/10"
+                className="w-full rounded-xl object-contain max-h-40 border border-white/10 bg-black/10"
               />
               <button
                 type="button"
