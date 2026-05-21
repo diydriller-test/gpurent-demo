@@ -494,7 +494,7 @@ export default function Home() {
                 {METRICS.map((metric) => (
                   <div
                     key={metric.label}
-                    className="min-w-0 border-b border-black/[0.08] py-4 pr-3 last:border-b-0 sm:border-b-0 sm:border-r sm:py-5 sm:pr-4 sm:last:border-r-0"
+                    className="min-w-0 border-b border-black/[0.08] py-4 pr-3 text-center last:border-b-0 sm:border-b-0 sm:border-r sm:py-5 sm:pr-4 sm:last:border-r-0"
                   >
                     <p className="text-[22px] font-semibold tracking-normal text-[#08090d] sm:text-[28px]">
                       {metric.value}
