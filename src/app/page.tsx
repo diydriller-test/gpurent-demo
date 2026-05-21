@@ -204,12 +204,6 @@ function HeroTtsWorkbench() {
       });
 
     async function run() {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        setTypedPayload(TTS_DEMO_PAYLOAD);
-        setPhase("done");
-        return;
-      }
-
       while (!cancelled) {
         setTypedPayload("");
         setPhase("typing");

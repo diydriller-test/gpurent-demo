@@ -252,8 +252,7 @@ body {
   .docs-toc-link-active { animation: none; }
   .dashboard-card { transform: none !important; }
   .dashboard-card:hover { transform: none !important; }
-  .hero-tts-spinner,
-  .hero-tts-wave i {
+  .hero-tts-spinner {
     animation: none !important;
   }
 }
