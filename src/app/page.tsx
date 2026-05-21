@@ -501,7 +501,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex min-w-0 items-center lg:justify-end">
+            <div className="flex min-w-0 items-start lg:justify-end">
               <HeroTtsWorkbench />
             </div>
           </div>
