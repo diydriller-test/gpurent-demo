@@ -515,11 +515,10 @@ export default function Home() {
 
             <p className="mt-5 text-[15px] leading-7 text-black/58">
               AI API 오마카세는 현재 모두의 창업 참가자에게 우선 제공되고
-              있습니다. 결제 모듈 연동이 완료되면 일반 사용자도 이용할 수
-              있습니다.
+              있습니다. 안정적인 사용 경험을 위해 8월까지 제한적으로 운영합니다.
             </p>
             <p className="mt-3 text-[14px] leading-6 text-black/50">
-              참가자가 아니지만 사전 사용을 원하시면 이메일로 문의해주세요.
+              참가자가 아니지만 사용을 원하시면 이메일로 문의해주세요.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
