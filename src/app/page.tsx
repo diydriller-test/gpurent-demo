@@ -153,6 +153,9 @@ const TRUST_POINTS = [
   "개발자 친화적 코드 handoff",
 ];
 
+const PARTICIPANT_NOTICE_SESSION_KEY =
+  "ai-api-omakase-participant-notice-dismissed";
+
 const TTS_DEMO_PAYLOAD = `{
   "language": "ko",
   "speaker": "warm",
@@ -395,6 +398,7 @@ function HeroTtsWorkbench() {
 export default function Home() {
   const [capabilities, setCapabilities] =
     useState<Capability[]>(CAPABILITY_FALLBACK);
+  const [participantNoticeOpen, setParticipantNoticeOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -435,9 +439,107 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    let shouldOpen = false;
+
+    try {
+      if (sessionStorage.getItem(PARTICIPANT_NOTICE_SESSION_KEY) !== "true") {
+        shouldOpen = true;
+      }
+    } catch {
+      shouldOpen = true;
+    }
+
+    if (!shouldOpen) return;
+
+    const timer = window.setTimeout(() => {
+      setParticipantNoticeOpen(true);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  function closeParticipantNotice() {
+    setParticipantNoticeOpen(false);
+    try {
+      sessionStorage.setItem(PARTICIPANT_NOTICE_SESSION_KEY, "true");
+    } catch {}
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f8fb] text-[#08090d]">
       <SiteNav fixed />
+
+      {participantNoticeOpen ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/28 px-4 py-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="participant-notice-title"
+        >
+          <div className="w-full max-w-[520px] border border-black/[0.08] bg-white p-6 shadow-[0_30px_120px_rgba(8,9,13,0.22)] md:p-7">
+            <div className="flex items-start justify-between gap-5">
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-normal text-[#d84a3a]">
+                  beta access
+                </p>
+                <h2
+                  id="participant-notice-title"
+                  className="mt-3 text-[26px] font-semibold leading-tight tracking-normal text-[#08090d]"
+                >
+                  8월까지 모두의 창업 참가자 전용으로 운영됩니다.
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeParticipantNotice}
+                aria-label="안내 닫기"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/[0.08] text-black/42 transition-colors hover:border-black/16 hover:text-black"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <p className="mt-5 text-[15px] leading-7 text-black/58">
+              AI API 오마카세는 현재 모두의 창업 참가자에게 우선 제공되고
+              있습니다. 결제 모듈 연동이 완료되면 일반 사용자도 이용할 수
+              있습니다.
+            </p>
+            <p className="mt-3 text-[14px] leading-6 text-black/50">
+              참가자가 아니지만 사전 사용을 원하시면 이메일로 문의해주세요.
+            </p>
+
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="mailto:help@kogrobo.com?subject=AI%20API%20%EC%98%A4%EB%A7%88%EC%B9%B4%EC%84%B8%20%EC%82%AC%EC%A0%84%20%EC%82%AC%EC%9A%A9%20%EB%AC%B8%EC%9D%98"
+                className="inline-flex h-11 items-center justify-center rounded-lg bg-[#08090d] px-5 text-[14px] font-semibold text-white transition-colors hover:bg-black"
+              >
+                이메일 문의하기
+              </a>
+              <button
+                type="button"
+                onClick={closeParticipantNotice}
+                className="inline-flex h-11 items-center justify-center rounded-lg border border-black/[0.12] bg-white px-5 text-[14px] font-semibold text-black/68 transition-colors hover:border-black/20 hover:text-black"
+              >
+                확인했습니다
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <main className="pt-[72px]">
         <section className="relative overflow-hidden border-b border-black/[0.06] bg-[#f7f8fb]">
