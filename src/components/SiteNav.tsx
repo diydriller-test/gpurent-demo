@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -55,9 +56,7 @@ export function SiteNav({
             if (pathname === "/") window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-md border border-black/[0.08] bg-[#08090d] text-[11px] font-semibold text-white">
-            AI
-          </div>
+          <Image src="/icon.png" alt="로고" width={28} height={28} className="rounded-md" />
           <div className="flex flex-col leading-none">
             <span className="text-[15px] font-semibold tracking-normal text-[#08090d]">
               AI API Omakase
