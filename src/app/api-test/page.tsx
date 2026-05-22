@@ -51,15 +51,15 @@ const REAL_ENDPOINTS = {
 } as const;
 
 const DUMMY_ENDPOINTS = {
-  llm: "https://api.kogrobo.com/llm/v1",
-  embedding: "https://api.kogrobo.com/_inference/text_embedding/qwen3",
-  reranker: "https://api.kogrobo.com/_inference/rerank/qwen3",
-  tts: "https://api.kogrobo.com",
-  stt: "https://api.kogrobo.com/_inference/stt/my_stt",
-  voiceClone: "https://api.kogrobo.com",
-  image2text: "https://api.kogrobo.com",
-  t2m: "https://api.kogrobo.com",
-  t2i: "https://api.kogrobo.com",
+  llm: "https://your-api-endpoint.com/llm/v1",
+  embedding: "https://your-api-endpoint.com/_inference/text_embedding/qwen3",
+  reranker: "https://your-api-endpoint.com/_inference/rerank/qwen3",
+  tts: "https://your-api-endpoint.com",
+  stt: "https://your-api-endpoint.com/_inference/stt/my_stt",
+  voiceClone: "https://your-api-endpoint.com",
+  image2text: "https://your-api-endpoint.com",
+  t2m: "https://your-api-endpoint.com",
+  t2i: "https://your-api-endpoint.com",
 } as const;
 
 type ApiId =
