@@ -1889,7 +1889,7 @@ export default function ApiTestPage() {
 
   // Text-to-Image
   const [t2iPrompt, setT2iPrompt] = useState("A serene mountain landscape at sunset, photorealistic, 8k");
-  const [t2iNegativePrompt, setT2iNegativePrompt] = useState("");
+  const [t2iNegativePrompt, setT2iNegativePrompt] = useState("blurry, low quality, distorted, artifact, wrong body");
   const [t2iWidth, setT2iWidth] = useState(1024);
   const [t2iHeight, setT2iHeight] = useState(1024);
   const [t2iSeed, setT2iSeed] = useState("");
