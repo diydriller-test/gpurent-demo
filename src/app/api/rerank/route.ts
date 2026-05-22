@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveUpstreamContext } from "../_lib/upstream";
+import { resolveUpstreamContext, withUpstreamClientIp } from "../_lib/upstream";
 
 export async function POST(req: Request) {
   try {
@@ -31,10 +31,10 @@ export async function POST(req: Request) {
     console.log("apiKey", apiKey);
     const upstreamRes = await fetch(`${upstreamBasePath}/reranker/_inference/rerank/qwen3`, {
       method: "POST",
-      headers: {
+      headers: withUpstreamClientIp(req, {
         "Content-Type": "application/json",
         ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
+      }),
       body: JSON.stringify({
         query,
         input: inputList,

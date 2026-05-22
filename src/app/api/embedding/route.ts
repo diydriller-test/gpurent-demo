@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveUpstreamContext } from "../_lib/upstream";
+import { resolveUpstreamContext, withUpstreamClientIp } from "../_lib/upstream";
 
 type EmbeddingRequestBody = {
   // playground에서 보낼 때
@@ -46,14 +46,14 @@ export async function POST(req: Request) {
       `${upstreamBasePath}/embedding/_inference/text_embedding/qwen3`,
       {
         method: "POST",
-        headers: {
+        headers: withUpstreamClientIp(req, {
           "Content-Type": "application/json",
           ...(apiKey
             ? { Authorization: `Bearer ${apiKey}` }
             : authHeader
               ? { Authorization: authHeader }
               : {}),
-        },
+        }),
         body: JSON.stringify({
           input: text,
           task_settings: { additionalProp1: {} },

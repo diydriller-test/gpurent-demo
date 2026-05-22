@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveUpstreamContext } from "../_lib/upstream";
+import { resolveUpstreamContext, withUpstreamClientIp } from "../_lib/upstream";
 
 export const maxDuration = 60;
 
@@ -60,9 +60,9 @@ export async function POST(req: Request) {
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamRes = await fetch(`${upstreamBasePath}/stt/_inference/stt/my_stt`, {
       method: "POST",
-      headers: {
+      headers: withUpstreamClientIp(req, {
         ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
+      }),
       body: upstreamForm,
       signal: controller.signal,
     });

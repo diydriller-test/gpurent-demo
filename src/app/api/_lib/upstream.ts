@@ -1,4 +1,13 @@
+import { getClientIpForwardingHeaders } from "./client-ip";
 import { fetchBackend } from "./backend";
+
+/** 게이트웨이(11115) 프록시 fetch 헤더에 클라이언트 IP 포함 */
+export function withUpstreamClientIp(
+  req: Request,
+  headers: Record<string, string>,
+): Record<string, string> {
+  return { ...headers, ...getClientIpForwardingHeaders(req) };
+}
 
 const UPSTREAM_BASE_URL = "http://aiapi.kogrobo.com:11115";
 

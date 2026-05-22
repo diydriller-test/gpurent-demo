@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { resolveUpstreamContext } from "../_lib/upstream";
+import { resolveUpstreamContext, withUpstreamClientIp } from "../_lib/upstream";
 
 export const maxDuration = 300;
 
@@ -90,14 +90,14 @@ export async function POST(req: Request) {
 
     const upstreamRes = await fetch(upstreamUrl, {
       method: "POST",
-      headers: {
+      headers: withUpstreamClientIp(req, {
         "Content-Type": "application/json",
         ...(apiKey
           ? { Authorization: `Bearer ${apiKey}` }
           : authHeader
             ? { Authorization: authHeader }
             : {}),
-      },
+      }),
       body: JSON.stringify(payload),
       signal: controller.signal,
       cache: "no-store",

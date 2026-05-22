@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { resolveUpstreamContext } from "../_lib/upstream";
+import { resolveUpstreamContext, withUpstreamClientIp } from "../_lib/upstream";
 
 type TtsRequestBody = {
   text?: unknown;
@@ -36,10 +36,10 @@ export async function GET(req: Request) {
     const { upstreamBasePath, apiKey } = await resolveUpstreamContext(req);
     const upstreamRes = await fetch(`${upstreamBasePath}/tts/speakers`, {
       method: "GET",
-      headers: {
+      headers: withUpstreamClientIp(req, {
         Accept: "application/json",
         ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
+      }),
       cache: "no-store",
       signal: AbortSignal.timeout(8_000),
     });
@@ -96,10 +96,10 @@ export async function POST(req: Request) {
 
     const upstreamRes = await fetch(upstreamUrl, {
       method: "POST",
-      headers: {
+      headers: withUpstreamClientIp(req, {
         "Content-Type": "application/x-www-form-urlencoded",
         ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
+      }),
       body: form.toString(),
       signal: controller.signal,
     });

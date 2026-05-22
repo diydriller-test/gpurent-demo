@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveUpstreamContext } from "../_lib/upstream";
+import { resolveUpstreamContext, withUpstreamClientIp } from "../_lib/upstream";
 
 export async function POST(req: Request) {
   try {
@@ -33,14 +33,14 @@ export async function POST(req: Request) {
 
     const upstreamRes = await fetch(upstreamUrl, {
       method: "POST",
-      headers: {
+      headers: withUpstreamClientIp(req, {
         "Content-Type": "application/json",
         ...(apiKey
           ? { Authorization: `Bearer ${apiKey}` }
           : authHeader
             ? { Authorization: authHeader }
             : {}),
-      },
+      }),
       body: JSON.stringify({
         model: "Qwen/Qwen3.6-35B-A3B",
         temperature: parsedTemperature,
