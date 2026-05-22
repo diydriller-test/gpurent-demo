@@ -116,7 +116,9 @@ type Props = {
   t2iImageUrl: string | null;
   t2iIsLoading: boolean;
   t2iError: string | null;
+  t2iLastSeed: string | null;
   handleT2iSave: () => void;
+  handleT2iReuseSeed: () => void;
 };
 
 export function ApiOutputPanel({
@@ -182,7 +184,9 @@ export function ApiOutputPanel({
   t2iImageUrl,
   t2iIsLoading,
   t2iError,
+  t2iLastSeed,
   handleT2iSave,
+  handleT2iReuseSeed,
 }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -1192,6 +1196,37 @@ export function ApiOutputPanel({
                       </div>
                     )}
                   </div>
+
+                  {t2iImageUrl && t2iLastSeed ? (
+                    <div className="mt-3 rounded-xl border border-black/[0.08] bg-white px-3 py-2.5 text-foreground shadow-[0_1px_2px_rgba(8,9,13,0.035)]">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-mono text-[10px] uppercase tracking-normal text-black/38">
+                            seed
+                          </p>
+                          <p className="mt-1 break-all font-mono text-sm font-semibold text-foreground">
+                            {t2iLastSeed}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {renderCopyButton("t2i-seed", () =>
+                            copyText("t2i-seed", t2iLastSeed),
+                          )}
+                          <button
+                            type="button"
+                            onClick={handleT2iReuseSeed}
+                            className="inline-flex h-8 items-center justify-center rounded-lg border border-black/[0.08] bg-background px-3 text-[11px] font-medium text-foreground/70 transition-colors hover:border-accent/40 hover:text-accent"
+                          >
+                            이 seed 재사용
+                          </button>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-[11px] leading-5 text-black/48">
+                        다음 실행은 기본적으로 랜덤 seed를 사용합니다. 같은 결과를
+                        재현하고 싶을 때만 이 seed를 다시 사용하세요.
+                      </p>
+                    </div>
+                  ) : null}
 
                   {t2iError ? (
                     <div className="mt-3 rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-300">

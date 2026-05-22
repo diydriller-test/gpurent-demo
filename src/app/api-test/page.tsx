@@ -1893,6 +1893,7 @@ export default function ApiTestPage() {
   const [t2iWidth, setT2iWidth] = useState(1024);
   const [t2iHeight, setT2iHeight] = useState(1024);
   const [t2iSeed, setT2iSeed] = useState("");
+  const [t2iLastSeed, setT2iLastSeed] = useState<string | null>(null);
   const [t2iImageFile, setT2iImageFile] = useState<File | null>(null);
   const [t2iImagePreview, setT2iImagePreview] = useState<string | null>(null);
   const [t2iImageUrl, setT2iImageUrl] = useState<string | null>(null);
@@ -2579,7 +2580,9 @@ export default function ApiTestPage() {
       setT2iNegativePrompt("");
       setT2iWidth(1024);
       setT2iHeight(1024);
+      setT2iSeed("");
       setT2iImageUrl(null);
+      setT2iLastSeed(null);
       setT2iIsLoading(false);
       setT2iError(null);
     }
@@ -3250,7 +3253,11 @@ export default function ApiTestPage() {
     try {
       const token = getToken();
       const t2iStart = Date.now();
-      const resolvedT2iSeed = t2iSeed !== "" ? Number(t2iSeed) : Math.floor(Math.random() * 2147483647);
+      const manualT2iSeed = t2iSeed.trim() !== "" ? Number(t2iSeed) : null;
+      const resolvedT2iSeed =
+        manualT2iSeed !== null && Number.isFinite(manualT2iSeed) && manualT2iSeed >= 0
+          ? Math.floor(manualT2iSeed)
+          : Math.floor(Math.random() * 2147483647);
       const t2iForm = new FormData();
       t2iForm.append("prompt", t2iPrompt.trim());
       t2iForm.append("negative_prompt", t2iNegativePrompt.trim() || " ");
@@ -3292,7 +3299,7 @@ export default function ApiTestPage() {
       t2iBlobUrlRef.current = url;
       setT2iImageUrl(url);
       setT2iLatencyMs(Date.now() - t2iStart);
-      setT2iSeed(String(resolvedT2iSeed));
+      setT2iLastSeed(String(resolvedT2iSeed));
 
       patchConsole("t2i", {
         statusCode: 200,
@@ -3333,6 +3340,11 @@ export default function ApiTestPage() {
     link.download = `t2i-${Date.now()}.png`;
     link.click();
     link.remove();
+  }
+
+  function handleT2iReuseSeed() {
+    if (!t2iLastSeed) return;
+    setT2iSeed(t2iLastSeed);
   }
 
   function handleT2mPlayPause() {
@@ -5218,7 +5230,9 @@ export default function ApiTestPage() {
                         t2iImageUrl={t2iImageUrl}
                         t2iIsLoading={t2iIsLoading}
                         t2iError={t2iError}
+                        t2iLastSeed={t2iLastSeed}
                         handleT2iSave={handleT2iSave}
+                        handleT2iReuseSeed={handleT2iReuseSeed}
                       />
                     </div>
                   <div
