@@ -522,7 +522,7 @@ function buildLlmConsoleRequestJson(
 ) {
   return JSON.stringify(
     {
-      model: "Qwen/Qwen3.6-35B-A3B",
+      model: "google/gemma-4-26b-a4b-it",
       temperature,
       ...(systemPromptValue.trim()
         ? {
@@ -4036,7 +4036,7 @@ export default function ApiTestPage() {
       statusLine: "Pending...",
       requestJson: JSON.stringify(
         {
-          model: "Qwen/Qwen3.6-35B-A3B",
+          model: "google/gemma-4-26b-a4b-it",
           ...(llmSystemPrompt.trim()
             ? {
                 messages: [

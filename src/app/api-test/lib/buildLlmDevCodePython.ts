@@ -1,4 +1,4 @@
-const MODEL = "Qwen/Qwen3.6-35B-A3B";
+const MODEL = "google/gemma-4-26b-a4b-it";
 
 function escapeForPythonDoubleQuoted(s: string) {
   return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");

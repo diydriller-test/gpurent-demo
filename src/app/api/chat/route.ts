@@ -42,7 +42,7 @@ export async function POST(req: Request) {
             : {}),
       }),
       body: JSON.stringify({
-        model: "Qwen/Qwen3.6-35B-A3B",
+        model: "google/gemma-4-26b-a4b-it",
         temperature: parsedTemperature,
         messages: [
           ...(systemPrompt
