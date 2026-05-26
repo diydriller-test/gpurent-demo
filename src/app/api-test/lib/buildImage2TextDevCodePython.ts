@@ -32,7 +32,7 @@ data_url = f"data:image/jpeg;base64,{image_b64}"
 
 # 3. 요청 데이터 설정
 data = {
-    "model": "Qwen/Qwen3.6-35B-A3B",
+    "model": "google/gemma-4-26b-a4b-it",
     "temperature": ${temperature},  # 생성 다양성 (0.0~1.0, 낮을수록 일관된 결과)
     "messages": [
         {
