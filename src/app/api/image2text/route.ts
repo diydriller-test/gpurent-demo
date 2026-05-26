@@ -3,7 +3,7 @@ import { resolveUpstreamContext, withUpstreamClientIp } from "../_lib/upstream";
 
 export const maxDuration = 120;
 
-const MODEL = "Qwen/Qwen3.6-35B-A3B";
+const MODEL = "google/gemma-4-26b-a4b-it";
 const DEFAULT_PROMPT =
   "이 이미지 내용을 한국어로 설명하고, 이미지 안의 글자를 줄바꿈 유지해서 그대로 추출해줘.";
 
@@ -71,7 +71,9 @@ export async function POST(req: Request) {
       signal: controller.signal,
     });
 
-    const upstreamJson = (await upstreamRes.json().catch(() => null)) as unknown;
+    const upstreamJson = (await upstreamRes
+      .json()
+      .catch(() => null)) as unknown;
 
     if (!upstreamRes.ok) {
       const status = upstreamRes.status || 500;
