@@ -40,7 +40,7 @@ const CAPABILITY_FALLBACK: Capability[] = [
   },
   {
     label: "Image-to-Text",
-    detail: "Qwen3.6 35B multi modal",
+    detail: "google/gemma-4-26b-a4b-it",
     href: "/api-test?task=image2text&view=detail",
   },
   {
@@ -55,7 +55,7 @@ const CAPABILITY_FALLBACK: Capability[] = [
   },
   {
     label: "LLM",
-    detail: "Qwen3.6 35B",
+    detail: "google/gemma-4-26b-a4b-it",
     href: "/api-test?task=llm&view=detail",
   },
 ];
@@ -103,15 +103,15 @@ const TASK_DETAILS: Record<string, string> = {
   Reranker: "Qwen3-Reranker-8B",
   Reranking: "Qwen3-Reranker-8B",
   "Voice Clone": "Qwen3-TTS-12Hz-1.7B-Base",
-  Vision: "Qwen3.6 35B multi modal",
-  "Image-to-Text": "Qwen3.6 35B multi modal",
+  Vision: "google/gemma-4-26b-a4b-it",
+  "Image-to-Text": "google/gemma-4-26b-a4b-it",
   "Image Generation": "Qwen-Image-Edit-2511-Lightning",
   "Text-to-Image": "Qwen-Image-Edit-2511-Lightning",
   "Text-to-Music": "acestep-v15-xl-sft",
   "Music Generation": "acestep-v15-xl-sft",
-  "Text Generation": "Qwen3.6 35B",
-  Text: "Qwen3.6 35B",
-  LLM: "Qwen3.6 35B",
+  "Text Generation": "google/gemma-4-26b-a4b-it",
+  Text: "google/gemma-4-26b-a4b-it",
+  LLM: "google/gemma-4-26b-a4b-it",
 };
 
 const METRICS = [

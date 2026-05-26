@@ -216,8 +216,8 @@ const TASK_META: Record<
 > = {
   "Text Generation": {
     displayName: "대규모 언어 모델(LLM)",
-    sublabel: "Qwen 3.6 • Text Generation",
-    modelDisplay: "Qwen3.6 35B",
+    sublabel: "Gemma 4 • Text Generation",
+    modelDisplay: "google/gemma-4-26b-a4b-it",
     tags: ["LLM", "Text-Gen", "GPT"],
   },
   Embedding: {
@@ -253,7 +253,7 @@ const TASK_META: Record<
   Vision: {
     displayName: "이미지를 문장으로 변환(Image-to-Text)",
     sublabel: "이미지 분석 • OCR",
-    modelDisplay: "Qwen3.6 35B multi modal",
+    modelDisplay: "google/gemma-4-26b-a4b-it",
     tags: ["Vision", "OCR", "I2T"],
   },
   "Text-to-Music": {
