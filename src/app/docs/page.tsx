@@ -37,7 +37,7 @@ const QUICKSTART_SNIPPETS: QuickstartSnippet[] = [
   {
     id: "curl",
     label: "cURL",
-    code: `curl -X POST "$AI_OMAKASE_BASE_URL/api/chat" \\
+    code: `curl -X POST "http://aiapi.kogrobo.com:11115/llm/v1/chat/completions" \\
   -H "Authorization: Bearer $AI_OMAKASE_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -48,7 +48,7 @@ const QUICKSTART_SNIPPETS: QuickstartSnippet[] = [
   {
     id: "typescript",
     label: "TypeScript",
-    code: `const response = await fetch(\`\${baseUrl}/api/chat\`, {
+    code: `const response = await fetch(\`\${baseUrl}/llm/v1/chat/completions\`, {
   method: "POST",
   headers: {
     Authorization: \`Bearer \${apiKey}\`,
@@ -73,8 +73,7 @@ console.log(result.text);`,
     code: `import os
 import requests
 
-response = requests.post(
-    f"{os.environ['AI_OMAKASE_BASE_URL']}/api/chat",
+response = requests.post("http://aiapi.kogrobo.com:11115/llm/v1/chat/completions",
     headers={
         "Authorization": f"Bearer {os.environ['AI_OMAKASE_API_KEY']}",
         "Content-Type": "application/json",

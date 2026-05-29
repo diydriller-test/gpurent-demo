@@ -159,15 +159,14 @@ function FirstRunCodeBlock({
   hasKey: boolean;
 }) {
   const [copied, setCopied] = useState(false);
-  const baseUrl =
-    typeof window === "undefined" ? "<your_app_origin>" : window.location.origin;
+  const baseUrl = "http://aiapi.kogrobo.com:11115";
   const keyLine = apiKey
     ? `export AI_OMAKASE_API_KEY="${apiKey}"`
     : `export AI_OMAKASE_API_KEY="<your_api_key>"`;
   const code = `export AI_OMAKASE_BASE_URL="${baseUrl}"
 ${keyLine}
 
-curl -X POST "$AI_OMAKASE_BASE_URL/api/chat" \\
+curl -X POST "$AI_OMAKASE_BASE_URL/llm/v1/chat/completions" \\
   -H "Authorization: Bearer $AI_OMAKASE_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
