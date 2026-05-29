@@ -13,7 +13,7 @@ export function buildEmbeddingDevCodePython({ inputText, url }: { inputText: str
   return `import requests
 
 # 1. API 설정
-url = "${url}"
+url = "${url}/_inference/text_embedding/qwen3"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
     "Content-Type": "application/json",

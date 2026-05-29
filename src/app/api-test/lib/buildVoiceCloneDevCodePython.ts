@@ -29,7 +29,7 @@ import random
 
 # 1. API 설정 - 요청마다 고유한 랜덤 ID 생성
 rand = random.randint(0, 999_999_999)
-url = f"${url}/voiceclone/_inference/tts/{rand}"
+url = f"${url}/_inference/tts/{rand}"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
 }

@@ -18,7 +18,7 @@ import json
 import requests
 
 # 1. API 설정
-url = "${url}/llm/v1/chat/completions"
+url = "${url}/_inference/image2text"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
     "Content-Type": "application/json",

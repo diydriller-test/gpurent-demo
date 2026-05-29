@@ -25,7 +25,7 @@ export function buildSttDevCodePython({
   return `import requests
 
 # 1. API 설정
-url = "${url}"
+url = "${url}/_inference/stt/{rand}"
 headers = {
     "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
 }

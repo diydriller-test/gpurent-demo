@@ -48,7 +48,7 @@ const QUICKSTART_SNIPPETS: QuickstartSnippet[] = [
   {
     id: "typescript",
     label: "TypeScript",
-    code: `const response = await fetch(\`\${baseUrl}/llm/v1/chat/completions\`, {
+    code: `const response = await fetch(\`http://aiapi.kogrobo.com:11115/llm/v1/chat/completions\`, {
   method: "POST",
   headers: {
     Authorization: \`Bearer \${apiKey}\`,

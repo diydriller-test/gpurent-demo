@@ -35,7 +35,7 @@ llm = ChatOpenAI(
     model="${MODEL}",              # 사용할 모델
     temperature=${safeTemperature},            # 생성 다양성 (0.0~1.0, 낮을수록 일관된 결과)
     api_key="YOUR_API_KEY",        # 발급받은 API 키를 입력하세요
-    base_url="${baseUrl}",  # API 엔드포인트
+    base_url="${baseUrl}/v1",  # API 엔드포인트
 )
 
 # 2. 메시지 구성

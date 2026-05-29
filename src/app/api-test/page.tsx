@@ -39,27 +39,27 @@ import {
 } from "@/app/plans/planCatalog";
 
 const REAL_ENDPOINTS = {
-  llm: "http://aiapi.kogrobo.com:11115/llm/v1",
-  embedding: "http://aiapi.kogrobo.com:11115/embedding/_inference/text_embedding/qwen3",
-  reranker: "http://aiapi.kogrobo.com:11115/reranker/_inference/rerank/qwen3",
-  tts: "http://aiapi.kogrobo.com:11115",
-  stt: "http://aiapi.kogrobo.com:11115/stt/_inference/stt/my_stt",
-  voiceClone: "http://aiapi.kogrobo.com:11115",
-  image2text: "http://aiapi.kogrobo.com:11115",
-  t2m: "http://aiapi.kogrobo.com:11115",
-  t2i: "http://aiapi.kogrobo.com:11115",
+  llm: "http://aiapi.kogrobo.com:11115/llm",
+  embedding: "http://aiapi.kogrobo.com:11115/embedding",
+  reranker: "http://aiapi.kogrobo.com:11115/reranker",
+  tts: "http://aiapi.kogrobo.com:11115/tts",
+  stt: "http://aiapi.kogrobo.com:11115/stt",
+  voiceClone: "http://aiapi.kogrobo.com:11115/voice-clone",
+  image2text: "http://aiapi.kogrobo.com:11115/ocr",
+  t2m: "http://aiapi.kogrobo.com:11115/music",
+  t2i: "http://aiapi.kogrobo.com:11115/image",
 } as const;
 
 const DUMMY_ENDPOINTS = {
-  llm: "https://your-api-endpoint.com/llm/v1",
-  embedding: "https://your-api-endpoint.com/_inference/text_embedding/qwen3",
-  reranker: "https://your-api-endpoint.com/_inference/rerank/qwen3",
-  tts: "https://your-api-endpoint.com",
-  stt: "https://your-api-endpoint.com/_inference/stt/my_stt",
-  voiceClone: "https://your-api-endpoint.com",
-  image2text: "https://your-api-endpoint.com",
-  t2m: "https://your-api-endpoint.com",
-  t2i: "https://your-api-endpoint.com",
+  llm: "http://aiapi.kogrobo.com:11115/llm",
+  embedding: "http://aiapi.kogrobo.com:11115/embedding",
+  reranker: "http://aiapi.kogrobo.com:11115/reranker",
+  tts: "http://aiapi.kogrobo.com:11115/tts",
+  stt: "http://aiapi.kogrobo.com:11115/stt",
+  voiceClone: "http://aiapi.kogrobo.com:11115/voice-clone",
+  image2text: "http://aiapi.kogrobo.com:11115/ocr",
+  t2m: "http://aiapi.kogrobo.com:11115/music",
+  t2i: "http://aiapi.kogrobo.com:11115/image",
 } as const;
 
 type ApiId =
