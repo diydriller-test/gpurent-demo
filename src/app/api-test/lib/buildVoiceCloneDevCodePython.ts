@@ -8,12 +8,14 @@ export function buildVoiceCloneDevCodePython({
   xVectorOnly,
   refText,
   url,
+  apiKey = "YOUR_API_KEY",
 }: {
   text: string;
   language: string;
   xVectorOnly: boolean;
   refText: string;
   url: string;
+  apiKey?: string;
 }) {
   const textSafe = escapeForPythonDoubleQuoted(text.trim() || "안녕하세요. 보이스 클론 테스트입니다.");
   const langSafe = escapeForPythonDoubleQuoted(language || "Korean");
@@ -31,7 +33,7 @@ import random
 rand = random.randint(0, 999_999_999)
 url = f"${url}/_inference/tts/{rand}"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Authorization": "Bearer ${apiKey}",  # 발급받은 API 키를 입력하세요
 }
 
 # 2. 참조 음성 파일 경로 설정 (클론할 목소리 샘플, WAV 권장 5~30초)

@@ -8,12 +8,14 @@ export function buildSttDevCodePython({
   beamSize,
   vadOn,
   url,
+  apiKey = "YOUR_API_KEY",
 }: {
   language: string;
   task: string;
   beamSize: number;
   vadOn: boolean;
   url: string;
+  apiKey?: string;
 }) {
   const lang = escapeForPythonDoubleQuoted(language);
   const taskSafe = escapeForPythonDoubleQuoted(task);
@@ -27,7 +29,7 @@ export function buildSttDevCodePython({
 # 1. API 설정
 url = "${url}/_inference/stt/{rand}"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Authorization": "Bearer ${apiKey}",  # 발급받은 API 키를 입력하세요
 }
 
 # 2. 음성 파일 및 옵션 설정

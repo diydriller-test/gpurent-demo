@@ -6,12 +6,14 @@ export function buildTtsDevCodePython({
   speaker,
   instruct,
   url,
+  apiKey = "YOUR_API_KEY",
 }: {
   text: string;
   language?: string;
   speaker?: string;
   instruct?: string;
   url: string;
+  apiKey?: string;
 }) {
   const content = escapeForPythonJsonString(text.trim() || "안녕하세요.");
   const voice = (speaker ?? "ryan").toLowerCase();
@@ -27,7 +29,7 @@ import random
 rand = random.randint(0, 999_999_999)
 url = f"${url}/_inference/tts/{rand}"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Authorization": "Bearer ${apiKey}",  # 발급받은 API 키를 입력하세요
 }
 
 # 2. 요청 데이터 설정

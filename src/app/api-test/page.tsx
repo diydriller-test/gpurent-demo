@@ -10,7 +10,7 @@ import React, {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { getApis, getMe, type Api, type User } from "@/lib/api";
+import { getApis, getMe, getApiKeys, type Api, type User } from "@/lib/api";
 import { getToken } from "@/lib/token";
 import { JsonCode } from "./components/JsonCode";
 import { DeveloperCodeSection } from "./components/DeveloperCodeSection";
@@ -51,15 +51,15 @@ const REAL_ENDPOINTS = {
 } as const;
 
 const DUMMY_ENDPOINTS = {
-  llm: "http://aiapi.kogrobo.com:11115/llm",
-  embedding: "http://aiapi.kogrobo.com:11115/embedding",
-  reranker: "http://aiapi.kogrobo.com:11115/reranker",
-  tts: "http://aiapi.kogrobo.com:11115/tts",
-  stt: "http://aiapi.kogrobo.com:11115/stt",
-  voiceClone: "http://aiapi.kogrobo.com:11115/voice-clone",
-  image2text: "http://aiapi.kogrobo.com:11115/ocr",
-  t2m: "http://aiapi.kogrobo.com:11115/music",
-  t2i: "http://aiapi.kogrobo.com:11115/image",
+  llm: "https://api.example.com",
+  embedding: "https://api.example.com",
+  reranker: "https://api.example.com",
+  tts: "https://api.example.com",
+  stt: "https://api.example.com",
+  voiceClone: "https://api.example.com",
+  image2text: "https://api.example.com",
+  t2m: "https://api.example.com",
+  t2i: "https://api.example.com",
 } as const;
 
 type ApiId =
@@ -1260,6 +1260,7 @@ export default function ApiTestPage() {
   } | null>(null);
   const [apisFromBackend, setApisFromBackend] = useState<Api[]>([]);
   const [userMe, setUserMe] = useState<User | null>(null);
+  const [approvedApiKey, setApprovedApiKey] = useState<string | null>(null);
 
   // 각 API별 구독 여부: 해당 API에 플랜이 있는 경우에만 실 URL 노출
   const subscribedApis = useMemo(() => {
@@ -1340,6 +1341,13 @@ export default function ApiTestPage() {
         if (!cancelled) setUserMe(user);
       } catch {
         if (!cancelled) setUserMe(null);
+      }
+      try {
+        const keys = await getApiKeys();
+        const approved = keys.find((k) => k.is_approved);
+        if (!cancelled) setApprovedApiKey(approved?.api_key ?? null);
+      } catch {
+        if (!cancelled) setApprovedApiKey(null);
       }
     })();
     return () => {
@@ -1757,8 +1765,9 @@ export default function ApiTestPage() {
     () => buildEmbeddingDevCodePython({
       inputText: embeddingText,
       url: subscribedApis.embedding ? REAL_ENDPOINTS.embedding : DUMMY_ENDPOINTS.embedding,
+      apiKey: subscribedApis.embedding && approvedApiKey ? approvedApiKey : "YOUR_API_KEY",
     }),
-    [embeddingText, subscribedApis],
+    [embeddingText, subscribedApis, approvedApiKey],
   );
 
   // Reranker
@@ -1925,8 +1934,9 @@ export default function ApiTestPage() {
         query: rerankQuestion,
         docLines: rerankDocsText.split("\n"),
         url: subscribedApis.reranker ? REAL_ENDPOINTS.reranker : DUMMY_ENDPOINTS.reranker,
+        apiKey: subscribedApis.reranker && approvedApiKey ? approvedApiKey : "YOUR_API_KEY",
       }),
-    [rerankQuestion, rerankDocsText, subscribedApis],
+    [rerankQuestion, rerankDocsText, subscribedApis, approvedApiKey],
   );
 
   const ttsDevCodePython = useMemo(
@@ -1937,8 +1947,9 @@ export default function ApiTestPage() {
         speaker: ttsSpeaker,
         instruct: ttsStyleInstruction,
         url: subscribedApis.tts ? REAL_ENDPOINTS.tts : DUMMY_ENDPOINTS.tts,
+        apiKey: subscribedApis.tts && approvedApiKey ? approvedApiKey : "YOUR_API_KEY",
       }),
-    [ttsText, ttsLanguage, ttsSpeaker, ttsStyleInstruction, subscribedApis],
+    [ttsText, ttsLanguage, ttsSpeaker, ttsStyleInstruction, subscribedApis, approvedApiKey],
   );
 
   const sttDevCodePython = useMemo(
@@ -1949,8 +1960,9 @@ export default function ApiTestPage() {
         beamSize: sttBeamSize,
         vadOn: sttVadOn,
         url: subscribedApis.stt ? REAL_ENDPOINTS.stt : DUMMY_ENDPOINTS.stt,
+        apiKey: subscribedApis.stt && approvedApiKey ? approvedApiKey : "YOUR_API_KEY",
       }),
-    [sttLanguage, sttTask, sttBeamSize, sttVadOn, subscribedApis],
+    [sttLanguage, sttTask, sttBeamSize, sttVadOn, subscribedApis, approvedApiKey],
   );
 
   const vcDevCodePython = useMemo(
@@ -1961,8 +1973,9 @@ export default function ApiTestPage() {
         xVectorOnly: vcXVectorOnly,
         refText: vcRefText,
         url: subscribedApis.voiceClone ? REAL_ENDPOINTS.voiceClone : DUMMY_ENDPOINTS.voiceClone,
+        apiKey: subscribedApis.voiceClone && approvedApiKey ? approvedApiKey : "YOUR_API_KEY",
       }),
-    [vcText, vcLanguage, vcXVectorOnly, vcRefText, subscribedApis],
+    [vcText, vcLanguage, vcXVectorOnly, vcRefText, subscribedApis, approvedApiKey],
   );
 
   const image2textDevCodePython = useMemo(
@@ -1971,8 +1984,9 @@ export default function ApiTestPage() {
         prompt: image2textPrompt || DEFAULT_IMAGE2TEXT_PROMPT,
         temperature: image2textTemperature,
         url: subscribedApis.image2text ? REAL_ENDPOINTS.image2text : DUMMY_ENDPOINTS.image2text,
+        apiKey: subscribedApis.image2text && approvedApiKey ? approvedApiKey : "YOUR_API_KEY",
       }),
-    [image2textPrompt, image2textTemperature, subscribedApis],
+    [image2textPrompt, image2textTemperature, subscribedApis, approvedApiKey],
   );
 
   const t2mDevCodePython = useMemo(
@@ -1984,8 +1998,9 @@ export default function ApiTestPage() {
         duration: t2mDuration,
         seed: t2mSeed,
         url: subscribedApis.t2m ? REAL_ENDPOINTS.t2m : DUMMY_ENDPOINTS.t2m,
+        apiKey: subscribedApis.t2m && approvedApiKey ? approvedApiKey : "YOUR_API_KEY",
       }),
-    [t2mPrompt, t2mLyrics, t2mInstrumental, t2mDuration, t2mSeed, subscribedApis],
+    [t2mPrompt, t2mLyrics, t2mInstrumental, t2mDuration, t2mSeed, subscribedApis, approvedApiKey],
   );
 
   const t2iDevCodePython = useMemo(
@@ -1998,8 +2013,9 @@ export default function ApiTestPage() {
         seed: t2iSeed,
         imageFileName: t2iImageFile ? t2iImageFile.name : null,
         url: subscribedApis.t2i ? REAL_ENDPOINTS.t2i : DUMMY_ENDPOINTS.t2i,
+        apiKey: subscribedApis.t2i && approvedApiKey ? approvedApiKey : "YOUR_API_KEY",
       }),
-    [t2iPrompt, t2iNegativePrompt, t2iWidth, t2iHeight, t2iSeed, t2iImageFile, subscribedApis],
+    [t2iPrompt, t2iNegativePrompt, t2iWidth, t2iHeight, t2iSeed, t2iImageFile, subscribedApis, approvedApiKey],
   );
 
   useEffect(() => {
@@ -2383,8 +2399,9 @@ export default function ApiTestPage() {
       userMessage: llmDevUserMessage,
       temperature: llmTemperature,
       baseUrl: subscribedApis.llm ? REAL_ENDPOINTS.llm : DUMMY_ENDPOINTS.llm,
+      apiKey: subscribedApis.llm && approvedApiKey ? approvedApiKey : "YOUR_API_KEY",
     });
-  }, [llmDevUserMessage, llmSystemPrompt, llmTemperature, subscribedApis]);
+  }, [llmDevUserMessage, llmSystemPrompt, llmTemperature, subscribedApis, approvedApiKey]);
 
   const currentConsole = consoleByApi[selectedApi];
 

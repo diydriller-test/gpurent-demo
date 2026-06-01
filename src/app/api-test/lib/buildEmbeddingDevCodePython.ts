@@ -5,7 +5,7 @@ function escapeForPythonJsonString(s: string) {
     .replace(/\n/g, "\\n");
 }
 
-export function buildEmbeddingDevCodePython({ inputText, url }: { inputText: string; url: string }) {
+export function buildEmbeddingDevCodePython({ inputText, url, apiKey = "YOUR_API_KEY" }: { inputText: string; url: string; apiKey?: string }) {
   const content = escapeForPythonJsonString(
     inputText.trim() || "안녕하세요. 만나서 반갑습니다.",
   );
@@ -15,7 +15,7 @@ export function buildEmbeddingDevCodePython({ inputText, url }: { inputText: str
 # 1. API 설정
 url = "${url}/_inference/text_embedding/qwen3"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Authorization": "Bearer ${apiKey}",  # 발급받은 API 키를 입력하세요
     "Content-Type": "application/json",
 }
 

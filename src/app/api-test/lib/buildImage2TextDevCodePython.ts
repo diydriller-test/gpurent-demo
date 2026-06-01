@@ -6,10 +6,12 @@ export function buildImage2TextDevCodePython({
   prompt,
   temperature,
   url,
+  apiKey = "YOUR_API_KEY",
 }: {
   prompt: string;
   temperature: number;
   url: string;
+  apiKey?: string;
 }) {
   const safePrompt = escapeForPythonDoubleQuoted(prompt.trim());
 
@@ -20,7 +22,7 @@ import requests
 # 1. API 설정
 url = "${url}/_inference/image2text"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Authorization": "Bearer ${apiKey}",  # 발급받은 API 키를 입력하세요
     "Content-Type": "application/json",
 }
 

@@ -7,6 +7,7 @@ export function buildT2mDevCodePython({
   duration,
   seed,
   url,
+  apiKey = "YOUR_API_KEY",
 }: {
   prompt: string;
   lyrics: string;
@@ -14,6 +15,7 @@ export function buildT2mDevCodePython({
   duration: number;
   seed: string;
   url: string;
+  apiKey?: string;
 }) {
   const safePrompt = escapeForPythonJsonString(prompt.trim() || "Upbeat jazz with piano and saxophone, 120bpm, warm and lively");
   const safeLyrics = escapeForPythonJsonString(lyrics.trim());
@@ -29,7 +31,7 @@ import requests
 rand = random.randint(0, 999_999_999)
 url = f"${url}/_inference/text2music/{rand}"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Authorization": "Bearer ${apiKey}",  # 발급받은 API 키를 입력하세요
     "Content-Type": "application/json",
 }
 

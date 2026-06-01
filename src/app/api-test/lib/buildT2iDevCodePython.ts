@@ -8,6 +8,7 @@ export function buildT2iDevCodePython({
   seed,
   imageFileName,
   url,
+  apiKey = "YOUR_API_KEY",
 }: {
   prompt: string;
   negativePrompt: string;
@@ -16,6 +17,7 @@ export function buildT2iDevCodePython({
   seed: string;
   imageFileName: string | null;
   url: string;
+  apiKey?: string;
 }) {
   const safePrompt = escapeForPythonJsonString(
     prompt.trim() || "A serene mountain landscape at sunset, photorealistic, 8k",
@@ -36,7 +38,7 @@ import requests
 rand = random.randint(0, 999_999_999)
 url = f"${url}/image/_inference/image-edit/{rand}"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Authorization": "Bearer ${apiKey}",  # 발급받은 API 키를 입력하세요
 }
 
 # 2. 요청 데이터 설정 (이미지 편집 모드 - multipart/form-data)
@@ -70,7 +72,7 @@ import requests
 rand = random.randint(0, 999_999_999)
 url = f"${url}/_inference/image-edit/{rand}"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Authorization": "Bearer ${apiKey}",  # 발급받은 API 키를 입력하세요
 }
 
 # 2. 요청 데이터 설정 (텍스트→이미지 생성 모드 - multipart/form-data)

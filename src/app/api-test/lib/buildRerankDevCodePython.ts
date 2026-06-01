@@ -8,10 +8,12 @@ export function buildRerankDevCodePython({
   query,
   docLines,
   url,
+  apiKey = "YOUR_API_KEY",
 }: {
   query: string;
   docLines: string[];
   url: string;
+  apiKey?: string;
 }) {
   const q = escapeForPythonJsonString(query.trim() || "여행 추천");
   const lines = docLines.map(sanitizeDocLine).filter(Boolean);
@@ -34,7 +36,7 @@ import json
 # 1. API 설정
 url = "${url}/_inference/rerank/qwen3"
 headers = {
-    "Authorization": "Bearer YOUR_API_KEY",  # 발급받은 API 키를 입력하세요
+    "Authorization": "Bearer ${apiKey}",  # 발급받은 API 키를 입력하세요
     "Content-Type": "application/json",
 }
 
