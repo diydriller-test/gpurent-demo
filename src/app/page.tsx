@@ -694,11 +694,10 @@ export default function Home() {
                   enterprise signals
                 </p>
                 <h2 className="mt-5 max-w-lg text-[38px] font-semibold leading-[1.05] tracking-normal md:text-[48px]">
-                  운영 가능한 AI infra는 조용하고, 예측 가능해야 합니다.
+                  필요한 API만 구독하여 무제한으로 사용하세요.
                 </h2>
                 <p className="mt-5 max-w-xl text-[15px] leading-7 text-white/56">
-                  실험용 데모가 아니라 production에 붙일 수 있는 trace, capacity,
-                  API key 흐름을 첫 경험부터 같은 언어로 제공합니다.
+                  Playground에서 먼저 테스트하고, 코드 예제로 바로 개발에 적용하세요.
                 </p>
               </div>
 
