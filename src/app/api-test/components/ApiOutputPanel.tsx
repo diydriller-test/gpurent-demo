@@ -729,7 +729,7 @@ export function ApiOutputPanel({
                         Transcript Output
                       </p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
-                        최첨단 Whisper 알고리즘 기반의 Qwen3 STT 엔진이 소리를
+                        Whisper 알고리즘 기반의 Qwen3 STT 엔진이 소리를
                         텍스트로 정교하게 추출합니다.
                       </p>
                     </div>
