@@ -250,26 +250,30 @@ function PlansPageContent() {
       setPlans([]);
       return;
     }
-    const task = getApiTask(selectedApi);
-    const hardcoded = task ? HARDCODED_PLANS_BY_TASK[task] : undefined;
-    if (hardcoded) {
-      setPlansLoading(false);
-      setError(null);
-      setPlans(hardcoded);
-      return;
-    }
     if (usingDemoApis) {
       setPlansLoading(false);
       setError(null);
       setPlans(DEMO_PLANS_THREE_TIERS);
       return;
     }
+
+    const task = getApiTask(selectedApi);
+    const hardcoded = task ? HARDCODED_PLANS_BY_TASK[task] : undefined;
+
+    function applyOverrides(serverPlans: Plan[]): Plan[] {
+      if (!hardcoded) return serverPlans;
+      return serverPlans.map((sp) => {
+        const hp = hardcoded.find((h) => h.sort_order === sp.sort_order);
+        return hp ? { ...sp, price_monthly: hp.price_monthly, max_rps: hp.max_rps } : sp;
+      });
+    }
+
     setPlansLoading(true);
     setError(null);
     getPlans(selectedApi.id)
       .then(async (selectedPlans) => {
         if (selectedPlans.length > 0) {
-          setPlans(selectedPlans);
+          setPlans(applyOverrides(selectedPlans));
           return;
         }
 
@@ -283,7 +287,7 @@ function PlansPageContent() {
               : null;
 
         if (!fallbackTask) {
-          setPlans(selectedPlans);
+          setPlans(hardcoded ?? selectedPlans);
           return;
         }
 
@@ -293,18 +297,24 @@ function PlansPageContent() {
         );
 
         if (!fallbackApi) {
-          setPlans(selectedPlans);
+          setPlans(hardcoded ?? selectedPlans);
           return;
         }
 
         const fallbackPlans = await getPlans(fallbackApi.id);
-        setPlans(fallbackPlans.length > 0 ? fallbackPlans : selectedPlans);
+        setPlans(
+          fallbackPlans.length > 0
+            ? applyOverrides(fallbackPlans)
+            : (hardcoded ?? selectedPlans),
+        );
       })
-      .catch((err) =>
-        setError(
-          err instanceof Error ? err.message : "플랜을 불러올 수 없습니다.",
-        ),
-      )
+      .catch((err) => {
+        if (hardcoded) {
+          setPlans(hardcoded);
+        } else {
+          setError(err instanceof Error ? err.message : "플랜을 불러올 수 없습니다.");
+        }
+      })
       .finally(() => setPlansLoading(false));
   }, [selectedApi, usingDemoApis, apis]);
 
