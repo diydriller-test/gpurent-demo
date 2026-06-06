@@ -22,11 +22,13 @@ import {
   chapterQueryToPlanTask,
   DEMO_APIS_FALLBACK,
   DEMO_PLANS_THREE_TIERS,
+  HARDCODED_PLANS_BY_TASK,
   getApiTask,
   getPlanCardDisplay,
   getPlanTaskDisplayName,
   getPlanTaskSublabel,
   formatPlanRequestsPerMinute,
+  rpsToRequestsPerMinute,
   MODU_NLP_SURFACE_TASKS,
   PLAN_TASK_KEYS,
   type PlanTask,
@@ -246,6 +248,14 @@ function PlansPageContent() {
   useEffect(() => {
     if (!selectedApi) {
       setPlans([]);
+      return;
+    }
+    const task = getApiTask(selectedApi);
+    const hardcoded = task ? HARDCODED_PLANS_BY_TASK[task] : undefined;
+    if (hardcoded) {
+      setPlansLoading(false);
+      setError(null);
+      setPlans(hardcoded);
       return;
     }
     if (usingDemoApis) {
@@ -968,8 +978,7 @@ function PlansPageContent() {
                 const isCurrentPlan = currentApiPlan?.plan_id === plan.id;
                 const isPendingPlan = pendingPlanId === plan.id;
                 const isUpdating = updatingPlanId === plan.id;
-                const isComingSoon =
-                  !usingDemoApis && (parseFloat(plan.price_monthly) === 0);
+                const isComingSoon = parseFloat(plan.price_monthly) === 0;
                 const numericPrice = parseFloat(plan.price_monthly);
                 const impliedMonthlyCapacity = Math.round(plan.max_rps * 2_592_000);
                 const costPerTenK =
@@ -1022,7 +1031,9 @@ function PlansPageContent() {
                     <div className="mb-5 grid gap-3 rounded-xl border border-black/[0.06] bg-background px-4 py-3">
                       <div>
                         <p className="font-mono text-sm text-foreground">
-                          {formatPlanRequestsPerMinute(plan.max_rps)}
+                          {isComingSoon
+                            ? `1분에 ${rpsToRequestsPerMinute(plan.max_rps).toLocaleString("ko-KR")}번 이상`
+                            : formatPlanRequestsPerMinute(plan.max_rps)}
                         </p>
                         <p className="mt-1 text-xs text-foreground/50">
                           월 약 {impliedMonthlyCapacity.toLocaleString("ko-KR")} requests

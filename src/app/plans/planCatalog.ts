@@ -123,6 +123,61 @@ export const DEMO_PLANS_THREE_TIERS: Plan[] = [
   },
 ];
 
+function makePlans(
+  idBase: number,
+  starter: { price: number; rps: number },
+  pro: { price: number; rps: number },
+  enterprise: { rps: number },
+): Plan[] {
+  return [
+    {
+      id: idBase,
+      name: "Starter",
+      price_monthly: String(starter.price),
+      description: "소규모 트래픽·프로토타입에 적합한 입문 등급",
+      max_rps: starter.rps,
+      period: "/월",
+      features: ["예상 월 트래픽 기준 입문 등급", "기본 대시보드", "이메일 지원 (영업일)"],
+      is_active: true,
+      sort_order: 1,
+    },
+    {
+      id: idBase + 1,
+      name: "Pro",
+      price_monthly: String(pro.price),
+      description: "프로덕션 트래픽을 다루는 팀을 위한 표준 등급",
+      max_rps: pro.rps,
+      period: "/월",
+      features: ["예상 월 트래픽 기준 표준 등급", "우선 지원 큐", "알림·웹훅 (베타)"],
+      is_active: true,
+      sort_order: 2,
+    },
+    {
+      id: idBase + 2,
+      name: "Enterprise",
+      price_monthly: "0",
+      description: "대규모·전용 용량·맞춤 계약",
+      max_rps: enterprise.rps,
+      period: "",
+      features: ["전용 RPM·용량 협의", "전담 담당자", "맞춤 SLA·보안 검토"],
+      is_active: true,
+      sort_order: 3,
+    },
+  ];
+}
+
+export const HARDCODED_PLANS_BY_TASK: Partial<Record<PlanTask, Plan[]>> = {
+  STT:              makePlans(88001, { price: 30000,  rps: 0.25 }, { price: 90000,  rps: 0.75 }, { rps: 0.75 }),
+  TTS:              makePlans(88011, { price: 30000,  rps: 0.25 }, { price: 90000,  rps: 0.75 }, { rps: 0.75 }),
+  Embedding:        makePlans(88021, { price: 20000,  rps: 0.5  }, { price: 60000,  rps: 1.5  }, { rps: 1.5  }),
+  Reranker:         makePlans(88031, { price: 30000,  rps: 0.25 }, { price: 90000,  rps: 0.75 }, { rps: 0.75 }),
+  "Voice Clone":    makePlans(88041, { price: 30000,  rps: 0.25 }, { price: 90000,  rps: 0.75 }, { rps: 0.75 }),
+  Vision:           makePlans(88051, { price: 80000,  rps: 0.5  }, { price: 240000, rps: 1.5  }, { rps: 1.5  }),
+  "Image Generation": makePlans(88061, { price: 100000, rps: 0.1 }, { price: 300000, rps: 0.3  }, { rps: 0.3  }),
+  "Text-to-Music":  makePlans(88071, { price: 50000,  rps: 0.1  }, { price: 180000, rps: 0.3  }, { rps: 0.3  }),
+  "Text Generation": makePlans(88081, { price: 150000, rps: 0.5 }, { price: 450000, rps: 1.5  }, { rps: 1.5  }),
+};
+
 /** api-test `selectedApi`와 동일한 문자열 (쿼리 `?chapter=` 값) */
 export type PlansChapterParam =
   | "llm"
