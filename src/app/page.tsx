@@ -542,8 +542,8 @@ export default function Home() {
 
       <main className="pt-[72px]">
         <section className="relative overflow-hidden border-b border-black/[0.06] bg-[#f7f8fb]">
-          <div className="mx-auto grid min-h-[calc(100vh-72px)] portrait:min-h-0 max-w-[1440px] grid-cols-1 gap-10 px-5 py-8 md:px-8 lg:grid-cols-[minmax(0,0.98fr)_minmax(420px,0.78fr)] lg:px-10 lg:py-12">
-            <div className="flex min-h-[560px] portrait:min-h-0 min-w-0 flex-col justify-between portrait:justify-start pb-6 md:pb-10">
+          <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 py-16 md:px-8 md:py-20 lg:grid-cols-[minmax(0,0.98fr)_minmax(420px,0.78fr)] lg:px-10 lg:py-24">
+            <div className="flex min-w-0 flex-col justify-start pb-6 md:pb-10">
               <div>
                 <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-white px-3 py-1.5 text-[12px] font-medium text-black/58 shadow-[0_1px_2px_rgba(8,9,13,0.04)]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#15b87a]" />
