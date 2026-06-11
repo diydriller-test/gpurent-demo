@@ -175,7 +175,7 @@ export const HARDCODED_PLANS_BY_TASK: Partial<Record<PlanTask, Plan[]>> = {
   Vision:           makePlans(88051, { price: 80000,  rps: 0.25 }, { price: 240000, rps: 0.75 }, { rps: 0.75 }),
   "Image Generation": makePlans(88061, { price: 100000, rps: 0.1 }, { price: 300000, rps: 0.3  }, { rps: 0.3  }),
   "Text-to-Music":  makePlans(88071, { price: 50000,  rps: 0.1  }, { price: 180000, rps: 0.3  }, { rps: 0.3  }),
-  "Text Generation": makePlans(88081, { price: 150000, rps: 0.5 }, { price: 450000, rps: 1.5  }, { rps: 1.5  }),
+  "Text Generation": makePlans(88081, { price: 150000, rps: 0.25 }, { price: 450000, rps: 0.75 }, { rps: 0.75 }),
 };
 
 /** api-test `selectedApi`와 동일한 문자열 (쿼리 `?chapter=` 값) */
