@@ -333,7 +333,7 @@ export default function Home() {
 
       <main className="pt-[72px]">
         <section className="relative overflow-hidden border-b border-black/[0.06] bg-[#f7f8fb]">
-          <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 py-16 md:px-8 md:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(560px,1.1fr)] lg:px-10 lg:py-24">
+          <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 py-16 md:px-8 md:py-20 lg:px-10 lg:py-24 xl:grid-cols-[minmax(0,1fr)_minmax(560px,1.1fr)] 2xl:max-w-[1680px]">
             <div className="flex min-w-0 flex-col justify-start pb-6 md:pb-10">
               <div>
                 <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-white px-3 py-1.5 text-[12px] font-medium text-black/58 shadow-[0_1px_2px_rgba(8,9,13,0.04)]">
@@ -341,7 +341,7 @@ export default function Home() {
                   AI API workbench
                 </div>
 
-                <h1 className="max-w-[920px] text-[38px] font-semibold leading-[1.07] tracking-normal text-[#08090d] sm:text-[56px] md:text-[70px] lg:text-[82px] xl:text-[92px]">
+                <h1 className="max-w-[920px] break-keep text-[38px] font-semibold leading-[1.07] tracking-normal text-[#08090d] sm:text-[48px] md:text-[56px] lg:text-[56px] xl:text-[60px] 2xl:text-[72px]">
                   <span className="block">필요한 AI API를</span>
                   <span className="block">테스트하고 선택하세요.</span>
                 </h1>
@@ -393,8 +393,8 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex min-w-0 flex-col items-stretch gap-3 lg:justify-center">
-              <figure className="flex w-full max-w-[720px] flex-col gap-3 lg:ml-auto">
+            <div className="flex min-w-0 flex-col items-stretch gap-3 xl:justify-center">
+              <figure className="flex w-full max-w-[720px] flex-col gap-3 xl:ml-auto">
                 <div className="relative w-full overflow-hidden rounded-xl border border-black/[0.08] bg-[#f0f1f4] shadow-[0_24px_90px_rgba(8,9,13,0.09)]">
                   <div className="aspect-video w-full">
                     <iframe
