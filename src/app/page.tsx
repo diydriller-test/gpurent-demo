@@ -397,17 +397,12 @@ export default function Home() {
               <figure className="flex w-full max-w-[720px] flex-col gap-3 lg:ml-auto">
                 <div className="relative w-full overflow-hidden rounded-xl border border-black/[0.08] bg-[#f0f1f4] shadow-[0_24px_90px_rgba(8,9,13,0.09)]">
                   <div className="aspect-video w-full">
-                    <video
-                      src="/hero-qa-demo.mp4"
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      controls
-                      controlsList="nodownload"
-                      preload="metadata"
-                      aria-label="API 코드예제로 만든 QA 챗봇 시연 영상"
-                      className="block h-full w-full object-cover"
+                    <iframe
+                      src="https://www.youtube.com/embed/__hdL92vSoY?autoplay=1&mute=1&loop=1&playlist=__hdL92vSoY&modestbranding=1&rel=0&playsinline=1"
+                      title="API 코드예제로 만든 QA 챗봇 시연 영상"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="block h-full w-full border-0"
                     />
                   </div>
                 </div>
