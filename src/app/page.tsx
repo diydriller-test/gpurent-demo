@@ -341,7 +341,7 @@ export default function Home() {
                   AI API workbench
                 </div>
 
-                <h1 className="max-w-[920px] break-keep text-[38px] font-semibold leading-[1.07] tracking-normal text-[#08090d] sm:text-[48px] md:text-[56px] lg:text-[56px] xl:text-[60px] 2xl:text-[72px]">
+                <h1 className="max-w-[920px] break-keep text-[32px] font-semibold leading-[1.07] tracking-normal text-[#08090d] sm:text-[40px] md:text-[48px] lg:text-[48px] xl:text-[52px] 2xl:text-[60px]">
                   <span className="block">필요한 AI API를</span>
                   <span className="block">테스트하고 선택하세요.</span>
                 </h1>
@@ -394,22 +394,21 @@ export default function Home() {
             </div>
 
             <div className="flex min-w-0 flex-col items-stretch gap-3 xl:justify-center">
-              <figure className="flex w-full max-w-[720px] flex-col gap-3 xl:ml-auto">
+              <figure className="flex w-full max-w-[720px] flex-col gap-4 xl:ml-auto">
+                <figcaption className="break-keep text-center text-[14px] font-medium leading-snug text-black/68 sm:text-[15px] lg:text-[16px]">
+                  누구나 따라 할 수 있는 QA 챗봇 프롬프트 코딩 예제
+                </figcaption>
                 <div className="relative w-full overflow-hidden rounded-xl border border-black/[0.08] bg-[#f0f1f4] shadow-[0_24px_90px_rgba(8,9,13,0.09)]">
                   <div className="aspect-video w-full">
                     <iframe
                       src="https://www.youtube.com/embed/__hdL92vSoY?autoplay=1&mute=1&loop=1&playlist=__hdL92vSoY&modestbranding=1&rel=0&playsinline=1"
-                      title="API 코드예제로 만든 QA 챗봇 시연 영상"
+                      title="누구나 따라 할 수 있는 QA 챗봇 프롬프트 코딩 예제"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
                       className="block h-full w-full border-0"
                     />
                   </div>
                 </div>
-                <figcaption className="flex items-center gap-2 px-1 font-mono text-[11px] uppercase tracking-normal text-black/46">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#d84a3a]" />
-                  live demo · API 코드예제로 만든 QA 챗봇
-                </figcaption>
               </figure>
             </div>
           </div>
