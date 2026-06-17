@@ -156,15 +156,6 @@ const TRUST_POINTS = [
 const PARTICIPANT_NOTICE_SESSION_KEY =
   "ai-api-omakase-participant-notice-dismissed";
 
-const TTS_DEMO_PAYLOAD = `{
-  "language": "ko",
-  "speaker": "warm",
-  "style_instruction": "차분하고 신뢰감 있게",
-  "text": "안녕하세요. AI API 오마카세입니다."
-}`;
-
-type TtsDemoPhase = "typing" | "ready" | "generating" | "done";
-
 function normalizeTask(taskKey?: string | null, name?: string | null) {
   const raw = `${taskKey ?? ""} ${name ?? ""}`.toLowerCase();
   if (/text[-\s]?to[-\s]?music|music generation|t2m|music/.test(raw)) {
@@ -193,206 +184,6 @@ function taskLabel(taskKey?: string | null, name?: string | null) {
 function taskDetail(taskKey?: string | null, name?: string | null, fallback?: string | null) {
   const task = normalizeTask(taskKey, name);
   return TASK_DETAILS[task] ?? fallback ?? "AI Engine · API";
-}
-
-function HeroTtsWorkbench() {
-  const [typedPayload, setTypedPayload] = useState("");
-  const [phase, setPhase] = useState<TtsDemoPhase>("typing");
-
-  useEffect(() => {
-    let cancelled = false;
-    const wait = (ms: number) =>
-      new Promise((resolve) => {
-        window.setTimeout(resolve, ms);
-      });
-
-    async function run() {
-      while (!cancelled) {
-        setTypedPayload("");
-        setPhase("typing");
-        await wait(520);
-
-        for (let index = 0; index < TTS_DEMO_PAYLOAD.length; index += 1) {
-          if (cancelled) return;
-          setTypedPayload(TTS_DEMO_PAYLOAD.slice(0, index + 1));
-          await wait(TTS_DEMO_PAYLOAD[index] === "\n" ? 105 : 20);
-        }
-
-        if (cancelled) return;
-        setPhase("ready");
-        await wait(1250);
-
-        if (cancelled) return;
-        setPhase("generating");
-        await wait(980);
-
-        if (cancelled) return;
-        setPhase("done");
-        await wait(3600);
-
-        if (cancelled) return;
-        await wait(900);
-      }
-    }
-
-    run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const isGenerating = phase === "generating";
-  const isDone = phase === "done";
-  const showCursor = phase === "ready" || phase === "generating";
-  const statusLabel =
-    phase === "typing" ? "typing" : phase === "ready" ? "ready" : isGenerating ? "generating" : "200 OK";
-
-  return (
-    <div
-      data-hero-tts-workbench
-      className="w-full max-w-[540px] overflow-hidden border border-black/[0.08] bg-white shadow-[0_24px_90px_rgba(8,9,13,0.09)]"
-    >
-      <div className="flex h-9 items-center justify-between border-b border-black/[0.06] px-4">
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-        </div>
-        <span className="truncate font-mono text-[11px] text-black/38">
-          api.workbench
-        </span>
-      </div>
-
-      <div className="relative p-3 sm:p-4">
-        <div className="border border-black/[0.06] bg-[#fbfbfc] p-3">
-          <div className="flex items-start justify-between gap-6">
-            <div>
-              <p className="font-mono text-[10px] uppercase tracking-normal text-black/35">
-                selected API
-              </p>
-              <h2 className="mt-1.5 break-words text-[21px] font-semibold leading-tight tracking-normal">
-                TTS API
-              </h2>
-            </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d84a3a]/25 bg-[#d84a3a]/8 px-2.5 py-1.5 font-mono text-[11px] font-semibold text-[#a93229]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#d84a3a]" />
-              live test
-            </span>
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-black/[0.06] py-2 font-mono text-[10px] text-black/48">
-            <span className="truncate">Qwen3-TTS-12Hz-1.7B-CustomVoice</span>
-            <span className="text-black/20">/</span>
-            <span className="font-semibold text-black/64">POST /api/tts</span>
-          </div>
-
-          <div className="mt-3 overflow-hidden border border-black/[0.08] bg-[#08090d]">
-            <div className="flex items-center justify-between border-b border-white/[0.08] px-3 py-1.5">
-              <p className="font-mono text-[10px] uppercase tracking-normal text-white/42">
-                request payload
-              </p>
-              <p className="font-mono text-[10px] uppercase tracking-normal text-[#d84a3a]">
-                {statusLabel}
-              </p>
-            </div>
-            <pre className="min-h-[88px] whitespace-pre-wrap p-3 font-mono text-[10.5px] leading-[1.38] text-white/86">
-              {typedPayload}
-              {phase === "typing" ? (
-                <span className="ml-0.5 inline-block h-3.5 w-1.5 translate-y-0.5 animate-pulse bg-[#d84a3a]" />
-              ) : null}
-            </pre>
-          </div>
-
-          <div className="relative mt-3 flex items-center justify-between gap-3">
-            <button
-              type="button"
-              className={[
-                "inline-flex h-10 min-w-[124px] items-center justify-center bg-[#d84a3a] px-4 text-[13px] font-semibold text-white transition-transform",
-                isGenerating ? "gap-2" : "",
-                phase === "ready" ? "translate-y-px scale-[0.99]" : "",
-              ].join(" ")}
-            >
-              {isGenerating ? (
-                <span className="hero-tts-spinner h-3 w-3 rounded-full border-2 border-white/35 border-t-white" />
-              ) : null}
-              {isGenerating ? "생성 중" : isDone ? "재생 중" : "음성 합성"}
-            </button>
-            <span className="font-mono text-[10px] text-black/42">
-              API key ready
-            </span>
-            <span
-              className={[
-                "hero-demo-cursor pointer-events-none absolute left-[108px] top-[25px] z-10 h-7 w-[22px] transition-all duration-500",
-                showCursor ? "opacity-100" : "translate-x-[-36px] translate-y-[-12px] opacity-0",
-              ].join(" ")}
-              aria-hidden="true"
-            />
-          </div>
-        </div>
-
-        <div
-          className={[
-            "mt-3 border border-black/[0.06] bg-white p-3 transition-all duration-300",
-            isDone ? "translate-y-0 opacity-100" : "translate-y-2 opacity-20",
-          ].join(" ")}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="font-mono text-[10px] uppercase tracking-normal text-black/35">
-                generated audio
-              </p>
-              <h3 className="mt-1.5 text-[17px] font-semibold leading-tight">
-                생성된 음성을 바로 확인합니다.
-              </h3>
-            </div>
-            <span className="rounded-full border border-[#d84a3a]/25 bg-[#d84a3a]/8 px-2.5 py-1.5 font-mono text-[11px] font-semibold text-[#a93229]">
-              200 OK
-            </span>
-          </div>
-
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 border-y border-black/[0.06] py-2 font-mono text-[10px] text-black/46">
-            <span>
-              latency <strong className="text-black/82">1.24s</strong>
-            </span>
-            <span>
-              duration <strong className="text-black/82">6.8s</strong>
-            </span>
-            <span>
-              format <strong className="text-black/82">wav</strong>
-            </span>
-          </div>
-
-          <p className="mt-3 text-[12px] leading-5 text-black/54">
-            언어, 화자, 스타일 지시와 읽어줄 텍스트를 입력하면 합성 결과와 응답 정보를
-            한 화면에서 확인합니다.
-          </p>
-
-          <div
-            className={[
-              "hero-tts-wave mt-3 flex h-10 items-end justify-center gap-1 border border-[#d84a3a]/20 bg-[#d84a3a]/5",
-              isDone ? "is-playing" : "",
-            ].join(" ")}
-          >
-            {Array.from({ length: 12 }).map((_, index) => (
-              <i
-                key={index}
-                className="block w-1.5 rounded-full bg-[#d84a3a]"
-                style={{
-                  height: `${[10, 19, 14, 28, 36, 16, 24, 18, 31, 22, 12, 26][index]}px`,
-                  animationDelay: `${index * 80}ms`,
-                }}
-              />
-            ))}
-          </div>
-
-          <p className="mt-2 font-mono text-[10px] uppercase text-black/34">
-            audio ready · code handoff
-          </p>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default function Home() {
@@ -542,7 +333,7 @@ export default function Home() {
 
       <main className="pt-[72px]">
         <section className="relative overflow-hidden border-b border-black/[0.06] bg-[#f7f8fb]">
-          <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 py-16 md:px-8 md:py-20 lg:grid-cols-[minmax(0,0.98fr)_minmax(420px,0.78fr)] lg:px-10 lg:py-24">
+          <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 py-16 md:px-8 md:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(560px,1.1fr)] lg:px-10 lg:py-24">
             <div className="flex min-w-0 flex-col justify-start pb-6 md:pb-10">
               <div>
                 <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-white px-3 py-1.5 text-[12px] font-medium text-black/58 shadow-[0_1px_2px_rgba(8,9,13,0.04)]">
@@ -602,8 +393,29 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex min-w-0 items-start lg:justify-end">
-              <HeroTtsWorkbench />
+            <div className="flex min-w-0 flex-col items-stretch gap-3 lg:justify-center">
+              <figure className="flex w-full max-w-[720px] flex-col gap-3 lg:ml-auto">
+                <div className="relative w-full overflow-hidden rounded-xl border border-black/[0.08] bg-[#f0f1f4] shadow-[0_24px_90px_rgba(8,9,13,0.09)]">
+                  <div className="aspect-video w-full">
+                    <video
+                      src="/hero-qa-demo.mp4"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      controls
+                      controlsList="nodownload"
+                      preload="metadata"
+                      aria-label="API 코드예제로 만든 QA 챗봇 시연 영상"
+                      className="block h-full w-full object-cover"
+                    />
+                  </div>
+                </div>
+                <figcaption className="flex items-center gap-2 px-1 font-mono text-[11px] uppercase tracking-normal text-black/46">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#d84a3a]" />
+                  live demo · API 코드예제로 만든 QA 챗봇
+                </figcaption>
+              </figure>
             </div>
           </div>
         </section>

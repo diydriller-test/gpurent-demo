@@ -209,50 +209,8 @@ body {
   will-change: auto;
 }
 
-.hero-tts-spinner {
-  animation: heroTtsSpin 0.8s linear infinite;
-}
-
-.hero-demo-cursor {
-  filter: drop-shadow(0 3px 4px rgba(8, 9, 13, 0.26));
-}
-
-.hero-demo-cursor::before,
-.hero-demo-cursor::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  clip-path: polygon(0 0, 0 22px, 6px 17px, 10px 27px, 15px 25px, 11px 16px, 20px 16px);
-}
-
-.hero-demo-cursor::before {
-  background: #fff;
-}
-
-.hero-demo-cursor::after {
-  inset: 2px 3px 3px 2px;
-  background: #08090d;
-  clip-path: polygon(0 0, 0 20px, 6px 15px, 10px 25px, 13px 24px, 9px 14px, 18px 14px);
-}
-
-.hero-tts-wave.is-playing i {
-  animation: heroTtsWave 1.3s ease-in-out infinite;
-}
-
-@keyframes heroTtsSpin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes heroTtsWave {
-  0%, 100% { transform: scaleY(0.5); opacity: 0.52; }
-  50% { transform: scaleY(1); opacity: 1; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .docs-toc-link-active { animation: none; }
   .dashboard-card { transform: none !important; }
   .dashboard-card:hover { transform: none !important; }
-  .hero-tts-spinner {
-    animation: none !important;
-  }
 }
