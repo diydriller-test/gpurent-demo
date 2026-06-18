@@ -153,6 +153,63 @@ const TRUST_POINTS = [
   "개발자 친화적 코드 handoff",
 ];
 
+const FAQ_ITEMS: { q: string; a: string }[] = [
+  {
+    q: "모두의 창업 지원금으로 어떻게 신청하면 되나요?",
+    a: "기관 정책상 각 API가 개별 상품으로 등록되어 있습니다. 필요한 API를 지원 한도 내에서 선택하시면 기관을 통해 구매 정보가 전달되며, 이후 운영팀이 계정에 사용 권한을 활성화해 드립니다. 7월 1일 사용 시작 전까지 운영팀이 별도로 안내를 진행할 예정입니다.",
+  },
+  {
+    q: "AI API 오마카세는 어떤 서비스인가요?",
+    a: "AI 서비스 개발에 필요한 다양한 API를 제공하는 플랫폼입니다. LLM, Embedding, Reranking, STT, TTS, OCR, 이미지 생성·분석 등의 AI API를 제공하며, 하나의 계정으로 여러 API를 사용할 수 있고 필요한 서비스만 선택하여 이용할 수 있습니다.",
+  },
+  {
+    q: "월 결제 한 번으로 모든 API를 사용할 수 있나요?",
+    a: "아닙니다. 현재 기관 정책에 따라 서비스가 9개의 개별 상품으로 분리되어 있습니다. 필요한 API를 각각 선택하셔야 하며, 선택한 서비스만 사용 가능합니다.",
+  },
+  {
+    q: "월 정액인가요?",
+    a: "네. Pro 요금제는 월 정액제로 운영되며, 추가 사용량에 따른 별도 과금 없이 동일한 월 비용으로 사용하실 수 있습니다.",
+  },
+  {
+    q: "사용량은 토큰 기준인가요?",
+    a: "아닙니다. AI API 오마카세는 토큰 차감 방식이 아닙니다. 요금제는 분당 호출 수(RPM)와 동시 접속 IP 수 기준으로 운영되며, 사용량이 많다고 추가 과금되는 구조가 아닙니다.",
+  },
+  {
+    q: "하나의 계정으로 모든 API를 사용할 수 있나요?",
+    a: "네. 계정은 1개만 생성되며 API Key도 1개만 발급됩니다. 다만 이용 권한은 구매(선택)하신 API 서비스에 대해서만 활성화됩니다. 예를 들어 LLM, Embedding, Reranking API를 선택하셨다면 하나의 API Key로 위 3개의 서비스를 모두 호출할 수 있습니다.",
+  },
+  {
+    q: "API Key는 어떻게 발급되나요?",
+    a: "계정당 API Key 1개가 자동으로 발급됩니다. 필요 시 직접 재발급이 가능하며, 노출된 Key는 삭제 후 새로 생성할 수 있습니다. 발급된 Key에는 구매하신 API 서비스 권한이 자동으로 연결됩니다.",
+  },
+  {
+    q: "팀원들과 API Key를 공유할 수 있나요?",
+    a: "네, 가능합니다. 다만 Pro 플랜 기준으로 동시에 사용할 수 있는 IP 수가 제한되며 현재 기준 최대 3개 IP까지 지원합니다.",
+  },
+  {
+    q: "GPT, Claude, Gemini 모델을 사용할 수 있나요?",
+    a: "현재는 자체 제공 모델 중심으로 운영됩니다. GPT, Claude, Gemini 연동 기능은 향후 확대될 예정입니다.",
+  },
+  {
+    q: "서비스가 성장하면 더 높은 트래픽도 지원 가능한가요?",
+    a: "네. 현재 Pro 요금제는 MVP 및 초기 서비스 운영에 적합한 수준이며, 대규모 상용 서비스가 필요한 경우 Enterprise 플랜을 통해 별도 협의가 가능합니다.",
+  },
+  {
+    q: "한국어 STT 정확도는 어느 정도인가요?",
+    a: "Whisper 기반 엔진을 사용하고 있으며, 오픈소스 STT 중에서는 높은 수준의 정확도를 제공합니다. 다만 음성 품질과 도메인에 따라 결과가 달라질 수 있으므로 Playground 테스트를 권장합니다.",
+  },
+  {
+    q: "회의록 자동 요약 기능이 있나요?",
+    a: "회의록 전용 기능은 제공하지 않지만 STT API와 LLM API 조합을 이용하여 자동 요약 기능을 쉽게 구현할 수 있습니다.",
+  },
+  {
+    q: "장애가 발생하면 어떻게 되나요?",
+    a: "서비스는 Load Balancer와 고가용성(HA) 구조로 운영됩니다. 장애 발생 시 자동 복구가 우선 수행되며, 문제가 지속될 경우 운영팀이 직접 대응합니다. 문의는 이메일 또는 전화로 가능합니다.",
+  },
+];
+
+const FAQ_VISIBLE_COUNT = 10;
+
 const PARTICIPANT_NOTICE_SESSION_KEY =
   "ai-api-omakase-participant-notice-dismissed";
 
@@ -190,6 +247,24 @@ export default function Home() {
   const [capabilities, setCapabilities] =
     useState<Capability[]>(CAPABILITY_FALLBACK);
   const [participantNoticeOpen, setParticipantNoticeOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<Set<number>>(() => new Set([0]));
+  const [showAllFaq, setShowAllFaq] = useState(false);
+
+  const visibleFaq = showAllFaq
+    ? FAQ_ITEMS
+    : FAQ_ITEMS.slice(0, FAQ_VISIBLE_COUNT);
+
+  function toggleFaq(index: number) {
+    setOpenFaq((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -532,6 +607,104 @@ export default function Home() {
                   API docs 보기
                 </Link>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="faq"
+          className="border-t border-black/[0.06] bg-white px-5 py-16 md:px-8 md:py-20 lg:px-10"
+        >
+          <div className="mx-auto grid max-w-[1440px] gap-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <p className="font-mono text-[12px] uppercase tracking-normal text-black/38">
+                frequently asked
+              </p>
+              <h2 className="mt-4 max-w-md text-[32px] font-semibold leading-[1.05] tracking-normal md:text-[44px]">
+                자주 묻는 질문
+              </h2>
+              <p className="mt-5 max-w-md text-[15px] leading-7 text-black/54">
+                서비스 도입 전에 가장 많이 받은 질문을 정리했습니다. 더
+                궁금한 점이 있으시면 언제든 이메일로 문의해주세요.
+              </p>
+              <a
+                href="mailto:help@kogrobo.com?subject=AI%20API%20%EC%98%A4%EB%A7%88%EC%B9%B4%EC%84%B8%20%EB%AC%B8%EC%9D%98"
+                className="mt-7 inline-flex h-11 items-center justify-center rounded-lg border border-black/[0.12] bg-white px-5 text-[14px] font-semibold text-black/72 shadow-[0_1px_2px_rgba(8,9,13,0.04)] transition-colors hover:border-black/20 hover:text-black"
+              >
+                help@kogrobo.com 으로 문의하기
+              </a>
+            </div>
+
+            <div>
+              <ul className="border-t border-black/[0.08]">
+                {visibleFaq.map((item, index) => {
+                  const isOpen = openFaq.has(index);
+                  const panelId = `faq-panel-${index}`;
+                  const buttonId = `faq-button-${index}`;
+                  return (
+                    <li
+                      key={item.q}
+                      className="border-b border-black/[0.08]"
+                    >
+                      <h3>
+                        <button
+                          id={buttonId}
+                          type="button"
+                          onClick={() => toggleFaq(index)}
+                          aria-expanded={isOpen}
+                          aria-controls={panelId}
+                          className="flex w-full items-start justify-between gap-6 py-5 text-left transition-colors hover:text-black md:py-6"
+                        >
+                          <span className="text-[15px] font-medium leading-snug text-[#08090d] md:text-[17px]">
+                            {item.q}
+                          </span>
+                          <span
+                            aria-hidden="true"
+                            className={`mt-1 inline-flex h-6 w-6 shrink-0 items-center justify-center font-mono text-[18px] leading-none text-black/42 transition-transform duration-200 ${
+                              isOpen ? "rotate-45 text-black/72" : ""
+                            }`}
+                          >
+                            +
+                          </span>
+                        </button>
+                      </h3>
+                      <div
+                        id={panelId}
+                        role="region"
+                        aria-labelledby={buttonId}
+                        hidden={!isOpen}
+                        className="pb-6 pr-2 text-[14px] leading-7 text-black/58 md:pr-10 md:text-[15px]"
+                      >
+                        {item.a}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {FAQ_ITEMS.length > FAQ_VISIBLE_COUNT ? (
+                <div className="mt-8">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllFaq((prev) => !prev)}
+                    className="inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-normal text-black/58 transition-colors hover:text-black"
+                  >
+                    <span>
+                      {showAllFaq
+                        ? "접기"
+                        : `더 보기 +${FAQ_ITEMS.length - FAQ_VISIBLE_COUNT}`}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className={`transition-transform duration-200 ${
+                        showAllFaq ? "rotate-180" : ""
+                      }`}
+                    >
+                      ↓
+                    </span>
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
