@@ -415,11 +415,6 @@ export default function Home() {
           <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-10 px-5 py-16 md:px-8 md:py-20 lg:px-10 lg:py-24 xl:grid-cols-[minmax(0,1fr)_minmax(560px,1.1fr)] 2xl:max-w-[1680px]">
             <div className="flex min-w-0 flex-col justify-start pb-6 md:pb-10">
               <div>
-                <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-white px-3 py-1.5 text-[12px] font-medium text-black/58 shadow-[0_1px_2px_rgba(8,9,13,0.04)]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#15b87a]" />
-                  AI API workbench
-                </div>
-
                 <h1 className="max-w-[920px] break-keep text-[32px] font-semibold leading-[1.07] tracking-normal text-[#08090d] sm:text-[40px] md:text-[48px] lg:text-[48px] xl:text-[52px] 2xl:text-[60px]">
                   <span className="block">필요한 AI API를</span>
                   <span className="block">테스트하고 선택하세요.</span>

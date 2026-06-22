@@ -57,14 +57,9 @@ export function SiteNav({
           }}
         >
           <Image src="/icon.png" alt="로고" width={28} height={28} className="rounded-md" />
-          <div className="flex flex-col leading-none">
-            <span className="text-[15px] font-semibold tracking-normal text-[#08090d]">
-              AI API Omakase
-            </span>
-            <span className="mt-1 font-mono text-[10px] uppercase tracking-normal text-black/36">
-              control plane
-            </span>
-          </div>
+          <span className="text-[15px] font-semibold leading-none tracking-normal text-[#08090d]">
+            AI API Omakase
+          </span>
         </Link>
 
         <div className="hidden flex-1 items-center justify-center md:flex">
