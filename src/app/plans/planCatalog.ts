@@ -335,6 +335,11 @@ export function getPlanTaskSublabel(task: PlanTask): string {
   return TASK_META[task].sublabel;
 }
 
+/** 플랜·API 체험 카드의 모델 식별자 — 리스트 카드와 동일한 mono 표기에 사용 */
+export function getPlanTaskModelDisplay(task: PlanTask): string {
+  return TASK_META[task].modelDisplay;
+}
+
 /**
  * 백엔드 Api.name 기준으로 태스크 추정 (키워드 순서 중요)
  */

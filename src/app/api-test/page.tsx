@@ -34,6 +34,7 @@ import {
   getApiTask,
   getPlanCardDisplay,
   getPlanTaskDisplayName,
+  getPlanTaskModelDisplay,
   rpsToRequestsPerMinute,
   type PlanTask,
 } from "@/app/plans/planCatalog";
@@ -84,6 +85,18 @@ const PLAN_TASK_TO_PLAYGROUND_API: Partial<Record<PlanTask, ApiId>> = {
   Vision: "image2text",
   "Text-to-Music": "t2m",
   "Image Generation": "t2i",
+};
+
+const PLAYGROUND_API_TO_PLAN_TASK: Partial<Record<ApiId, PlanTask>> = {
+  llm: "Text Generation",
+  embedding: "Embedding",
+  reranker: "Reranker",
+  tts: "TTS",
+  stt: "STT",
+  voiceClone: "Voice Clone",
+  image2text: "Vision",
+  t2m: "Text-to-Music",
+  t2i: "Image Generation",
 };
 
 type ApiItem = {
@@ -4626,6 +4639,11 @@ export default function ApiTestPage() {
 
   const selectedApiItem = apis.find((a) => a.id === selectedApi);
 
+  const selectedPlanTask = PLAYGROUND_API_TO_PLAN_TASK[selectedApi];
+  const selectedModelDisplay = selectedPlanTask
+    ? getPlanTaskModelDisplay(selectedPlanTask)
+    : null;
+
   const selectedMarketplaceItem = filteredMarketplace.find(
     (item) => item.apiId === selectedApi,
   );
@@ -5120,6 +5138,11 @@ export default function ApiTestPage() {
                         <h3 className="mt-2 max-w-3xl break-words text-2xl font-semibold leading-tight tracking-normal text-foreground">
                           {selectedApiItem?.name ?? "API"} 테스트
                         </h3>
+                        {selectedModelDisplay && (
+                          <p className="mt-1 break-all font-mono text-[11px] text-black/48">
+                            {selectedModelDisplay}
+                          </p>
+                        )}
                         <p className="mt-2 max-w-full whitespace-normal break-all text-sm leading-6 text-black/56">
                           입력값을 구성하고 응답을 확인하세요.
                         </p>
@@ -5461,6 +5484,11 @@ export default function ApiTestPage() {
                       <p className="mt-2 text-lg font-semibold leading-tight text-foreground">
                         {selectedRouteProfile.model}
                       </p>
+                      {selectedModelDisplay && (
+                        <p className="mt-1 break-all font-mono text-[11px] text-black/48">
+                          {selectedModelDisplay}
+                        </p>
+                      )}
                       <p className="mt-2 font-mono text-[11px] text-black/48">
                         {selectedRouteProfile.endpoint}
                       </p>
