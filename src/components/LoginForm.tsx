@@ -25,6 +25,12 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
     return raw;
   }, [searchParams]);
 
+  const recoveryMailto = `mailto:help@kogrobo.com?subject=${encodeURIComponent(
+    "[AI API 오마카세] 아이디·비밀번호 찾기 문의",
+  )}&body=${encodeURIComponent(
+    "가입 이메일:\n가입 사용자명(알고 계신 경우):\n문의 내용:\n",
+  )}`;
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -143,6 +149,17 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
         >
           회원가입
         </Link>
+      </p>
+
+      <p className="mt-3 text-center text-xs leading-5 text-black/44">
+        아이디 또는 비밀번호를 잊으셨다면{" "}
+        <a
+          href={recoveryMailto}
+          className="font-medium text-accent hover:underline"
+        >
+          help@kogrobo.com
+        </a>
+        으로 문의해 주세요. 운영팀이 본인 확인 후 안내해 드립니다.
       </p>
     </div>
   );
