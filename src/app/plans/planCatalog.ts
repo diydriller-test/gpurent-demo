@@ -1,11 +1,9 @@
 import type { Api, Plan } from "@/lib/api";
 
-/** UI 표기: 1 RPS → 1분 60회, 여기서 ÷3 (예: 1 RPS → 1분에 20번 요청) */
-const RPS_TO_REQUESTS_PER_MINUTE_DIVISOR = 3;
-
+/** UI 표기: 서버 `max_rps` 값을 분당 요청 수치로 그대로 표시 */
 export function rpsToRequestsPerMinute(rps: number): number {
   if (!Number.isFinite(rps) || rps <= 0) return 0;
-  return Math.round((rps * 60) / RPS_TO_REQUESTS_PER_MINUTE_DIVISOR);
+  return rps;
 }
 
 export function formatPlanRequestsPerMinute(rps: number): string {

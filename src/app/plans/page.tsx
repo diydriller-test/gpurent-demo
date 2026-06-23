@@ -264,7 +264,7 @@ function PlansPageContent() {
       if (!hardcoded) return serverPlans;
       return serverPlans.map((sp) => {
         const hp = hardcoded.find((h) => h.sort_order === sp.sort_order);
-        return hp ? { ...sp, price_monthly: hp.price_monthly, max_rps: hp.max_rps } : sp;
+        return hp ? { ...sp, price_monthly: hp.price_monthly } : sp;
       });
     }
 
