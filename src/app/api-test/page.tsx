@@ -38,30 +38,7 @@ import {
   rpsToRequestsPerMinute,
   type PlanTask,
 } from "@/app/plans/planCatalog";
-
-const REAL_ENDPOINTS = {
-  llm: "http://aiapi.kogrobo.com:11115/llm",
-  embedding: "http://aiapi.kogrobo.com:11115/embedding",
-  reranker: "http://aiapi.kogrobo.com:11115/reranker",
-  tts: "http://aiapi.kogrobo.com:11115/tts",
-  stt: "http://aiapi.kogrobo.com:11115/stt",
-  voiceClone: "http://aiapi.kogrobo.com:11115/voice-clone",
-  image2text: "http://aiapi.kogrobo.com:11115/ocr",
-  t2m: "http://aiapi.kogrobo.com:11115/music",
-  t2i: "http://aiapi.kogrobo.com:11115/image",
-} as const;
-
-const DUMMY_ENDPOINTS = {
-  llm: "https://api.example.com",
-  embedding: "https://api.example.com",
-  reranker: "https://api.example.com",
-  tts: "https://api.example.com",
-  stt: "https://api.example.com",
-  voiceClone: "https://api.example.com",
-  image2text: "https://api.example.com",
-  t2m: "https://api.example.com",
-  t2i: "https://api.example.com",
-} as const;
+import { REAL_ENDPOINTS, DUMMY_ENDPOINTS } from "@/lib/endpoints";
 
 type ApiId =
   | "llm"
