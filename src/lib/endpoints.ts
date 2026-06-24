@@ -6,7 +6,7 @@ export const REAL_ENDPOINTS = {
   reranker: "http://aiapi.kogrobo.com:11115/reranker",
   tts: "http://aiapi.kogrobo.com:11115/tts",
   stt: "http://aiapi.kogrobo.com:11115/stt",
-  voiceClone: "http://aiapi.kogrobo.com:11115/voice-clone",
+  voiceClone: "http://aiapi.kogrobo.com:11115/voiceclone",
   image2text: "http://aiapi.kogrobo.com:11115/ocr",
   t2m: "http://aiapi.kogrobo.com:11115/music",
   t2i: "http://aiapi.kogrobo.com:11115/image",
