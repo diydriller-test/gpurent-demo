@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { getMe, getApiKeys, createApiKey, regenerateApiKey, getApis, type User, type ApiKey, type Api } from "@/lib/api";
+import { useCallback, useEffect, useState } from "react";
+import { getMe, getApiKeys, createApiKey, regenerateApiKey, type User, type ApiKey } from "@/lib/api";
 import { getToken } from "@/lib/token";
-import { rpsToRequestsPerMinute, getApiTask } from "@/app/plans/planCatalog";
-import { getRealEndpointByTask } from "@/lib/endpoints";
+import { rpsToRequestsPerMinute } from "@/app/plans/planCatalog";
 import {
   PlatformButton,
   PlatformCard,
@@ -203,40 +202,10 @@ curl -X POST "$AI_OMAKASE_BASE_URL/llm/v1/chat/completions" \\
   );
 }
 
-function EndpointRow({ url }: { url: string }) {
-  const [copied, setCopied] = useState(false);
-
-  async function handleCopy() {
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1400);
-  }
-
-  return (
-    <div className="mt-3 flex items-center gap-2 rounded-lg border border-black/[0.06] bg-background px-3 py-2">
-      <span className="shrink-0 font-mono text-[10px] uppercase tracking-normal text-black/36">
-        Endpoint
-      </span>
-      <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
-        {url}
-      </code>
-      <button
-        type="button"
-        onClick={handleCopy}
-        aria-label="엔드포인트 URL 복사"
-        className="shrink-0 rounded border border-black/[0.08] px-2 py-1 font-mono text-[11px] text-black/56 transition-colors hover:border-black/20 hover:text-foreground"
-      >
-        {copied ? "복사됨" : "복사"}
-      </button>
-    </div>
-  );
-}
-
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [apis, setApis] = useState<Api[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -259,12 +228,6 @@ export default function ProfilePage() {
         setApiKeys(keys);
       } catch {
         setApiKeys([]);
-      }
-      try {
-        const apiList = await getApis();
-        setApis(apiList);
-      } catch {
-        setApis([]);
       }
     } catch (err) {
       if (err instanceof Error && err.message === "UNAUTHORIZED") {
@@ -326,16 +289,6 @@ export default function ProfilePage() {
   const activeApiPlans = (user?.api_plans ?? []).filter(
     (ap) => !DEPRECATED_API_NAME_PATTERN.test(ap.api_name),
   );
-
-  const apiIdToUrl = useMemo(() => {
-    const map = new Map<number, string>();
-    for (const a of apis) {
-      const task = getApiTask(a);
-      if (!task) continue;
-      map.set(a.id, getRealEndpointByTask(task));
-    }
-    return map;
-  }, [apis]);
 
   if (isLoading) {
     return (
@@ -651,7 +604,6 @@ export default function ProfilePage() {
                 .sort((a, b) => a.api_name.localeCompare(b.api_name, "ko"))
                 .map((ap) => {
                   const registeredAt = formatPlanRegisteredAt(ap.created_at);
-                  const endpointUrl = apiIdToUrl.get(ap.api_id);
                   return (
                   <li
                     key={`${ap.api_id}-${ap.plan_id}`}
@@ -673,7 +625,6 @@ export default function ProfilePage() {
                         <span>최대 {rpsToRequestsPerMinute(ap.max_rps).toLocaleString("ko-KR")} RPM</span>
                       </div>
                     </div>
-                    {endpointUrl ? <EndpointRow url={endpointUrl} /> : null}
                   </li>
                   );
                 })}
