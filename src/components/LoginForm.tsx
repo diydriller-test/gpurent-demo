@@ -31,6 +31,7 @@ export function LoginForm({ onSuccess, onBack, onForgotPassword }: LoginFormProp
   function handleForgotPasswordClick(e: React.MouseEvent<HTMLAnchorElement>) {
     if (!onForgotPassword) return;
     e.preventDefault();
+    sessionStorage.setItem("modalScrollY", String(window.scrollY));
     onForgotPassword();
   }
 

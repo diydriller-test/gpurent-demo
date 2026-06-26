@@ -7,9 +7,10 @@ import { forgotPassword } from "@/lib/api";
 
 interface ForgotPasswordFormProps {
   onBack?: () => void;
+  onLogin?: () => void;
 }
 
-export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({ onBack, onLogin }: ForgotPasswordFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +41,12 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function handleLoginClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (!onLogin) return;
+    e.preventDefault();
+    onLogin();
   }
 
   return (
@@ -73,6 +80,8 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
           </div>
           <Link
             href="/login"
+            scroll={false}
+            onClick={handleLoginClick}
             className="block w-full rounded-lg bg-[#08090d] py-3 text-center font-medium text-white transition-colors hover:bg-black"
           >
             로그인으로 돌아가기
@@ -116,7 +125,12 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
 
       <p className="mt-6 text-center text-sm text-black/52">
         비밀번호가 기억나셨나요?{" "}
-        <Link href="/login" className="font-medium text-accent hover:underline">
+        <Link
+          href="/login"
+          scroll={false}
+          onClick={handleLoginClick}
+          className="font-medium text-accent hover:underline"
+        >
           로그인
         </Link>
       </p>

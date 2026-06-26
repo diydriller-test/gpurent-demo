@@ -7,15 +7,35 @@ import { resetPassword } from "@/lib/api";
 
 interface ResetPasswordFormProps {
   onBack?: () => void;
+  onLogin?: () => void;
+  onForgotPassword?: () => void;
+  onResetSuccess?: () => void;
 }
 
-export function ResetPasswordForm({ onBack }: ResetPasswordFormProps) {
+export function ResetPasswordForm({
+  onBack,
+  onLogin,
+  onForgotPassword,
+  onResetSuccess,
+}: ResetPasswordFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const token = useMemo(() => searchParams.get("token")?.trim() ?? "", [searchParams]);
+
+  function handleLoginClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (!onLogin) return;
+    e.preventDefault();
+    onLogin();
+  }
+
+  function handleForgotPasswordClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (!onForgotPassword) return;
+    e.preventDefault();
+    onForgotPassword();
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -44,7 +64,11 @@ export function ResetPasswordForm({ onBack }: ResetPasswordFormProps) {
 
     try {
       await resetPassword({ token, password });
-      router.push("/login?reset=1");
+      if (onResetSuccess) {
+        onResetSuccess();
+      } else {
+        router.push("/login?reset=1");
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "비밀번호 재설정에 실패했습니다.",
@@ -85,6 +109,8 @@ export function ResetPasswordForm({ onBack }: ResetPasswordFormProps) {
           </div>
           <Link
             href="/forgot-password"
+            scroll={false}
+            onClick={handleForgotPasswordClick}
             className="block w-full rounded-lg bg-[#08090d] py-3 text-center font-medium text-white transition-colors hover:bg-black"
           >
             비밀번호 찾기
@@ -145,7 +171,12 @@ export function ResetPasswordForm({ onBack }: ResetPasswordFormProps) {
       )}
 
       <p className="mt-6 text-center text-sm text-black/52">
-        <Link href="/login" className="font-medium text-accent hover:underline">
+        <Link
+          href="/login"
+          scroll={false}
+          onClick={handleLoginClick}
+          className="font-medium text-accent hover:underline"
+        >
           로그인으로 돌아가기
         </Link>
       </p>

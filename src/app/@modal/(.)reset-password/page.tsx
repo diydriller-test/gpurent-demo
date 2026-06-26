@@ -2,9 +2,9 @@
 
 import { Suspense, useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
-import { LoginForm } from "@/components/LoginForm";
+import { ResetPasswordForm } from "@/components/ResetPasswordForm";
 
-function LoginModal() {
+function ResetPasswordModal() {
   const router = useRouter();
 
   useLayoutEffect(() => {
@@ -21,8 +21,9 @@ function LoginModal() {
     router.back();
   }
 
-  function handleSuccess(nextPath: string) {
-    window.location.assign(nextPath);
+  function handleLogin() {
+    sessionStorage.setItem("modalScrollY", String(window.scrollY));
+    router.push("/login", { scroll: false });
   }
 
   function handleForgotPassword() {
@@ -30,22 +31,26 @@ function LoginModal() {
     router.push("/forgot-password", { scroll: false });
   }
 
+  function handleResetSuccess() {
+    sessionStorage.setItem("modalScrollY", String(window.scrollY));
+    router.push("/login?reset=1", { scroll: false });
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/10 backdrop-blur-[2px]"
         onClick={handleClose}
         aria-hidden="true"
       />
 
-      {/* Modal card */}
-      <div className="relative z-10 w-full max-w-md mx-4">
+      <div className="relative z-10 mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto">
         <div className="rounded-xl border border-black/[0.08] bg-white p-6 shadow-2xl md:p-8">
-          <LoginForm
-            onSuccess={handleSuccess}
+          <ResetPasswordForm
             onBack={handleClose}
+            onLogin={handleLogin}
             onForgotPassword={handleForgotPassword}
+            onResetSuccess={handleResetSuccess}
           />
         </div>
       </div>
@@ -53,10 +58,10 @@ function LoginModal() {
   );
 }
 
-export default function LoginModalPage() {
+export default function ResetPasswordModalPage() {
   return (
     <Suspense fallback={null}>
-      <LoginModal />
+      <ResetPasswordModal />
     </Suspense>
   );
 }
