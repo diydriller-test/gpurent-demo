@@ -1,23 +1,24 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { Suspense } from "react";
-import { ResetPasswordForm } from "@/components/ResetPasswordForm";
+type ResetPasswordRedirectPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-/** 이메일 링크 등 직접 접속 시 폼 표시. 사이트 내 이동은 @modal 인터셉트가 처리. */
-function ResetPasswordDirect() {
-  return (
-    <div className="platform-shell flex min-h-screen items-center justify-center px-6 py-16">
-      <div className="w-full max-w-md rounded-xl border border-black/[0.08] bg-white p-6 shadow-2xl md:p-8">
-        <ResetPasswordForm />
-      </div>
-    </div>
-  );
-}
+/** 레거시 `/reset-password` → 이메일 링크와 동일한 `/auth/reset-password` */
+export default async function ResetPasswordRedirectPage({
+  searchParams,
+}: ResetPasswordRedirectPageProps) {
+  const params = await searchParams;
+  const qs = new URLSearchParams();
 
-export default function ResetPasswordPage() {
-  return (
-    <Suspense fallback={null}>
-      <ResetPasswordDirect />
-    </Suspense>
-  );
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === "string") {
+      qs.set(key, value);
+    } else if (Array.isArray(value)) {
+      value.forEach((v) => qs.append(key, v));
+    }
+  }
+
+  const suffix = qs.toString();
+  redirect(suffix ? `/auth/reset-password?${suffix}` : "/auth/reset-password");
 }
