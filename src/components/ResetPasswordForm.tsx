@@ -1,41 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { resetPassword } from "@/lib/api";
 
-interface ResetPasswordFormProps {
-  onBack?: () => void;
-  onLogin?: () => void;
-  onForgotPassword?: () => void;
-  onResetSuccess?: () => void;
-}
-
-export function ResetPasswordForm({
-  onBack,
-  onLogin,
-  onForgotPassword,
-  onResetSuccess,
-}: ResetPasswordFormProps) {
-  const router = useRouter();
+export function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const token = useMemo(() => searchParams.get("token")?.trim() ?? "", [searchParams]);
-
-  function handleLoginClick(e: React.MouseEvent<HTMLAnchorElement>) {
-    if (!onLogin) return;
-    e.preventDefault();
-    onLogin();
-  }
-
-  function handleForgotPasswordClick(e: React.MouseEvent<HTMLAnchorElement>) {
-    if (!onForgotPassword) return;
-    e.preventDefault();
-    onForgotPassword();
-  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -64,11 +39,7 @@ export function ResetPasswordForm({
 
     try {
       await resetPassword({ token, new_password: password });
-      if (onResetSuccess) {
-        onResetSuccess();
-      } else {
-        router.push("/login?reset=1");
-      }
+      window.location.assign("/login?reset=1");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "비밀번호 재설정에 실패했습니다.",
@@ -80,14 +51,13 @@ export function ResetPasswordForm({
 
   return (
     <div className="w-full">
-      <button
-        type="button"
-        onClick={onBack ?? (() => router.back())}
+      <Link
+        href="/login"
         className="inline-flex items-center gap-1 text-xs text-foreground/60 transition-colors hover:text-accent"
       >
         <span>←</span>
-        <span>뒤로가기</span>
-      </button>
+        <span>로그인으로 돌아가기</span>
+      </Link>
 
       <div className="mb-8 mt-4">
         <p className="font-mono text-[11px] uppercase tracking-normal text-black/36">
@@ -109,8 +79,6 @@ export function ResetPasswordForm({
           </div>
           <Link
             href="/forgot-password"
-            scroll={false}
-            onClick={handleForgotPasswordClick}
             className="block w-full rounded-lg bg-[#08090d] py-3 text-center font-medium text-white transition-colors hover:bg-black"
           >
             비밀번호 찾기
@@ -171,12 +139,7 @@ export function ResetPasswordForm({
       )}
 
       <p className="mt-6 text-center text-sm text-black/52">
-        <Link
-          href="/login"
-          scroll={false}
-          onClick={handleLoginClick}
-          className="font-medium text-accent hover:underline"
-        >
+        <Link href="/login" className="font-medium text-accent hover:underline">
           로그인으로 돌아가기
         </Link>
       </p>
