@@ -25,11 +25,7 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
     return raw;
   }, [searchParams]);
 
-  const recoveryMailto = `mailto:help@kogrobo.com?subject=${encodeURIComponent(
-    "[AI API 오마카세] 아이디·비밀번호 찾기 문의",
-  )}&body=${encodeURIComponent(
-    "가입 이메일:\n가입 사용자명(알고 계신 경우):\n문의 내용:\n",
-  )}`;
+  const passwordResetSuccess = searchParams.get("reset") === "1";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -88,6 +84,12 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {passwordResetSuccess && (
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700">
+            비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.
+          </div>
+        )}
+
         {error && (
           <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-500">
             {error}
@@ -113,12 +115,24 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
         </div>
 
         <div>
-          <label
-            htmlFor="login-password"
-            className="mb-2 block text-sm font-medium text-black/70"
-          >
-            비밀번호
-          </label>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <label
+              htmlFor="login-password"
+              className="block text-sm font-medium text-black/70"
+            >
+              비밀번호
+            </label>
+            <Link
+              href="/forgot-password"
+              scroll={false}
+              onClick={() =>
+                sessionStorage.setItem("modalScrollY", String(window.scrollY))
+              }
+              className="text-xs font-medium text-accent hover:underline"
+            >
+              비밀번호 찾기
+            </Link>
+          </div>
           <input
             id="login-password"
             type="password"
@@ -153,13 +167,17 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
 
       <p className="mt-3 text-center text-xs leading-5 text-black/44">
         아이디 또는 비밀번호를 잊으셨다면{" "}
-        <a
-          href={recoveryMailto}
+        <Link
+          href="/forgot-password"
+          scroll={false}
+          onClick={() =>
+            sessionStorage.setItem("modalScrollY", String(window.scrollY))
+          }
           className="font-medium text-accent hover:underline"
         >
-          help@kogrobo.com
-        </a>
-        으로 문의해 주세요. 운영팀이 본인 확인 후 안내해 드립니다.
+          비밀번호 찾기
+        </Link>
+        를 이용해 주세요.
       </p>
     </div>
   );

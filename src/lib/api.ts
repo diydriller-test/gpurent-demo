@@ -72,6 +72,61 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
   return res.json();
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export async function forgotPassword(
+  data: ForgotPasswordRequest,
+): Promise<void> {
+  const res = await fetch("/api/forgot-password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(
+      typeof error.detail === "string"
+        ? error.detail
+        : Array.isArray(error.detail)
+          ? error.detail.map((e: { msg?: string }) => e.msg).join(", ")
+          : JSON.stringify(error)
+    );
+  }
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export async function resetPassword(
+  data: ResetPasswordRequest,
+): Promise<void> {
+  const res = await fetch("/api/reset-password", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(
+      typeof error.detail === "string"
+        ? error.detail
+        : Array.isArray(error.detail)
+          ? error.detail.map((e: { msg?: string }) => e.msg).join(", ")
+          : JSON.stringify(error)
+    );
+  }
+}
+
 export function getAuthHeaders(): Record<string, string> {
   const token = getToken();
   if (!token) return {};
