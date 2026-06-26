@@ -1,21 +1,28 @@
 "use client";
 
 import { Suspense, useLayoutEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { LoginForm } from "@/components/LoginForm";
 
 function LoginModal() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const passwordJustReset = searchParams.get("reset") === "1";
 
   useLayoutEffect(() => {
-    const scrollY = parseInt(sessionStorage.getItem("modalScrollY") ?? "0", 10);
+    const scrollY = passwordJustReset
+      ? 0
+      : parseInt(sessionStorage.getItem("modalScrollY") ?? "0", 10);
+    if (passwordJustReset) {
+      sessionStorage.setItem("modalScrollY", "0");
+    }
     document.body.style.overflow = "hidden";
     window.scrollTo(0, scrollY);
     return () => {
       document.body.style.overflow = "";
       window.scrollTo(0, scrollY);
     };
-  }, []);
+  }, [passwordJustReset]);
 
   function handleClose() {
     router.back();

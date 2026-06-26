@@ -1,12 +1,16 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AuthResetPasswordModal } from "@/components/AuthResetPasswordModal";
 
 /** 이메일 링크(`/auth/reset-password?token=...`) 직접 접속 시 모달 UI 표시 */
 function AuthResetPasswordPageInner() {
   const router = useRouter();
+
+  useEffect(() => {
+    sessionStorage.setItem("modalScrollY", "0");
+  }, []);
 
   function handleClose() {
     router.push("/");
@@ -21,7 +25,8 @@ function AuthResetPasswordPageInner() {
   }
 
   function handleResetSuccess() {
-    router.push("/login?reset=1");
+    sessionStorage.setItem("modalScrollY", "0");
+    router.push("/login?reset=1", { scroll: false });
   }
 
   return (
