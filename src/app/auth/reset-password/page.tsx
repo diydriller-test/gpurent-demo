@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AuthResetPasswordModal } from "@/components/AuthResetPasswordModal";
+import { navigateToLoginAfterPasswordReset } from "@/lib/authModalNav";
 
 /** 이메일 링크(`/auth/reset-password?token=...`) 직접 접속 시 모달 UI 표시 */
 function AuthResetPasswordPageInner() {
@@ -25,8 +26,7 @@ function AuthResetPasswordPageInner() {
   }
 
   function handleResetSuccess() {
-    sessionStorage.setItem("modalScrollY", "0");
-    router.push("/login?reset=1", { scroll: false });
+    navigateToLoginAfterPasswordReset(router);
   }
 
   return (

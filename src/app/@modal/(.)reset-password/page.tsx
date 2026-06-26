@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { AuthResetPasswordModal } from "@/components/AuthResetPasswordModal";
+import { navigateToLoginAfterPasswordReset } from "@/lib/authModalNav";
 
 function ResetPasswordModal() {
   const router = useRouter();
@@ -22,8 +23,7 @@ function ResetPasswordModal() {
   }
 
   function handleResetSuccess() {
-    sessionStorage.setItem("modalScrollY", "0");
-    router.push("/login?reset=1", { scroll: false });
+    navigateToLoginAfterPasswordReset(router);
   }
 
   return (
