@@ -25,6 +25,10 @@ function LoginModal() {
     window.location.assign(nextPath);
   }
 
+  function handleForgotPassword() {
+    router.replace("/forgot-password");
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
@@ -37,7 +41,11 @@ function LoginModal() {
       {/* Modal card */}
       <div className="relative z-10 w-full max-w-md mx-4">
         <div className="rounded-xl border border-black/[0.08] bg-white p-6 shadow-2xl md:p-8">
-          <LoginForm onSuccess={handleSuccess} onBack={handleClose} />
+          <LoginForm
+            onSuccess={handleSuccess}
+            onBack={handleClose}
+            onForgotPassword={handleForgotPassword}
+          />
         </div>
       </div>
     </div>

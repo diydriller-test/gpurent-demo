@@ -9,9 +9,10 @@ import { setToken, setUserId } from "@/lib/token";
 interface LoginFormProps {
   onSuccess?: (nextPath: string) => void;
   onBack?: () => void;
+  onForgotPassword?: () => void;
 }
 
-export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
+export function LoginForm({ onSuccess, onBack, onForgotPassword }: LoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
@@ -26,6 +27,12 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
   }, [searchParams]);
 
   const passwordResetSuccess = searchParams.get("reset") === "1";
+
+  function handleForgotPasswordClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (!onForgotPassword) return;
+    e.preventDefault();
+    onForgotPassword();
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -115,24 +122,12 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
         </div>
 
         <div>
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <label
-              htmlFor="login-password"
-              className="block text-sm font-medium text-black/70"
-            >
-              비밀번호
-            </label>
-            <Link
-              href="/forgot-password"
-              scroll={false}
-              onClick={() =>
-                sessionStorage.setItem("modalScrollY", String(window.scrollY))
-              }
-              className="text-xs font-medium text-accent hover:underline"
-            >
-              비밀번호 찾기
-            </Link>
-          </div>
+          <label
+            htmlFor="login-password"
+            className="mb-2 block text-sm font-medium text-black/70"
+          >
+            비밀번호
+          </label>
           <input
             id="login-password"
             type="password"
@@ -166,13 +161,11 @@ export function LoginForm({ onSuccess, onBack }: LoginFormProps) {
       </p>
 
       <p className="mt-3 text-center text-xs leading-5 text-black/44">
-        아이디 또는 비밀번호를 잊으셨다면{" "}
+        비밀번호를 잊으셨다면{" "}
         <Link
           href="/forgot-password"
           scroll={false}
-          onClick={() =>
-            sessionStorage.setItem("modalScrollY", String(window.scrollY))
-          }
+          onClick={handleForgotPasswordClick}
           className="font-medium text-accent hover:underline"
         >
           비밀번호 찾기
