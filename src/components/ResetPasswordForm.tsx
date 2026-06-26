@@ -63,7 +63,7 @@ export function ResetPasswordForm({
     setIsLoading(true);
 
     try {
-      await resetPassword({ token, password });
+      await resetPassword({ token, new_password: password });
       if (onResetSuccess) {
         onResetSuccess();
       } else {

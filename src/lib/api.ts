@@ -101,7 +101,7 @@ export async function forgotPassword(
 
 export interface ResetPasswordRequest {
   token: string;
-  password: string;
+  new_password: string;
 }
 
 export async function resetPassword(
